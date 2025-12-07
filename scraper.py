@@ -1,6 +1,7 @@
 import time
 import re
 import os
+import datetime
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -45,6 +46,9 @@ def scrape_nytimes():
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
 
+    # 获取当天日期用于显示
+    today_str = datetime.date.today().strftime("%A, %B %d, %Y")
+
     driver = get_driver()
     if not driver:
         return
@@ -62,23 +66,138 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # 初始化索引页 HTML
-    index_html_content = """
-    <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>纽约时报双语文章 (本地保存版)</title>
-    <style>
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;margin:2em auto;max-width:800px;padding:0 1em;color:#333}
-        h1{color:#000;border-bottom:2px solid #eee;padding-bottom:.5em}
-        ul{list-style-type:decimal;padding-left:2em}
-        li{margin-bottom:1em}
-        a{text-decoration:none;color:#00589c;font-weight:bold}
-        a:hover{text-decoration:underline;color:#003d6b}
-        .timestamp {font-size: 0.8em; color: #666; margin-left: 10px;}
-    </style>
-    </head><body><h1>纽约时报双语文章 (本地保存版)</h1><ul>
+    # --- 升级后的 index.html 模板 (报纸头版风格) ---
+    index_html_head = f"""
+    <!DOCTYPE html>
+    <html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>纽约时报双语版 The New York Times Bilingual</title>
+        <style>
+            :root {{
+                --nyt-black: #121212;
+                --nyt-gray: #727272;
+                --nyt-border: #e2e2e2;
+                --bg-color: #f8f9fa;
+            }}
+            body {{
+                font-family: 'Georgia', 'Times New Roman', serif;
+                background-color: var(--bg-color);
+                color: var(--nyt-black);
+                margin: 0;
+                padding: 0;
+                line-height: 1.5;
+            }}
+            .app-container {{
+                max-width: 800px;
+                margin: 0 auto;
+                background: #fff;
+                min-height: 100vh;
+                box-shadow: 0 0 20px rgba(0,0,0,0.05);
+                padding-bottom: 40px;
+            }}
+            header {{
+                padding: 40px 20px 20px 20px;
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .masthead {{
+                font-family: 'Chomsky', 'Georgia', 'Times New Roman', serif;
+                font-size: 3.5rem;
+                margin: 0;
+                font-weight: 900;
+                letter-spacing: -1px;
+                line-height: 1;
+                color: #000;
+                margin-bottom: 10px;
+            }}
+            .sub-masthead {{
+                font-family: system-ui, -apple-system, sans-serif;
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 15px;
+                letter-spacing: 1px;
+            }}
+            .date-line {{
+                border-top: 1px solid #ddd;
+                border-bottom: 3px double #000;
+                padding: 8px 0;
+                font-family: sans-serif;
+                font-size: 0.85rem;
+                color: #555;
+                display: flex;
+                justify-content: space-between;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }}
+            ul {{
+                list-style: none;
+                padding: 0 30px;
+                margin: 0;
+            }}
+            li {{
+                padding: 25px 0;
+                border-bottom: 1px solid var(--nyt-border);
+                transition: background-color 0.2s;
+            }}
+            li:last-child {{
+                border-bottom: none;
+            }}
+            li:hover .article-title {{
+                color: #00589c;
+            }}
+            a {{
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }}
+            .article-title {{
+                font-size: 1.4rem;
+                font-weight: 700;
+                margin-bottom: 8px;
+                line-height: 1.3;
+                color: #000;
+                transition: color 0.2s;
+            }}
+            .article-meta {{
+                font-family: sans-serif;
+                font-size: 0.8rem;
+                color: var(--nyt-gray);
+                display: flex;
+                align-items: center;
+            }}
+            .tag {{
+                text-transform: uppercase;
+                font-weight: 700;
+                font-size: 0.7rem;
+                margin-right: 10px;
+                color: #000;
+            }}
+            @media (max-width: 600px) {{
+                .masthead {{ font-size: 2.5rem; }}
+                .date-line {{ flex-direction: column; align-items: center; gap: 5px; }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="app-container">
+            <header>
+                <div class="masthead">The New York Times</div>
+                <div class="sub-masthead">纽约时报双语版</div>
+                <div class="date-line">
+                    <span>{today_str}</span>
+                    <span>Bilingual Selection</span>
+                </div>
+            </header>
+            <ul>
     """
 
+    # 用列表存储内容，最后再一次性写入
+    list_items = []
+
     unique_links = {}
-    # 匹配 /YYYYMMDD/ 格式的 URL
     article_pattern = re.compile(r'/\d{8}/')
     processed_articles = 0
 
@@ -88,7 +207,7 @@ def scrape_nytimes():
         href = link.get('href', '')
         title = link.text.strip()
 
-        # 1. 基础过滤：必须有 href，有标题，且包含日期结构
+        # 1. 基础过滤
         if not (href and title and article_pattern.search(href)):
             continue
 
@@ -96,19 +215,16 @@ def scrape_nytimes():
         if href in unique_links:
             continue
 
-        # 3. 排除非 http 开头的完整域名干扰链接（虽然一般 href 是相对路径）
+        # 3. 排除无效链接
         if 'cn.nytimes.com' in href and not href.startswith('http'):
             continue
 
         absolute_url = urljoin(base_url, href)
 
-        # 4. [已修复] 之前这里有一个过滤 2025 年的逻辑，导致当前文章被跳过。已删除。
-
         unique_links[href] = title
         print(f"\nProcessing: {title}")
 
         # --- 构造双语 URL ---
-        # 逻辑：移除 URL 末尾可能存在的查询参数和 '/zh-hant'，强行加上 '/zh-hant/dual/'
         clean_url = absolute_url.split('?')[0].rstrip('/')
         if clean_url.endswith('/zh-hant'):
             clean_url = clean_url[:-len('/zh-hant')]
@@ -117,49 +233,66 @@ def scrape_nytimes():
         print(f"  -> Target URL: {bilingual_url}")
 
         try:
-            # 使用 Selenium 获取正文，比 requests 更稳定
             driver.get(bilingual_url)
-            time.sleep(3)  # 给页面一点加载和 JS 执行的时间
+            time.sleep(3)
 
-            # 检查是否真的加载成功（简单的 404 检测）
             if "Page Not Found" in driver.title or "404" in driver.title:
-                print("  -> Page not found or not available in dual mode. Skipping.")
+                print("  -> Page not found. Skipping.")
                 continue
 
             article_soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-            # 尝试定位文章主体，NYTimes 结构可能会变，这里多几个备选
             article_body = article_soup.find('div', class_='article-body') or \
                            article_soup.find('section', attrs={'name': 'articleBody'}) or \
                            article_soup.find('article') or \
                            article_soup.find('main')
 
             if article_body:
-                # 获取标题
                 page_title_tag = article_soup.find('h1')
                 page_title = page_title_tag.text.strip() if page_title_tag else title
 
-                # 生成本地 HTML
-                # 我们保留页面中的样式，或者注入简单的样式来区分中英文
-                local_filename = f"{clean_url.split('/')[-1]}.html"
+                # 尝试从 URL 中提取日期
+                date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
+                date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "Recent"
+
+                # 保存文章 HTML (样式同步优化)
+                slug = clean_url.split('/')[-1]
+                local_filename = f"{slug}.html"
                 local_filepath = os.path.join(output_dir, local_filename)
 
                 article_html = f'''
-                <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>{page_title}</title>
+                <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{page_title} - NYTimes</title>
                 <style>
-                    body {{ font-family: Georgia, serif; line-height: 1.8; margin: 2em auto; max-width: 800px; padding: 0 1em; background: #f9f9f9; }}
-                    h1 {{ text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 0.5em; margin-bottom: 1.5em; color: #000; }}
-                    /* NYTimes Dual Mode Styles Simulation */
-                    .article-paragraph {{ margin-bottom: 1.5em; }}
-                    /* 简单的样式假设，实际结构可能需要根据抓取到的 HTML 微调 */
-                    p {{ margin-bottom: 1.2em; }}
-                    img {{ max-width: 100%; height: auto; display: block; margin: 1em auto; }}
-                    figcaption {{ font-size: 0.9em; color: #666; text-align: center; }}
+                    body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
+                    .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; }}
+                    h1 {{ font-family: 'Georgia', serif; font-style: italic; margin-bottom: 0.5em; font-size: 2.2rem; line-height: 1.2; color: #000; }}
+                    .meta {{ color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 2.5em; border-top: 1px solid #ddd; padding-top: 1em; text-transform: uppercase; letter-spacing: 0.5px; }}
+
+                    /* 双语段落样式 */
+                    .article-paragraph {{ margin-bottom: 2em; }}
+                    p {{ margin: 0 0 1em 0; }}
+                    .en-p {{ color: #222; margin-bottom: 0.8em; font-size: 1.1rem; }}
+                    .cn-p {{ color: #004276; font-weight: 500; font-size: 1.05rem; line-height: 1.8; }}
+
+                    /* 图片样式适配 */
+                    figure {{ margin: 2em 0; width: 100%; }}
+                    img {{ max-width: 100%; height: auto; display: block; background: #f0f0f0; }}
+                    figcaption {{ font-size: 0.85rem; color: #888; margin-top: 0.5em; font-family: sans-serif; text-align: center; }}
+
+                    /* 简单的返回首页链接 */
+                    .back-link {{ display: inline-block; margin-bottom: 20px; color: #999; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; }}
+                    .back-link:hover {{ text-decoration: underline; color: #333; }}
                 </style>
                 </head><body>
-                <h1>{page_title}</h1>
-                <div class="content">
-                    {str(article_body)}
+                <div class="content-container">
+                    <a href="../index.html" class="back-link">← Back to Index</a>
+                    <h1>{page_title}</h1>
+                    <div class="meta">{date_str} • The New York Times</div>
+                    <div class="article-body">
+                        {str(article_body)}
+                    </div>
                 </div>
                 </body></html>'''
 
@@ -167,7 +300,19 @@ def scrape_nytimes():
                     f.write(article_html)
 
                 print(f"  -> Saved: {local_filename}")
-                index_html_content += f'<li><a href="{local_filepath}" target="_blank">{page_title}</a> <span class="timestamp">({bilingual_url})</span></li>\n'
+
+                # 添加列表项到主页
+                list_items.append(f'''
+                <li>
+                    <a href="{local_filepath}" target="_blank">
+                        <div class="article-title">{page_title}</div>
+                        <div class="article-meta">
+                            <span class="tag">ARTICLE</span>
+                            <span class="date">{date_str}</span>
+                        </div>
+                    </a>
+                </li>
+                ''')
                 processed_articles += 1
             else:
                 print(f"  -> Could not locate article body content.")
@@ -175,14 +320,22 @@ def scrape_nytimes():
         except Exception as e:
             print(f"  -> Error fetching article: {e}")
 
-    # 收尾
     driver.quit()
 
-    index_html_content += "</ul></body></html>"
+    # 组装最终的 index.html
+    full_index_html = index_html_head + "\n".join(list_items) + """
+            </ul>
+            <footer style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.8rem; font-family: sans-serif; border-top: 1px solid #eee; margin-top: 40px;">
+                <p>Generated locally for personal study.</p>
+            </footer>
+        </div>
+    </body>
+    </html>
+    """
 
     if processed_articles > 0:
         with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(index_html_content)
+            f.write(full_index_html)
         print(f"\nDone! Processed {processed_articles} articles. Open 'index.html' to view.")
     else:
         print("\nNo articles were processed.")
