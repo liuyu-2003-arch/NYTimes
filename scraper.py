@@ -19,8 +19,6 @@ def get_driver():
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
-
-    # 防止部分自动化检测
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -32,6 +30,23 @@ def get_driver():
     except Exception as e:
         print(f"Error initializing ChromeDriver: {e}")
         return None
+
+
+def slug_to_title(url):
+    """
+    从 URL 中提取英文 slug 并转换为标题格式
+    例如: .../20251203/china-us-relations/... -> "China Us Relations"
+    """
+    try:
+        # 找到日期后面的部分
+        match = re.search(r'/\d{8}/([^/]+)', url)
+        if match:
+            slug = match.group(1)
+            # 把横杠换成空格，并首字母大写
+            return slug.replace('-', ' ').title()
+    except:
+        pass
+    return ""
 
 
 def scrape_nytimes():
@@ -80,8 +95,9 @@ def scrape_nytimes():
             li {{ padding: 25px 0; border-bottom: 1px solid var(--nyt-border); }}
             li:last-child {{ border-bottom: none; }}
             a {{ text-decoration: none; color: inherit; display: block; }}
-            .article-title {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; line-height: 1.3; color: #000; }}
-            a:hover .article-title {{ color: #00589c; }}
+            .article-title-cn {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; color: #000; }}
+            .article-title-en {{ font-size: 1.1rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }}
+            a:hover .article-title-cn {{ color: #00589c; }}
             .article-meta {{ font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }}
             .tag {{ text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }}
         </style>
@@ -108,22 +124,30 @@ def scrape_nytimes():
 
     for link in all_links:
         href = link.get('href', '')
-        # 从首页链接获取最原始的标题（通常是最准确的）
-        raw_title = link.text.strip().replace('\n', ' ')
+        cn_title = link.text.strip().replace('\n', ' ')
 
-        if not (href and raw_title and article_pattern.search(href)):
+        # 基础过滤
+        if not (href and cn_title and article_pattern.search(href)):
             continue
+
+        # 过滤 2023/2024
+        if '/2023' in href or '/2024' in href:
+            continue
+
         if href in unique_links:
             continue
         if 'cn.nytimes.com' in href and not href.startswith('http'):
             continue
 
-        unique_links[href] = raw_title
+        unique_links[href] = cn_title
         absolute_url = urljoin(base_url, href)
-
         clean_url = absolute_url.split('?')[0].rstrip('/')
         if clean_url.endswith('/zh-hant'):
             clean_url = clean_url[:-len('/zh-hant')]
+
+        # --- 获取英文标题 (Strategy: URL Slug) ---
+        # 默认使用 URL 推断，如果下载时能找到更好的就覆盖
+        en_title_fallback = slug_to_title(clean_url)
 
         # 从 URL 提取日期
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
@@ -133,57 +157,60 @@ def scrape_nytimes():
         local_filename = f"{slug}.html"
         local_filepath = os.path.join(output_dir, local_filename)
 
-        final_page_title = raw_title  # 默认使用首页链接文字
+        final_cn_title = cn_title
+        final_en_title = en_title_fallback
 
         # --- 1. 检查文件是否已存在 (并修复标题) ---
         if os.path.exists(local_filepath):
             print(f"\n[CHECKING] File exists: {local_filename}")
-            file_needs_update = False
 
             try:
-                # 读取全部内容以进行解析和可能的替换
                 with open(local_filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                head_soup = BeautifulSoup(content, 'html.parser')
-                existing_title_tag = head_soup.title
-                existing_title_text = existing_title_tag.text.strip() if existing_title_tag else ""
+                # 尝试从本地文件中读取已保存的英文标题 (如果有)
+                # 比如我们之后保存的 <h2 class="en-headline">Title</h2>
+                saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
+                if saved_en_match:
+                    final_en_title = saved_en_match.group(1).strip()
 
-                # 检查条件：如果没有 title 标签，或者 title 为空，或者 title 仅仅是 "NYTimes" 这种无效标题
-                if not existing_title_text or existing_title_text == "NYTimes" or existing_title_text == "The New York Times":
-                    print(f"  -> Missing or bad title in file. Fixing with: {raw_title}")
-                    final_page_title = raw_title
+                # 检查并修复 <title>
+                title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+                existing_title = title_match.group(1).strip() if title_match else ""
 
-                    # 构造新的 title 标签
-                    new_title_tag = f"<title>{html.escape(raw_title)} - NYTimes</title>"
+                file_needs_update = False
 
-                    if existing_title_tag:
-                        # 替换旧标签
-                        content = content.replace(str(existing_title_tag), new_title_tag)
+                # 1. 修复空的/坏的网页标题
+                if not existing_title or existing_title == "NYTimes" or "- NYTimes" not in existing_title:
+                    print(f"  -> Fixing bad <title>...")
+                    safe_new_title = f"{html.escape(final_cn_title)} - NYTimes"
+                    new_title_tag = f"<title>{safe_new_title}</title>"
+                    if title_match:
+                        content = re.sub(r'<title>.*?</title>', new_title_tag, content, flags=re.IGNORECASE)
                     else:
-                        # 插入新标签到 head
                         content = content.replace("<head>", f"<head>{new_title_tag}")
-
                     file_needs_update = True
-                else:
-                    # 如果本地文件标题正常，就用本地文件的（去除后缀）
-                    final_page_title = existing_title_text.replace(" - NYTimes", "").strip()
+
+                # 2. (可选) 如果本地文件里完全没有英文标题的显示，可以尝试注入进去 (不破坏正文结构较难，暂时只修复 title)
+                # 现在的逻辑是：如果文件存在，我们在 index.html 里显示 URL 推断的英文标题，
+                # 但不一定强行插入到文章页的 body 里，以免破坏 HTML 结构。
 
                 if file_needs_update:
                     with open(local_filepath, 'w', encoding='utf-8') as f:
                         f.write(content)
-                    print("  -> File updated with correct title.")
+                    print("  -> File updated.")
 
             except Exception as e:
                 print(f"  -> Warning: Could not read/fix local file: {e}")
 
-            # 添加到列表
+            # 添加到列表 (带英文标题)
             list_items.append(f'''
             <li>
                 <a href="{os.path.join('articles', local_filename)}" target="_blank">
-                    <div class="article-title">{final_page_title}</div>
+                    <div class="article-title-cn">{final_cn_title}</div>
+                    <div class="article-title-en">{final_en_title}</div>
                     <div class="article-meta">
-                        <span class="tag">CACHED</span>
+                        <span class="tag">READ</span>
                         <span class="date">{date_str}</span>
                     </div>
                 </a>
@@ -193,7 +220,7 @@ def scrape_nytimes():
             continue
 
         # --- 2. 文件不存在，执行下载 ---
-        print(f"\n[DOWNLOADING] {raw_title}")
+        print(f"\n[DOWNLOADING] {cn_title}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
 
         try:
@@ -211,14 +238,28 @@ def scrape_nytimes():
                            article_soup.find('main')
 
             if article_body:
-                # 尝试从文章页获取 H1，如果获取不到，回退使用首页链接的 raw_title
-                page_h1 = article_soup.find('h1')
-                if page_h1 and page_h1.text.strip():
-                    final_page_title = page_h1.text.strip().replace('\n', ' ')
-                else:
-                    final_page_title = raw_title
+                # 尝试提取真实的英文标题
+                # NYT 双语页通常有 <span class="en-headline"> 或类似的结构
+                # 如果找不到，就用 URL 推断的
+                real_en_title = None
 
-                safe_title = html.escape(final_page_title)
+                # 策略 1: 查找特定 class
+                en_tag = article_soup.find(class_='en-headline') or \
+                         article_soup.find(class_='en-title') or \
+                         article_soup.find('h1', class_='en')
+
+                if en_tag:
+                    real_en_title = en_tag.text.strip()
+
+                # 策略 2: 如果找不到，且 URL 推断的有值，用 URL 的
+                if not real_en_title and en_title_fallback:
+                    real_en_title = en_title_fallback
+
+                if real_en_title:
+                    final_en_title = real_en_title
+
+                safe_cn_title = html.escape(final_cn_title)
+                safe_en_title = html.escape(final_en_title)
 
                 article_html = f'''
                 <!DOCTYPE html>
@@ -226,19 +267,26 @@ def scrape_nytimes():
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>{safe_title} - NYTimes</title>
+                    <title>{safe_cn_title} - NYTimes</title>
                     <style>
                         body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
                         .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }}
-                        h1 {{ font-family: 'Georgia', serif; font-style: italic; margin-bottom: 0.5em; font-size: 2.2rem; line-height: 1.2; color: #000; }}
+
+                        /* 标题样式 */
+                        h1.cn-headline {{ font-family: "Pieter", "Georgia", serif; font-weight: 700; margin-bottom: 10px; font-size: 2.2rem; line-height: 1.2; color: #000; }}
+                        h2.en-headline {{ font-family: "Georgia", serif; font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 1.5em; font-size: 1.5rem; color: #555; }}
+
                         .meta {{ color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 2.5em; border-top: 1px solid #ddd; padding-top: 1em; text-transform: uppercase; letter-spacing: 0.5px; }}
+
                         .article-paragraph {{ margin-bottom: 2em; }}
                         p {{ margin: 0 0 1em 0; }}
                         .en-p {{ color: #222; margin-bottom: 0.8em; font-size: 1.1rem; }}
                         .cn-p {{ color: #004276; font-weight: 500; font-size: 1.05rem; line-height: 1.8; }}
+
                         figure {{ margin: 2em 0; width: 100%; }}
                         img {{ max-width: 100%; height: auto; display: block; background: #f0f0f0; }}
                         figcaption {{ font-size: 0.85rem; color: #888; margin-top: 0.5em; font-family: sans-serif; text-align: center; }}
+
                         .back-link {{ display: inline-block; margin-bottom: 20px; color: #999; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; }}
                         .back-link:hover {{ text-decoration: underline; color: #333; }}
                     </style>
@@ -246,8 +294,12 @@ def scrape_nytimes():
                 <body>
                 <div class="content-container">
                     <a href="../index.html" class="back-link">← Back to Index</a>
-                    <h1>{final_page_title}</h1>
+
+                    <h1 class="cn-headline">{final_cn_title}</h1>
+                    <h2 class="en-headline">{final_en_title}</h2>
+
                     <div class="meta">{date_str} • The New York Times</div>
+
                     <div class="article-body">
                         {str(article_body)}
                     </div>
@@ -262,7 +314,8 @@ def scrape_nytimes():
                 list_items.append(f'''
                 <li>
                     <a href="{os.path.join('articles', local_filename)}" target="_blank">
-                        <div class="article-title">{final_page_title}</div>
+                        <div class="article-title-cn">{final_cn_title}</div>
+                        <div class="article-title-en">{final_en_title}</div>
                         <div class="article-meta">
                             <span class="tag">NEW</span>
                             <span class="date">{date_str}</span>
@@ -289,13 +342,12 @@ def scrape_nytimes():
     </html>
     """
 
-    # 只要有处理过的文章或者列表不为空，就生成 index.html
     if len(list_items) > 0:
         with open('index.html', 'w', encoding='utf-8') as f:
             f.write(full_index_html)
-        print(f"\nDone! Processed {len(list_items)} articles. Open 'index.html' to view.")
+        print(f"\nDone! Index updated with {len(list_items)} articles.")
     else:
-        print("\nNo articles found.")
+        print("\nNo valid articles found.")
 
 
 if __name__ == "__main__":
