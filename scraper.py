@@ -13,7 +13,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURATION ---
 TEMPLATE_FILE = 'article_template.html'
-# 环境变量控制强制更新
+ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
+
+# 设为 True 运行一次以更新所有文章的顶部控制栏样式
 FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
@@ -120,6 +122,7 @@ def scrape_nytimes():
 
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
+    today_str = datetime.date.today().strftime("%Y-%m-%d")
 
     driver = get_driver()
     if not driver: return
@@ -137,7 +140,7 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # 用于存储纯数据，而不是 HTML 字符串
+    # 用于存储纯数据
     articles_data = []
 
     unique_links = {}
@@ -306,7 +309,7 @@ def scrape_nytimes():
                 print(f"  -> Error: {e}")
                 continue
 
-        # 将文章数据添加到列表
+        # 添加到数据列表
         articles_data.append({
             "title_cn": final_cn_title,
             "title_en": final_en_title,
@@ -317,20 +320,16 @@ def scrape_nytimes():
 
     driver.quit()
 
-    # --- 3. 生成 JSON 数据文件 ---
+    # --- 3. 生成动态首页 (Data Embedded) ---
     if articles_data:
-        # 按日期倒序排列（简单的字符串比较，YYYYMMDD 格式支持）
-        # 如果需要更精确排序，可以转换成 datetime 对象
         try:
             articles_data.sort(key=lambda x: x['date'], reverse=True)
         except:
             pass
 
-        with open('articles.json', 'w', encoding='utf-8') as f:
-            json.dump(articles_data, f, ensure_ascii=False, indent=2)
-        print(f"\nSaved {len(articles_data)} articles to articles.json")
+        # 将数据转换为 JSON 字符串，准备注入到 HTML 中
+        json_data_str = json.dumps(articles_data, ensure_ascii=False)
 
-        # --- 4. 生成动态首页 (Dynamic Index HTML) ---
         dynamic_index_html = f"""<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -400,19 +399,18 @@ def scrape_nytimes():
 
     <script>
         const ARTICLES_PER_PAGE = 10;
-        let allArticles = [];
+        // 关键修改：数据直接内嵌，解决 CORS 问题
+        const allArticles = /* DATA_PLACEHOLDER */; 
+
         let currentPage = 1;
 
-        async function loadArticles() {{
-            try {{
-                const response = await fetch('articles.json');
-                allArticles = await response.json();
-                renderPage(1);
-                document.getElementById('pagination-controls').style.display = 'flex';
-            }} catch (error) {{
-                console.error('Error loading articles:', error);
-                document.getElementById('article-list').innerHTML = '<li style="text-align:center; padding: 40px; color: red;">Error loading content.</li>';
+        function initApp() {{
+            if (!allArticles || allArticles.length === 0) {{
+                document.getElementById('article-list').innerHTML = '<li style="text-align:center; padding: 40px;">No articles found.</li>';
+                return;
             }}
+            renderPage(1);
+            document.getElementById('pagination-controls').style.display = 'flex';
         }}
 
         function renderPage(page) {{
@@ -451,7 +449,6 @@ def scrape_nytimes():
             document.getElementById('prev-btn').disabled = currentPage === 1;
             document.getElementById('next-btn').disabled = currentPage === totalPages;
 
-            // Scroll to top of list
             if(window.scrollY > 200) window.scrollTo({{ top: 0, behavior: 'smooth' }});
         }}
 
@@ -465,14 +462,17 @@ def scrape_nytimes():
         }});
 
         // Start
-        loadArticles();
+        initApp();
     </script>
 </body>
 </html>
 """
+        # 使用 replace 注入 JSON 数据，避免 f-string 冲突
+        final_html = dynamic_index_html.replace('/* DATA_PLACEHOLDER */', json_data_str)
+
         with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(dynamic_index_html)
-        print("Generated dynamic index.html and articles.json")
+            f.write(final_html)
+        print(f"\nGenerated dynamic index.html with {len(articles_data)} articles embedded.")
     else:
         print("\nNo articles found.")
 
