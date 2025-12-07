@@ -1,139 +1,16 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>纽约时报双语版 - NYTimes Bilingual</title>
-    <style>
-        :root { --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }
-        body { font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }
-        .app-container { max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 40px; }
-        header { padding: 40px 20px 20px 20px; text-align: center; margin-bottom: 20px; border-bottom: 4px double #000; }
-        .masthead { font-family: 'Georgia', serif; font-size: 3rem; margin: 0; font-weight: 900; letter-spacing: -1px; line-height: 1; color: #000; margin-bottom: 10px; }
-        .sub-masthead { font-family: sans-serif; font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 15px; letter-spacing: 1px; }
-        .date-line { border-top: 1px solid #ddd; padding: 8px 0; font-family: sans-serif; font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; text-transform: uppercase; }
-
-        ul { list-style: none; padding: 0 30px; margin: 0; }
-        li { padding: 25px 0; border-bottom: 1px solid var(--nyt-border); animation: fadeIn 0.5s ease; }
-        li:last-child { border-bottom: none; }
-
-        /* 移除 target=_blank 后，文章将在当前标签页打开 */
-        a { text-decoration: none; color: inherit; display: block; }
-
-        .article-title-cn { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; color: #000; }
-        .article-title-en { font-size: 1.15rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }
-        a:hover .article-title-cn { color: #00589c; }
-
-        .article-meta { font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }
-        .tag { text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }
-
-        /* Pagination Controls */
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 40px; padding: 20px 0; border-top: 1px solid #eee; }
-        .page-btn { 
-            padding: 8px 20px; border: 1px solid #ddd; background: white; 
-            border-radius: 4px; cursor: pointer; font-family: sans-serif; font-size: 0.9rem; color: #333; 
-            transition: all 0.2s;
-        }
-        .page-btn:hover:not(:disabled) { background-color: #f5f5f5; border-color: #ccc; }
-        .page-btn:disabled { color: #ccc; cursor: not-allowed; border-color: #eee; }
-        .page-info { font-family: sans-serif; color: #666; font-size: 0.9rem; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body>
-    <div class="app-container">
-        <header>
-            <div class="masthead">The New York Times</div>
-            <div class="sub-masthead">纽约时报双语版</div>
-            <div class="date-line">
-                <span>Sunday, December 07, 2025</span>
-                <span>Daily Selection</span>
-            </div>
-        </header>
-
-        <ul id="article-list">
-            <li style="text-align:center; padding: 40px; color: #999;">Loading articles...</li>
-        </ul>
-
-        <div class="pagination" id="pagination-controls" style="display:none;">
-            <button id="prev-btn" class="page-btn">← Prev</button>
-            <span id="page-info" class="page-info">Page 1</span>
-            <button id="next-btn" class="page-btn">Next →</button>
-        </div>
-
-        <footer style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.8rem; border-top: 1px solid #eee; margin-top: 40px;">
-            <p>Generated locally for personal study.</p>
-        </footer>
-    </div>
-
-    <script>
-        const ARTICLES_PER_PAGE = 10;
-        // 关键修改：数据直接内嵌，解决 CORS 问题
-        const allArticles = [{"title_cn": "馬克宏敦促習近平幫助結束烏克蘭戰爭", "title_en": "Macron Urges Xi to Help End War in Ukraine", "url": "articles/china-france-macron-ukraine.html", "date": "2025-12-05", "tag": "NEW"}, {"title_cn": "國民黨主席鄭麗文：從台獨青年到親中政治領袖", "title_en": "Taiwan’s Opposition Leader, Once for Independence, Turns Toward China", "url": "articles/taiwan-opposition-cheng-china.html", "date": "2025-12-05", "tag": "NEW"}, {"title_cn": "為什麼在美國建晶片工廠如此艱難？有1.8萬個原因", "title_en": "18,000 Reasons It’s So Hard to Build a Chip Factory in America", "url": "articles/tsmc-phoenix-fab.html", "date": "2025-12-05", "tag": "NEW"}, {"title_cn": "台積電在美國建起工廠，也帶來一個繁榮的台灣社區", "title_en": "In Arizona Desert, Taiwanese Families Create Community and Build a Factory", "url": "articles/tsmc-phoenix-little-taipei.html", "date": "2025-12-05", "tag": "NEW"}, {"title_cn": "六歲中國男孩遭美國移民當局拘押，被迫與父親分離", "title_en": "ICE Separates Boy, 6, From Father During Effort to Deport Them to China", "url": "articles/chinese-father-son-migrants-separated.html", "date": "2025-12-05", "tag": "NEW"}, {"title_cn": "賴清德稱中國正加速對台灣軍事威懾", "title_en": "Taiwan’s President Warns That China’s Military Aggression Is Growing", "url": "articles/taiwan-lai-ching-te-china.html", "date": "2025-12-04", "tag": "NEW"}, {"title_cn": "大火過後，急於維穩的港府和未被「馴服」的香港公民社會", "title_en": "After Deadly Fire, Hong Kong Ominously Warns Grieving Citizens to Stay in Line", "url": "articles/hong-kong-fire-china.html", "date": "2025-12-04", "tag": "NEW"}, {"title_cn": "港府強硬回應公眾憤怒：打擊質疑聲音、抓捕要求追責人士", "title_en": "The Hong Kong Fire: A Crisis in the National Security Era", "url": "articles/hong-kong-fire-national-security-arrests.html", "date": "2025-12-04", "tag": "NEW"}, {"title_cn": "中國、日本與二戰新敘事", "title_en": "China, Japan and a New Narrative About World War II", "url": "articles/china-japan-ww2-russia-gaza-pope.html", "date": "2025-12-04", "tag": "NEW"}, {"title_cn": "《紐約時報》2025年度十大好書", "title_en": "The 10 Best Books of 2025", "url": "articles/best-books-2025.html", "date": "2025-12-04", "tag": "NEW"}, {"title_cn": "時報總編輯周看答讀者問：如何報導川普、中國和世界", "title_en": "Your Questions, Complaints and Feedback for Our Editor, Joe Kahn", "url": "articles/joe-kahn-executive-editor-questions.html", "date": "2025-12-03", "tag": "NEW"}, {"title_cn": "中國敦促英法兩國在中日爭端中支持北京", "title_en": "China, Evoking World War II, Urges Europe to Take Its Side Against Japan", "url": "articles/china-japan-taiwan-europe.html", "date": "2025-12-03", "tag": "NEW"}, {"title_cn": "高市早苗戳破了習近平的台灣戰略幻象", "title_en": "Japan Has Changed How the World Must Think About Taiwan", "url": "articles/china-us-japan-security-taiwan.html", "date": "2025-12-03", "tag": "NEW"}, {"title_cn": "100年前，《紐約時報》在上海設立首個駐華分社", "title_en": "The New York Times Marks the Centennial of Its Shanghai Bureau", "url": "articles/new-york-times-centennial-shanghai-china.html", "date": "2025-12-02", "tag": "NEW"}, {"title_cn": "宏福苑大火調查：港府稱建築外牆棚網不符合阻燃標準", "title_en": "Hong Kong Contractors Used Unsafe Netting at Fire Site, Officials Say", "url": "articles/hong-kong-fire.html", "date": "2025-12-02", "tag": "NEW"}, {"title_cn": "牛津詞典2025年度詞彙：「引戰」", "title_en": "The Oxford 2025 Word of the Year Is ‘Rage Bait’", "url": "articles/oxford-word-of-the-year-rage-bait.html", "date": "2025-12-01", "tag": "NEW"}, {"title_cn": "香港現代史上最致命火災：慘劇何以釀成？", "title_en": "Hong Kong’s Worst Fire in Generations Fuels Scrutiny of Safety Lapses", "url": "articles/hong-kong-fire-tai-po-apartment-buildings.html", "date": "2025-11-28", "tag": "NEW"}, {"title_cn": "在與中國競爭的世界之巔，美國正給自己「挖坑」", "title_en": "The Thucydides Trap Is Coming for America", "url": "articles/america-china-trump-g20.html", "date": "2025-11-24", "tag": "NEW"}, {"title_cn": "東南亞「殺豬盤」電詐園區是如何騙遍全世界的？", "title_en": "Americans Have Lost Billions to Online Scams. How Is That Possible?", "url": "articles/scam-centers-myanmar-cambodia.html", "date": "2025-11-21", "tag": "NEW"}, {"title_cn": "川普讓北京知道，中國已可以與美國平起平坐", "title_en": "Trump Proved That China Can Stand Up to America Now", "url": "articles/trump-china-xi-trade.html", "date": "2025-11-20", "tag": "NEW"}, {"title_cn": "矽谷反華情緒高漲，但美國人工智慧發展仍靠中國人才推動", "title_en": "In the A.I. Race, Chinese Talent Still Drives American Research", "url": "articles/ai-research-chinese-talent.html", "date": "2025-11-20", "tag": "NEW"}, {"title_cn": "川普無法「翻篇」的愛潑斯坦案", "title_en": "For Trump, Epstein Is the Story That Won’t Go Away", "url": "articles/trump-epstein-files.html", "date": "2025-11-19", "tag": "NEW"}, {"title_cn": "上班比失業更痛苦？", "title_en": "For Gen Z-ers, Work Is Now More Depressing Than Unemployment", "url": "articles/gen-z-work.html", "date": "2025-11-18", "tag": "NEW"}, {"title_cn": "「新的美國夢是逃離」", "title_en": "For Some, ‘the New American Dream Is to Leave’", "url": "articles/new-american-dream-tiktok.html", "date": "2025-11-14", "tag": "NEW"}, {"title_cn": "習近平持續清洗軍方凸顯深層不安與擔憂", "title_en": "Xi’s Military Purges Show Unease About China’s Nuclear Forces", "url": "articles/xi-trump-military-purges.html", "date": "2025-11-12", "tag": "NEW"}, {"title_cn": "從長生不老藥到「活到150歲」：中國蓬勃發展的長壽產業", "title_en": "In China, the Dream of Outrunning Time", "url": "articles/china-aging-longevity-science.html", "date": "2025-11-10", "tag": "NEW"}, {"title_cn": "「美國最受歡迎的水果」有多健康？", "title_en": "How Healthy Are Apples?", "url": "articles/apples-health-benefits-recipes.html", "date": "2025-11-04", "tag": "NEW"}, {"title_cn": "向左與向右：從紐約市長選舉看美國華人的代際鴻溝", "title_en": "In Chinese American Families, There’s a Generational Split on Mamdani", "url": "articles/zohran-mamdani-chinese.html", "date": "2025-11-03", "tag": "NEW"}]; 
-
-        let currentPage = 1;
-
-        function initApp() {
-            if (!allArticles || allArticles.length === 0) {
-                document.getElementById('article-list').innerHTML = '<li style="text-align:center; padding: 40px;">No articles found.</li>';
-                return;
-            }
-            renderPage(1);
-            document.getElementById('pagination-controls').style.display = 'flex';
-        }
-
-        function renderPage(page) {
-            const start = (page - 1) * ARTICLES_PER_PAGE;
-            const end = start + ARTICLES_PER_PAGE;
-            const pageArticles = allArticles.slice(start, end);
-
-            const listContainer = document.getElementById('article-list');
-            listContainer.innerHTML = '';
-
-            if (pageArticles.length === 0) {
-                listContainer.innerHTML = '<li style="text-align:center; padding: 20px;">No more articles.</li>';
-                return;
-            }
-
-            pageArticles.forEach(article => {
-                const li = document.createElement('li');
-                // 这里移除了 target="_blank"，实现当前页打开
-                li.innerHTML = `
-                    <a href="${article.url}">
-                        <div class="article-title-cn">${article.title_cn}</div>
-                        <div class="article-title-en">${article.title_en}</div>
-                        <div class="article-meta">
-                            <span class="tag">${article.tag}</span>
-                            <span class="date">${article.date}</span>
-                        </div>
-                    </a>
-                `;
-                listContainer.appendChild(li);
-            });
-
-            // Update Controls
-            currentPage = page;
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
-
-            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('prev-btn').disabled = currentPage === 1;
-            document.getElementById('next-btn').disabled = currentPage === totalPages;
-
-            if(window.scrollY > 200) window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        document.getElementById('prev-btn').addEventListener('click', () => {
-            if (currentPage > 1) renderPage(currentPage - 1);
-        });
-
-        document.getElementById('next-btn').addEventListener('click', () => {
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
-            if (currentPage < totalPages) renderPage(currentPage + 1);
-        });
-
-        // Start
-        initApp();
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>纽约时报双语版 - NYTimes Bilingual</title><style>:root{--nyt-black:#121212;--nyt-gray:#727272;--nyt-border:#e2e2e2;--bg-color:#f8f9fa}body{font-family:'Georgia','Times New Roman',serif;background-color:var(--bg-color);color:var(--nyt-black);margin:0;padding:0;line-height:1.5}.app-container{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 20px rgba(0,0,0,0.05);padding-bottom:40px}header{padding:40px 20px 20px 20px;text-align:center;margin-bottom:20px;border-bottom:4px double #000}.masthead{font-family:'Georgia',serif;font-size:3rem;margin:0;font-weight:900;letter-spacing:-1px;line-height:1;color:#000;margin-bottom:10px}.sub-masthead{font-family:sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:15px;letter-spacing:1px}.date-line{border-top:1px solid #ddd;padding:8px 0;font-family:sans-serif;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;text-transform:uppercase}ul{list-style:none;padding:0 30px;margin:0}li{padding:25px 0;border-bottom:1px solid var(--nyt-border)}li:last-child{border-bottom:none}a{text-decoration:none;color:inherit;display:block}.article-title-cn{font-size:1.4rem;font-weight:700;margin-bottom:4px;line-height:1.3;color:#000}.article-title-en{font-size:1.15rem;font-weight:400;margin-bottom:8px;line-height:1.4;color:#444;font-style:italic;font-family:'Georgia',serif}a:hover .article-title-cn{color:#00589c}.article-meta{font-family:sans-serif;font-size:0.8rem;color:var(--nyt-gray);display:flex;align-items:center}.tag{text-transform:uppercase;font-weight:700;font-size:0.7rem;margin-right:10px;color:#000;background:#eee;padding:2px 6px;border-radius:4px}
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+    .page-link { padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333; font-size: 0.9rem; font-family: sans-serif; }
+    .page-link:hover { background-color: #f5f5f5; border-color: #ccc; }
+    .page-link.disabled { color: #ccc; pointer-events: none; border-color: #eee; }
+    .page-info { font-size: 0.9rem; color: #666; font-family: sans-serif; }
+    </style></head><body><div class="app-container"><header><div class="masthead">The New York Times</div><div class="sub-masthead">纽约时报双语版</div><div class="date-line"><span>Monday, December 08, 2025</span><span>Daily Selection</span></div></header><ul><ul><li><a href="articles/china-france-macron-ukraine.html"><div class="article-title-cn">馬克宏敦促習近平幫助結束烏克蘭戰爭</div><div class="article-title-en">Macron Urges Xi to Help End War in Ukraine</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-05</span></div></a></li>
+<li><a href="articles/taiwan-lai-ching-te-china.html"><div class="article-title-cn">賴清德稱中國正加速對台灣軍事威懾</div><div class="article-title-en">Taiwan’s President Warns That China’s Military Aggression Is Growing</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-04</span></div></a></li>
+<li><a href="articles/hong-kong-fire-china.html"><div class="article-title-cn">大火過後，急於維穩的港府和未被「馴服」的香港公民社會</div><div class="article-title-en">After Deadly Fire, Hong Kong Ominously Warns Grieving Citizens to Stay in Line</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-04</span></div></a></li>
+<li><a href="articles/hong-kong-fire-national-security-arrests.html"><div class="article-title-cn">港府強硬回應公眾憤怒：打擊質疑聲音、抓捕要求追責人士</div><div class="article-title-en">The Hong Kong Fire: A Crisis in the National Security Era</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-04</span></div></a></li>
+<li><a href="articles/joe-kahn-executive-editor-questions.html"><div class="article-title-cn">時報總編輯周看答讀者問：如何報導川普、中國和世界</div><div class="article-title-en">Your Questions, Complaints and Feedback for Our Editor, Joe Kahn</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-03</span></div></a></li>
+<li><a href="articles/china-japan-ww2-russia-gaza-pope.html"><div class="article-title-cn">中國、日本與二戰新敘事</div><div class="article-title-en">China, Japan and a New Narrative About World War II</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-04</span></div></a></li>
+<li><a href="articles/china-japan-taiwan-europe.html"><div class="article-title-cn">中國敦促英法兩國在中日爭端中支持北京</div><div class="article-title-en">China, Evoking World War II, Urges Europe to Take Its Side Against Japan</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-03</span></div></a></li>
+<li><a href="articles/new-york-times-centennial-shanghai-china.html"><div class="article-title-cn">100年前，《紐約時報》在上海設立首個駐華分社</div><div class="article-title-en">The New York Times Marks the Centennial of Its Shanghai Bureau</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-02</span></div></a></li>
+<li><a href="articles/hong-kong-fire.html"><div class="article-title-cn">宏福苑大火調查：港府稱建築外牆棚網不符合阻燃標準</div><div class="article-title-en">Hong Kong Contractors Used Unsafe Netting at Fire Site, Officials Say</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-02</span></div></a></li>
+<li><a href="articles/taiwan-opposition-cheng-china.html"><div class="article-title-cn">國民黨主席鄭麗文：從台獨青年到親中政治領袖</div><div class="article-title-en">Taiwan’s Opposition Leader, Once for Independence, Turns Toward China</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">2025-12-05</span></div></a></li></ul><div class="pagination"><span class="page-link disabled">← Prev</span><span class="page-info">Page 1 of 3</span><a href="index_2.html" class="page-link">Next →</a></div><footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;margin-top:20px;'>Generated locally.</footer></div></body></html>

@@ -13,10 +13,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURATION ---
 TEMPLATE_FILE = 'article_template.html'
-ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
+ARTICLES_PER_PAGE = 10
 
-# 设为 True 运行一次以更新所有文章；设为 False 则跳过已有文章
-FORCE_UPDATE = False
+# [重要] 设为 True 运行一次，以修复旧文章缺失的语言标签
+FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
 def get_driver():
@@ -140,11 +140,19 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # 用于存储纯数据
-    articles_data = []
+    # Index Head
+    index_html_head = f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>纽约时报双语版 - NYTimes Bilingual</title><style>:root{{--nyt-black:#121212;--nyt-gray:#727272;--nyt-border:#e2e2e2;--bg-color:#f8f9fa}}body{{font-family:'Georgia','Times New Roman',serif;background-color:var(--bg-color);color:var(--nyt-black);margin:0;padding:0;line-height:1.5}}.app-container{{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 20px rgba(0,0,0,0.05);padding-bottom:40px}}header{{padding:40px 20px 20px 20px;text-align:center;margin-bottom:20px;border-bottom:4px double #000}}.masthead{{font-family:'Georgia',serif;font-size:3rem;margin:0;font-weight:900;letter-spacing:-1px;line-height:1;color:#000;margin-bottom:10px}}.sub-masthead{{font-family:sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:15px;letter-spacing:1px}}.date-line{{border-top:1px solid #ddd;padding:8px 0;font-family:sans-serif;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;text-transform:uppercase}}ul{{list-style:none;padding:0 30px;margin:0}}li{{padding:25px 0;border-bottom:1px solid var(--nyt-border)}}li:last-child{{border-bottom:none}}a{{text-decoration:none;color:inherit;display:block}}.article-title-cn{{font-size:1.4rem;font-weight:700;margin-bottom:4px;line-height:1.3;color:#000}}.article-title-en{{font-size:1.15rem;font-weight:400;margin-bottom:8px;line-height:1.4;color:#444;font-style:italic;font-family:'Georgia',serif}}a:hover .article-title-cn{{color:#00589c}}.article-meta{{font-family:sans-serif;font-size:0.8rem;color:var(--nyt-gray);display:flex;align-items:center}}.tag{{text-transform:uppercase;font-weight:700;font-size:0.7rem;margin-right:10px;color:#000;background:#eee;padding:2px 6px;border-radius:4px}}
+    .pagination {{ display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }}
+    .page-link {{ padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333; font-size: 0.9rem; font-family: sans-serif; }}
+    .page-link:hover {{ background-color: #f5f5f5; border-color: #ccc; }}
+    .page-link.disabled {{ color: #ccc; pointer-events: none; border-color: #eee; }}
+    .page-info {{ font-size: 0.9rem; color: #666; font-family: sans-serif; }}
+    </style></head><body><div class="app-container"><header><div class="masthead">The New York Times</div><div class="sub-masthead">纽约时报双语版</div><div class="date-line"><span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span><span>Daily Selection</span></div></header><ul>"""
 
+    list_items = []
     unique_links = {}
     article_pattern = re.compile(r'/\d{8}/')
+    processed_articles = 0
 
     print(f"Found {len(all_links)} links on homepage. Filtering...")
 
@@ -163,7 +171,7 @@ def scrape_nytimes():
         if clean_url.endswith('/zh-hant'): clean_url = clean_url[:-len('/zh-hant')]
 
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
-        date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "Recent"
+        date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else today_str
 
         slug = clean_url.split('/')[-1]
         local_filename = f"{slug}.html"
@@ -172,24 +180,24 @@ def scrape_nytimes():
         final_cn_title = homepage_title_hint
         final_en_title = ""
         need_download = True
-        status_tag = "NEW"
 
-        # --- 1. Check Local File ---
+        # Check Local File
         if os.path.exists(local_filepath) and not FORCE_UPDATE:
             try:
                 with open(local_filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
-
                 if not is_valid_content(content):
                     print(f"\n[DELETE] Invalid content: {local_filename}")
                     os.remove(local_filepath)
                 else:
                     saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
                     saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
-                    has_trash = "翻譯：紐約時報中文網" in content or "点击查看本文英文版" in content
+                    # 检查是否有 cn-p 类名，如果没有，说明是旧版文件，需要重新处理
+                    has_classes = 'cn-p' in content or 'en-p' in content
+                    has_trash = "翻譯：紐約時報中文網" in content
 
-                    if not saved_en or is_brand_name(saved_en) or has_trash:
-                        print(f"\n[RE-FETCH] Needs repair: {local_filename}")
+                    if not saved_en or is_brand_name(saved_en) or has_trash or not has_classes:
+                        print(f"\n[RE-FETCH] Updating file (Missing Classes/Bad Title): {local_filename}")
                         need_download = True
                     else:
                         print(f"\n[SKIP] Valid cache: {local_filename}")
@@ -197,19 +205,20 @@ def scrape_nytimes():
                         if saved_cn_match: final_cn_title = saved_cn_match.group(1).strip()
                         final_en_title = saved_en
                         need_download = False
-                        status_tag = "CACHED"
+                        list_items.append(
+                            f'<li><a href="{os.path.join("articles", local_filename)}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">{date_str}</span></div></a></li>')
+                        processed_articles += 1
+                        continue
             except:
                 need_download = True
 
-        # --- 2. Download ---
+        # Download
         if need_download:
             print(f"\n[DOWNLOADING] {homepage_title_hint}")
             bilingual_url = f"{clean_url}/zh-hant/dual/"
-
             try:
                 driver.get(bilingual_url)
                 time.sleep(3)
-
                 if not is_valid_content(driver.page_source):
                     print("  -> Page invalid. Skipping.")
                     continue
@@ -227,6 +236,7 @@ def scrape_nytimes():
                     extracted_cn = None
                     extracted_en = None
 
+                    # Titles Extraction
                     h1_en_tag = article_soup.find('h1', class_='en-title')
                     if h1_en_tag: extracted_en = clean_text(h1_en_tag.text)
                     if not extracted_en:
@@ -264,6 +274,26 @@ def scrape_nytimes():
                     if extracted_cn: final_cn_title = extracted_cn
                     if extracted_en: final_en_title = extracted_en
 
+                    # --- 核心修复：注入语言类名 (Class Injection) ---
+                    # 遍历正文段落，区分中英文并添加 class
+                    for p in article_body.find_all('p'):
+                        # 检查段落文字
+                        txt = p.get_text().strip()
+                        if not txt: continue
+
+                        # 简单的启发式：如果有中文字符，就是中文段落
+                        if re.search(r'[\u4e00-\u9fff]', txt):
+                            # 使用 class 列表操作避免覆盖原有 class
+                            current_classes = p.get('class', [])
+                            if 'cn-p' not in current_classes:
+                                p['class'] = current_classes + ['cn-p']
+                        else:
+                            # 否则认为是英文
+                            current_classes = p.get('class', [])
+                            if 'en-p' not in current_classes:
+                                p['class'] = current_classes + ['en-p']
+
+                    # Body Cleanup
                     for link in article_body.find_all('a'): link.unwrap()
                     header_div = article_body.find('div', class_='article-header')
                     if header_div: header_div.decompose()
@@ -301,182 +331,49 @@ def scrape_nytimes():
                         f.write(article_html)
 
                     print(f"  -> Saved: {local_filename}")
-                    status_tag = "NEW"
+
+                    list_items.append(
+                        f'<li><a href="{os.path.join("articles", local_filename)}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">NEW</span><span class="date">{date_str}</span></div></a></li>')
+                    processed_articles += 1
                 else:
                     print(f"  -> No body content.")
-                    continue
             except Exception as e:
                 print(f"  -> Error: {e}")
-                continue
-
-        # 添加到数据列表
-        articles_data.append({
-            "title_cn": final_cn_title,
-            "title_en": final_en_title,
-            "url": f"articles/{local_filename}",
-            "date": date_str,
-            "tag": status_tag
-        })
 
     driver.quit()
 
-    # --- 3. 生成动态首页 (Data Embedded) ---
-    if articles_data:
-        try:
-            articles_data.sort(key=lambda x: x['date'], reverse=True)
-        except:
-            pass
+    # Generate Pagination
+    if len(list_items) > 0:
+        chunks = [list_items[i:i + ARTICLES_PER_PAGE] for i in range(0, len(list_items), ARTICLES_PER_PAGE)]
+        total_pages = len(chunks)
+        for i, chunk in enumerate(chunks):
+            page_num = i + 1
+            filename = 'index.html' if page_num == 1 else f'index_{page_num}.html'
+            page_list_html = "\n".join(chunk)
 
-        # 将数据转换为 JSON 字符串，准备注入到 HTML 中
-        json_data_str = json.dumps(articles_data, ensure_ascii=False)
+            prev_html = ""
+            if page_num > 1:
+                prev_file = 'index.html' if page_num == 2 else f'index_{page_num - 1}.html'
+                prev_html = f'<a href="{prev_file}" class="page-link">← Prev</a>'
+            else:
+                prev_html = '<span class="page-link disabled">← Prev</span>'
 
-        dynamic_index_html = f"""<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>纽约时报双语版 - NYTimes Bilingual</title>
-    <style>
-        :root {{ --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }}
-        body {{ font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }}
-        .app-container {{ max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 40px; }}
-        header {{ padding: 40px 20px 20px 20px; text-align: center; margin-bottom: 20px; border-bottom: 4px double #000; }}
-        .masthead {{ font-family: 'Georgia', serif; font-size: 3rem; margin: 0; font-weight: 900; letter-spacing: -1px; line-height: 1; color: #000; margin-bottom: 10px; }}
-        .sub-masthead {{ font-family: sans-serif; font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 15px; letter-spacing: 1px; }}
-        .date-line {{ border-top: 1px solid #ddd; padding: 8px 0; font-family: sans-serif; font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; text-transform: uppercase; }}
+            next_html = ""
+            if page_num < total_pages:
+                next_file = f'index_{page_num + 1}.html'
+                next_html = f'<a href="{next_file}" class="page-link">Next →</a>'
+            else:
+                next_html = '<span class="page-link disabled">Next →</span>'
 
-        ul {{ list-style: none; padding: 0 30px; margin: 0; }}
-        li {{ padding: 25px 0; border-bottom: 1px solid var(--nyt-border); animation: fadeIn 0.5s ease; }}
-        li:last-child {{ border-bottom: none; }}
+            pagination_html = f'<div class="pagination">{prev_html}<span class="page-info">Page {page_num} of {total_pages}</span>{next_html}</div>'
+            full_html = f"{index_html_head}<ul>{page_list_html}</ul>{pagination_html}<footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;margin-top:20px;'>Generated locally.</footer></div></body></html>"
 
-        /* 移除 target=_blank 后，文章将在当前标签页打开 */
-        a {{ text-decoration: none; color: inherit; display: block; }}
-
-        .article-title-cn {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; color: #000; }}
-        .article-title-en {{ font-size: 1.15rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }}
-        a:hover .article-title-cn {{ color: #00589c; }}
-
-        .article-meta {{ font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }}
-        .tag {{ text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }}
-
-        /* Pagination Controls */
-        .pagination {{ display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 40px; padding: 20px 0; border-top: 1px solid #eee; }}
-        .page-btn {{ 
-            padding: 8px 20px; border: 1px solid #ddd; background: white; 
-            border-radius: 4px; cursor: pointer; font-family: sans-serif; font-size: 0.9rem; color: #333; 
-            transition: all 0.2s;
-        }}
-        .page-btn:hover:not(:disabled) {{ background-color: #f5f5f5; border-color: #ccc; }}
-        .page-btn:disabled {{ color: #ccc; cursor: not-allowed; border-color: #eee; }}
-        .page-info {{ font-family: sans-serif; color: #666; font-size: 0.9rem; }}
-
-        @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(10px); }} to {{ opacity: 1; transform: translateY(0); }} }}
-    </style>
-</head>
-<body>
-    <div class="app-container">
-        <header>
-            <div class="masthead">The New York Times</div>
-            <div class="sub-masthead">纽约时报双语版</div>
-            <div class="date-line">
-                <span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span>
-                <span>Daily Selection</span>
-            </div>
-        </header>
-
-        <ul id="article-list">
-            <li style="text-align:center; padding: 40px; color: #999;">Loading articles...</li>
-        </ul>
-
-        <div class="pagination" id="pagination-controls" style="display:none;">
-            <button id="prev-btn" class="page-btn">← Prev</button>
-            <span id="page-info" class="page-info">Page 1</span>
-            <button id="next-btn" class="page-btn">Next →</button>
-        </div>
-
-        <footer style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.8rem; border-top: 1px solid #eee; margin-top: 40px;">
-            <p>Generated locally for personal study.</p>
-        </footer>
-    </div>
-
-    <script>
-        const ARTICLES_PER_PAGE = 10;
-        // 关键修改：数据直接内嵌，解决 CORS 问题
-        const allArticles = /* DATA_PLACEHOLDER */; 
-
-        let currentPage = 1;
-
-        function initApp() {{
-            if (!allArticles || allArticles.length === 0) {{
-                document.getElementById('article-list').innerHTML = '<li style="text-align:center; padding: 40px;">No articles found.</li>';
-                return;
-            }}
-            renderPage(1);
-            document.getElementById('pagination-controls').style.display = 'flex';
-        }}
-
-        function renderPage(page) {{
-            const start = (page - 1) * ARTICLES_PER_PAGE;
-            const end = start + ARTICLES_PER_PAGE;
-            const pageArticles = allArticles.slice(start, end);
-
-            const listContainer = document.getElementById('article-list');
-            listContainer.innerHTML = '';
-
-            if (pageArticles.length === 0) {{
-                listContainer.innerHTML = '<li style="text-align:center; padding: 20px;">No more articles.</li>';
-                return;
-            }}
-
-            pageArticles.forEach(article => {{
-                const li = document.createElement('li');
-                // 这里移除了 target="_blank"，实现当前页打开
-                li.innerHTML = `
-                    <a href="${{article.url}}">
-                        <div class="article-title-cn">${{article.title_cn}}</div>
-                        <div class="article-title-en">${{article.title_en}}</div>
-                        <div class="article-meta">
-                            <span class="tag">${{article.tag}}</span>
-                            <span class="date">${{article.date}}</span>
-                        </div>
-                    </a>
-                `;
-                listContainer.appendChild(li);
-            }});
-
-            // Update Controls
-            currentPage = page;
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
-
-            document.getElementById('page-info').textContent = `Page ${{currentPage}} of ${{totalPages}}`;
-            document.getElementById('prev-btn').disabled = currentPage === 1;
-            document.getElementById('next-btn').disabled = currentPage === totalPages;
-
-            if(window.scrollY > 200) window.scrollTo({{ top: 0, behavior: 'smooth' }});
-        }}
-
-        document.getElementById('prev-btn').addEventListener('click', () => {{
-            if (currentPage > 1) renderPage(currentPage - 1);
-        }});
-
-        document.getElementById('next-btn').addEventListener('click', () => {{
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
-            if (currentPage < totalPages) renderPage(currentPage + 1);
-        }});
-
-        // Start
-        initApp();
-    </script>
-</body>
-</html>
-"""
-        # 使用 replace 注入 JSON 数据，避免 f-string 冲突
-        final_html = dynamic_index_html.replace('/* DATA_PLACEHOLDER */', json_data_str)
-
-        with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(final_html)
-        print(f"\nGenerated dynamic index.html with {len(articles_data)} articles embedded.")
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(full_html)
+        print(f"\nDone! Generated {total_pages} pages for {len(list_items)} articles.")
     else:
+        with open('index.html', 'w', encoding='utf-8') as f:
+            f.write(f"{index_html_head}<ul><li>No articles found.</li></ul></div></body></html>")
         print("\nNo articles found.")
 
 
