@@ -12,13 +12,12 @@ from urllib.parse import urljoin
 # --- CONFIGURATION ---
 CHROME_DRIVER_PATH = '/Users/yuliu/PycharmProjects/NYTimes/chromedriver'
 
-# [控制开关] True = 强制重新下载所有文章（用于修复标题）； False = 跳过已存在的文件
-FORCE_UPDATE = True
+# [控制開關] True = 強制重新下載所有文章； False = 跳過已存在的文件 (推薦)
+FORCE_UPDATE = False
 
 
 def get_driver():
     chrome_options = Options()
-    # 调试时如果想看浏览器运行，可以注释掉下面这行 '--headless'
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument(
@@ -37,7 +36,7 @@ def get_driver():
 
 
 def slug_to_title_fallback(url):
-    """(备用) 从 URL 中提取英文 slug 并转换为标题格式"""
+    """(備用) 從 URL 中提取英文 slug 並轉換為標題格式"""
     try:
         match = re.search(r'/\d{8}/([^/]+)', url)
         if match:
@@ -45,6 +44,22 @@ def slug_to_title_fallback(url):
     except:
         pass
     return ""
+
+
+def is_valid_content(soup_or_text):
+    """檢查內容是否為有效的文章，排除 404 頁面"""
+    text = str(soup_or_text)
+    invalid_markers = [
+        "對不起，您訪問的頁面未找到",
+        "您访问的页面未找到",
+        "Page Not Found",
+        "The page you requested could not be found",
+        "我們為您推薦的熱門文章"
+    ]
+    for marker in invalid_markers:
+        if marker in text:
+            return False
+    return True
 
 
 def scrape_nytimes():
@@ -73,14 +88,14 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # --- 首页 HTML 头部 ---
+    # --- 首頁 HTML 頭部 ---
     index_html_head = f"""
     <!DOCTYPE html>
     <html lang="zh-Hant">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>纽约时报双语版 - NYTimes Bilingual</title>
+        <title>紐約時報雙語版 - NYTimes Bilingual</title>
         <style>
             :root {{ --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }}
             body {{ font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }}
@@ -104,7 +119,7 @@ def scrape_nytimes():
         <div class="app-container">
             <header>
                 <div class="masthead">The New York Times</div>
-                <div class="sub-masthead">纽约时报双语版</div>
+                <div class="sub-masthead">紐約時報雙語版</div>
                 <div class="date-line">
                     <span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span>
                     <span>Daily Selection</span>
@@ -124,11 +139,11 @@ def scrape_nytimes():
         href = link.get('href', '')
         cn_title = link.text.strip().replace('\n', ' ')
 
-        # 基础过滤
+        # 基礎過濾
         if not (href and cn_title and article_pattern.search(href)):
             continue
 
-        # 过滤 2023/2024 (以及更早的)
+        # 過濾 2023/2024 (以及更早的)
         if any(x in href for x in ['/2023', '/2024', '/2022']):
             continue
 
@@ -143,7 +158,7 @@ def scrape_nytimes():
         if clean_url.endswith('/zh-hant'):
             clean_url = clean_url[:-len('/zh-hant')]
 
-        # 从 URL 提取日期
+        # 從 URL 提取日期
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
         date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else today_str
 
@@ -152,38 +167,49 @@ def scrape_nytimes():
         local_filepath = os.path.join(output_dir, local_filename)
 
         final_cn_title = cn_title
-        final_en_title = slug_to_title_fallback(clean_url)  # 默认值
+        final_en_title = slug_to_title_fallback(clean_url)  # 默認值
 
-        # --- 1. 检查是否跳过 ---
-        # 如果 FORCE_UPDATE 为 False，且文件存在，则跳过下载，读取现有内容
-        if not FORCE_UPDATE and os.path.exists(local_filepath):
-            print(f"\n[SKIP] File exists: {local_filename}")
-            try:
-                with open(local_filepath, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                # 尝试从已保存的文件中读取英文标题
-                saved_en = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
-                if saved_en:
-                    final_en_title = saved_en.group(1).strip()
-            except:
+        # --- 1. 檢查文件是否存在 ---
+        if os.path.exists(local_filepath):
+            if not FORCE_UPDATE:
+                # 檢查文件是否是“壞文件”（404 頁面）
+                try:
+                    with open(local_filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                    if not is_valid_content(content):
+                        print(f"\n[DELETE] Found invalid local file (404 page): {local_filename}")
+                        os.remove(local_filepath)
+                        # 刪除後不 continue，讓它進入下方的下載流程（或者您可以選擇直接 skip）
+                        # 這裡我們選擇重新下載，試試看能不能獲取到正確的
+                    else:
+                        # 文件存在且有效，讀取信息並跳過下載
+                        print(f"\n[SKIP] Valid file exists: {local_filename}")
+                        saved_en = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
+                        if saved_en:
+                            final_en_title = saved_en.group(1).strip()
+
+                        list_items.append(f'''
+                        <li>
+                            <a href="{os.path.join('articles', local_filename)}" target="_blank">
+                                <div class="article-title-cn">{final_cn_title}</div>
+                                <div class="article-title-en">{final_en_title}</div>
+                                <div class="article-meta">
+                                    <span class="tag">CACHED</span>
+                                    <span class="date">{date_str}</span>
+                                </div>
+                            </a>
+                        </li>
+                        ''')
+                        processed_articles += 1
+                        continue
+                except Exception as e:
+                    print(f"Error reading local file: {e}")
+            else:
+                # 強制更新模式，忽略本地文件
                 pass
 
-            list_items.append(f'''
-            <li>
-                <a href="{os.path.join('articles', local_filename)}" target="_blank">
-                    <div class="article-title-cn">{final_cn_title}</div>
-                    <div class="article-title-en">{final_en_title}</div>
-                    <div class="article-meta">
-                        <span class="tag">CACHED</span>
-                        <span class="date">{date_str}</span>
-                    </div>
-                </a>
-            </li>
-            ''')
-            processed_articles += 1
-            continue
-
-        # --- 2. 下载文章 (Force Update 或 文件不存在) ---
+        # --- 2. 下載文章 ---
         print(f"\n[DOWNLOADING] {cn_title}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
 
@@ -191,56 +217,59 @@ def scrape_nytimes():
             driver.get(bilingual_url)
             time.sleep(3)
 
-            if "Page Not Found" in driver.title or "404" in driver.title:
-                print("  -> Page not found. Skipping.")
+            # 檢查標題和內容是否包含 404 關鍵詞
+            page_source = driver.page_source
+            if "Page Not Found" in driver.title or "404" in driver.title or not is_valid_content(page_source):
+                print("  -> Page content invalid (likely 404). Skipping.")
                 continue
 
-            article_soup = BeautifulSoup(driver.page_source, 'html.parser')
+            article_soup = BeautifulSoup(page_source, 'html.parser')
             article_body = article_soup.find('div', class_='article-body') or \
                            article_soup.find('section', attrs={'name': 'articleBody'}) or \
                            article_soup.find('article') or \
                            article_soup.find('main')
 
             if article_body:
-                # --- 核心：精准提取英文标题 ---
+                # 二次檢查 body 內容是否有效
+                if not is_valid_content(article_body):
+                    print("  -> Article body contains error message. Skipping.")
+                    continue
+
+                # --- 提取英文標題 ---
                 real_en_title = None
 
-                # 1. 尝试从 <span class="en-title"> 或类似结构提取
-                # 纽约时报中文网常见的标题结构
-                header_tags = article_soup.find_all(['h1', 'span', 'div'])
+                # 策略 1: 查找特定 class
+                header_tags = article_soup.find_all(['h1', 'span', 'div', 'h2'])
                 for tag in header_tags:
-                    # 检查 class 是否包含 'en' 且是标题相关的
-                    if tag.get('class') and any(
-                            'en' in c and ('title' in c or 'headline' in c) for c in tag.get('class')):
+                    # 檢查 class 是否包含 'en' 且是標題相關的
+                    classes = tag.get('class', [])
+                    if classes and any('en' in c for c in classes) and any(
+                            k in str(classes).lower() for k in ['title', 'headline']):
                         if tag.text.strip():
                             real_en_title = tag.text.strip()
                             break
 
-                # 2. 如果上面没找到，尝试查找紧跟在中文 H1 后面的英文内容
+                # 策略 2: 查找緊跟在中文 H1 後面的英文內容
                 if not real_en_title:
                     h1_cn = article_soup.find('h1')
                     if h1_cn:
-                        # 有时候英文标题是 h1 下的一个 span
                         span_en = h1_cn.find('span', class_='en')
                         if span_en:
                             real_en_title = span_en.text.strip()
-                        # 或者 sometimes 是 H1 的兄弟节点
                         elif h1_cn.find_next_sibling(['h1', 'h2', 'div', 'span']):
                             sib = h1_cn.find_next_sibling()
+                            # 簡單的啟發式：如果兄弟節點包含大量英文字符
                             if sib and len(sib.text) > 5 and re.search(r'[a-zA-Z]', sib.text):
-                                # 简单的启发式：如果兄弟节点包含大量英文字符
                                 real_en_title = sib.text.strip()
 
                 if real_en_title:
                     final_en_title = real_en_title
                     print(f"  -> Found English title: {final_en_title}")
-                else:
-                    print(f"  -> English title not found in HTML, using slug: {final_en_title}")
 
                 safe_cn_title = html.escape(final_cn_title)
                 safe_en_title = html.escape(final_en_title)
 
-                # 生成文章页
+                # 生成文章頁
                 article_html = f'''
                 <!DOCTYPE html>
                 <html lang="zh-Hant">
