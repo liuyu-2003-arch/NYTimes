@@ -15,8 +15,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 TEMPLATE_FILE = 'article_template.html'
 ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
 
-# 设为 True 运行一次以更新所有文章的顶部控制栏样式
-FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
+# 设为 True 运行一次以更新所有文章；设为 False 则跳过已有文章
+FORCE_UPDATE = False
 
 
 def get_driver():
