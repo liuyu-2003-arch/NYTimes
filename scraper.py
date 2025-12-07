@@ -12,9 +12,13 @@ from urllib.parse import urljoin
 # --- CONFIGURATION ---
 CHROME_DRIVER_PATH = '/Users/yuliu/PycharmProjects/NYTimes/chromedriver'
 
+# [控制开关] True = 强制重新下载所有文章（用于修复标题）； False = 跳过已存在的文件
+FORCE_UPDATE = True
+
 
 def get_driver():
     chrome_options = Options()
+    # 调试时如果想看浏览器运行，可以注释掉下面这行 '--headless'
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument(
@@ -32,18 +36,12 @@ def get_driver():
         return None
 
 
-def slug_to_title(url):
-    """
-    从 URL 中提取英文 slug 并转换为标题格式
-    例如: .../20251203/china-us-relations/... -> "China Us Relations"
-    """
+def slug_to_title_fallback(url):
+    """(备用) 从 URL 中提取英文 slug 并转换为标题格式"""
     try:
-        # 找到日期后面的部分
         match = re.search(r'/\d{8}/([^/]+)', url)
         if match:
-            slug = match.group(1)
-            # 把横杠换成空格，并首字母大写
-            return slug.replace('-', ' ').title()
+            return match.group(1).replace('-', ' ').title()
     except:
         pass
     return ""
@@ -96,7 +94,7 @@ def scrape_nytimes():
             li:last-child {{ border-bottom: none; }}
             a {{ text-decoration: none; color: inherit; display: block; }}
             .article-title-cn {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; color: #000; }}
-            .article-title-en {{ font-size: 1.1rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }}
+            .article-title-en {{ font-size: 1.15rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }}
             a:hover .article-title-cn {{ color: #00589c; }}
             .article-meta {{ font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }}
             .tag {{ text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }}
@@ -130,8 +128,8 @@ def scrape_nytimes():
         if not (href and cn_title and article_pattern.search(href)):
             continue
 
-        # 过滤 2023/2024
-        if '/2023' in href or '/2024' in href:
+        # 过滤 2023/2024 (以及更早的)
+        if any(x in href for x in ['/2023', '/2024', '/2022']):
             continue
 
         if href in unique_links:
@@ -145,10 +143,6 @@ def scrape_nytimes():
         if clean_url.endswith('/zh-hant'):
             clean_url = clean_url[:-len('/zh-hant')]
 
-        # --- 获取英文标题 (Strategy: URL Slug) ---
-        # 默认使用 URL 推断，如果下载时能找到更好的就覆盖
-        en_title_fallback = slug_to_title(clean_url)
-
         # 从 URL 提取日期
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
         date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else today_str
@@ -158,59 +152,29 @@ def scrape_nytimes():
         local_filepath = os.path.join(output_dir, local_filename)
 
         final_cn_title = cn_title
-        final_en_title = en_title_fallback
+        final_en_title = slug_to_title_fallback(clean_url)  # 默认值
 
-        # --- 1. 检查文件是否已存在 (并修复标题) ---
-        if os.path.exists(local_filepath):
-            print(f"\n[CHECKING] File exists: {local_filename}")
-
+        # --- 1. 检查是否跳过 ---
+        # 如果 FORCE_UPDATE 为 False，且文件存在，则跳过下载，读取现有内容
+        if not FORCE_UPDATE and os.path.exists(local_filepath):
+            print(f"\n[SKIP] File exists: {local_filename}")
             try:
                 with open(local_filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
+                # 尝试从已保存的文件中读取英文标题
+                saved_en = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
+                if saved_en:
+                    final_en_title = saved_en.group(1).strip()
+            except:
+                pass
 
-                # 尝试从本地文件中读取已保存的英文标题 (如果有)
-                # 比如我们之后保存的 <h2 class="en-headline">Title</h2>
-                saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
-                if saved_en_match:
-                    final_en_title = saved_en_match.group(1).strip()
-
-                # 检查并修复 <title>
-                title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
-                existing_title = title_match.group(1).strip() if title_match else ""
-
-                file_needs_update = False
-
-                # 1. 修复空的/坏的网页标题
-                if not existing_title or existing_title == "NYTimes" or "- NYTimes" not in existing_title:
-                    print(f"  -> Fixing bad <title>...")
-                    safe_new_title = f"{html.escape(final_cn_title)} - NYTimes"
-                    new_title_tag = f"<title>{safe_new_title}</title>"
-                    if title_match:
-                        content = re.sub(r'<title>.*?</title>', new_title_tag, content, flags=re.IGNORECASE)
-                    else:
-                        content = content.replace("<head>", f"<head>{new_title_tag}")
-                    file_needs_update = True
-
-                # 2. (可选) 如果本地文件里完全没有英文标题的显示，可以尝试注入进去 (不破坏正文结构较难，暂时只修复 title)
-                # 现在的逻辑是：如果文件存在，我们在 index.html 里显示 URL 推断的英文标题，
-                # 但不一定强行插入到文章页的 body 里，以免破坏 HTML 结构。
-
-                if file_needs_update:
-                    with open(local_filepath, 'w', encoding='utf-8') as f:
-                        f.write(content)
-                    print("  -> File updated.")
-
-            except Exception as e:
-                print(f"  -> Warning: Could not read/fix local file: {e}")
-
-            # 添加到列表 (带英文标题)
             list_items.append(f'''
             <li>
                 <a href="{os.path.join('articles', local_filename)}" target="_blank">
                     <div class="article-title-cn">{final_cn_title}</div>
                     <div class="article-title-en">{final_en_title}</div>
                     <div class="article-meta">
-                        <span class="tag">READ</span>
+                        <span class="tag">CACHED</span>
                         <span class="date">{date_str}</span>
                     </div>
                 </a>
@@ -219,7 +183,7 @@ def scrape_nytimes():
             processed_articles += 1
             continue
 
-        # --- 2. 文件不存在，执行下载 ---
+        # --- 2. 下载文章 (Force Update 或 文件不存在) ---
         print(f"\n[DOWNLOADING] {cn_title}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
 
@@ -238,29 +202,45 @@ def scrape_nytimes():
                            article_soup.find('main')
 
             if article_body:
-                # 尝试提取真实的英文标题
-                # NYT 双语页通常有 <span class="en-headline"> 或类似的结构
-                # 如果找不到，就用 URL 推断的
+                # --- 核心：精准提取英文标题 ---
                 real_en_title = None
 
-                # 策略 1: 查找特定 class
-                en_tag = article_soup.find(class_='en-headline') or \
-                         article_soup.find(class_='en-title') or \
-                         article_soup.find('h1', class_='en')
+                # 1. 尝试从 <span class="en-title"> 或类似结构提取
+                # 纽约时报中文网常见的标题结构
+                header_tags = article_soup.find_all(['h1', 'span', 'div'])
+                for tag in header_tags:
+                    # 检查 class 是否包含 'en' 且是标题相关的
+                    if tag.get('class') and any(
+                            'en' in c and ('title' in c or 'headline' in c) for c in tag.get('class')):
+                        if tag.text.strip():
+                            real_en_title = tag.text.strip()
+                            break
 
-                if en_tag:
-                    real_en_title = en_tag.text.strip()
-
-                # 策略 2: 如果找不到，且 URL 推断的有值，用 URL 的
-                if not real_en_title and en_title_fallback:
-                    real_en_title = en_title_fallback
+                # 2. 如果上面没找到，尝试查找紧跟在中文 H1 后面的英文内容
+                if not real_en_title:
+                    h1_cn = article_soup.find('h1')
+                    if h1_cn:
+                        # 有时候英文标题是 h1 下的一个 span
+                        span_en = h1_cn.find('span', class_='en')
+                        if span_en:
+                            real_en_title = span_en.text.strip()
+                        # 或者 sometimes 是 H1 的兄弟节点
+                        elif h1_cn.find_next_sibling(['h1', 'h2', 'div', 'span']):
+                            sib = h1_cn.find_next_sibling()
+                            if sib and len(sib.text) > 5 and re.search(r'[a-zA-Z]', sib.text):
+                                # 简单的启发式：如果兄弟节点包含大量英文字符
+                                real_en_title = sib.text.strip()
 
                 if real_en_title:
                     final_en_title = real_en_title
+                    print(f"  -> Found English title: {final_en_title}")
+                else:
+                    print(f"  -> English title not found in HTML, using slug: {final_en_title}")
 
                 safe_cn_title = html.escape(final_cn_title)
                 safe_en_title = html.escape(final_en_title)
 
+                # 生成文章页
                 article_html = f'''
                 <!DOCTYPE html>
                 <html lang="zh-Hant">
@@ -272,7 +252,6 @@ def scrape_nytimes():
                         body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
                         .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }}
 
-                        /* 标题样式 */
                         h1.cn-headline {{ font-family: "Pieter", "Georgia", serif; font-weight: 700; margin-bottom: 10px; font-size: 2.2rem; line-height: 1.2; color: #000; }}
                         h2.en-headline {{ font-family: "Georgia", serif; font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 1.5em; font-size: 1.5rem; color: #555; }}
 
