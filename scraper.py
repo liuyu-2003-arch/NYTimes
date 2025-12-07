@@ -13,9 +13,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURATION ---
 TEMPLATE_FILE = 'article_template.html'
-ARTICLES_PER_PAGE = 10
+ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
 
-# [重要] 设为 True 运行一次，以修复旧文章缺失的语言标签
+# [重要] 第一次运行修复版时，必须设为 True，以重新生成带有语言标签的 HTML
 FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
