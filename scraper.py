@@ -2,6 +2,7 @@ import time
 import re
 import os
 import datetime
+import html
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -18,7 +19,7 @@ def get_driver():
     Initializes and returns a Selenium WebDriver instance.
     """
     chrome_options = Options()
-    # 如果调试时想看到浏览器运行，可以注释掉下面这行 '--headless'
+    # 调试时如果想看浏览器运行，可以注释掉下面这行 '--headless'
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument(
@@ -46,7 +47,6 @@ def scrape_nytimes():
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
 
-    # 获取当天日期用于显示
     today_str = datetime.date.today().strftime("%A, %B %d, %Y")
 
     driver = get_driver()
@@ -56,7 +56,7 @@ def scrape_nytimes():
     try:
         print(f"Fetching homepage: {homepage_url}")
         driver.get(homepage_url)
-        time.sleep(5)  # 等待页面完全加载
+        time.sleep(5)
         homepage_html = driver.page_source
     except Exception as e:
         print(f"Failed to load homepage: {e}")
@@ -66,14 +66,14 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # --- 升级后的 index.html 模板 (报纸头版风格) ---
+    # --- 首页 HTML 头部 ---
     index_html_head = f"""
     <!DOCTYPE html>
     <html lang="zh-Hant">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>纽约时报双语版 The New York Times Bilingual</title>
+        <title>纽约时报双语版 - The New York Times Bilingual Reader</title>
         <style>
             :root {{
                 --nyt-black: #121212;
@@ -194,9 +194,7 @@ def scrape_nytimes():
             <ul>
     """
 
-    # 用列表存储内容，最后再一次性写入
     list_items = []
-
     unique_links = {}
     article_pattern = re.compile(r'/\d{8}/')
     processed_articles = 0
@@ -205,32 +203,67 @@ def scrape_nytimes():
 
     for link in all_links:
         href = link.get('href', '')
-        title = link.text.strip()
+        # 清理标题中的换行和多余空格
+        raw_title = link.text.strip().replace('\n', ' ')
 
-        # 1. 基础过滤
-        if not (href and title and article_pattern.search(href)):
+        if not (href and raw_title and article_pattern.search(href)):
             continue
-
-        # 2. 去重
         if href in unique_links:
             continue
-
-        # 3. 排除无效链接
         if 'cn.nytimes.com' in href and not href.startswith('http'):
             continue
 
+        unique_links[href] = raw_title
         absolute_url = urljoin(base_url, href)
 
-        unique_links[href] = title
-        print(f"\nProcessing: {title}")
-
-        # --- 构造双语 URL ---
+        # --- 准备路径和日期 ---
         clean_url = absolute_url.split('?')[0].rstrip('/')
         if clean_url.endswith('/zh-hant'):
             clean_url = clean_url[:-len('/zh-hant')]
 
+        # 从 URL 提取日期
+        date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
+        date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "Recent"
+
+        slug = clean_url.split('/')[-1]
+        local_filename = f"{slug}.html"
+        local_filepath = os.path.join(output_dir, local_filename)
+
+        final_page_title = raw_title  # 默认使用首页链接文字
+
+        # --- 1. 检查文件是否已存在 ---
+        if os.path.exists(local_filepath):
+            print(f"\n[SKIP] File exists: {local_filename}")
+            # 尝试从本地文件中读取精准标题
+            try:
+                with open(local_filepath, 'r', encoding='utf-8') as f:
+                    # 只读取前 2048 字节通常足够获取 title，提高速度
+                    existing_head = f.read(4096)
+                    head_soup = BeautifulSoup(existing_head, 'html.parser')
+                    if head_soup.title:
+                        # 移除 "- NYTimes" 后缀以保持列表整洁
+                        final_page_title = head_soup.title.text.replace(" - NYTimes", "").strip()
+            except Exception as e:
+                print(f"  -> Warning: Could not read title from local file: {e}")
+
+            # 直接添加到列表，不下载
+            list_items.append(f'''
+            <li>
+                <a href="{os.path.join('articles', local_filename)}" target="_blank">
+                    <div class="article-title">{final_page_title}</div>
+                    <div class="article-meta">
+                        <span class="tag">CACHED</span>
+                        <span class="date">{date_str}</span>
+                    </div>
+                </a>
+            </li>
+            ''')
+            processed_articles += 1
+            continue
+
+        # --- 2. 文件不存在，执行下载 ---
+        print(f"\n[DOWNLOADING] {raw_title}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
-        print(f"  -> Target URL: {bilingual_url}")
 
         try:
             driver.get(bilingual_url)
@@ -241,7 +274,6 @@ def scrape_nytimes():
                 continue
 
             article_soup = BeautifulSoup(driver.page_source, 'html.parser')
-
             article_body = article_soup.find('div', class_='article-body') or \
                            article_soup.find('section', attrs={'name': 'articleBody'}) or \
                            article_soup.find('article') or \
@@ -249,46 +281,42 @@ def scrape_nytimes():
 
             if article_body:
                 page_title_tag = article_soup.find('h1')
-                page_title = page_title_tag.text.strip() if page_title_tag else title
+                if page_title_tag:
+                    final_page_title = page_title_tag.text.strip().replace('\n', ' ')
 
-                # 尝试从 URL 中提取日期
-                date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
-                date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "Recent"
-
-                # 保存文章 HTML (样式同步优化)
-                slug = clean_url.split('/')[-1]
-                local_filename = f"{slug}.html"
-                local_filepath = os.path.join(output_dir, local_filename)
+                # HTML 转义标题，防止引号破坏标签
+                safe_title = html.escape(final_page_title)
 
                 article_html = f'''
-                <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>{page_title} - NYTimes</title>
-                <style>
-                    body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
-                    .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; }}
-                    h1 {{ font-family: 'Georgia', serif; font-style: italic; margin-bottom: 0.5em; font-size: 2.2rem; line-height: 1.2; color: #000; }}
-                    .meta {{ color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 2.5em; border-top: 1px solid #ddd; padding-top: 1em; text-transform: uppercase; letter-spacing: 0.5px; }}
+                <!DOCTYPE html>
+                <html lang="zh-Hant">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>{safe_title} - NYTimes</title>
+                    <style>
+                        body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
+                        .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }}
+                        h1 {{ font-family: 'Georgia', serif; font-style: italic; margin-bottom: 0.5em; font-size: 2.2rem; line-height: 1.2; color: #000; }}
+                        .meta {{ color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 2.5em; border-top: 1px solid #ddd; padding-top: 1em; text-transform: uppercase; letter-spacing: 0.5px; }}
 
-                    /* 双语段落样式 */
-                    .article-paragraph {{ margin-bottom: 2em; }}
-                    p {{ margin: 0 0 1em 0; }}
-                    .en-p {{ color: #222; margin-bottom: 0.8em; font-size: 1.1rem; }}
-                    .cn-p {{ color: #004276; font-weight: 500; font-size: 1.05rem; line-height: 1.8; }}
+                        .article-paragraph {{ margin-bottom: 2em; }}
+                        p {{ margin: 0 0 1em 0; }}
+                        .en-p {{ color: #222; margin-bottom: 0.8em; font-size: 1.1rem; }}
+                        .cn-p {{ color: #004276; font-weight: 500; font-size: 1.05rem; line-height: 1.8; }}
 
-                    /* 图片样式适配 */
-                    figure {{ margin: 2em 0; width: 100%; }}
-                    img {{ max-width: 100%; height: auto; display: block; background: #f0f0f0; }}
-                    figcaption {{ font-size: 0.85rem; color: #888; margin-top: 0.5em; font-family: sans-serif; text-align: center; }}
+                        figure {{ margin: 2em 0; width: 100%; }}
+                        img {{ max-width: 100%; height: auto; display: block; background: #f0f0f0; }}
+                        figcaption {{ font-size: 0.85rem; color: #888; margin-top: 0.5em; font-family: sans-serif; text-align: center; }}
 
-                    /* 简单的返回首页链接 */
-                    .back-link {{ display: inline-block; margin-bottom: 20px; color: #999; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; }}
-                    .back-link:hover {{ text-decoration: underline; color: #333; }}
-                </style>
-                </head><body>
+                        .back-link {{ display: inline-block; margin-bottom: 20px; color: #999; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; }}
+                        .back-link:hover {{ text-decoration: underline; color: #333; }}
+                    </style>
+                </head>
+                <body>
                 <div class="content-container">
                     <a href="../index.html" class="back-link">← Back to Index</a>
-                    <h1>{page_title}</h1>
+                    <h1>{final_page_title}</h1>
                     <div class="meta">{date_str} • The New York Times</div>
                     <div class="article-body">
                         {str(article_body)}
@@ -301,13 +329,12 @@ def scrape_nytimes():
 
                 print(f"  -> Saved: {local_filename}")
 
-                # 添加列表项到主页
                 list_items.append(f'''
                 <li>
-                    <a href="{local_filepath}" target="_blank">
-                        <div class="article-title">{page_title}</div>
+                    <a href="{os.path.join('articles', local_filename)}" target="_blank">
+                        <div class="article-title">{final_page_title}</div>
                         <div class="article-meta">
-                            <span class="tag">ARTICLE</span>
+                            <span class="tag">NEW</span>
                             <span class="date">{date_str}</span>
                         </div>
                     </a>
@@ -322,7 +349,7 @@ def scrape_nytimes():
 
     driver.quit()
 
-    # 组装最终的 index.html
+    # 生成 index.html
     full_index_html = index_html_head + "\n".join(list_items) + """
             </ul>
             <footer style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.8rem; font-family: sans-serif; border-top: 1px solid #eee; margin-top: 40px;">
@@ -333,12 +360,14 @@ def scrape_nytimes():
     </html>
     """
 
-    if processed_articles > 0:
+    # 始终重新生成 index.html，以确保包含最新的已有文件列表
+    if processed_articles > 0 or len(list_items) > 0:
         with open('index.html', 'w', encoding='utf-8') as f:
             f.write(full_index_html)
-        print(f"\nDone! Processed {processed_articles} articles. Open 'index.html' to view.")
+        print(
+            f"\nDone! Processed {processed_articles} new articles (Total in index: {len(list_items)}). Open 'index.html' to view.")
     else:
-        print("\nNo articles were processed.")
+        print("\nNo articles found.")
 
 
 if __name__ == "__main__":
