@@ -3,6 +3,7 @@ import re
 import os
 import datetime
 import html
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -11,8 +12,9 @@ from urllib.parse import urljoin
 
 # --- CONFIGURATION ---
 CHROME_DRIVER_PATH = '/Users/yuliu/PycharmProjects/NYTimes/chromedriver'
+TEMPLATE_FILE = 'article_template.html'
 
-# [控制開關] True = 強制重新下載所有文章； False = 跳過已存在的文件 (推薦)
+# [重要] 第一次使用新模板时设为 True，更新所有文章样式；之后改回 False 节省时间
 FORCE_UPDATE = False
 
 
@@ -35,45 +37,95 @@ def get_driver():
         return None
 
 
-def slug_to_title_fallback(url):
-    """(備用) 從 URL 中提取英文 slug 並轉換為標題格式"""
-    try:
-        match = re.search(r'/\d{8}/([^/]+)', url)
-        if match:
-            return match.group(1).replace('-', ' ').title()
-    except:
-        pass
-    return ""
+def load_template():
+    """读取 HTML 模板文件"""
+    if not os.path.exists(TEMPLATE_FILE):
+        print(f"Error: Template file '{TEMPLATE_FILE}' not found!")
+        return None
+    with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
+        return f.read()
 
 
 def is_valid_content(soup_or_text):
-    """檢查內容是否為有效的文章，排除 404 頁面"""
     text = str(soup_or_text)
-    invalid_markers = [
-        "對不起，您訪問的頁面未找到",
-        "您访问的页面未找到",
-        "Page Not Found",
-        "The page you requested could not be found",
-        "我們為您推薦的熱門文章"
-    ]
+    invalid_markers = ["Page Not Found", "頁面未找到", "页面未找到"]
     for marker in invalid_markers:
-        if marker in text:
-            return False
+        if marker in text: return False
     return True
+
+
+def clean_text(text):
+    if not text: return ""
+    return re.sub(r'\s+', ' ', text.strip())
+
+
+def is_brand_name(text):
+    if not text: return True
+    lower = text.lower()
+    brands = ["new york times", "nytimes", "紐約時報", "纽约时报", "chinese website", "中文网"]
+    cleaned = re.sub(r'[^a-zA-Z\u4e00-\u9fff]', '', lower)
+    for b in brands:
+        if b.replace(" ", "") in cleaned and len(cleaned) < len(b.replace(" ", "")) + 5:
+            return True
+    return False
+
+
+def extract_titles_from_page_title(browser_title):
+    if not browser_title: return None, None
+    parts = re.split(r'\s+[-–—]\s+', browser_title)
+    cn = None
+    en = None
+    if len(parts) >= 1: cn = clean_text(parts[0])
+    for part in parts[1:]:
+        p = clean_text(part)
+        if re.match(r'^[A-Za-z0-9\s:,\.\-\?\'"’]+$', p) and not is_brand_name(p):
+            en = p
+            break
+    return cn, en
+
+
+def extract_author(soup):
+    try:
+        scripts = soup.find_all('script', type='application/ld+json')
+        for s in scripts:
+            data = json.loads(s.string)
+            if isinstance(data, list): data = data[0]
+            if 'author' in data:
+                authors = data['author']
+                if isinstance(authors, list):
+                    names = [a.get('name') for a in authors if a.get('name')]
+                    return ", ".join(names)
+                elif isinstance(authors, dict):
+                    return authors.get('name', '')
+            if 'creator' in data:
+                return str(data['creator'])
+    except:
+        pass
+
+    address = soup.find('address')
+    if address: return clean_text(address.text)
+
+    meta_byl = soup.find('meta', attrs={'name': 'byl'})
+    if meta_byl: return clean_text(meta_byl.get('content'))
+
+    return "The New York Times"
 
 
 def scrape_nytimes():
     output_dir = 'articles'
     os.makedirs(output_dir, exist_ok=True)
 
+    # 预加载模板
+    template_content = load_template()
+    if not template_content:
+        return
+
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
-
     today_str = datetime.date.today().strftime("%Y-%m-%d")
 
     driver = get_driver()
-    if not driver:
-        return
+    if not driver: return
 
     try:
         print(f"Fetching homepage: {homepage_url}")
@@ -88,14 +140,14 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # --- 首頁 HTML 頭部 ---
+    # Index HTML Head (Index 页面暂时保持硬编码，因为它结构简单)
     index_html_head = f"""
     <!DOCTYPE html>
     <html lang="zh-Hant">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>紐約時報雙語版 - NYTimes Bilingual</title>
+        <title>纽约时报双语版 - NYTimes Bilingual</title>
         <style>
             :root {{ --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }}
             body {{ font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }}
@@ -119,7 +171,7 @@ def scrape_nytimes():
         <div class="app-container">
             <header>
                 <div class="masthead">The New York Times</div>
-                <div class="sub-masthead">紐約時報雙語版</div>
+                <div class="sub-masthead">纽约时报双语版</div>
                 <div class="date-line">
                     <span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span>
                     <span>Daily Selection</span>
@@ -137,28 +189,18 @@ def scrape_nytimes():
 
     for link in all_links:
         href = link.get('href', '')
-        cn_title = link.text.strip().replace('\n', ' ')
+        homepage_title_hint = clean_text(link.text)
 
-        # 基礎過濾
-        if not (href and cn_title and article_pattern.search(href)):
-            continue
+        if not (href and homepage_title_hint and article_pattern.search(href)): continue
+        if any(x in href for x in ['/2023', '/2024', '/2022']): continue
+        if href in unique_links: continue
+        if 'cn.nytimes.com' in href and not href.startswith('http'): continue
 
-        # 過濾 2023/2024 (以及更早的)
-        if any(x in href for x in ['/2023', '/2024', '/2022']):
-            continue
-
-        if href in unique_links:
-            continue
-        if 'cn.nytimes.com' in href and not href.startswith('http'):
-            continue
-
-        unique_links[href] = cn_title
+        unique_links[href] = homepage_title_hint
         absolute_url = urljoin(base_url, href)
         clean_url = absolute_url.split('?')[0].rstrip('/')
-        if clean_url.endswith('/zh-hant'):
-            clean_url = clean_url[:-len('/zh-hant')]
+        if clean_url.endswith('/zh-hant'): clean_url = clean_url[:-len('/zh-hant')]
 
-        # 從 URL 提取日期
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
         date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else today_str
 
@@ -166,196 +208,168 @@ def scrape_nytimes():
         local_filename = f"{slug}.html"
         local_filepath = os.path.join(output_dir, local_filename)
 
-        final_cn_title = cn_title
-        final_en_title = slug_to_title_fallback(clean_url)  # 默認值
+        final_cn_title = homepage_title_hint
+        final_en_title = ""
+        need_download = True
 
-        # --- 1. 檢查文件是否存在 ---
-        if os.path.exists(local_filepath):
-            if not FORCE_UPDATE:
-                # 檢查文件是否是“壞文件”（404 頁面）
-                try:
-                    with open(local_filepath, 'r', encoding='utf-8') as f:
-                        content = f.read()
+        # --- 1. Check Local File ---
+        if os.path.exists(local_filepath) and not FORCE_UPDATE:
+            try:
+                with open(local_filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
 
-                    if not is_valid_content(content):
-                        print(f"\n[DELETE] Found invalid local file (404 page): {local_filename}")
-                        os.remove(local_filepath)
-                        # 刪除後不 continue，讓它進入下方的下載流程（或者您可以選擇直接 skip）
-                        # 這裡我們選擇重新下載，試試看能不能獲取到正確的
+                if not is_valid_content(content):
+                    print(f"\n[DELETE] Invalid content: {local_filename}")
+                    os.remove(local_filepath)
+                else:
+                    saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
+                    saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
+
+                    if not saved_en or is_brand_name(saved_en):
+                        print(f"\n[RE-FETCH] Missing/Bad EN title: {local_filename}")
+                        need_download = True
                     else:
-                        # 文件存在且有效，讀取信息並跳過下載
-                        print(f"\n[SKIP] Valid file exists: {local_filename}")
-                        saved_en = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
-                        if saved_en:
-                            final_en_title = saved_en.group(1).strip()
+                        print(f"\n[SKIP] Valid cache: {local_filename}")
+                        saved_cn_match = re.search(r'<h1 class="cn-headline">(.*?)</h1>', content)
+                        if saved_cn_match: final_cn_title = saved_cn_match.group(1).strip()
+                        final_en_title = saved_en
+                        need_download = False
 
-                        list_items.append(f'''
-                        <li>
-                            <a href="{os.path.join('articles', local_filename)}" target="_blank">
-                                <div class="article-title-cn">{final_cn_title}</div>
-                                <div class="article-title-en">{final_en_title}</div>
-                                <div class="article-meta">
-                                    <span class="tag">CACHED</span>
-                                    <span class="date">{date_str}</span>
-                                </div>
-                            </a>
-                        </li>
-                        ''')
+                        list_items.append(
+                            f'<li><a href="{os.path.join("articles", local_filename)}" target="_blank"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">{date_str}</span></div></a></li>')
                         processed_articles += 1
                         continue
-                except Exception as e:
-                    print(f"Error reading local file: {e}")
-            else:
-                # 強制更新模式，忽略本地文件
-                pass
+            except:
+                need_download = True
 
-        # --- 2. 下載文章 ---
-        print(f"\n[DOWNLOADING] {cn_title}")
-        bilingual_url = f"{clean_url}/zh-hant/dual/"
+        # --- 2. Download ---
+        if need_download:
+            print(f"\n[DOWNLOADING] {homepage_title_hint}")
+            bilingual_url = f"{clean_url}/zh-hant/dual/"
 
-        try:
-            driver.get(bilingual_url)
-            time.sleep(3)
+            try:
+                driver.get(bilingual_url)
+                time.sleep(3)
 
-            # 檢查標題和內容是否包含 404 關鍵詞
-            page_source = driver.page_source
-            if "Page Not Found" in driver.title or "404" in driver.title or not is_valid_content(page_source):
-                print("  -> Page content invalid (likely 404). Skipping.")
-                continue
-
-            article_soup = BeautifulSoup(page_source, 'html.parser')
-            article_body = article_soup.find('div', class_='article-body') or \
-                           article_soup.find('section', attrs={'name': 'articleBody'}) or \
-                           article_soup.find('article') or \
-                           article_soup.find('main')
-
-            if article_body:
-                # 二次檢查 body 內容是否有效
-                if not is_valid_content(article_body):
-                    print("  -> Article body contains error message. Skipping.")
+                if not is_valid_content(driver.page_source):
+                    print("  -> Page invalid. Skipping.")
                     continue
 
-                # --- 提取英文標題 ---
-                real_en_title = None
+                article_soup = BeautifulSoup(driver.page_source, 'html.parser')
+                article_body = article_soup.find('div', class_='article-body') or \
+                               article_soup.find('section', attrs={'name': 'articleBody'}) or \
+                               article_soup.find('article') or \
+                               article_soup.find('main')
 
-                # 策略 1: 查找特定 class
-                header_tags = article_soup.find_all(['h1', 'span', 'div', 'h2'])
-                for tag in header_tags:
-                    # 檢查 class 是否包含 'en' 且是標題相關的
-                    classes = tag.get('class', [])
-                    if classes and any('en' in c for c in classes) and any(
-                            k in str(classes).lower() for k in ['title', 'headline']):
-                        if tag.text.strip():
-                            real_en_title = tag.text.strip()
-                            break
+                if article_body:
+                    if not is_valid_content(article_body): continue
 
-                # 策略 2: 查找緊跟在中文 H1 後面的英文內容
-                if not real_en_title:
-                    h1_cn = article_soup.find('h1')
-                    if h1_cn:
-                        span_en = h1_cn.find('span', class_='en')
-                        if span_en:
-                            real_en_title = span_en.text.strip()
-                        elif h1_cn.find_next_sibling(['h1', 'h2', 'div', 'span']):
-                            sib = h1_cn.find_next_sibling()
-                            # 簡單的啟發式：如果兄弟節點包含大量英文字符
-                            if sib and len(sib.text) > 5 and re.search(r'[a-zA-Z]', sib.text):
-                                real_en_title = sib.text.strip()
+                    author_str = extract_author(article_soup)
 
-                if real_en_title:
-                    final_en_title = real_en_title
-                    print(f"  -> Found English title: {final_en_title}")
+                    extracted_cn = None
+                    extracted_en = None
 
-                safe_cn_title = html.escape(final_cn_title)
-                safe_en_title = html.escape(final_en_title)
+                    # --- Titles Extraction ---
+                    h1_en_tag = article_soup.find('h1', class_='en-title')
+                    if h1_en_tag: extracted_en = clean_text(h1_en_tag.text)
+                    if not extracted_en:
+                        h1_en_head = article_soup.find('h1', class_='en-headline')
+                        if h1_en_head: extracted_en = clean_text(h1_en_head.text)
 
-                # 生成文章頁
-                article_html = f'''
-                <!DOCTYPE html>
-                <html lang="zh-Hant">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>{safe_cn_title} - NYTimes</title>
-                    <style>
-                        body {{ font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.8; margin: 0; padding: 0; background: #fdfdfd; color: #111; }}
-                        .content-container {{ max-width: 700px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }}
+                    all_h1s = article_soup.find_all('h1')
+                    for h in all_h1s:
+                        txt = clean_text(h.text)
+                        if 'en-title' not in h.get('class', []) and re.search(r'[\u4e00-\u9fff]', txt):
+                            extracted_cn = txt
 
-                        h1.cn-headline {{ font-family: "Pieter", "Georgia", serif; font-weight: 700; margin-bottom: 10px; font-size: 2.2rem; line-height: 1.2; color: #000; }}
-                        h2.en-headline {{ font-family: "Georgia", serif; font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 1.5em; font-size: 1.5rem; color: #555; }}
+                    if not extracted_en:
+                        try:
+                            scripts = article_soup.find_all('script', type='application/ld+json')
+                            for s in scripts:
+                                data = json.loads(s.string)
+                                if isinstance(data, list): data = data[0]
+                                if 'alternativeHeadline' in data:
+                                    alt = clean_text(data['alternativeHeadline'])
+                                    if alt and not is_brand_name(alt):
+                                        extracted_en = alt
+                                        break
+                        except:
+                            pass
 
-                        .meta {{ color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 2.5em; border-top: 1px solid #ddd; padding-top: 1em; text-transform: uppercase; letter-spacing: 0.5px; }}
+                    if not extracted_en:
+                        parts = re.split(r'\s+[-–—]\s+', driver.title)
+                        for part in parts:
+                            p = clean_text(part)
+                            if re.match(r'^[A-Za-z0-9\s:,\.\-\?\'"’]+$', p) and not is_brand_name(p):
+                                extracted_en = p
+                                break
 
-                        .article-paragraph {{ margin-bottom: 2em; }}
-                        p {{ margin: 0 0 1em 0; }}
-                        .en-p {{ color: #222; margin-bottom: 0.8em; font-size: 1.1rem; }}
-                        .cn-p {{ color: #004276; font-weight: 500; font-size: 1.05rem; line-height: 1.8; }}
+                    if extracted_cn: final_cn_title = extracted_cn
+                    if extracted_en: final_en_title = extracted_en
 
-                        figure {{ margin: 2em 0; width: 100%; }}
-                        img {{ max-width: 100%; height: auto; display: block; background: #f0f0f0; }}
-                        figcaption {{ font-size: 0.85rem; color: #888; margin-top: 0.5em; font-family: sans-serif; text-align: center; }}
+                    # --- BODY CLEANUP ---
+                    for link in article_body.find_all('a'):
+                        link.unwrap()
 
-                        .back-link {{ display: inline-block; margin-bottom: 20px; color: #999; text-decoration: none; font-family: sans-serif; font-size: 0.8rem; }}
-                        .back-link:hover {{ text-decoration: underline; color: #333; }}
-                    </style>
-                </head>
-                <body>
-                <div class="content-container">
-                    <a href="../index.html" class="back-link">← Back to Index</a>
+                    header_div = article_body.find('div', class_='article-header')
+                    if header_div: header_div.decompose()
+                    for tag in article_body.find_all(['header', 'h1']): tag.decompose()
+                    for tag in article_body.find_all(class_=re.compile(r'en[-_]?(title|headline)')): tag.decompose()
+                    for tag in article_body.find_all(class_=re.compile(r'byline|meta|timestamp|date')): tag.decompose()
 
-                    <h1 class="cn-headline">{final_cn_title}</h1>
-                    <h2 class="en-headline">{final_en_title}</h2>
+                    # Remove footer noise
+                    trash_texts = ["翻譯：紐約時報中文網", "點擊查看本文英文版", "点击查看本文英文版"]
+                    for trash in trash_texts:
+                        found_texts = article_body.find_all(string=re.compile(re.escape(trash)))
+                        for ft in found_texts:
+                            parent = ft.parent
+                            if parent and parent.name != 'body':
+                                if len(parent.get_text().strip()) < 50:
+                                    parent.decompose()
+                                else:
+                                    ft.replace_with("")
 
-                    <div class="meta">{date_str} • The New York Times</div>
+                    first_child = next(article_body.children, None)
+                    if first_child and hasattr(first_child, 'text') and clean_text(first_child.text) == final_en_title:
+                        first_child.extract()
 
-                    <div class="article-body">
-                        {str(article_body)}
-                    </div>
-                </div>
-                </body></html>'''
+                    safe_cn = html.escape(final_cn_title)
+                    safe_en = html.escape(final_en_title)
+                    safe_auth = html.escape(author_str)
 
-                with open(local_filepath, 'w', encoding='utf-8') as f:
-                    f.write(article_html)
+                    # --- INJECT INTO TEMPLATE ---
+                    # 使用模板替换
+                    article_html = template_content.replace('{{cn_title}}', safe_cn) \
+                        .replace('{{en_title}}', safe_en) \
+                        .replace('{{author}}', safe_auth) \
+                        .replace('{{date}}', date_str) \
+                        .replace('{{content}}', str(article_body)) \
+                        .replace('{{url}}', bilingual_url)
 
-                print(f"  -> Saved: {local_filename}")
+                    with open(local_filepath, 'w', encoding='utf-8') as f:
+                        f.write(article_html)
 
-                list_items.append(f'''
-                <li>
-                    <a href="{os.path.join('articles', local_filename)}" target="_blank">
-                        <div class="article-title-cn">{final_cn_title}</div>
-                        <div class="article-title-en">{final_en_title}</div>
-                        <div class="article-meta">
-                            <span class="tag">NEW</span>
-                            <span class="date">{date_str}</span>
-                        </div>
-                    </a>
-                </li>
-                ''')
-                processed_articles += 1
-            else:
-                print(f"  -> Could not locate article body content.")
+                    print(f"  -> Saved: {local_filename}")
 
-        except Exception as e:
-            print(f"  -> Error fetching article: {e}")
+                    list_items.append(
+                        f'<li><a href="{os.path.join("articles", local_filename)}" target="_blank"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">NEW</span><span class="date">{date_str}</span></div></a></li>')
+                    processed_articles += 1
+                else:
+                    print(f"  -> No body content.")
+            except Exception as e:
+                print(f"  -> Error: {e}")
 
     driver.quit()
 
-    full_index_html = index_html_head + "\n".join(list_items) + """
-            </ul>
-            <footer style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.8rem; font-family: sans-serif; border-top: 1px solid #eee; margin-top: 40px;">
-                <p>Generated locally for personal study.</p>
-            </footer>
-        </div>
-    </body>
-    </html>
-    """
+    full_index = index_html_head + "\n".join(
+        list_items) + "</ul><footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;border-top:1px solid #eee;margin-top:40px;'>Generated locally.</footer></div></body></html>"
 
     if len(list_items) > 0:
         with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(full_index_html)
-        print(f"\nDone! Index updated with {len(list_items)} articles.")
+            f.write(full_index)
+        print(f"\nDone! Processed {len(list_items)} articles.")
     else:
-        print("\nNo valid articles found.")
+        print("\nNo articles.")
 
 
 if __name__ == "__main__":
