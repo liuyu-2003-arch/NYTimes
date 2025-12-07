@@ -9,19 +9,18 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from urllib.parse import urljoin
-from webdriver_manager.chrome import ChromeDriverManager  # 自动管理驱动
+from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURATION ---
 TEMPLATE_FILE = 'article_template.html'
+ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
 
-# 通过环境变量控制是否强制更新，默认为 'False'
-# 在本地想强制刷新时，可以手动改为 True
-FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
+# 设为 True 运行一次以更新所有文章的顶部控制栏样式
+FORCE_UPDATE = False
 
 
 def get_driver():
     chrome_options = Options()
-    # 必须开启 headless 才能在 GitHub Actions 运行
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -33,7 +32,6 @@ def get_driver():
     chrome_options.add_experimental_option('useAutomationExtension', False)
 
     try:
-        # 使用 ChromeDriverManager 自动安装驱动
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
@@ -142,8 +140,15 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # Index Head (Simple enough to keep inline)
-    index_html_head = f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>纽约时报双语版 - NYTimes Bilingual</title><style>:root{{--nyt-black:#121212;--nyt-gray:#727272;--nyt-border:#e2e2e2;--bg-color:#f8f9fa}}body{{font-family:'Georgia','Times New Roman',serif;background-color:var(--bg-color);color:var(--nyt-black);margin:0;padding:0;line-height:1.5}}.app-container{{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 20px rgba(0,0,0,0.05);padding-bottom:40px}}header{{padding:40px 20px 20px 20px;text-align:center;margin-bottom:20px;border-bottom:4px double #000}}.masthead{{font-family:'Georgia',serif;font-size:3rem;margin:0;font-weight:900;letter-spacing:-1px;line-height:1;color:#000;margin-bottom:10px}}.sub-masthead{{font-family:sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:15px;letter-spacing:1px}}.date-line{{border-top:1px solid #ddd;padding:8px 0;font-family:sans-serif;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;text-transform:uppercase}}ul{{list-style:none;padding:0 30px;margin:0}}li{{padding:25px 0;border-bottom:1px solid var(--nyt-border)}}li:last-child{{border-bottom:none}}a{{text-decoration:none;color:inherit;display:block}}.article-title-cn{{font-size:1.4rem;font-weight:700;margin-bottom:4px;line-height:1.3;color:#000}}.article-title-en{{font-size:1.15rem;font-weight:400;margin-bottom:8px;line-height:1.4;color:#444;font-style:italic;font-family:'Georgia',serif}}a:hover .article-title-cn{{color:#00589c}}.article-meta{{font-family:sans-serif;font-size:0.8rem;color:var(--nyt-gray);display:flex;align-items:center}}.tag{{text-transform:uppercase;font-weight:700;font-size:0.7rem;margin-right:10px;color:#000;background:#eee;padding:2px 6px;border-radius:4px}}</style></head><body><div class="app-container"><header><div class="masthead">The New York Times</div><div class="sub-masthead">纽约时报双语版</div><div class="date-line"><span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span><span>Daily Selection</span></div></header><ul>"""
+    # Index HTML Head (包含分页 CSS)
+    index_html_head = f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>纽约时报双语版 - NYTimes Bilingual</title><style>:root{{--nyt-black:#121212;--nyt-gray:#727272;--nyt-border:#e2e2e2;--bg-color:#f8f9fa}}body{{font-family:'Georgia','Times New Roman',serif;background-color:var(--bg-color);color:var(--nyt-black);margin:0;padding:0;line-height:1.5}}.app-container{{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 20px rgba(0,0,0,0.05);padding-bottom:40px}}header{{padding:40px 20px 20px 20px;text-align:center;margin-bottom:20px;border-bottom:4px double #000}}.masthead{{font-family:'Georgia',serif;font-size:3rem;margin:0;font-weight:900;letter-spacing:-1px;line-height:1;color:#000;margin-bottom:10px}}.sub-masthead{{font-family:sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:15px;letter-spacing:1px}}.date-line{{border-top:1px solid #ddd;padding:8px 0;font-family:sans-serif;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;text-transform:uppercase}}ul{{list-style:none;padding:0 30px;margin:0}}li{{padding:25px 0;border-bottom:1px solid var(--nyt-border)}}li:last-child{{border-bottom:none}}a{{text-decoration:none;color:inherit;display:block}}.article-title-cn{{font-size:1.4rem;font-weight:700;margin-bottom:4px;line-height:1.3;color:#000}}.article-title-en{{font-size:1.15rem;font-weight:400;margin-bottom:8px;line-height:1.4;color:#444;font-style:italic;font-family:'Georgia',serif}}a:hover .article-title-cn{{color:#00589c}}.article-meta{{font-family:sans-serif;font-size:0.8rem;color:var(--nyt-gray);display:flex;align-items:center}}.tag{{text-transform:uppercase;font-weight:700;font-size:0.7rem;margin-right:10px;color:#000;background:#eee;padding:2px 6px;border-radius:4px}}
+    /* Pagination Styles */
+    .pagination {{ display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }}
+    .page-link {{ padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333; font-size: 0.9rem; font-family: sans-serif; }}
+    .page-link:hover {{ background-color: #f5f5f5; border-color: #ccc; }}
+    .page-link.disabled {{ color: #ccc; pointer-events: none; border-color: #eee; }}
+    .page-info {{ font-size: 0.9rem; color: #666; font-family: sans-serif; }}
+    </style></head><body><div class="app-container"><header><div class="masthead">The New York Times</div><div class="sub-masthead">纽约时报双语版</div><div class="date-line"><span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span><span>Daily Selection</span></div></header><ul>"""
 
     list_items = []
     unique_links = {}
@@ -177,24 +182,19 @@ def scrape_nytimes():
         final_en_title = ""
         need_download = True
 
-        # --- 1. Check Local File ---
         if os.path.exists(local_filepath) and not FORCE_UPDATE:
             try:
                 with open(local_filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
-
                 if not is_valid_content(content):
                     print(f"\n[DELETE] Invalid content: {local_filename}")
                     os.remove(local_filepath)
                 else:
-                    # Check for bad EN title or trash text in footer
                     saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
                     saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
-
                     has_trash = "翻譯：紐約時報中文網" in content or "点击查看本文英文版" in content
-
                     if not saved_en or is_brand_name(saved_en) or has_trash:
-                        print(f"\n[RE-FETCH] Needs repair (Bad Title/Trash): {local_filename}")
+                        print(f"\n[RE-FETCH] Needs repair: {local_filename}")
                         need_download = True
                     else:
                         print(f"\n[SKIP] Valid cache: {local_filename}")
@@ -209,15 +209,12 @@ def scrape_nytimes():
             except:
                 need_download = True
 
-        # --- 2. Download ---
         if need_download:
             print(f"\n[DOWNLOADING] {homepage_title_hint}")
             bilingual_url = f"{clean_url}/zh-hant/dual/"
-
             try:
                 driver.get(bilingual_url)
                 time.sleep(3)
-
                 if not is_valid_content(driver.page_source):
                     print("  -> Page invalid. Skipping.")
                     continue
@@ -232,11 +229,9 @@ def scrape_nytimes():
                     if not is_valid_content(article_body): continue
 
                     author_str = extract_author(article_soup)
-
                     extracted_cn = None
                     extracted_en = None
 
-                    # --- Titles Extraction ---
                     h1_en_tag = article_soup.find('h1', class_='en-title')
                     if h1_en_tag: extracted_en = clean_text(h1_en_tag.text)
                     if not extracted_en:
@@ -274,16 +269,13 @@ def scrape_nytimes():
                     if extracted_cn: final_cn_title = extracted_cn
                     if extracted_en: final_en_title = extracted_en
 
-                    # --- BODY CLEANUP ---
                     for link in article_body.find_all('a'): link.unwrap()
-
                     header_div = article_body.find('div', class_='article-header')
                     if header_div: header_div.decompose()
                     for tag in article_body.find_all(['header', 'h1']): tag.decompose()
                     for tag in article_body.find_all(class_=re.compile(r'en[-_]?(title|headline)')): tag.decompose()
                     for tag in article_body.find_all(class_=re.compile(r'byline|meta|timestamp|date')): tag.decompose()
 
-                    # Remove footer trash text
                     trash_texts = ["翻譯：紐約時報中文網", "點擊查看本文英文版", "点击查看本文英文版", "查看本文英文版"]
                     for trash in trash_texts:
                         found_texts = article_body.find_all(string=re.compile(re.escape(trash)))
@@ -303,7 +295,6 @@ def scrape_nytimes():
                     safe_en = html.escape(final_en_title)
                     safe_auth = html.escape(author_str)
 
-                    # --- INJECT INTO TEMPLATE ---
                     article_html = template_content.replace('{{cn_title}}', safe_cn) \
                         .replace('{{en_title}}', safe_en) \
                         .replace('{{author}}', safe_auth) \
@@ -326,15 +317,52 @@ def scrape_nytimes():
 
     driver.quit()
 
-    full_index = index_html_head + "\n".join(
-        list_items) + "</ul><footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;border-top:1px solid #eee;margin-top:40px;'>Generated locally.</footer></div></body></html>"
-
+    # --- GENERATE PAGINATED INDEX FILES ---
     if len(list_items) > 0:
-        with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(full_index)
-        print(f"\nDone! Processed {len(list_items)} articles.")
+        # Split into chunks of ARTICLES_PER_PAGE
+        chunks = [list_items[i:i + ARTICLES_PER_PAGE] for i in range(0, len(list_items), ARTICLES_PER_PAGE)]
+        total_pages = len(chunks)
+
+        for i, chunk in enumerate(chunks):
+            page_num = i + 1
+            filename = 'index.html' if page_num == 1 else f'index_{page_num}.html'
+
+            page_list_html = "\n".join(chunk)
+
+            # Pagination Controls Logic
+            prev_html = ""
+            if page_num > 1:
+                prev_file = 'index.html' if page_num == 2 else f'index_{page_num - 1}.html'
+                prev_html = f'<a href="{prev_file}" class="page-link">← Prev</a>'
+            else:
+                prev_html = '<span class="page-link disabled">← Prev</span>'
+
+            next_html = ""
+            if page_num < total_pages:
+                next_file = f'index_{page_num + 1}.html'
+                next_html = f'<a href="{next_file}" class="page-link">Next →</a>'
+            else:
+                next_html = '<span class="page-link disabled">Next →</span>'
+
+            pagination_html = f'''
+            <div class="pagination">
+                {prev_html}
+                <span class="page-info">Page {page_num} of {total_pages}</span>
+                {next_html}
+            </div>
+            '''
+
+            full_html = f"{index_html_head}<ul>{page_list_html}</ul>{pagination_html}<footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;margin-top:20px;'>Generated locally.</footer></div></body></html>"
+
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(full_html)
+
+        print(f"\nDone! Generated {total_pages} pages for {len(list_items)} articles.")
     else:
-        print("\nNo articles.")
+        # Generate empty index if no articles
+        with open('index.html', 'w', encoding='utf-8') as f:
+            f.write(f"{index_html_head}<ul><li>No articles found.</li></ul></div></body></html>")
+        print("\nNo articles found.")
 
 
 if __name__ == "__main__":
