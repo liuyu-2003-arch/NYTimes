@@ -13,9 +13,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURATION ---
 TEMPLATE_FILE = 'article_template.html'
-ARTICLES_PER_PAGE = 10  # 每页显示的文章数量
+ARTICLES_PER_PAGE = 10
 
-# [重要] 第一次运行修复版时，必须设为 True，以重新生成带有语言标签的 HTML
+# [重要] 必须设为 True 运行一次，以重新处理所有 HTML 文件
 FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
@@ -192,7 +192,7 @@ def scrape_nytimes():
                 else:
                     saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
                     saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
-                    # 检查是否有 cn-p 类名，如果没有，说明是旧版文件，需要重新处理
+                    # 检查是否包含正确的 class 标记
                     has_classes = 'cn-p' in content or 'en-p' in content
                     has_trash = "翻譯：紐約時報中文網" in content
 
@@ -275,23 +275,20 @@ def scrape_nytimes():
                     if extracted_en: final_en_title = extracted_en
 
                     # --- 核心修复：注入语言类名 (Class Injection) ---
-                    # 遍历正文段落，区分中英文并添加 class
-                    for p in article_body.find_all('p'):
-                        # 检查段落文字
-                        txt = p.get_text().strip()
+                    # 查找 p 标签 和 div.article-paragraph (纽约时报正文div)
+                    # 将它们汇总处理
+                    target_elements = article_body.find_all('p') + article_body.find_all('div',
+                                                                                         class_='article-paragraph')
+
+                    for tag in target_elements:
+                        txt = tag.get_text().strip()
                         if not txt: continue
 
-                        # 简单的启发式：如果有中文字符，就是中文段落
+                        # 判断是否包含中文
                         if re.search(r'[\u4e00-\u9fff]', txt):
-                            # 使用 class 列表操作避免覆盖原有 class
-                            current_classes = p.get('class', [])
-                            if 'cn-p' not in current_classes:
-                                p['class'] = current_classes + ['cn-p']
+                            tag['class'] = tag.get('class', []) + ['cn-p']
                         else:
-                            # 否则认为是英文
-                            current_classes = p.get('class', [])
-                            if 'en-p' not in current_classes:
-                                p['class'] = current_classes + ['en-p']
+                            tag['class'] = tag.get('class', []) + ['en-p']
 
                     # Body Cleanup
                     for link in article_body.find_all('a'): link.unwrap()
