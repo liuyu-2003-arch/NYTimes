@@ -9,18 +9,22 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from urllib.parse import urljoin
+from webdriver_manager.chrome import ChromeDriverManager  # 自动管理驱动
 
 # --- CONFIGURATION ---
-CHROME_DRIVER_PATH = '/Users/yuliu/PycharmProjects/NYTimes/chromedriver'
 TEMPLATE_FILE = 'article_template.html'
 
-# [重要] 第一次使用新模板时设为 True，更新所有文章样式；之后改回 False 节省时间
-FORCE_UPDATE = False
+# 通过环境变量控制是否强制更新，默认为 'False'
+# 在本地想强制刷新时，可以手动改为 True
+FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
 def get_driver():
     chrome_options = Options()
+    # 必须开启 headless 才能在 GitHub Actions 运行
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
@@ -28,8 +32,9 @@ def get_driver():
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option('useAutomationExtension', False)
 
-    service = Service(CHROME_DRIVER_PATH)
     try:
+        # 使用 ChromeDriverManager 自动安装驱动
+        service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
     except Exception as e:
@@ -38,7 +43,6 @@ def get_driver():
 
 
 def load_template():
-    """读取 HTML 模板文件"""
     if not os.path.exists(TEMPLATE_FILE):
         print(f"Error: Template file '{TEMPLATE_FILE}' not found!")
         return None
@@ -115,10 +119,8 @@ def scrape_nytimes():
     output_dir = 'articles'
     os.makedirs(output_dir, exist_ok=True)
 
-    # 预加载模板
     template_content = load_template()
-    if not template_content:
-        return
+    if not template_content: return
 
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
@@ -140,45 +142,8 @@ def scrape_nytimes():
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
 
-    # Index HTML Head (Index 页面暂时保持硬编码，因为它结构简单)
-    index_html_head = f"""
-    <!DOCTYPE html>
-    <html lang="zh-Hant">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>纽约时报双语版 - NYTimes Bilingual</title>
-        <style>
-            :root {{ --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }}
-            body {{ font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }}
-            .app-container {{ max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 40px; }}
-            header {{ padding: 40px 20px 20px 20px; text-align: center; margin-bottom: 20px; border-bottom: 4px double #000; }}
-            .masthead {{ font-family: 'Georgia', serif; font-size: 3rem; margin: 0; font-weight: 900; letter-spacing: -1px; line-height: 1; color: #000; margin-bottom: 10px; }}
-            .sub-masthead {{ font-family: sans-serif; font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 15px; letter-spacing: 1px; }}
-            .date-line {{ border-top: 1px solid #ddd; padding: 8px 0; font-family: sans-serif; font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; text-transform: uppercase; }}
-            ul {{ list-style: none; padding: 0 30px; margin: 0; }}
-            li {{ padding: 25px 0; border-bottom: 1px solid var(--nyt-border); }}
-            li:last-child {{ border-bottom: none; }}
-            a {{ text-decoration: none; color: inherit; display: block; }}
-            .article-title-cn {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; color: #000; }}
-            .article-title-en {{ font-size: 1.15rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }}
-            a:hover .article-title-cn {{ color: #00589c; }}
-            .article-meta {{ font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }}
-            .tag {{ text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }}
-        </style>
-    </head>
-    <body>
-        <div class="app-container">
-            <header>
-                <div class="masthead">The New York Times</div>
-                <div class="sub-masthead">纽约时报双语版</div>
-                <div class="date-line">
-                    <span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span>
-                    <span>Daily Selection</span>
-                </div>
-            </header>
-            <ul>
-    """
+    # Index Head (Simple enough to keep inline)
+    index_html_head = f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>纽约时报双语版 - NYTimes Bilingual</title><style>:root{{--nyt-black:#121212;--nyt-gray:#727272;--nyt-border:#e2e2e2;--bg-color:#f8f9fa}}body{{font-family:'Georgia','Times New Roman',serif;background-color:var(--bg-color);color:var(--nyt-black);margin:0;padding:0;line-height:1.5}}.app-container{{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 20px rgba(0,0,0,0.05);padding-bottom:40px}}header{{padding:40px 20px 20px 20px;text-align:center;margin-bottom:20px;border-bottom:4px double #000}}.masthead{{font-family:'Georgia',serif;font-size:3rem;margin:0;font-weight:900;letter-spacing:-1px;line-height:1;color:#000;margin-bottom:10px}}.sub-masthead{{font-family:sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:15px;letter-spacing:1px}}.date-line{{border-top:1px solid #ddd;padding:8px 0;font-family:sans-serif;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;text-transform:uppercase}}ul{{list-style:none;padding:0 30px;margin:0}}li{{padding:25px 0;border-bottom:1px solid var(--nyt-border)}}li:last-child{{border-bottom:none}}a{{text-decoration:none;color:inherit;display:block}}.article-title-cn{{font-size:1.4rem;font-weight:700;margin-bottom:4px;line-height:1.3;color:#000}}.article-title-en{{font-size:1.15rem;font-weight:400;margin-bottom:8px;line-height:1.4;color:#444;font-style:italic;font-family:'Georgia',serif}}a:hover .article-title-cn{{color:#00589c}}.article-meta{{font-family:sans-serif;font-size:0.8rem;color:var(--nyt-gray);display:flex;align-items:center}}.tag{{text-transform:uppercase;font-weight:700;font-size:0.7rem;margin-right:10px;color:#000;background:#eee;padding:2px 6px;border-radius:4px}}</style></head><body><div class="app-container"><header><div class="masthead">The New York Times</div><div class="sub-masthead">纽约时报双语版</div><div class="date-line"><span>{datetime.date.today().strftime("%A, %B %d, %Y")}</span><span>Daily Selection</span></div></header><ul>"""
 
     list_items = []
     unique_links = {}
@@ -222,11 +187,14 @@ def scrape_nytimes():
                     print(f"\n[DELETE] Invalid content: {local_filename}")
                     os.remove(local_filepath)
                 else:
+                    # Check for bad EN title or trash text in footer
                     saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
                     saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
 
-                    if not saved_en or is_brand_name(saved_en):
-                        print(f"\n[RE-FETCH] Missing/Bad EN title: {local_filename}")
+                    has_trash = "翻譯：紐約時報中文網" in content or "点击查看本文英文版" in content
+
+                    if not saved_en or is_brand_name(saved_en) or has_trash:
+                        print(f"\n[RE-FETCH] Needs repair (Bad Title/Trash): {local_filename}")
                         need_download = True
                     else:
                         print(f"\n[SKIP] Valid cache: {local_filename}")
@@ -234,7 +202,6 @@ def scrape_nytimes():
                         if saved_cn_match: final_cn_title = saved_cn_match.group(1).strip()
                         final_en_title = saved_en
                         need_download = False
-
                         list_items.append(
                             f'<li><a href="{os.path.join("articles", local_filename)}" target="_blank"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">{date_str}</span></div></a></li>')
                         processed_articles += 1
@@ -308,8 +275,7 @@ def scrape_nytimes():
                     if extracted_en: final_en_title = extracted_en
 
                     # --- BODY CLEANUP ---
-                    for link in article_body.find_all('a'):
-                        link.unwrap()
+                    for link in article_body.find_all('a'): link.unwrap()
 
                     header_div = article_body.find('div', class_='article-header')
                     if header_div: header_div.decompose()
@@ -317,8 +283,8 @@ def scrape_nytimes():
                     for tag in article_body.find_all(class_=re.compile(r'en[-_]?(title|headline)')): tag.decompose()
                     for tag in article_body.find_all(class_=re.compile(r'byline|meta|timestamp|date')): tag.decompose()
 
-                    # Remove footer noise
-                    trash_texts = ["翻譯：紐約時報中文網", "點擊查看本文英文版", "点击查看本文英文版"]
+                    # Remove footer trash text
+                    trash_texts = ["翻譯：紐約時報中文網", "點擊查看本文英文版", "点击查看本文英文版", "查看本文英文版"]
                     for trash in trash_texts:
                         found_texts = article_body.find_all(string=re.compile(re.escape(trash)))
                         for ft in found_texts:
@@ -338,7 +304,6 @@ def scrape_nytimes():
                     safe_auth = html.escape(author_str)
 
                     # --- INJECT INTO TEMPLATE ---
-                    # 使用模板替换
                     article_html = template_content.replace('{{cn_title}}', safe_cn) \
                         .replace('{{en_title}}', safe_en) \
                         .replace('{{author}}', safe_auth) \
