@@ -3,101 +3,445 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>纽约时报双语版 - NYTimes Bilingual</title>
+    <title>The New York Times - Bilingual Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
-        :root { --nyt-black: #121212; --nyt-gray: #727272; --nyt-border: #e2e2e2; --bg-color: #f8f9fa; }
-        body { font-family: 'Georgia', 'Times New Roman', serif; background-color: var(--bg-color); color: var(--nyt-black); margin: 0; padding: 0; line-height: 1.5; }
-        .app-container { max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 40px; }
-        header { padding: 40px 20px 20px 20px; text-align: center; margin-bottom: 20px; border-bottom: 4px double #000; }
-        .masthead { font-family: 'Georgia', serif; font-size: 3rem; margin: 0; font-weight: 900; letter-spacing: -1px; line-height: 1; color: #000; margin-bottom: 10px; }
-        .sub-masthead { font-family: sans-serif; font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 15px; letter-spacing: 1px; }
-        .date-line { border-top: 1px solid #ddd; padding: 8px 0; font-family: sans-serif; font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; text-transform: uppercase; }
-        ul { list-style: none; padding: 0 30px; margin: 0; min-height: 500px; }
-        li { padding: 25px 0; border-bottom: 1px solid var(--nyt-border); animation: fadeIn 0.5s ease; }
-        li:last-child { border-bottom: none; }
-        a { text-decoration: none; color: inherit; display: block; }
-        /* 中文标题样式 */
-        .article-title-cn { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; color: #000; }
-        /* 英文标题样式 - 保持在中文下方 */
-        .article-title-en { font-size: 1.15rem; font-weight: 400; margin-bottom: 8px; line-height: 1.4; color: #444; font-style: italic; font-family: 'Georgia', serif; }
-        a:hover .article-title-cn { color: #00589c; }
-        .article-meta { font-family: sans-serif; font-size: 0.8rem; color: var(--nyt-gray); display: flex; align-items: center; }
-        .tag { text-transform: uppercase; font-weight: 700; font-size: 0.7rem; margin-right: 10px; color: #000; background: #eee; padding: 2px 6px; border-radius: 4px; }
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-        .page-btn { padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-family: sans-serif; font-size: 0.9rem; }
-        .page-btn:hover:not(:disabled) { background-color: #f5f5f5; border-color: #ccc; }
-        .page-btn:disabled { color: #ccc; cursor: default; border-color: #eee; }
-        .page-info { font-size: 0.9rem; color: #666; font-family: sans-serif; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #loading { text-align: center; padding: 50px; color: #999; font-family: sans-serif; }
+        /* --- 基础设定 --- */
+        :root {
+            --nyt-black: #121212;
+            --nyt-gray: #5a5a5a;
+            --nyt-light-gray: #e2e2e2;
+            --bg-color: #ffffff;
+            --accent-color: #326891;
+            --font-serif: 'Georgia', 'Times New Roman', serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-serif);
+            background-color: #f8f9fa;
+            color: var(--nyt-black);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- 容器 --- */
+        .app-container {
+            max-width: 740px; /* 稍微收窄，更有报纸感 */
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            border-left: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+            padding-bottom: 60px;
+        }
+
+        /* --- 头部区域 --- */
+        header {
+            padding: 40px 20px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e2e2;
+        }
+
+        .masthead {
+            font-family: 'UnifrakturMaguntia', var(--font-serif); /* 备用字体 */
+            font-size: 2.8rem;
+            margin: 0 0 5px 0;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #000;
+        }
+
+        .sub-masthead {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        /* --- 工具栏 (日期与搜索) --- */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0 0 0;
+            border-top: 1px double #000;
+            border-top-width: 4px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .date-display {
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        /* 输入框样式 */
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="date"] {
+            font-family: var(--font-sans);
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"] {
+            width: 160px;
+        }
+
+        input:focus {
+            border-color: #000;
+        }
+
+        .icon-search {
+            position: absolute;
+            right: 8px;
+            color: #999;
+            pointer-events: none;
+            font-size: 0.8rem;
+        }
+
+        .clear-btn {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 5px;
+            text-decoration: underline;
+        }
+
+        /* --- 文章列表 --- */
+        ul {
+            list-style: none;
+            padding: 0 20px;
+            margin: 0;
+            min-height: 400px;
+        }
+
+        li {
+            padding: 24px 0;
+            border-bottom: 1px solid var(--nyt-light-gray);
+            transition: background-color 0.2s ease;
+        }
+
+        li:hover {
+            background-color: #fafafa;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .article-title-cn {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            color: #000;
+        }
+
+        .article-title-en {
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #444;
+            font-style: italic;
+        }
+
+        a:hover .article-title-cn {
+            color: var(--accent-color);
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 2px;
+        }
+
+        .article-meta {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag {
+            font-weight: 700;
+            color: #000;
+            border: 1px solid #ddd;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- 分页 --- */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--nyt-light-gray);
+            font-family: var(--font-sans);
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+
+        .page-btn:disabled {
+            color: #ccc;
+            border-color: #eee;
+            cursor: default;
+        }
+
+        #page-info {
+            color: #666;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- 底部 & 状态 --- */
+        #loading {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            font-family: var(--font-sans);
+            font-style: italic;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-family: var(--font-sans);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            font-size: 0.75rem;
+            font-family: var(--font-sans);
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            input[type="text"] {
+                flex-grow: 1;
+                width: auto;
+            }
+            .masthead {
+                font-size: 2.2rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <header>
             <div class="masthead">The New York Times</div>
-            <div class="sub-masthead">纽约时报双语版</div>
-            <div class="date-line">
-                <span id="current-date"></span>
-                <span>Daily Selection</span>
+            <div class="sub-masthead">Bilingual Archive</div>
+
+            <div class="toolbar">
+                <div class="date-display" id="header-date">Loading...</div>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="text" id="search-input" placeholder="Search title..." oninput="applyFilters()">
+                        <span class="icon-search">🔍</span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="date" id="date-picker" onchange="applyFilters()">
+                    </div>
+
+                    <button id="reset-btn" class="clear-btn" style="display:none;" onclick="resetFilters()">Reset</button>
+                </div>
             </div>
         </header>
 
-        <div id="loading">Loading articles...</div>
+        <div id="loading">Loading library...</div>
         <ul id="article-list"></ul>
 
-        <div class="pagination">
-            <button id="prev-btn" class="page-btn" onclick="changePage(-1)">← Prev</button>
-            <span id="page-info" class="page-info">Page 1</span>
-            <button id="next-btn" class="page-btn" onclick="changePage(1)">Next →</button>
+        <div class="pagination" id="pagination-container">
+            <button id="prev-btn" class="page-btn" onclick="changePage(-1)">Previous</button>
+            <span id="page-info"></span>
+            <button id="next-btn" class="page-btn" onclick="changePage(1)">Next</button>
         </div>
 
-        <footer style='text-align:center;padding:40px;color:#999;font-size:0.8rem;margin-top:20px;'>
-            Generated locally • <a href="https://github.com/liuyu-2003/NYTimes" target="_blank" style="display:inline;color:#999;text-decoration:underline;">GitHub</a>
+        <footer>
+            Generated locally • Archives from NYTimes.com
         </footer>
     </div>
 
     <script>
         const ARTICLES_PER_PAGE = 10;
-        let allArticles = [];
+        let allArticles = [];       // 原始数据
+        let filteredArticles = [];  // 经过筛选的数据
         let currentPage = 1;
 
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', options);
+        // 设置顶部日期显示
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
+        function updateHeaderDate(dateString = null) {
+            const dateObj = dateString ? new Date(dateString) : new Date();
+            // 修正时区问题：如果直接解析 YYYY-MM-DD，JS可能会因为时区前推一天。
+            // 这里简单处理：如果传了 dateString，手动解析
+            if(dateString) {
+                const parts = dateString.split('-');
+                const safeDate = new Date(parts[0], parts[1]-1, parts[2]);
+                document.getElementById('header-date').textContent = safeDate.toLocaleDateString('en-US', dateOptions);
+            } else {
+                document.getElementById('header-date').textContent = dateObj.toLocaleDateString('en-US', dateOptions);
+            }
+        }
+        updateHeaderDate(); // 初始化显示今天
+
+        // 核心逻辑：加载文章
         async function loadArticles() {
             try {
                 const response = await fetch(`articles.json?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Failed to load articles.json');
                 allArticles = await response.json();
 
-                // 按日期排序 (最新的在前)
+                // 默认按日期倒序
                 allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // 初始状态：未筛选
+                filteredArticles = [...allArticles];
 
                 document.getElementById('loading').style.display = 'none';
                 renderPage();
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerHTML = 'Error loading articles.<br>Please ensure <b>articles.json</b> exists.';
+                document.getElementById('loading').innerHTML = 'Error loading content.<br>Please ensure <b>articles.json</b> exists.';
             }
         }
 
+        // 核心逻辑：筛选 (搜索 + 日期)
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const selectedDate = document.getElementById('date-picker').value;
+            const resetBtn = document.getElementById('reset-btn');
+
+            // 显示/隐藏重置按钮
+            if (searchTerm || selectedDate) {
+                resetBtn.style.display = 'inline-block';
+            } else {
+                resetBtn.style.display = 'none';
+            }
+
+            // 更新顶部日期文字
+            if (selectedDate) {
+                updateHeaderDate(selectedDate);
+            } else {
+                updateHeaderDate(); // 回到今天
+            }
+
+            // 执行筛选
+            filteredArticles = allArticles.filter(article => {
+                // 1. 日期匹配 (如果有选日期)
+                const matchDate = selectedDate ? (article.date === selectedDate) : true;
+
+                // 2. 关键词匹配 (如果有输入)
+                let matchSearch = true;
+                if (searchTerm) {
+                    const cn = article.title_cn ? article.title_cn.toLowerCase() : "";
+                    const en = article.title_en ? article.title_en.toLowerCase() : "";
+                    matchSearch = cn.includes(searchTerm) || en.includes(searchTerm);
+                }
+
+                return matchDate && matchSearch;
+            });
+
+            currentPage = 1;
+            renderPage();
+        }
+
+        // 重置所有筛选
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('date-picker').value = '';
+            applyFilters();
+        }
+
+        // 渲染列表
         function renderPage() {
             const list = document.getElementById('article-list');
+            const pagination = document.getElementById('pagination-container');
             list.innerHTML = '';
 
-            const start = (currentPage - 1) * ARTICLES_PER_PAGE;
-            const end = start + ARTICLES_PER_PAGE;
-            const pageItems = allArticles.slice(start, end);
-
-            if (pageItems.length === 0) {
-                list.innerHTML = '<li style="text-align:center;border:none;">No articles found.</li>';
+            if (filteredArticles.length === 0) {
+                list.innerHTML = `<div class="no-results">No articles found matching your criteria.</div>`;
+                pagination.style.display = 'none';
                 return;
             }
 
+            pagination.style.display = 'flex';
+
+            const start = (currentPage - 1) * ARTICLES_PER_PAGE;
+            const end = start + ARTICLES_PER_PAGE;
+            const pageItems = filteredArticles.slice(start, end);
+
             pageItems.forEach(article => {
                 const li = document.createElement('li');
-                // 这里的 HTML 结构确保了英文标题在中文标题下方
                 li.innerHTML = `
                     <a href="${article.url}">
                         <div class="article-title-cn">${article.title_cn}</div>
@@ -121,14 +465,14 @@
         }
 
         function updatePagination() {
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE) || 1;
-            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE) || 1;
+            document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
             document.getElementById('prev-btn').disabled = currentPage === 1;
             document.getElementById('next-btn').disabled = currentPage === totalPages;
         }
 
         function changePage(delta) {
-            const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
+            const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
             const newPage = currentPage + delta;
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
@@ -136,6 +480,7 @@
             }
         }
 
+        // 启动
         loadArticles();
     </script>
 </body>
