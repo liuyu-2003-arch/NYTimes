@@ -48,7 +48,6 @@ def load_template():
         return None
     with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
-    # 修复模板中的首页链接，使其指向根目录
     content = content.replace('href="index.html"', f'href="{HOME_URL}"')
     content = content.replace('href="../index.html"', f'href="{HOME_URL}"')
     content = content.replace('href="./index.html"', f'href="{HOME_URL}"')
@@ -103,7 +102,7 @@ def is_valid_content(soup_or_text):
     return True
 
 
-# --- 新增功能：扫描所有本地文件并重建 articles.json ---
+# --- 核心更新：更智能的 JSON 索引构建 ---
 def rebuild_json_index():
     print("\n[INDEXING] Scanning local files to rebuild articles.json...")
     articles_data = []
@@ -112,57 +111,53 @@ def rebuild_json_index():
         print("No articles directory found.")
         return
 
-    # 遍历 articles 目录
     for root, dirs, files in os.walk(ARTICLES_DIR):
         for file in files:
             if file.endswith(".html"):
                 full_path = os.path.join(root, file)
 
-                # 读取文件提取元数据
                 try:
                     with open(full_path, 'r', encoding='utf-8') as f:
                         content = f.read()
 
                     soup = BeautifulSoup(content, 'html.parser')
 
-                    # 提取标题 (cn)
+                    # 1. 提取中文标题
                     cn_title = ""
                     h1_cn = soup.find('h1', class_='cn-headline') or soup.find('div', class_='article-title-cn')
                     if h1_cn: cn_title = clean_text(h1_cn.get_text())
 
-                    # 提取标题 (en)
+                    # 2. 提取英文标题 (增加了对 h2 的支持，兼容旧文件)
                     en_title = ""
-                    h1_en = soup.find('h1', class_='en-headline') or soup.find('div', class_='article-title-en')
-                    if h1_en: en_title = clean_text(h1_en.get_text())
+                    h_en = soup.find('h1', class_='en-headline') or \
+                           soup.find('h2', class_='en-headline') or \
+                           soup.find('div', class_='article-title-en') or \
+                           soup.find('h1', class_='en-title')
 
-                    # 提取日期 (尝试从路径或内容提取)
-                    # 路径格式通常为: articles/YYYYMMDD/slug.html
+                    if h_en: en_title = clean_text(h_en.get_text())
+
+                    # 3. 提取日期
                     path_parts = os.path.normpath(full_path).split(os.sep)
                     date_str = ""
-
-                    # 尝试从文件夹名称获取日期 (假设文件夹名是 YYYYMMDD)
                     for part in path_parts:
                         if re.match(r'^\d{8}$', part):
                             date_str = f"{part[:4]}-{part[4:6]}-{part[6:]}"
                             break
 
-                    # 如果路径没日期，尝试从文件内容获取
                     if not date_str:
                         date_meta = soup.find('meta', attrs={'name': 'date'})
                         if date_meta: date_str = date_meta.get('content')
 
                     if not date_str:
-                        # 最后手段：文件修改时间
                         ts = os.path.getmtime(full_path)
                         date_str = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
 
-                    # 生成相对 Web 路径 (必须是正斜杠)
                     web_path = os.path.relpath(full_path, start='.').replace('\\', '/')
 
                     if cn_title:
                         articles_data.append({
                             "title_cn": cn_title,
-                            "title_en": en_title,
+                            "title_en": en_title,  # 这里确保保存了英文标题
                             "url": web_path,
                             "date": date_str,
                             "tag": "ARCHIVE"
@@ -170,10 +165,8 @@ def rebuild_json_index():
                 except Exception as e:
                     print(f"Skipping broken file {file}: {e}")
 
-    # 按日期倒序排序
     articles_data.sort(key=lambda x: x['date'], reverse=True)
 
-    # 保存 JSON
     with open(JSON_DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(articles_data, f, ensure_ascii=False, indent=2)
 
@@ -188,7 +181,7 @@ def scrape_nytimes():
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
     today_str = datetime.date.today().strftime("%Y-%m-%d")
-    today_folder = today_str.replace('-', '')  # YYYYMMDD
+    today_folder = today_str.replace('-', '')
 
     driver = get_driver()
     if not driver: return
@@ -215,7 +208,7 @@ def scrape_nytimes():
         title_hint = clean_text(link.text)
 
         if not (href and title_hint and article_pattern.search(href)): continue
-        if any(x in href for x in ['/2023', '/2024', '/2022']): continue  # 可选：过滤旧年份
+        if any(x in href for x in ['/2023', '/2024', '/2022']): continue
         if href in unique_links: continue
         if 'cn.nytimes.com' in href and not href.startswith('http'): continue
 
@@ -224,7 +217,6 @@ def scrape_nytimes():
         clean_url = absolute_url.split('?')[0].rstrip('/')
         if clean_url.endswith('/zh-hant'): clean_url = clean_url[:-len('/zh-hant')]
 
-        # Date Extraction & Path Setup
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
         if date_match:
             article_date = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}"
@@ -233,7 +225,6 @@ def scrape_nytimes():
             article_date = today_str
             article_folder = today_folder
 
-        # 目标文件夹
         target_dir = os.path.join(ARTICLES_DIR, article_folder)
         os.makedirs(target_dir, exist_ok=True)
 
@@ -241,9 +232,7 @@ def scrape_nytimes():
         local_filename = f"{slug}.html"
         local_filepath = os.path.join(target_dir, local_filename)
 
-        # 检查是否已存在
         if os.path.exists(local_filepath) and not FORCE_UPDATE:
-            # 简单检查文件有效性
             try:
                 with open(local_filepath, 'r', encoding='utf-8') as f:
                     if is_valid_content(f.read()) and HOME_URL in f.read():
@@ -252,7 +241,6 @@ def scrape_nytimes():
             except:
                 pass
 
-        # 下载逻辑
         print(f"\n[DOWNLOADING] {title_hint}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
         try:
@@ -270,16 +258,13 @@ def scrape_nytimes():
                            article_soup.find('main')
 
             if article_body and is_valid_content(article_body):
-                # 提取元数据
                 author_str = extract_author(article_soup)
                 final_cn = title_hint
                 final_en = ""
 
-                # 尝试获取英文标题
                 h1_en = article_soup.find('h1', class_='en-title') or article_soup.find('h1', class_='en-headline')
                 if h1_en: final_en = clean_text(h1_en.text)
 
-                # 如果没找到英文标题，尝试从网页标题分割
                 if not final_en:
                     parts = re.split(r'\s+[-–—]\s+', driver.title)
                     for p in parts:
@@ -288,7 +273,6 @@ def scrape_nytimes():
                             final_en = p
                             break
 
-                # 注入 class
                 target_elements = article_body.find_all('p') + article_body.find_all('div', class_='article-paragraph')
                 for tag in target_elements:
                     txt = tag.get_text().strip()
@@ -298,7 +282,6 @@ def scrape_nytimes():
                     else:
                         tag['class'] = tag.get('class', []) + ['en-p']
 
-                # 清理垃圾元素
                 for link in article_body.find_all('a'): link.unwrap()
                 for tag in article_body.find_all(['header', 'h1']): tag.decompose()
                 trash_texts = ["翻譯：紐約時報中文網", "點擊查看本文英文版", "点击查看本文英文版"]
@@ -306,7 +289,6 @@ def scrape_nytimes():
                     for ft in article_body.find_all(string=re.compile(re.escape(trash))):
                         if ft.parent: ft.parent.decompose()
 
-                # 生成 HTML
                 safe_cn = html.escape(final_cn)
                 safe_en = html.escape(final_en)
                 safe_auth = html.escape(author_str)
@@ -326,8 +308,6 @@ def scrape_nytimes():
             print(f"  -> Error: {e}")
 
     driver.quit()
-
-    # 最后一步：重建索引 JSON
     rebuild_json_index()
 
 
