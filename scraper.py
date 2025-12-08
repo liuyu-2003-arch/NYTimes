@@ -170,18 +170,32 @@ def scrape_nytimes():
         clean_url = absolute_url.split('?')[0].rstrip('/')
         if clean_url.endswith('/zh-hant'): clean_url = clean_url[:-len('/zh-hant')]
 
+        # Date Extraction
         date_match = re.search(r'/(\d{4})(\d{2})(\d{2})/', clean_url)
         date_str = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else today_str
 
+        # --- PATH CONFIGURATION START ---
+        # 1. Generate Date Folder Name (YYYYMMDD)
+        date_folder = date_str.replace('-', '')
+
+        # 2. Create Sub-directory
+        current_save_dir = os.path.join(output_dir, date_folder)
+        os.makedirs(current_save_dir, exist_ok=True)
+
+        # 3. Define File Paths
         slug = clean_url.split('/')[-1]
         local_filename = f"{slug}.html"
-        local_filepath = os.path.join(output_dir, local_filename)
+        local_filepath = os.path.join(current_save_dir, local_filename)
+
+        # 4. Define Web Path (for href in index.html) - Force forward slash
+        web_path = f"articles/{date_folder}/{local_filename}"
+        # --- PATH CONFIGURATION END ---
 
         final_cn_title = homepage_title_hint
         final_en_title = ""
         need_download = True
 
-        # Check Local File
+        # Check Local File (New Location)
         if os.path.exists(local_filepath) and not FORCE_UPDATE:
             try:
                 with open(local_filepath, 'r', encoding='utf-8') as f:
@@ -192,7 +206,7 @@ def scrape_nytimes():
                 else:
                     saved_en_match = re.search(r'<h2 class="en-headline">(.*?)</h2>', content)
                     saved_en = saved_en_match.group(1).strip() if saved_en_match else ""
-                    # 检查是否包含正确的 class 标记
+
                     has_classes = 'cn-p' in content or 'en-p' in content
                     has_trash = "翻譯：紐約時報中文網" in content
 
@@ -205,8 +219,9 @@ def scrape_nytimes():
                         if saved_cn_match: final_cn_title = saved_cn_match.group(1).strip()
                         final_en_title = saved_en
                         need_download = False
+                        # Use web_path for the link
                         list_items.append(
-                            f'<li><a href="{os.path.join("articles", local_filename)}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">{date_str}</span></div></a></li>')
+                            f'<li><a href="{web_path}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">CACHED</span><span class="date">{date_str}</span></div></a></li>')
                         processed_articles += 1
                         continue
             except:
@@ -274,23 +289,18 @@ def scrape_nytimes():
                     if extracted_cn: final_cn_title = extracted_cn
                     if extracted_en: final_en_title = extracted_en
 
-                    # --- 核心修复：注入语言类名 (Class Injection) ---
-                    # 查找 p 标签 和 div.article-paragraph (纽约时报正文div)
-                    # 将它们汇总处理
+                    # Class Injection
                     target_elements = article_body.find_all('p') + article_body.find_all('div',
                                                                                          class_='article-paragraph')
-
                     for tag in target_elements:
                         txt = tag.get_text().strip()
                         if not txt: continue
-
-                        # 判断是否包含中文
                         if re.search(r'[\u4e00-\u9fff]', txt):
                             tag['class'] = tag.get('class', []) + ['cn-p']
                         else:
                             tag['class'] = tag.get('class', []) + ['en-p']
 
-                    # Body Cleanup
+                    # Cleanup
                     for link in article_body.find_all('a'): link.unwrap()
                     header_div = article_body.find('div', class_='article-header')
                     if header_div: header_div.decompose()
@@ -324,13 +334,15 @@ def scrape_nytimes():
                         .replace('{{content}}', str(article_body)) \
                         .replace('{{url}}', bilingual_url)
 
+                    # Save to new structured path
                     with open(local_filepath, 'w', encoding='utf-8') as f:
                         f.write(article_html)
 
-                    print(f"  -> Saved: {local_filename}")
+                    print(f"  -> Saved: {local_filename} in {date_folder}")
 
+                    # Use web_path for the link
                     list_items.append(
-                        f'<li><a href="{os.path.join("articles", local_filename)}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">NEW</span><span class="date">{date_str}</span></div></a></li>')
+                        f'<li><a href="{web_path}"><div class="article-title-cn">{final_cn_title}</div><div class="article-title-en">{final_en_title}</div><div class="article-meta"><span class="tag">NEW</span><span class="date">{date_str}</span></div></a></li>')
                     processed_articles += 1
                 else:
                     print(f"  -> No body content.")
