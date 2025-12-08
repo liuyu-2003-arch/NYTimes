@@ -18,7 +18,7 @@ JSON_DB_FILE = 'articles.json'
 HOME_URL = "https://nytimes.324893.xyz"
 
 # [重要] 设为 True 会强制重新下载并覆盖所有文章（建议设为 True 运行一次以修复现有文章的重复问题）
-FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'False'
+FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
 def get_driver():
