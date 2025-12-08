@@ -17,8 +17,8 @@ ARTICLES_DIR = 'articles'
 JSON_DB_FILE = 'articles.json'
 HOME_URL = "https://nytimes.324893.xyz"
 
-# [重要] 必须设为 True 运行一次，以重新处理所有 HTML 文件
-FORCE_UPDATE = False
+# [重要] 除非你需要强制刷新所有文件，否则保持为 False
+FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
 
 
 def get_driver():
@@ -102,7 +102,7 @@ def is_valid_content(soup_or_text):
     return True
 
 
-# --- 核心更新：更智能的 JSON 索引构建 ---
+# --- 重建索引 ---
 def rebuild_json_index():
     print("\n[INDEXING] Scanning local files to rebuild articles.json...")
     articles_data = []
@@ -117,17 +117,16 @@ def rebuild_json_index():
                 full_path = os.path.join(root, file)
 
                 try:
+                    # 快速读取，不做深度解析以节省时间，只提取必要信息
                     with open(full_path, 'r', encoding='utf-8') as f:
                         content = f.read()
 
                     soup = BeautifulSoup(content, 'html.parser')
 
-                    # 1. 提取中文标题
                     cn_title = ""
                     h1_cn = soup.find('h1', class_='cn-headline') or soup.find('div', class_='article-title-cn')
                     if h1_cn: cn_title = clean_text(h1_cn.get_text())
 
-                    # 2. 提取英文标题 (增加了对 h2 的支持，兼容旧文件)
                     en_title = ""
                     h_en = soup.find('h1', class_='en-headline') or \
                            soup.find('h2', class_='en-headline') or \
@@ -136,7 +135,7 @@ def rebuild_json_index():
 
                     if h_en: en_title = clean_text(h_en.get_text())
 
-                    # 3. 提取日期
+                    # 日期提取
                     path_parts = os.path.normpath(full_path).split(os.sep)
                     date_str = ""
                     for part in path_parts:
@@ -157,7 +156,7 @@ def rebuild_json_index():
                     if cn_title:
                         articles_data.append({
                             "title_cn": cn_title,
-                            "title_en": en_title,  # 这里确保保存了英文标题
+                            "title_en": en_title,
                             "url": web_path,
                             "date": date_str,
                             "tag": "ARCHIVE"
@@ -232,15 +231,14 @@ def scrape_nytimes():
         local_filename = f"{slug}.html"
         local_filepath = os.path.join(target_dir, local_filename)
 
+        # --- 核心修改：极速跳过逻辑 ---
+        # 只要文件存在且大小大于0，直接跳过，不再进行任何内容检查
         if os.path.exists(local_filepath) and not FORCE_UPDATE:
-            try:
-                with open(local_filepath, 'r', encoding='utf-8') as f:
-                    if is_valid_content(f.read()) and HOME_URL in f.read():
-                        print(f"[SKIP] Exists: {local_filename}")
-                        continue
-            except:
-                pass
+            if os.path.getsize(local_filepath) > 0:
+                print(f"[SKIP] Exists: {local_filename}")
+                continue
 
+        # 如果没跳过，才开始下载
         print(f"\n[DOWNLOADING] {title_hint}")
         bilingual_url = f"{clean_url}/zh-hant/dual/"
         try:
