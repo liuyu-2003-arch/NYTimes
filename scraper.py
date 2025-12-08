@@ -18,7 +18,7 @@ JSON_DB_FILE = 'articles.json'
 HOME_URL = "https://nytimes.324893.xyz"
 
 # [重要] 必须设为 True 运行一次，以重新处理所有 HTML 文件
-FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
+FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'False'
 
 
 def get_driver():
