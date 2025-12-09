@@ -27,7 +27,6 @@
             line-height: 1.6;
         }
 
-        /* --- 容器 --- */
         .app-container {
             max-width: 740px;
             margin: 0 auto;
@@ -38,7 +37,6 @@
             padding-bottom: 60px;
         }
 
-        /* --- 头部区域 --- */
         header {
             padding: 40px 20px 20px;
             text-align: center;
@@ -81,33 +79,35 @@
             font-weight: 700;
             font-size: 0.85rem;
             color: #333;
+            min-width: 150px;
+            text-align: left;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            /* [修改点] 增加间距：从 10px 改为 30px */
+            gap: 30px;
             align-items: center;
             flex-grow: 1;
             justify-content: flex-end;
         }
 
-        /* 输入框通用样式 */
         .input-group {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        /* 搜索框 */
         input[type="text"] {
             font-family: var(--font-sans);
             padding: 8px 10px;
-            padding-right: 30px; /* 为图标留空间 */
+            padding-right: 30px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 0.85rem;
             outline: none;
-            width: 160px;
+            width: 100%;
+            box-sizing: border-box;
             transition: border-color 0.2s;
         }
         input[type="text"]:focus { border-color: #000; }
@@ -120,7 +120,7 @@
             font-size: 0.8rem;
         }
 
-        /* --- 日期选择器美化 (核心修改) --- */
+        /* --- 日期选择器 --- */
         .date-wrapper {
             position: relative;
             display: inline-flex;
@@ -129,39 +129,34 @@
             background: #fff;
             border: 1px solid #ccc;
             border-radius: 4px;
-            height: 34px; /* 与搜索框高度对齐 */
+            height: 34px;
             min-width: 110px;
-            overflow: hidden;
             cursor: pointer;
             transition: border-color 0.2s;
+            user-select: none;
         }
 
         .date-wrapper:hover {
             border-color: #666;
+            background-color: #f9f9f9;
         }
 
-        /* 显示的文字标签 */
         .date-label {
             font-family: var(--font-sans);
             font-size: 0.85rem;
             color: #555;
             padding: 0 10px;
-            white-space: nowrap;
-            pointer-events: none; /* 让点击穿透到 input */
-            z-index: 1;
+            pointer-events: none;
         }
 
-        /* 真正的日期输入框：透明覆盖 */
         #date-picker {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0; /* 完全透明 */
-            cursor: pointer;
-            z-index: 2; /* 在最上层 */
-            -webkit-appearance: none; /* iOS 兼容 */
+            width: 0;
+            height: 0;
+            opacity: 0;
+            border: none;
+            padding: 0;
+            margin: 0;
         }
 
         .clear-btn {
@@ -176,7 +171,6 @@
             white-space: nowrap;
         }
 
-        /* --- 文章列表 --- */
         ul {
             list-style: none;
             padding: 0 20px;
@@ -190,19 +184,10 @@
             transition: background-color 0.2s ease;
         }
 
-        li:hover {
-            background-color: #fafafa;
-        }
+        li:hover { background-color: #fafafa; }
+        li:last-child { border-bottom: none; }
 
-        li:last-child {
-            border-bottom: none;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+        a { text-decoration: none; color: inherit; display: block; }
 
         .article-title-cn {
             font-size: 1.35rem;
@@ -247,7 +232,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* --- 分页 --- */
         .pagination {
             display: flex;
             justify-content: center;
@@ -271,34 +255,13 @@
             transition: all 0.2s;
         }
 
-        .page-btn:hover:not(:disabled) {
-            background-color: #f0f0f0;
-            border-color: #bbb;
-        }
+        .page-btn:hover:not(:disabled) { background-color: #f0f0f0; border-color: #bbb; }
+        .page-btn:disabled { color: #ccc; border-color: #eee; cursor: default; }
 
-        .page-btn:disabled {
-            color: #ccc;
-            border-color: #eee;
-            cursor: default;
-        }
-
-        #page-info {
-            color: #666;
-            font-variant-numeric: tabular-nums;
-        }
-
-        #loading {
+        #loading, .no-results {
             text-align: center;
             padding: 60px;
             color: #999;
-            font-family: var(--font-sans);
-            font-style: italic;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
             font-family: var(--font-sans);
         }
 
@@ -321,16 +284,10 @@
             .controls {
                 width: 100%;
                 justify-content: space-between;
-                gap: 8px;
+                gap: 8px; /* 移动端保持较小间距 */
             }
-            input[type="text"] {
-                flex-grow: 1;
-                width: auto;
-            }
-            /* 移动端日期按钮稍微宽一点 */
-            .date-wrapper {
-                min-width: 100px;
-            }
+            .date-wrapper { min-width: 100px; }
+            .date-display { min-width: auto; }
         }
     </style>
 </head>
@@ -349,7 +306,7 @@
                         <span class="icon-search">🔍</span>
                     </div>
 
-                    <div class="date-wrapper" title="Filter by date">
+                    <div class="date-wrapper" title="Filter by date" onclick="openDatePicker()">
                         <span id="date-label" class="date-label">📅 All Dates</span>
                         <input type="date" id="date-picker" onchange="applyFilters()">
                     </div>
@@ -410,6 +367,18 @@
             }
         }
 
+        function openDatePicker() {
+            const picker = document.getElementById('date-picker');
+            try {
+                picker.showPicker();
+            } catch (error) {
+                picker.style.opacity = 1;
+                picker.style.width = '100%';
+                picker.style.height = '100%';
+                picker.focus();
+            }
+        }
+
         function applyFilters() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
             const dateInput = document.getElementById('date-picker');
@@ -417,30 +386,26 @@
             const resetBtn = document.getElementById('reset-btn');
             const dateLabel = document.getElementById('date-label');
 
-            // 更新日期按钮文字
             if (selectedDate) {
-                dateLabel.textContent = selectedDate; // 显示例如 2025-12-09
+                dateLabel.textContent = selectedDate;
                 dateLabel.style.color = "#000";
             } else {
                 dateLabel.textContent = "📅 All Dates";
                 dateLabel.style.color = "#555";
             }
 
-            // 控制重置按钮显示
             if (searchTerm || selectedDate) {
                 resetBtn.style.display = 'inline-block';
             } else {
                 resetBtn.style.display = 'none';
             }
 
-            // 更新顶部日期
             if (selectedDate) {
                 updateHeaderDate(selectedDate);
             } else {
                 updateHeaderDate();
             }
 
-            // 筛选逻辑 (仅搜标题)
             filteredArticles = allArticles.filter(article => {
                 const matchDate = selectedDate ? (article.date === selectedDate) : true;
 
@@ -460,8 +425,8 @@
 
         function resetFilters() {
             document.getElementById('search-input').value = '';
-            document.getElementById('date-picker').value = ''; // 清空日期输入框
-            applyFilters(); // applyFilters 会自动把文字重置为 "All Dates"
+            document.getElementById('date-picker').value = '';
+            applyFilters();
         }
 
         function renderPage() {
