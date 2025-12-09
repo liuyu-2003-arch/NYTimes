@@ -29,7 +29,7 @@
 
         /* --- 容器 --- */
         .app-container {
-            max-width: 740px; /* 稍微收窄，更有报纸感 */
+            max-width: 740px;
             margin: 0 auto;
             background: #fff;
             min-height: 100vh;
@@ -46,7 +46,7 @@
         }
 
         .masthead {
-            font-family: 'UnifrakturMaguntia', var(--font-serif); /* 备用字体 */
+            font-family: var(--font-serif);
             font-size: 2.8rem;
             margin: 0 0 5px 0;
             font-weight: 900;
@@ -64,7 +64,7 @@
             margin-bottom: 25px;
         }
 
-        /* --- 工具栏 (日期与搜索) --- */
+        /* --- 工具栏 --- */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -91,37 +91,77 @@
             justify-content: flex-end;
         }
 
-        /* 输入框样式 */
+        /* 输入框通用样式 */
         .input-group {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        input[type="text"], input[type="date"] {
+        /* 搜索框 */
+        input[type="text"] {
             font-family: var(--font-sans);
-            padding: 6px 10px;
+            padding: 8px 10px;
+            padding-right: 30px; /* 为图标留空间 */
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 0.85rem;
             outline: none;
+            width: 160px;
             transition: border-color 0.2s;
         }
-
-        input[type="text"] {
-            width: 160px;
-        }
-
-        input:focus {
-            border-color: #000;
-        }
+        input[type="text"]:focus { border-color: #000; }
 
         .icon-search {
             position: absolute;
-            right: 8px;
+            right: 10px;
             color: #999;
             pointer-events: none;
             font-size: 0.8rem;
+        }
+
+        /* --- 日期选择器美化 (核心修改) --- */
+        .date-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: 34px; /* 与搜索框高度对齐 */
+            min-width: 110px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .date-wrapper:hover {
+            border-color: #666;
+        }
+
+        /* 显示的文字标签 */
+        .date-label {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            color: #555;
+            padding: 0 10px;
+            white-space: nowrap;
+            pointer-events: none; /* 让点击穿透到 input */
+            z-index: 1;
+        }
+
+        /* 真正的日期输入框：透明覆盖 */
+        #date-picker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* 完全透明 */
+            cursor: pointer;
+            z-index: 2; /* 在最上层 */
+            -webkit-appearance: none; /* iOS 兼容 */
         }
 
         .clear-btn {
@@ -133,6 +173,7 @@
             cursor: pointer;
             padding: 0 5px;
             text-decoration: underline;
+            white-space: nowrap;
         }
 
         /* --- 文章列表 --- */
@@ -246,7 +287,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* --- 底部 & 状态 --- */
         #loading {
             text-align: center;
             padding: 60px;
@@ -272,7 +312,6 @@
             margin-top: 20px;
         }
 
-        /* 移动端适配 */
         @media (max-width: 600px) {
             .toolbar {
                 flex-direction: column;
@@ -282,13 +321,15 @@
             .controls {
                 width: 100%;
                 justify-content: space-between;
+                gap: 8px;
             }
             input[type="text"] {
                 flex-grow: 1;
                 width: auto;
             }
-            .masthead {
-                font-size: 2.2rem;
+            /* 移动端日期按钮稍微宽一点 */
+            .date-wrapper {
+                min-width: 100px;
             }
         }
     </style>
@@ -303,12 +344,13 @@
                 <div class="date-display" id="header-date">Loading...</div>
 
                 <div class="controls">
-                    <div class="input-group">
+                    <div class="input-group" style="flex-grow: 1;">
                         <input type="text" id="search-input" placeholder="Search title..." oninput="applyFilters()">
                         <span class="icon-search">🔍</span>
                     </div>
 
-                    <div class="input-group">
+                    <div class="date-wrapper" title="Filter by date">
+                        <span id="date-label" class="date-label">📅 All Dates</span>
                         <input type="date" id="date-picker" onchange="applyFilters()">
                     </div>
 
@@ -333,17 +375,14 @@
 
     <script>
         const ARTICLES_PER_PAGE = 10;
-        let allArticles = [];       // 原始数据
-        let filteredArticles = [];  // 经过筛选的数据
+        let allArticles = [];
+        let filteredArticles = [];
         let currentPage = 1;
 
-        // 设置顶部日期显示
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
         function updateHeaderDate(dateString = null) {
             const dateObj = dateString ? new Date(dateString) : new Date();
-            // 修正时区问题：如果直接解析 YYYY-MM-DD，JS可能会因为时区前推一天。
-            // 这里简单处理：如果传了 dateString，手动解析
             if(dateString) {
                 const parts = dateString.split('-');
                 const safeDate = new Date(parts[0], parts[1]-1, parts[2]);
@@ -352,19 +391,15 @@
                 document.getElementById('header-date').textContent = dateObj.toLocaleDateString('en-US', dateOptions);
             }
         }
-        updateHeaderDate(); // 初始化显示今天
+        updateHeaderDate();
 
-        // 核心逻辑：加载文章
         async function loadArticles() {
             try {
                 const response = await fetch(`articles.json?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Failed to load articles.json');
                 allArticles = await response.json();
 
-                // 默认按日期倒序
                 allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                // 初始状态：未筛选
                 filteredArticles = [...allArticles];
 
                 document.getElementById('loading').style.display = 'none';
@@ -375,32 +410,40 @@
             }
         }
 
-        // 核心逻辑：筛选 (搜索 + 日期)
         function applyFilters() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-            const selectedDate = document.getElementById('date-picker').value;
+            const dateInput = document.getElementById('date-picker');
+            const selectedDate = dateInput.value;
             const resetBtn = document.getElementById('reset-btn');
+            const dateLabel = document.getElementById('date-label');
 
-            // 显示/隐藏重置按钮
+            // 更新日期按钮文字
+            if (selectedDate) {
+                dateLabel.textContent = selectedDate; // 显示例如 2025-12-09
+                dateLabel.style.color = "#000";
+            } else {
+                dateLabel.textContent = "📅 All Dates";
+                dateLabel.style.color = "#555";
+            }
+
+            // 控制重置按钮显示
             if (searchTerm || selectedDate) {
                 resetBtn.style.display = 'inline-block';
             } else {
                 resetBtn.style.display = 'none';
             }
 
-            // 更新顶部日期文字
+            // 更新顶部日期
             if (selectedDate) {
                 updateHeaderDate(selectedDate);
             } else {
-                updateHeaderDate(); // 回到今天
+                updateHeaderDate();
             }
 
-            // 执行筛选
+            // 筛选逻辑 (仅搜标题)
             filteredArticles = allArticles.filter(article => {
-                // 1. 日期匹配 (如果有选日期)
                 const matchDate = selectedDate ? (article.date === selectedDate) : true;
 
-                // 2. 关键词匹配 (如果有输入)
                 let matchSearch = true;
                 if (searchTerm) {
                     const cn = article.title_cn ? article.title_cn.toLowerCase() : "";
@@ -415,14 +458,12 @@
             renderPage();
         }
 
-        // 重置所有筛选
         function resetFilters() {
             document.getElementById('search-input').value = '';
-            document.getElementById('date-picker').value = '';
-            applyFilters();
+            document.getElementById('date-picker').value = ''; // 清空日期输入框
+            applyFilters(); // applyFilters 会自动把文字重置为 "All Dates"
         }
 
-        // 渲染列表
         function renderPage() {
             const list = document.getElementById('article-list');
             const pagination = document.getElementById('pagination-container');
@@ -480,7 +521,6 @@
             }
         }
 
-        // 启动
         loadArticles();
     </script>
 </body>
