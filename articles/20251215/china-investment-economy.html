@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中國經濟進入更保守時代 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">中國經濟進入更保守時代</h1>
+        <h2 class="en-headline">Historic Shift Underway in China’s Economy as Investment Slump Deepens</h2>
+        <div class="meta-line">DAISUKE WAKABAYASHI, AMY CHANG CHIEN <span style="margin: 0 8px;">•</span> 2025-12-15</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國寧波的一家汽車工廠。中國政府不鼓勵電動汽車製造商進行殘酷的競爭。" height="700" src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-01-hqmp/12Biz-China-Investment-01-hqmp-master1050.jpg" width="1050"/><figcaption><span>中國寧波的一家汽車工廠。中國政府不鼓勵電動汽車製造商進行殘酷的競爭。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the past three decades, as China’s economy has developed into a global powerhouse, investment has grown reliably each year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去30年來，隨著中國發展成全球經濟強國，投資額幾乎年年穩定增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is about to change. This year, China’s investments in assets like new factories, public infrastructure and housing are expected to fall for the first time since the late 1980s, ushering in a more conservative era for an economy that has reshaped the global order with years of robust growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種情況即將發生變化。今年，中國對新建工廠、公共基礎設施和住房等資產的投資預計將出現自上世紀80年代末以來的首次下降。這標誌著以多年強勁增長重塑全球秩序的中國經濟將進入一個更為保守的時代。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The shift also signals that investing in China is no longer a surefire bet, even as Beijing continues to project confidence with economic growth estimates of 5 percent. But, as is often the case with the country’s economic data, the investment slump has raised more questions than answers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這一轉變也表明，對中國進行投資已不再是「穩賺不賠」的選擇，儘管北京仍在以5%的經濟增長預期來展現信心。不過，和中國經濟數據常見的情況一樣，投資下滑引發的疑問遠多於答案。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A real estate crisis in China has dragged on for five years with no end in sight, sapping the strength from one of the economy’s pillars. Local governments, strapped for cash because of the property downturn, are not pouring money into infrastructure projects as they did during previous periods of economic malaise. Beijing’s crackdown on excessive competition among Chinese manufacturers has chilled the climate for capital investment to fuel expansion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國的房地產危機已持續五年，仍看不到盡頭，這讓經濟的一大支柱元氣大傷。由於房地產市場低迷，地方政府財政吃緊，已不像以往經濟放緩時期那樣大舉投入基礎設施建設。與此同時，中國政府打擊製造業過度競爭，也讓用於擴張的資本投資環境明顯降溫。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CIP-r-DwwJEDFTDBfwQdV6ohYQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From January to October, a broad measure called fixed-asset investment has fallen 1.7 percent from the same period last year. The slide began in the second half of this year and accelerated with a sharp, double-digit decline in October. Analysts believe that investment dipped again in November, with that data scheduled to be released on Monday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年1月至10月，一項被稱為「固定資產投資」的綜合指標同比下降了1.7%。這一跌勢始於今年下半年，並在10月出現兩位數的急劇下滑。分析人士認為，11月投資可能繼續下跌，相關數據預計將於週一公布。（編註：<span>中國國家統計局週一公布的數據顯示，1月至11月，房地產、公共基礎設施和製造業投資同比下降2.6%，固定資產投資連續第二個月大幅下滑。</span>）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investment in property, infrastructure and manufacturing — the three major components that make up the figure — are all declining at the same time. In the past, a downturn in one area was offset by spending in another segment. It is rare for all three pillars of investment to fall at once. The government typically has stepped in to manage downturns by bolstering real estate or spending lavishly on infrastructure. Beijing has been reluctant to act boldly this year to help.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">房地產、基礎設施和製造業——構成該指標的三大板塊——如今同時下行。過去，某一領域的低迷往往會被其他領域的支出所抵消，三大投資支柱同時下滑的情況十分罕見。以往，政府通常會通過托底房地產或大規模增加基礎設施支出來應對下行週期，但今年北京方面一直不願採取大膽的措施出手相助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is a historically significant change,” said Dan Wang, a director on Eurasia Group’s China team. “This is a different style of managing the economy in the short term.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一次具有歷史意義的變化，」歐亞集團中國團隊主管王丹表示。「這是一種不同的短期經濟管控方式。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，中國武漢的一個建築工地。中國房地產市場顯著放緩是投資下降的一個主要因素。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-02-hqmp/12Biz-China-Investment-02-hqmp-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-02-hqmp/12Biz-China-Investment-02-hqmp-master1050.jpg"/></div><figcaption><span>去年，中國武漢的一個建築工地。中國房地產市場顯著放緩是投資下降的一個主要因素。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Wang said that this more passive approach suggests Chinese leaders are confident in the continued strength of exports, which have fueled a record trade surplus despite rising protectionism and growing global concern about the flood of inexpensive Chinese goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>王丹認為，這種較為被動的做法表明，中國領導層對出口持續保持強勁抱有信心。儘管保護主義抬頭、全球對大量廉價中國商品的擔憂加劇，但出口仍推動中國創下了貿易順差新高。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead of pumping money into the economy by building more airports and high-speed railroad stations, highways and bridges, local governments are holding back. And for the property sector, there has been no industrywide bailout or comprehensive plan to spur real estate investment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">地方政府沒有再通過修建機場、高鐵站、公路和橋樑來向經濟注入資金，而是選擇按兵不動。對於房地產行業，既沒有出台行業範圍內的紓困措施，也沒有制定刺激房地產投資的全面方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The investment drought is playing out urgently in the boardrooms of China Vanke, one of the country’s largest property developers, which is now teetering on the edge of possible financial collapse.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在萬科的董事會議室裡，投資匱乏的困境正迫切地顯現出來。萬科是中國最大的房地產開發商之一，如今正徘徊在可能發生財務崩潰的邊緣。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJGrsODwwJEDFfDbuAgdHWIqCA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vanke, unable to pay its debts, has leaned on its top shareholder, the state-owned firm Shenzhen Metro, to cover its debt obligations. But last month it asked bondholders to delay repayment of a bond for the first time, signaling that state financial support may have reached its limit. A deadline on some of its debt looms on Monday, and Vanke may need creditors to accept a delay in getting paid.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於無力償還債務，萬科一直依賴其第一大股東、國有企業深圳地鐵來履行償債義務。但上個月，萬科首次請求債券持有人推遲還款，釋放出國家金融支持可能已接近極限的信號。部分債務的最後期限將在週一到來，萬科或將再次需要債權人同意延期付款。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials have started to show some alarm at the plunge in investment, which was listed as a policy priority for 2026 in a plan announced on Thursday by Xi Jinping, China’s top leader.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員已開始對投資大幅下滑顯露擔憂。中國領導人習近平上週四公布的一項規劃中，投資被列為2026年的政策重點之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The deep problems in the property sector — too many apartments and long-running drops in their value — have shaken business confidence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">房地產領域的深層問題——住房供應過剩以及房價長期下跌——已經動搖了企業信心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chien Ting-tsai, who has run a manufacturing and real estate development company in Zhuhai, a city in southern China, for more than three decades, said customers are not expanding their businesses now because the economy is weak. He said the pipeline of design contracts has thinned dramatically.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國南方城市珠海經營製造和房地產開發公司30多年的簡廷在表示，由於經濟疲軟，客戶目前不再擴大業務，設計合同的數量已明顯減少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some manufacturers have shut down factories and frozen all investment in new facilities,” said Mr. Chien, 69, who is from Taiwan and has worked in China since the 1990s. “Everyone is frantically selling off fixed assets because they’re uncertain about the future.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些製造商已經關閉工廠，凍結了所有新設施的投資，」這位69歲的台商表示，他自上世紀90年代起就在中國工作。「大家都在拚命拋售固定資產，因為對未來沒有信心。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="廣州的一個招聘會上，紡織廠的代表正在招聘工人。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-03-hqmp/12Biz-China-Investment-03-hqmp-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-03-hqmp/12Biz-China-Investment-03-hqmp-master1050.jpg"/></div><figcaption><span>廣州的一個招聘會上，紡織廠的代表正在招聘工人。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pam Jiang, a sales assistant at Fashiontex International Limited, a textile company with roughly 150 employees in Jiangsu Province, one of China’s main fabric manufacturing hubs, said the domestic textile industry is pulling back on investments in facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">翀尚時代紡織科技有限公司是江蘇省一家有約150名員工的紡織企業，該公司的銷售助理帕姆·姜（音）說，中國國內的紡織行業正在收縮，對廠房和設備的投資明顯減少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The textile industry in China is basically stagnant and downsizing,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「紡織業在國內基本上是按兵不動和縮減規模，」她說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMu6sODwwJEDFbDh_QUdwu8Tjg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She attributed the drop in investment to rising labor costs and uncertainty about tariffs. Instead of expanding domestically, Ms. Jiang said, many Chinese textile manufacturers are investing abroad in countries such as Vietnam and Egypt.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她將投資下降歸因於勞動力成本上升以及對關稅的不確定性。姜女士表示，許多中國紡織企業沒有選擇在國內擴張，而是將投資轉向越南、埃及等國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The slowdown in manufacturing investment has coincided with the government’s campaign against involution, a term for the ruthless competition in which Chinese companies wage profit-eroding price wars to gain market share and outlast rivals. Provincial or city governments have often fueled such races to the bottom by providing incentives and support to foster local champions. This produced an oversupply of well-funded companies, each ready to add more products than customers want to buy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">製造業投資放緩的同時，政府還在推進「反內卷」行動。「內卷」指的是中國企業為搶佔市場份額、擊敗競爭對手展開的殘酷價格戰，這種價格戰會嚴重損害利潤。省級或市級政府過去往往通過提供激勵措施和支持來扶持本地龍頭企業，從而加劇了這種惡性競爭。這導致資金充裕的企業數量過剩，每家企業都準備推出遠超消費者需求的產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But some economists say Beijing’s efforts to slow that process down have given local governments permission to hold back on throwing money at manufacturing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但一些經濟學家認為，北京試圖緩解「內卷」的努力實際上是在允許地方政府減少對製造業的投資。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Jeremy Smith, a research analyst at Rhodium Group’s China practice, said he believes local governments might be taking Beijing’s cue. He noted that fixed-asset investment has declined in nearly all of China’s provinces and prefectural-level cities since May.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">榮鼎集團中國業務研究分析師傑瑞米·史密斯表示，他認為地方政府可能正在順應北京的態度。他指出，自5月以來，中國幾乎所有省份和地級市的固定資產投資都出現了下降。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="許多中國紡織企業正在投資海外，例如越南和埃及等國。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-04-hqmp/12Biz-China-Investment-04-hqmp-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-04-hqmp/12Biz-China-Investment-04-hqmp-master1050.jpg"/></div><figcaption><span>許多中國紡織企業正在投資海外，例如越南和埃及等國。</span> <cite>Linh Pham for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The downturn in investment numbers, he said, more accurately reflects what Rhodium had suspected following the collapse of the property sector.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這一投資數據的下滑更真實地反映了榮鼎在房地產行業崩盤之後所作出的判斷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rhodium has reported that China’s investment activity likely fell in 2023 and 2024, based on other economic signals, such as credit growth. Due mainly to slower investment, Rhodium estimated that China’s economic growth was between 2.4 percent and 2.8 percent last year, well short of the government’s official figure of 5 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">榮鼎報告稱，基於信貸增長等其他經濟信號，中國的投資活動很可能在2023年和2024年均出現下降。主要由於投資放緩，榮鼎估計中國去年的經濟增速在2.4%至2.8%之間，遠低於政府公布的5%。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLTVsODwwJEDFdrE_QUd9C8aPg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Declining investment is more the norm than the exception,” Mr. Smith said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「投資下降才是常態，而不是例外，」史密斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the one hand, he said, Beijing seeks to project an image of economic resilience. At the same time, it aims to demonstrate that it is curbing the harmful competition plaguing many of its industries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，北京一方面希望展現經濟韌性的形象，另一方面也試圖表明自己正在遏制困擾眾多行業的有害競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A slump does not bode well for China’s economic growth, as investment accounts for a significant share of gross domestic product. Yet the broader measure of investment China uses to calculate G.D.P. rose in the third quarter despite the sharp decline in fixed-asset investment, leaving economists scrambling for how to explain the discrepancy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資下滑對中國經濟增長而言並非好兆頭，因為投資在國內生產總值中佔據相當大的比重。然而，用於計算GDP的更廣義投資指標卻在第三季度有所增長，與固定資產投資的急劇下降形成反差，這讓經濟學家一時難以解釋其中的矛盾。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國張家口的一座高鐵站。多年來，中國一直通過投資公共基礎設施來增加投資總量。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-05-hqmp/12Biz-China-Investment-05-hqmp-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/12Biz-China-Investment-05-hqmp/12Biz-China-Investment-05-hqmp-master1050.jpg"/></div><figcaption><span>中國張家口的一座高鐵站。多年來，中國一直通過投資公共基礎設施來增加投資總量。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a November report, Goldman Sachs said it does not expect fixed-asset investment to weigh on economic growth because the decline is “overstated.” The investment bank said that most of the downturn is “a statistical correction of previously overreported data” rather than a genuine slowdown.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">高盛在11月的一份報告中表示，預計固定資產投資不會拖累經濟增長，因為相關下降「被誇大了」。高盛認為，大部分下滑其實是「對先前高估數據的統計修正」，而非真實的經濟放緩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, Fu Linghui, the spokesman and chief economist of China’s National Bureau of Statistics, attributed the decline to a “complex and severe external environment” and “fierce domestic competition” that has hurt investment returns and dragged down corporate profitability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國家統計局新聞發言人、首席經濟學家付凌暉上個月則將投資下降歸因於「複雜嚴峻的外部環境」和「激烈的國內競爭」，認為這削弱了投資回報，拖累了企業盈利能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He noted, however, that investment in high-tech industries such as green energy and aerospace is growing rapidly, a sign that overall investment might be slowing but is also “optimizing.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他指出，新能源、航空航天等高技術產業的投資仍在快速增長，顯示整體投資增速雖然放緩，但結構正在「優化」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMHwsODwwJEDFdrbuAgddK4SYg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economic Daily, a Chinese state-owned newspaper, said in November that the country has entered into a new, high-quality phase of development, echoing official talking points. It accused foreign media of seizing on the investment stall to sensationalize a “crisis theory” about the Chinese economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國官方媒體《經濟日報》11月稱，中國已進入高質量發展的新階段，呼應了官方的政策表述，並指責外國媒體借投資停滯之機渲染所謂中國經濟「危機論」。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Daisuke Wakabayashi是時報駐首爾亞洲商業記者，報導區域經濟、公司和地緣政治新聞。</p><div class="" data-poster=""><span><p class="cn-p">Amy Chang Chien是《紐約時報》記者/研究員，常駐台北，報導台灣和中國新聞。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/business/20251215/china-investment-economy/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>

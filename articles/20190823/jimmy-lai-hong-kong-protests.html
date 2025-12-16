@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黎智英，香港「有良心的攪局者」 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">黎智英，香港「有良心的攪局者」</h1>
+        <h2 class="en-headline">A Hong Kong ‘Troublemaker’ With a Clean Conscience</h2>
+        <div class="meta-line">ANDREW HIGGINS <span style="margin: 0 8px;">•</span> 2019-08-23</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="支持反政府抗議的媒體大亨黎智英是香港知名商人中的異類。" height="700" src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-1/merlin_159551868_2b2c946c-1ed7-4e4b-b865-7f4e4d828ca1-master1050.jpg" width="1050"/><figcaption><span>支持反政府抗議的媒體大亨黎智英是香港知名商人中的異類。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>Sign up</i><i> for NYT Chinese-language Morning Briefing.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><i>[《紐約時報》推出每日中文簡報，為你介紹時報當日的重點英文報導，並推薦部分已被譯成中文的精選內容。新讀者請</i><i>點擊此處訂閱</i><i>，或發送郵件至cn.letters@nytimes.com加入訂閱。]</i></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">HONG KONG — He has been mocked for years in China’s state-controlled news media for being fat, which he isn’t, and denounced more recently as a C.I.A. agent, a “black hand” and a member of an American-directed “gang of four” supposedly responsible for orchestrating the Hong Kong protest movement that is now in its 12th week. He says he isn’t any of those things, either.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">香港——多年來，他被中國官方控制的新聞媒體嘲笑是胖子——他並不肥胖，近來還被指為CIA特工、一隻「幕後黑手」和美國指使的「禍港四人幫」成員，據說是現已進入第12周的香港抗議運動的策動者。他說這些也都是子虛烏有。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This week the object of all that opprobrium, Jimmy Lai, a Hong Kong media tycoon, rose in Chinese propaganda from the number three spot in the “gang of four” to its senior member.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>本週，在中國的宣傳中，所有這些污名的對象、香港媒體大亨黎智英(Jimmy Lai)</span>，從「四人幫」三號上升到了頭面人物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That China has put much so much energy into demonizing a 71-year-old man is a measure of Mr. Lai’s singular status as the one prominent businessman in Hong Kong who openly supports antigovernment protests, routinely denounces the Communist Party leader Xi Jinping as a “dictator” and refuses to follow fellow tycoons in paying at least token obeisance to Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國耗費如此大精力將一個71歲的老人<span>妖魔化，表明黎智英作為香港著名商界人士的獨特地位，他公開支持反政府抗議活動，經常譴責中共領導人習近平為「獨裁者」，並拒絕效仿其他大亨，至少向北京表示象徵性的敬意。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CMaKvurwwJEDFYZWCAQdKZowOw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s relentless campaign of vilification against Mr. Lai took a particularly nasty turn last week when his name was purged from the genealogical records of his family across the border in southern China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對黎智英無休止的詆毀活動，上週出現了一個尤為惡毒的轉折，他在中國南方的族人將他剔出了族譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His relatives, according to a report in Ta Kung Pao, a Communist Party-controlled newspaper in Hong Kong that invariably refers to him as “fatty Lai,” deleted his name from a family tree going back 28 generations,declaring him a “traitor” to his ancestors and his country who is no longer part of the clan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據受中共控制、向來稱他為「肥佬黎」的香港報紙《大公報》報導，他的親戚把他從可往上追溯28代的族譜中除名，稱他是祖先和國家的「逆子」，已不再屬於家族。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview over a light Chinese lunch of shrimp and chicken in a glassed-in veranda at his home, Mr. Lai said the same relatives used to visit him regularly and have for years received money that he sent to them, but “of course they are going to deny me now.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在他家中一個包封了玻璃的陽台，黎智英一邊吃著有蝦和雞肉的清淡中式午餐，一邊接受採訪。他說，同樣是這些親戚以前經常來找他，多年來一直在拿他給的錢，但「現在他們當然要排斥我了」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese authorities, for all their talk about the primacy of family in Chinese culture, he added, frequently hound families to put pressure on critics. “They are very good at frightening people,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還說，中國當局儘管大談家庭在中國文化中的首要地位，卻頻頻逼迫家人給批評者施壓。「他們很擅長恐嚇，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週四在香港發起的學生抗議活動。黎智英的媒體公司為以年輕人為主、沒有領導人的抗議活動提供了一個廣闊而強大的平台。" data-src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-4/merlin_159555321_b630ca06-151b-48e9-aa4a-197c173aa616-master1050.jpg" src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-4/merlin_159555321_b630ca06-151b-48e9-aa4a-197c173aa616-master1050.jpg"/></div><figcaption><span>週四在香港發起的學生抗議活動。黎智英的媒體公司為以年輕人為主、沒有領導人的抗議活動提供了一個廣闊而強大的平台。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the majority owner of Next Media Group, which publishes Next, a weekly magazine, and Apple Daily, a popular newspaper and website, Mr. Lai has provided a powerful, wide-reaching platform to the mostly young and leaderless protesters. Both also have separate editions published in Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為壹傳媒公司(Next Media Group)多數股東，黎智英為年輕人居多、無人領導的抗議者提供了強大而影響廣泛的平台。壹傳媒出版《壹週刊》(Next)和熱門報刊及網站《蘋果日報》(Apple Daily)。兩者在台灣也均有單獨出版的版本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Apple Daily, once a lowbrow rag that ran prostitute reviews, has evolved into a more serious, though still rambunctious, journal of political and social news with a decidedly antigovernment and anti-Beijing slant. It also publishes a weekly column by Mr. Lai that has cheered on the protesters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《蘋果日報》曾是刊載妓女評論文章的低俗小報，現已進化為更嚴肅、有著堅決反政府和反北京傾向的政治和社會刊物，雖然仍有粗鄙內容。黎智英在其中還有一個為抗議者吶喊助威的每週專欄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His weekly, Next, which began as a print magazine but now has only a digital edition, writes a lot about celebrities and covers local tittle-tattle, but also provides unstinting support for the protests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的《壹週刊》起初是紙質雜誌，現只有數字版，文章大量涉及名人，也有本地雜談，不過同樣對抗議活動給予慷慨支持。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNKgvurwwJEDFSGROgUdZBgKiQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese Communist Party, which controls two newspapers in the city, has squeezed the revenue of both publications by pressuring companies not to advertise. Not a single major company now advertises in Mr. Lai’s newspaper, despite it being the second best selling publication in the city.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">控制了香港兩家報紙的中共通過迫使企業不要打廣告，擠壓了兩份刊物的收入。如今沒有一家主要公司在黎智英的報紙上刊登廣告，儘管它是香港銷量第二的刊物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The flight of advertisers, he said, has meant a loss of print revenue of about $44 million a year. But the online version of the paper, now behind a partial paywall, earns money from subscriptions and foreign advertisers who are not worried about being blackballed by Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，廣告商的流失意味著印刷版每年損失約4400萬美元。但報紙的在線版現已部分開始收費，從訂閱和不怕被北京封殺的外國廣告商那裡賺取收入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While all the other prominent tycoons in Hong Kong have stayed silent about the protests or issued statements filled with Communist-style jargon about the need to “resolutely stop the turmoil,” Mr. Lai has not only supported the protesters but joined them. He marched last Sunday in a mass parade through the center of Hong Kong that drew over a million people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然香港其他所有知名富商都對抗議活動保持緘默，或用充斥中共套話的聲明表達「堅決制止亂局」的必要<span>，但黎智英不僅支持抗議活動還親自參加。週日，他加入了香港市中心的大規模遊行，遊行吸引了逾百萬人。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The establishment hates my guts. They ask, ‘Why don’t you just let us make money in peace?’ They think I’m a troublemaker,” he said, adding: “I am a troublemaker, but one with a good conscience.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「建制派對我恨之入骨。他們問，『你為什麼不能讓我們安安靜靜賺錢？』他們覺得我是攪局者，」他說。「我是攪局者，但卻是有良心的攪局者。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has caused further anger by cheering on President Trump, whom he describes as “the only one who plays hardball with China. This is the only thing that China understands.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他為川普總統歡呼，引發了更大的憤怒，他形容後者是「唯一一位對中國強硬的。</span>那是中國唯一聽得懂的語言。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="兒時從廣東逃到香港的黎智英經營了一個成功的服裝連鎖品牌，後來轉向媒體行業。" data-src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-2/merlin_159550065_20cdc55a-dcd2-45bf-96bb-c02c065843e2-master1050.jpg" src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-2/merlin_159550065_20cdc55a-dcd2-45bf-96bb-c02c065843e2-master1050.jpg"/></div><figcaption><span>兒時從廣東逃到香港的黎智英經營了一個成功的服裝連鎖品牌，後來轉向媒體行業。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is a common view, too, among Chinese dissidents on the mainland, who see Mr. Trump, despite his describing Mr. Xi as “my good friend,” as the first United States leader to see China clearly since President Nixon visited Beijing in 1972 and began what they see as decades of weak-kneed policy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這在中國大陸異見人士中間也是普遍看法，在他們眼裡，川普雖形容習近平是「我的好朋友」，但卻是自1972年尼克森總統訪華、開啟他們視為幾十年的軟弱政策以來，第一位看清中國的美國領導人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Lai’s keen interest in China, however, is one area in which his views diverge sharply from those of Hong Kong’s mostly youthful protesters, who often want nothing to do with the country that took back control of their city from British colonial rule in 1997.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，黎智英對中國大陸的濃厚興趣，是他與香港年輕人居多的抗議者截然不同的一個方面。對於1997年從英國殖民統治下奪回對香港控制權的這個國家，年輕抗議者往往不希望與其有任何關係。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMDXvurwwJEDFctXCAQdGSUfUA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I always feel Chinese because I belong to the older generation,” he said. Each year he takes part in a candlelight vigil held on June 4 to commemorate the 1989 Tiananmen Square massacre in Beijing. Most Hong Kong student groups view Hong Kong as a place apart from China, and stay away from the event.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我總感覺自己是中國人，因為我屬於老一代，」他說。他每年參加6月4日紀念1989年北京天安門廣場大屠殺的燭光守夜活動。大部分香港學生團體視香港為一個中國以外的地方，因而遠離這項活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Born across the border in Canton, the capital of Guangdong, Mr. Lai fled to Hong Kong in a boat as a boy and, until the Tiananmen killings, was a typical success story in the then British-ruled city. He stayed away from politics and diligently worked his way up from lowly jobs as a knitter and clerk to become the main owner of Giordano, a successful chain of clothing stores.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎智英出生於邊境另一邊的廣東省省會廣州，小時候坐船逃到香港。天安門事件之前，他在當時由英國統治的香港是成功的典範。他遠離政治，努力工作，從紡織工和小職員這樣的卑微工作起家，最終成為成功的服裝連鎖品牌佐丹奴的主要所有人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 1989 Tiananmen bloodshed, he said, made him start thinking about politics and led to his setting up Next Magazine the following year, a move that quickly hurt his clothing business once he started writing insulting articles about leaders in Beijing, particularly China’s then prime minister, Li Peng, widely known as the “Butcher of Beijing,” who died last month at 90.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，1989年天安門的流血事件讓他開始思考政治，並導致他在第二年創辦了《壹週刊》，後來他開始寫辱罵北京領導人的文章，尤其是被廣泛稱為「北京屠夫」的時任中國總理李鵬（他於上月去世，終年90歲）。此舉迅速損害了他的服裝生意。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I had always hoped that China was changing and would become a democracy. I was wrong. It was wishful thinking,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我一直希望中國改變，成為民主國家。我錯了。這只是一廂情願，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In retaliation, the Chinese authorities began closing his Giordano clothing stores on the mainland, his chain’s fastest growing market. He realized that he had to either sell up or mind his tongue. He sold everything but his media holdings for nearly $320 million.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為報復，中國當局開始關閉他在大陸的佐丹奴服裝店，大陸是他的這個連鎖品牌增長最快的市場。他意識到他要麼得賣掉生意，要麼就得小心說話。他以將近3.2億美元的價格出售了除媒體之外的所有資產。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That experience, he said, has helped him understand why so many of his fellow tycoons toe Beijing’s line. “As a businessman, you can’t confront the regime,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，這段經歷幫助他理解，為什麼其他富商都聽北京的話。「作為商人，你無法對抗這個政權，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="黎智英的壹傳媒出版一份週刊和一份日報以及網站。北京一直在向企業施壓，讓它們不得在其媒體上做廣告。" data-src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-3/merlin_157795062_154c60f1-5e16-4ac4-880b-9b74cec112ba-master1050.jpg" src="https://static01.nyt.com/images/2019/08/23/world/23profile-lai-3/merlin_157795062_154c60f1-5e16-4ac4-880b-9b74cec112ba-master1050.jpg"/></div><figcaption><span>黎智英的壹傳媒出版一份週刊和一份日報以及網站。北京一直在向企業施壓，讓它們不得在其媒體上做廣告。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many business people, he says, do not believe their own statements against the protesters, but feel they have no choice but to show support for the Hong Kong government and Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，許多商界人士不是真心發表針對抗議者的言論，但他們感到別無選擇，只能支持香港政府和北京。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This, he said, is understandable but also a mistake because China’s leaders “know that once they cow you, they can always cow you. Once they have you in their pocket they will always squeeze you.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這是可以理解的，但也是一個錯誤，因為中國領導人「他們知道，他們一朝脅迫了你，就永遠能脅迫你。一旦他們把你裝進自己的口袋，就會一直榨取你」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLPNvurwwJEDFfyROgUdSdcQOg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Mr. Lai, unlike the other tycoons, the protests are potentially a commercial boon. Apple Daily has been running advertisements that try to lure new digital subscribers by promising them that of every 3 Hong Kong dollars (about 40 cents) they pay for a daily subscription, it will donate 1 Hong Kong dollar to the protest movement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎智英與其他富商的不同之處在於，抗議活動有可能為他帶來商業上的好處。《蘋果日報》一直在投放廣告，試圖吸引新的數字訂戶，它向訂戶承諾，他們每天支付的3港元（約合40美分）的訂閱費中，會有1港元捐贈給抗議活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Lai has become such a bogeyman for China’s propaganda machine that one newspaper has a photographer and video cameraman on permanent duty on the street outside his colonial-era house on the Kowloon Peninsula to record all his visitors — and, it apparently hopes, find evidence of secret contacts with American intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎智英已經成為中國宣傳機器口中的妖魔鬼怪，一份報紙的圖片和影片攝影師長期蹲守在九龍半島他那棟殖民時代的房子外，記錄他所有的訪客，顯然是希望找到與美國情報機構祕密聯繫的證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A group of mysterious “patriots” also gather regularly outside his front gate, arriving together in a white minibus to wave banners denouncing Mr. Lai, a father of six, as an “American running dog” and “the black financier supporting the turmoil.” He has given modest donations but his main support has been the unswervingly favorable coverage provided by his media outlets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一群神秘的「愛國者」也定期聚集在他的大門外，他們乘坐一輛白色小廂型車來到這裡，揮舞著橫幅，譴責育有六個子女的黎智英是「美國走狗」和「支持暴亂的黑金主」。他的捐款數額不大，但他提供的主要支持是他的媒體上堅決站在抗議者一邊的報導。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To put pressure on him through his children, one pro-Beijing newspaper recently published the name and address of a Hong Kong restaurant owned by an older son and urged a boycott. Business increased.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了通過他的孩子給他施加壓力，一家親北京的報紙最近刊登了他長子名下一家香港餐廳的名字和地址，並呼籲抵制。結果餐廳的生意更興旺了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Lai said he stopped paying attention long ago to all the insults, though he doesn’t enjoy being disturbed by raucous renditions of the Chinese national anthem on his doorstep. The abuse has scared off some old friends, but, he said, “If you don’t fight, you get frightened. I have always been a fighter.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎智英說，他很久以前就不再理會所有的辱罵，不過他不喜歡被門口刺耳的中國國歌打擾。這些辱罵嚇跑了一些老朋友，但是，他說，「不鬥爭就會害怕。我一直是個鬥士。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Photographed whenever he leaves his home and often followed, Mr. Lai shrugged off the harassment as an annoyance that he has grown used to. “I don’t go out much.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎智英每次離開家都會被拍下來，並經常被人跟蹤，但他對這種騷擾不屑一顧，說自己已經習慣了這種滋擾。「我很少出門。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/china/20190823/jimmy-lai-hong-kong-protests/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
