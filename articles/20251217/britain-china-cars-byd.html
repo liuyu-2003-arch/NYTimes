@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中國汽車品牌在英國快速佔領市場 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">中國汽車品牌在英國快速佔領市場</h1>
+        <h2 class="en-headline">On British Roads, Chinese Cars Are Racing Ahead</h2>
+        <div class="meta-line">ESHE NELSON <span style="margin: 0 8px;">•</span> 2025-12-17</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-03-bpvh/17Biz-UK-China-Cars-03-bpvh-jumbo.jpg" width="683"/><figcaption><span></span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a recent Monday, Dougal Keith drove an electric car out of his dealership’s showroom in Leeds, in northern England, and hit the accelerator.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久前的一個週一，杜格爾·基思駕駛著一輛電動汽車離開他位於英格蘭北部利茲市的經銷店，而後一腳踩下油門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The car, a Chinese-made BYD Seal Excellence, can reach 60 miles per hour in 3.8 seconds — a key selling point. Another is the price tag, about 48,000 pounds ($64,400), which is 20 percent cheaper than a top-range Tesla Model 3.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這輛中國製造的比亞迪海豹卓越版能在3.8秒內加速至時速百公里——這是它的核心賣點之一。另一個亮點是售價約4.8萬英鎊（6.44萬美元），比頂配版特斯拉Model 3便宜20%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Keith, who has been selling cars for more than four decades, said customers were skeptical of buying vehicles made in China when he opened a showroom in 2023 for BYD, China’s largest automaker. Now, he has six dealerships devoted to the brand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">擁有40餘年汽車銷售經驗的基思表示，2023年他的這家中國最大車企比亞迪的經銷店開業時，消費者對中國產汽車仍心存疑慮。而如今，他已擁有六家專門銷售該品牌的門店。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some people have the perception that because it's Chinese it’s going to be made cheaply,” he said. But then, he would ask them, “Where do you think your iPhone is assembled?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些人認為，因為是中國製造，所以做工肯定粗糙，」他說。但隨後他會反問：「你覺得你的iPhone是在哪裡組裝的？」</div></div></div></div></div><div class="big_ad" data-google-query-id="CIu07qW2yJEDFTPXGAIdccQmnA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese cars are rapidly gaining ground in Britain, driven by a combination of factors. The lack of steep tariffs on Chinese electric vehicles — unlike in the European Union or the United States, where officials see the levies as a way to protect domestic production — means the cars can be sold in Britain at better prices. And British car buyers are not particularly loyal to brands, with no major mass-market British carmaker to support.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多重因素推動下，中國汽車正迅速搶佔英國市場。與將關稅視為保護本土生產手段的歐盟或美國不同，英國對中國電動汽車沒有徵收高額關稅，這意味著中國汽車能以更優惠的價格在英國銷售。此外，英國消費者對汽車品牌並無強烈忠誠度，本土也沒有大型大眾市場車企可供國民支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, roughly a dozen Chinese automakers, like BYD, Chery and Geely, accounted for 13 percent of new car registrations in Britain, roughly double their market share a year ago, according to data from the Society of Motor Manufacturers and Traders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英國汽車製造商與貿易商協會的數據顯示，上月，比亞迪、奇瑞、吉利等約十幾家中國車企佔據了英國新車註冊量的13%，較去年同期的市場份額近乎翻倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The pace is like nothing the market has ever seen before,” said Ian Plummer, the chief commercial officer of Autotrader, Britain’s largest online car marketplace. BYD and Chery, which sell brands Jaecoo and Omoda, are gaining market share in Britain five or six times as fast as previous entrants, like Tesla a decade ago and South Korea’s Kia in the 1990s, he noted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種增長速度是市場前所未見的，」英國最大在線汽車交易平台Autotrader的首席商務官伊恩·普盧默表示。他指出，相比10年前的特斯拉、上世紀90年代的韓國起亞等品牌進入英國市場時，比亞迪以及旗下擁有傑酷和歐萌達品牌的奇瑞在英國的市場份額增長速度是前者的五到六倍。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="道格爾·基思在英格蘭北部利茲市經營的比亞迪汽車經銷店。過去一年，中國製造的汽車在英國新車註冊量中的份額翻了一番。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-01-bpvh/17Biz-UK-China-Cars-01-bpvh-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-01-bpvh/17Biz-UK-China-Cars-01-bpvh-master1050.jpg"/></div><figcaption><span>道格爾·基思在英格蘭北部利茲市經營的比亞迪汽車經銷店。過去一年，中國製造的汽車在英國新車註冊量中的份額翻了一番。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="英國購車者沒有一家大型本土汽車製造商可以去支持，這為中國品牌等新興汽車製造商提供了市場機遇。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-Uk-China-Cars-qlct/17Biz-Uk-China-Cars-qlct-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-Uk-China-Cars-qlct/17Biz-Uk-China-Cars-qlct-master1050.jpg"/></div><figcaption><span>英國購車者沒有一家大型本土汽車製造商可以去支持，這為中國品牌等新興汽車製造商提供了市場機遇。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Britain’s domestic auto manufacturing industry has been in decline for years, and produced about 600,000 cars so far this year, about half the pace of production at the end of last decade. The largest producers include Japan’s Nissan; Jaguar Land Rover, owned by India’s Tata Motors; and Mini, which is part of BMW.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>英國本土汽車製造業多年來持續衰退，今年以來產量約為60萬輛，僅為上十年末產量的一半。目前英國最大的汽車生產商包括日本日產、印度塔塔汽車旗下的積架路虎，以及寶馬集團旗下的MINI品牌。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has grown to become the largest car exporter in the world, making inroads in countries as far-flung as Mexico, Brazil, Malaysia and South Africa. China produces far more electric vehicles than any other country, and its automakers have proved adept at meeting shifting regulations and consumer preferences, gaining market share with in-demand hybrids as well.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國已崛起為全球最大汽車出口國，足跡</span><span>遠及墨西哥</span><span>、巴西、馬來西亞、南非等國。中國的電動汽車產量遠超其他任何國家，中國車企也被證明善於適應不斷變化的法規和消費者偏好，憑藉備受青睞的混合動力車型同樣持續擴大市場份額。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has encouraged exports as a way to deal with overcapacity at home, which has led to cutthroat competition and substantial losses. The surge of Chinese exports has triggered a backlash in Western countries with large domestic auto industries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國政府鼓勵汽車出口，以此應對已導致市場競爭白熱化和巨額虧損</span>的國內產能過剩問題。中國汽車出口的激增引發了擁有龐大本土汽車產業的西方國家的反彈。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMK97qW2yJEDFRTWGAIdrRY5sw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. tariffs of 100 percent on Chinese electric cars have effectively banned the vehicles there. The European Union has imposed tariffs of up to 45 percent on battery-powered vehicles from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國對中國電動汽車徵收100%的關稅，實際上已經相當于禁止該類車型進入美國市場；歐盟則對來自中國的電動汽車徵收最高45%的關稅。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Britain has not erected similar trade barriers, instead levying a 10 percent tariff on all imported cars. The British government has been pursuing closer economic ties with China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>英國並未設置類似貿易壁壘，僅對所有進口汽車統一徵收10%的關稅。英國政府一直致力於與中國建立更緊密的經濟聯繫。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Around two million new cars are sold in Britain every year. Since 2019, the number of different brands registering sales has nearly doubled, to more than 70, according to Autotrader. No single brand commands the same loyalty, or market share, as Volkswagen in Germany or Renault and Peugeot in France.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英國每年新車銷量約為200萬輛。Autotrader的數據顯示，自2019年以來，在英國註冊銷售的品牌數量已翻倍至70多個。沒有任何一個品牌能像大眾在德國、雷諾和標緻在法國那樣擁有極高的消費者忠誠度和市場份額。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="利茲停車場內的電動汽車充電站。中國是全球最大的汽車出口國，也是最大的電動汽車製造國。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-09-bpvh/17Biz-UK-China-Cars-09-bpvh-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-09-bpvh/17Biz-UK-China-Cars-09-bpvh-master1050.jpg"/></div><figcaption><span>利茲停車場內的電動汽車充電站。中國是全球最大的汽車出口國，也是最大的電動汽車製造國。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="今年，比亞迪在英國新車註冊量中佔比2%，與特斯拉大致持平。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-China-UK-Cars-01-hlbw/17Biz-China-UK-Cars-01-hlbw-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-China-UK-Cars-01-hlbw/17Biz-China-UK-Cars-01-hlbw-jumbo.jpg"/></div><figcaption><span>今年，比亞迪在英國新車註冊量中佔比2%，與特斯拉大致持平。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="比亞迪經銷商重點推介了可旋轉觸摸屏、語音控制甚至卡拉OK功能等亮點配置。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-China-UK-Cars-02-hlbw/17Biz-China-UK-Cars-02-hlbw-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-China-UK-Cars-02-hlbw/17Biz-China-UK-Cars-02-hlbw-jumbo.jpg"/></div><figcaption><span>比亞迪經銷商重點推介了可旋轉觸摸屏、語音控制甚至卡拉OK功能等亮點配置。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese-made cars got a jump start in Britain thanks to SAIC Motor, a Chinese state-owned carmaker, which acquired the British sports car brand MG after its collapse in the mid-2000s. More and more production was shifted to China until, in 2016, SAIC closed MG’s factory in the Midlands, the center of British car manufacturing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國汽車在英國的起步得益於中國國有車企上汽集團。2000年代中期，英國跑車品牌名爵破產後，上汽集團將其收購。此後，該品牌的生產逐漸轉移至中國，直至2016年，上汽關閉了位於英國汽車製造業中心米德蘭的名爵工廠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">MG cars imported from China accounted for more than 4 percent of new registrations in Britain so far this year, the largest share for a Chinese-owned brand. BYD accounted for just over 2 percent, about the same as Tesla.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年以來，進口自中國的名爵汽車佔英國新車註冊量的4%以上，是中國品牌中佔市場份額最大的；比亞迪的佔比略超2%，與特斯拉相當。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Keith, the auto dealer in Leeds, sold his first car at age 16 in 1980. Over the next decade, he gradually took over his father’s gas station and repair shop, which also sold Skoda cars, then made in Communist Czechoslovakia. In the early 1990s, he took a bet on the brand and opened a showroom just after Skoda was acquired by Volkswagen but before it gained a reputation for value and reliability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">利茲市的經銷商基思在1980年他16歲時賣出了人生第一輛車。在接下來的10年裡，他逐漸接管了父親的加油站和維修店，那家店當時也銷售斯科達汽車（當時產自共產主義國家<span>捷克斯洛伐克）。上世紀90年代初，在斯科達被大眾收購、尚未以高性價比和可靠性成名前，他就大膽押注該品牌，為其開設了</span>經銷店。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIfR7qW2yJEDFY7aGAIdz_0S0Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By the early 2020s, China’s BYD had caught Mr. Keith’s attention. With a group of other independent dealerships, he pitched the automaker and two and a half years ago became one of the first franchised dealers for the brand in Britain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">21世紀20年代初，中國的比亞迪引起了基思的關注。他聯合其他幾家獨立經銷商向比亞迪提出合作申請，並在兩年半前成為該品牌在英國的首批特許經銷商之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Initially, it was “very hard work,” Mr. Keith said. Few car buyers had heard of BYD, and he offered only an all-electric model.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">基思表示，起初的經營「非常艱難」。當時很少有消費者聽說過比亞迪，而且他最初只提供純電動車型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But as more models came out — particularly plug-in hybrids — sales increased. His sales staff emphasized the fully loaded vehicles’ perks, with rotatable touch screens, wireless phone chargers, voice controls and even karaoke features.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但隨著更多車型推出——尤其是插電式混合動力車型——銷量開始增長。他的銷售團隊著重宣傳這些配置齊全的車型所具備的優勢：可旋轉觸摸屏、無線手機充電器、語音控制，甚至還有卡拉OK功能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Customers “are beginning to understand it’s not a budget brand,” said Fozia Siddique, who has been selling BYD cars since the Leeds showroom opened.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">消費者「開始明白這不是一個廉價品牌」，自利茲店開業以來就一直銷售比亞迪汽車的福齊亞·西迪基說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-Uk-China-Cars-wlth/17Biz-Uk-China-Cars-wlth-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-Uk-China-Cars-wlth/17Biz-Uk-China-Cars-wlth-master1050.jpg"/></div><figcaption><span></span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="史提夫·瓦因一家和他們新買的車：一輛比亞迪插電式混合動力車。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-05-bpvh/17Biz-UK-China-Cars-05-bpvh-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-05-bpvh/17Biz-UK-China-Cars-05-bpvh-master1050.jpg"/></div><figcaption><span>史提夫·瓦因一家和他們新買的車：一輛比亞迪插電式混合動力車。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Siddique recently helped sell a new BYD plug-in hybrid S.U.V. to Steve Vine. He bought the car, which retails for about £33,000, in part because of its spaciousness and the battery’s long range. Mr. Vine, 55, regularly drives more than 300 miles from his home near Leeds to the southwest coastal town of Cornwall, and wanted to be able to do so without needing to stop and charge for too long.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西迪基最近幫助史提夫·瓦因購買了一輛新的比亞迪插電式混合動力SUV。這款車零售價約為3.3萬英鎊，瓦因購買它的部分原因是空間寬敞且續航裡程長。55歲的瓦因經常從利茲附近的家驅車約500公里前往西南沿海城鎮康沃爾郡，他希望能在途中無需長時間停車充電。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Derbyshire, Roger Lyons, 60, recently bought a £48,000 electric BYD Seal Excellence after trying out models from Audi, Hyundai and Porsche. The BYD was “as nice to drive almost as a Porsche, and it’s got more toys than any of the other cars,” he said. His accountant had urged him to switch to an electric car to save on fuel costs, since his penchant for used luxury automobiles left him with two Audi sports cars that can be pricey to run and maintain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在德比郡，在試駕了奧迪、現代和保時捷的車型後，60歲的羅傑·萊昂斯最終購買了一輛售價4.8萬英鎊的比亞迪海豹卓越版電動汽車。「這輛車的駕駛體驗幾乎和保時捷一樣好，而且比其他任何車的配置都更豐富，」他說。他的會計師建議他換一輛電動汽車以節省燃油成本——他偏愛二手豪華車，名下已有兩輛奧迪跑車，使用和維護成本不菲。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="羅傑·萊昂斯最近買了一輛比亞迪電動汽車，他表示，「這輛車的駕駛體驗幾乎和保時捷一樣好，而且比其他任何車的配置都更豐富。」" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-06-bpvh/17Biz-UK-China-Cars-06-bpvh-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-06-bpvh/17Biz-UK-China-Cars-06-bpvh-master1050.jpg"/></div><figcaption><span>羅傑·萊昂斯最近買了一輛比亞迪電動汽車，他表示，「這輛車的駕駛體驗幾乎和保時捷一樣好，而且比其他任何車的配置都更豐富。」</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="他家外牆上裝有一個充電樁。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-07-bpvh/17Biz-UK-China-Cars-07-bpvh-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-07-bpvh/17Biz-UK-China-Cars-07-bpvh-jumbo.jpg"/></div><figcaption><span>他家外牆上裝有一個充電樁。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="新車的充電狀態。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-08-bpvh/17Biz-UK-China-Cars-08-bpvh-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-08-bpvh/17Biz-UK-China-Cars-08-bpvh-jumbo.jpg"/></div><figcaption><span>新車的充電狀態。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Encouraged by the success of his BYD dealerships, this month Mr. Keith opened two locations to sell cars made by Changan, a Chinese state-owned automaker.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">受比亞迪門店成功的鼓舞，基思本月又開設了兩家門店，銷售中國國有車企長安汽車的產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Next year, Mr. Keith expects sales at his company, which runs 28 dealerships selling a variety of global brands, to hit about £500 million, more than 50 percent higher than in 2024, boosted by the demand for Chinese cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">基思的公司目前運營著28家門店，銷售多個全球品牌的汽車。他預計，明年公司銷售額將達到約5億英鎊，較2024年增長逾50%，這主要得益於對中國汽車需求的推動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In September, the BYD dealership in Leeds sold more cars than any of his other dealerships in the area. “It’s pretty good going for a brand that two years ago nobody had heard of,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年9月，利茲市的比亞迪門店銷量超過了他在該地區的其他所有門店。「對於一個兩年前還無人知曉的品牌來說，這已經非常不錯了，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="德比郡峰區國家公園的鄉村風光。憑藉其長續航電池技術，比亞迪吸引了眾多希望長途駕駛無需頻繁停靠充電的消費者。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-04-bpvh/17Biz-UK-China-Cars-04-bpvh-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/17Biz-UK-China-Cars-04-bpvh/17Biz-UK-China-Cars-04-bpvh-master1050.jpg"/></div><figcaption><span>德比郡峰區國家公園的鄉村風光。憑藉其長續航電池技術，比亞迪吸引了眾多希望長途駕駛無需頻繁停靠充電的消費者。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Eshe Nelson是時報駐倫敦記者，報導經濟和商業新聞。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/business/20251217/britain-china-cars-byd/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>

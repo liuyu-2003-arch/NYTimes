@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拒做「歷史罪人」 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">拒做「歷史罪人」</h1>
+        <h2 class="en-headline">The Secret Trial of the General Who Refused to Attack Tiananmen Square</h2>
+        <div class="meta-line">儲百亮 <span style="margin: 0 8px;">•</span> 2025-12-18</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2025/12/10/10visualUploader-81341-cover/10visualUploader-81341-cover-master1050.jpg" width="1050"/><figcaption><span></span> <cite>YouTube</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When China’s rulers ordered tens of thousands of soldiers to crush pro-democracy demonstrations in Beijing in 1989, Gen. Xu Qinxian was the commander who famously said no.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1989年，當中國統治者下令數萬士兵鎮壓北京的民主示威活動時，徐勤先將軍以拒絕執行命令而聞名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He refused to lead his troops into the capital to help clear the protesters in Tiananmen Square by armed force. For decades, the story of his defiance remained murky.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他拒絕率領部隊開進首都，以武力清剿天安門廣場的抗議者。幾十年來，他的反抗故事一直鮮為人知。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, a leaked video of his secret court-martial has shed a rare light on General Xu, and on the tensions inside the military as Deng Xiaoping, China’s paramount leader at the time, prepared to send the soldiers into Beijing. That deployment culminated in the killing of hundreds — by some estimates, thousands — of unarmed people on June 3 and 4 as soldiers fired on protesters and bystanders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>如今，一段洩漏的祕密軍事法庭審判影片罕見地揭開了徐勤先的真實面貌，也展現了當時軍隊內部的緊張局勢——時任中國最高領導人鄧小平正準備向北京派遣軍隊。這一部署的高潮發生在6月3日和4日，士兵向抗議者和旁觀者開槍，殺死了數百名手無寸鐵的人（根據某些估計達到數千人）。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the trial footage, General Xu explains that he refused the order as a matter of individual conscience and professional judgment. He tells judges that sending armed troops against civilians would lead to chaos and bloodshed, saying that a commander who carried out martial law poorly would go down as “a sinner in history.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在審判錄像中，徐勤先解釋說，他拒絕命令是出於個人良心和職業判斷。他告訴法官，派遣武裝部隊對抗平民會導致混亂和流血，並說執行戒嚴令不力的指揮官將成為「歷史罪人」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPD_8Jm2yJEDFR3hdgUd_tUUGg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu had risen from a family of small-time vendors to command the 38th Group Army, one of the military’s most prestigious units. But by the time of his court-martial in 1990, captured in the video, he had been stripped of his command, charged with disobeying martial law orders, and brought before the judges to defend the decision that abruptly ended his career.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先出身小販家庭，卻一路晉陞至第38集團軍司令——最負盛名的部隊之一。但在1990年的軍事法庭上，他被剝奪指揮權，被控違反戒嚴令，並且要在法官面前，為這個突然結束他職業生涯的決定辯護。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The six-hour video of the trial shows General Xu, in drab civilian clothes, entering a courtroom, guarded by three soldiers. Three judges gaze down from a podium. The courtroom is devoid of spectators.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長達六小時的審判錄像顯示，徐勤先穿著樸素便服，在三名士兵的看守下進入法庭。三位法官端坐審判席俯視全場。法庭中沒有觀眾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu does not beg for mercy. Instead, he tersely lays out why he refused to comply.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先沒有乞求寬恕。相反，他簡潔地列出了他拒絕服從的原因。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I said that whoever carries this out well could be a hero,” he tells the judges, “and I said that whoever carries this out poorly would become a sinner in history.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他對法官們說：「執行這樣的任務可能立功，也可能成為歷史罪人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is almost unheard of for such footage, describing internal decision-making and dissent within the Chinese military, to become public, and discussion of the 1989 crackdown is still heavily censored in China. The video, which has been shared on YouTube, a platform blocked in China, has drawn intense interest, with more than a million views on one channel alone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這類描述中國軍隊內部決策和異議的錄像非常罕見，而且關於1989年鎮壓的討論在中國仍然受到嚴格審查。這段影片在中國被屏蔽的YouTube平台上分享，引起了人們的強烈興趣，僅一個頻道的觀看量就超過了100萬次。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is one thing to read about General Xu taking a stand and following his conscience. It is another to see him sitting in such a vulnerable position in court,” said Jeremy Brown, a professor at Simon Fraser University in Canada who wrote a history of the Tiananmen protests and crackdown. “To see Xu explain how he decided to refuse to follow a bad order from his well-informed military perspective forces the observer to think: ‘What would I do in this situation?’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「讀到徐將軍秉持良知挺身而出的報導是一回事，親眼目睹他在法庭上如此脆弱的姿態則是另一回事，」加拿大西蒙弗雷澤大學教授周傑榮(Jeremy Brown)表示。他曾撰寫過天安門事件抗議與鎮壓的歷史著作。「當看到徐勤先從深入的軍事專業視角闡述拒絕執行錯誤命令的抉擇時，觀者不禁會自問：『如果身處同樣情況，我將如何抉擇？』」</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CKvQ8Zm2yJEDFZ1UYQYdhy8UHA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu tells the judges that he was speaking only for himself, not for the 38th Army, in refusing the order.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先告訴法官，他拒絕命令只是代表他自己，而不是代表38軍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His account, along with the testimony of other generals cited by the judges and prosecutor at his trial, provides new insights into how Chinese leaders secretively developed and conveyed the plans for martial law and tried to stifle misgivings in the People’s Liberation Army.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的陳述，以及法官和檢察官在審判中引用的其他將軍的證詞，為中國領導人如何祕密制定和傳達戒嚴令計劃，並試圖消除人民解放軍的疑慮提供了新的視角。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu, perhaps like other generals, was summoned individually to hear the orders. It may have been an effort to prevent them from sharing any concerns, said Wu Renhua, an independent historian from China who now lives in Taiwan. Mr. Wu, who has written several studies of the 1989 pro-democracy uprising and crackdown, also noted that General Xu’s trial showed how the martial law orders were delivered orally, leaving no paper trail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先也許和其他將軍一樣，被單獨召見聽取命令。現居台灣的中國獨立歷史學家吳仁華說，這可能是為了防止他們相互交流自己的疑慮。吳仁華撰寫過若干關於1989年民主起義和鎮壓的研究，他還指出，徐勤先的審判表明，戒嚴令是口頭下達的，沒有留下任何書面記錄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This counts as the most important material I have come across in over 30 years of collecting material on June 4,” Mr. Wu said of the trial video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這可以說是我30多年收集六四資料當中所見到的最重要的一份，」吳仁華在談到庭審影片時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“General Xu Qinxian’s insubordination was a pivotal event in the June Fourth events, but many details remained unclear before this footage emerged,” said Mr. Wu, who as a young scholar in Beijing went to Tiananmen Square in 1989 to join the protests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「徐勤先將軍抗命的事件，在整個六四事件當中是一個非常重大的事件，但是很多細節，這個錄像出來之前的都是不明了的，尤其是關於戒嚴的決定，」吳仁華說。1989年，身為年輕學者的他曾前往天安門廣場參與抗議活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Wu was among the people who posted the video online, but said he did so only after seeing that others had. He said he had been given the video by a trustworthy source, whose identity he declined to reveal, and that he checked details carefully to confirm that the footage was authentic. Professor Brown and another historian of the Tiananmen protests, Timothy Brook, a professor emeritus at the University of British Columbia, also said they saw no reason to doubt the authenticity of the video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>吳仁華是在網上發布影片的人之一，但他說他是在看到其他人上傳之後才跟進的。他說，他從一個值得信賴的消息來源那裡得到這段影片，但他拒絕透露此人的身份。他還說，他仔細檢查了細節，以確認影片的真實性。周傑榮及另一位研究天安門事件的歷史學家、不列顛哥倫比亞大學名譽教授卜正民(Timothy Brook)均表示，他們認為該影片真實可信。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CKvE8Zm2yJEDFfbLdgUdj4c2zg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The trial centers on a tense meeting between General Xu and his commanders on May 18, 1989. For weeks, students had occupied Tiananmen Square, demanding political liberalization. China’s top leader, Deng, wanted a decisive end to the tumult.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">審判的焦點集中於1989年5月18日徐勤先和他的指揮官們的一場緊張的會議。當時學生們已經佔領天安門廣場幾個星期，要求政治自由化。中國最高領導人鄧小平想要果斷地結束這場騷亂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu was in a hospital, recovering from a kidney stone, when he was summoned to the Beijing Military Region headquarters. China’s leaders had decided to impose martial law, and General Xu was being ordered to send about 15,000 armed troops from the 38th Army — an elite force based about 90 miles from Beijing — to be part of an initial force of 50,000.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正因腎結石住院治療的徐勤先被叫到<span>北京軍區總部。中國領導人已經決定實施戒嚴令，徐勤先奉命從38軍——一支駐紮在距離北京約150公里的精銳部隊——派出大約1.5萬名武裝官兵，作為最初的5萬人部隊的一部分。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I said that I had disagreements about this,” General Xu told the court, referring to the martial law order. The protests should be resolved mainly through political means, not by force, he said. If the central government ordered troops in, they should be deployed only to Beijing’s outskirts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我說這個事情我有不同意見，」徐勤先對法庭說，他指的是戒嚴令。他說，抗議活動應該主要通過政治手段解決，而不是武力。如果中央政府命令軍隊進駐，應該只部署在北京的郊區。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu acknowledged that the 38th Army would have to comply. But he did not want to be part of the operation, he told the commanders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先承認38軍必須服從命令。但他告訴指揮官，他不想參與這次行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I said to them that my superiors can appoint me, and they can also dismiss me,” he recounted in court, seeming to indicate that he was willing to lose his job over his decision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當時我說，我說上級可以任我，也可以免我，」他在法庭上敘述道，似乎表明他願意因為自己的決定付出丟掉職位的代價。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the generals at the meeting, Dai Jingsheng, told investigators that he and his colleagues went silent for about a minute while they absorbed General Xu’s defiance. “Nobody expected words like this from Xu,” said General Dai, according to the testimony.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">會議上的一位將軍戴敬生告訴調查人員，他和同事們沉默了大約一分鐘，徐勤先的反抗讓他們一時沒回過神來。「沒想到徐會說這些話，」戴敬生在證詞中說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK3Z8Zm2yJEDFa9GYQYd-rw2IQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under questioning, General Xu acknowledged that the military answered to China’s Communist Party leaders. But he suggested that it should also be subject to a broader authority.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在質詢之下，徐勤先承認軍隊聽命於中國共產黨領導人。但他表示，軍隊也應該受到更廣泛的權威的約束。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He told the commanders that an order so momentous should first be discussed more widely among senior party and government officials and — crucially, perhaps — by the National People’s Congress, the legislature that some moderates in the party also hoped would step in to halt the slide toward carnage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他對指揮官們說，如此重大的命令，首先應該在黨政高級官員之間進行更廣泛的討論，最關鍵的是，也許應該由全國人民代表大會進行討論。一些黨內溫和派人士也希望全國人民代表大會能夠介入，阻止事態滑向屠殺。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To support his case, General Xu said the People’s Liberation Army had been “incorporated into the state system” and so answered not only to party leaders, but to the government and lawmakers. (Communist Party leaders, especially Xi Jinping, have since condemned the idea of a “national” military as a threat to the party’s control of the armed forces.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了支持自己的觀點，徐勤先說，解放軍已經「納入國家體制」，因此不僅對黨的領導人負責，也應對政府和立法者負責。（此後中共領導人——尤其是習近平——譴責「國家軍隊」理念威脅了黨對武裝力量的控制。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu “seemed to believe that there was a possibility that his expression of concern would go up the food chain to higher levels that would essentially pump the brakes on martial law,” said Joseph Torigian, a historian of the Chinese Communist Party at American University in Washington who has examined the trial video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先「似乎相信，他表達的擔憂有可能會上升到更高層，從根本上踩下戒嚴令的<span>剎車，」華盛頓美利堅大學研究中國共產黨的歷史學家唐志學(Joseph Torigian)看過審判錄像後說。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The trial reveals, I think, that there was a sense even within the military that conversation, dialogue, to try to win over the students — that option had not been exhausted,” Mr. Torigian said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐志學說：「我認為，這次審判表明，甚至在軍方內部也有一種感覺，通過對話爭取學生支持的途徑尚未窮盡。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu seemed to wrestle with how far to take his dissent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徐勤先似乎在糾結該將異議表達到何種程度。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNfl8Zm2yJEDFZNIYQYdVgEByg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pressured by his commanders during the Beijing meeting, he relayed the martial law orders to a 38th Army colleague in a phone call, but also told him that he did not want to participate. He later called one of the commanders who had passed on the orders, repeating that he did not want to be involved. The next day, after a 38th Army officer beseeched General Xu to stay with the army if it went into Beijing, he said he would. But by then, it was too late to change course.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北京會議期間，迫於指揮官的壓力，他在電話中向38軍的一位同事轉達了戒嚴令，但同時告知對方自己不願參與。後來，他打電話給一名下達命令的指揮官，重申自己不想參與其中。第二天，一名軍官懇求徐勤先若部隊進京務必隨行。徐勤先表示同意。但到那時，改變態度為時已晚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is intolerable,” one vice chairman of the Chinese military said of General Xu’s actions, according to the trial testimony. Senior leaders cut off his contact with 38th Army officers, and he was later detained.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是不能容忍的，」根據審判證詞，中國軍方的一位副主席在談到徐勤先的行為時說。高層領導人切斷了他與38軍軍官的聯繫，他後來被拘留。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under a new commander, the 38th Army became notorious for its bloody advance into Beijing, shooting bystanders as well as people who resisted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在新指揮官的領導下，38軍以向北京進軍的血腥行動而臭名昭著，不僅射殺抵抗者，連路人也不放過。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Xu was sentenced to five years in prison, and he died in 2021 at 85. Parts of his story surfaced in books and news reports. In 2011, he told a Hong Kong newspaper that he had no regrets about his decision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>徐勤先被判處五年徒刑，他於2021年去世，享年85歲。他的部分故事出現在書籍和新聞報導中。2011年，他對一家香港報紙表示，對自己的決定並不後悔。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/china/20251218/china-general-tiananmen-square/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
