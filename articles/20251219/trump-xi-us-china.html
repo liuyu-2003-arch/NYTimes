@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中美認知差距日益擴大 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">中美認知差距日益擴大</h1>
+        <h2 class="en-headline">China Is Feeling Strong and Senses an American Retreat</h2>
+        <div class="meta-line">袁莉 <span style="margin: 0 8px;">•</span> 2025-12-19</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="833" src="https://static01.nyt.com/images/2025/12/19/business/00nw-bridge/00nw-bridge-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Dongyan Xu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the world’s tallest bridge opened in China’s Guizhou Province in September, a state-run political talk show filmed an episode from its summit to showcase what it called “the remarkable story of China’s path to modernization.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當世界上最高的橋樑於9月在中國貴州省開通時，一檔國有媒體的<span>政治脫口秀節目在橋頂拍攝了一期節目，展示他們</span>所稱的「中國式現代化的精彩故事」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Canadian influencer on the panel marveled, “You have projects like this the West could only dream of.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">節目中一位加拿大網紅驚嘆道：「你們有這種西方難以企及的工程。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">CNN and NBC broadcast segments of their own about the bridge, which stands roughly 200 stories above a river. So did Matt Walsh, a right-wing commentator. “Why aren’t we building stuff like this any more?” he asked on his show on YouTube. He lamented that America had “lost the will and desire to do great things.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">CNN和NBC報導了這座高懸於離河面約200層樓高處的橋。右翼評論員馬特·沃爾什也提到了它。「我們為什麼不再建造這樣的東西了？」他在YouTube節目中問道。他感嘆美國已經「失去了做大事的意志和慾望」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It would be a mistake to brush off the story of the Guizhou bridge as simply a victory of Chinese propaganda. The reactions to the bridge point to something deeper than admiration for Chinese infrastructure: a widening imbalance between the self-images of the world’s two largest powers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將貴州大橋的故事簡單歸為中國宣傳的勝利將是一個錯誤。對這座橋的反應指向了比對中國基礎設施的欽佩更深層的東西：世界上兩大強國自我形象之間日益擴大的失衡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMzS87X3ypEDFXLh_QUdBJgg_w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been buoyed this year by a surge of confidence, convinced that its governance model is ascendant and its rise inevitable. That confidence often overlooks serious vulnerabilities: a slowing economy, a deepening housing crisis and falling birthrates.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年，中國因信心激增而振奮，堅信其治理模式更優越，其崛起不可避免。這種信心往往忽略了嚴重的脆弱性：經濟放緩、不斷深化的住房危機以及出生率下降。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States, meanwhile, has taken a different tone — one that China experts say exhibits defeatism. President Trump’s national security strategy, released this month, frames China more as a business competitor than as a rival for military, technological and ideological power. That is a shift from the views of prior administrations, including Mr. Trump’s own in his first term. Chinese analysts have interpreted the new strategy as evidence of American retreat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，美國採取了不同的基調——中國專家稱其表現出一種<span>失敗主義。川普總統本月發布的國家安全戰略，將中國更多地定位為商業競爭對手，而不是軍事、技術和意識型態力量的對手。這與前幾屆政府（包括</span>川普的第一任期）的觀點有所轉變。中國分析人士將這一新戰略解讀為美國退縮的證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The document describes China as a “near peer.” It downplays Beijing’s military and technological strengths and reframes the relationship largely in commercial terms — a striking position when China sees itself advancing on every front.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該文件將中國描述為「實力近乎對等的國家」。它淡化了北京的軍事和技術優勢，並主要從商業角度重新定義了這種關係——當中國認為自己在各領域都在前進的時候，這樣的立場顯得很驚人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An official Chinese commentary published by the Xi Jinping Thought on Diplomacy Studies Center argued that the “near peer” phrasing reflects “deep anxiety” within America’s decision-making establishment and amounts to a “painful” acknowledgment that earlier U.S. strategies have failed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平外交思想研究中心發表的一篇中文官方評論認為，「實力近乎對等」的表述反映了美國決策層內部的「深切焦慮」，並相當於在「痛苦地」承認此前的美國戰略的失敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Similarly, Mr. Trump reversed Washington policy this month when he allowed the Silicon Valley giant Nvidia to sell advanced semiconductors to China, as long as the company shares the proceeds with the U.S. government. The move, in effect, cast competition with China as a losing battle best managed through short-term commercial transactions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣，本月<span>川普逆轉</span>了華盛頓的政策，允許矽谷巨頭英偉達向中國銷售先進半導體，只要該公司與美國政府分享收益。這一舉動實際上將與中國競爭視為一場註定失敗的戰鬥，通過短期商業交易來管理最為妥當。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="世界最高大橋花江峽谷大橋，位於中國貴州省。" data-src="https://static01.nyt.com/images/2025/12/18/multimedia/18Biz-Newworld-01-mkvj/18Biz-Newworld-01-mkvj-master1050.jpg" src="https://static01.nyt.com/images/2025/12/18/multimedia/18Biz-Newworld-01-mkvj/18Biz-Newworld-01-mkvj-master1050.jpg"/></div><figcaption><span>世界最高大橋花江峽谷大橋，位於中國貴州省。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A danger is that Mr. Trump, by downplaying the geopolitical rivalry with China, could give license to pessimism about America’s place in the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個危險是，川普<span>淡化與中國的地緣政治競爭可能助長對美國國際地位的悲觀情緒。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The gap in superpower perception — overconfidence in the rising power and defeatism in the incumbent — could destabilize U.S.-Chinese relations. It makes it less likely the two sides can view each other’s strengths with clear eyes and heightens the risk of strategic miscalculation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">超級大國認知的差距——崛起大國過度自信、現任大國失敗主義——可能破壞美中關係。這使得雙方不太可能清晰看待彼此的優勢，並增加了戰略誤判的風險。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI2P9LX3ypEDFeXauAgdFZ8tYg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Scholars of international relations have long argued that overconfidence and false optimism can intensify conflicts and even contribute to the outbreak of wars,” said Haifeng Huang, a political scientist at Ohio State University. He pointed to how China’s belligerent brand of wolf-warrior diplomacy has alienated key trading partners, including Australia and the European Union. He cited Russia’s underestimation of the challenges it faced when it invaded Ukraine as another example of the perils of geopolitical hubris.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「國際關係學者長期以來認為，過度自信和虛假樂觀會加劇衝突，甚至導致戰爭爆發，」俄亥俄州立大學政治學家黃海峰說。他指出，中國「好戰」的狼戰外交如何疏遠了包括澳洲和歐盟在內的關鍵貿易夥伴。</span>他還以俄羅斯入侵烏克蘭時低估自身面臨的挑戰為例，說明地緣政治傲慢的危險性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent years, the triumphant narrative that China has cultivated in its propaganda has taken root at home and echoed abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，中國在其宣傳中構建的勝利敘事已在國內紮根，並在國外產生共鳴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During the Covid-19 pandemic, global views of China dipped to their lowest in decades. But the Chinese public, its information filtered by a tightly controlled media, consistently overestimated the country’s international standing, according to two surveys conducted by Mr. Huang. The surveys showed that Chinese people believed that China was admired and endorsed far more widely around the world than Pew Research Center and Gallup surveys indicated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在新冠疫情期間，全球對中國看法降至幾十年來的最低點。但根據黃海峰進行的兩次調查，中國公眾的信息被嚴格控制的媒體過濾，一貫高估本國在國際上的地位。調查顯示，中國人認為中國在世界範圍內受到的欽佩和認可遠超皮尤研究中心和蓋洛普調查所顯示的程度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing could not prevent a crisis of confidence in 2023 and 2024 after it ended its strict Covid policies. The housing market crashed, youth unemployment surged and consumer sentiment plunged. A slump in confidence, largely driven by the decline in real estate values, continues to hang over China’s economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結束嚴格的新冠防疫政策後，北京未能阻止2023年和2024年出現的信心危機。房地產市場崩盤，青年失業率飆升，消費者信心暴跌。主要由房地產價值下降驅動的信心低迷繼續籠罩著中國經濟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But 2025 began differently. In January, DeepSeek announced a big advance in artificial intelligence and became a catalyst for a wave of technological confidence in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但2025年的開局有所不同。1月，DeepSeek宣布人工智慧領域的一項重大進展，成為中國技術信心浪潮的催化劑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past two months, I’ve interviewed more than a dozen Chinese tech executives and investors. They said they felt more optimistic than at any point in the previous four years, even as they acknowledged that the wider economy was sluggish and that intense domestic competition was eroding their profit margins.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去兩個月裡，我採訪了十多位中國科技高管和投資者。他們表示，他們比過去四年中的任何時候都更加樂觀，儘管他們承認，整體經濟低迷，激烈的國內競爭正在侵蝕他們的利潤率。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP269LX3ypEDFbPBfwQdLBIACQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Market sentiment has shifted, too. Hong Kong’s Hang Seng stock index, heavily weighted toward Chinese companies, is up about 25 percent this year, compared with 16 percent for the S&amp;P 500. The founder of a Shanghai-based A.I. start-up told me that major banks were so busy working on initial public offerings that it had become difficult to get meetings with their senior executives. A year ago, the banks were asking to see him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">市場情緒也發生了變化。以中國企業為主的香港恒生指數今年上漲了約25%，而標準普爾500指數的漲幅為16%。上海一家人工智慧初創企業的創始人告訴我，各大銀行都忙於首次公開募股，以至於很難與它們的高管見面。一年前，銀行還在主動約見他。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s confidence is magnified by the acclaim it receives from abroad. Western influencers routinely post videos of China’s megaprojects — from high-speed rail hubs to astonishing urban skylines — that feed a narrative of Chinese competence. American commentators gush at China’s tech and manufacturing advances. State media eagerly amplifies these voices as proof that the world views China as the standard-bearer of modern development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從國外獲得的讚譽增強了中國的信心。西方網紅經常發布中國大型項目的影片——從高鐵樞紐到驚人的城市天際線，不斷強化著有關中國實力的敘事。美國評論人士對中國的科技和製造業進步讚不絕口。官方媒體急切地放大這些聲音，作為世界將中國視為現代發展標竿的證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The scholar Zhang Weiwei, whose political talk show featured the opening of the Guizhou bridge, has advised top leaders on how to shape China’s messaging abroad. In July, he devoted an episode to praising what he called the “wise Americans” who, in his telling, have begun to acknowledge China’s rise and America’s decline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>學者張維為的政治脫口秀節目談到了貴州大橋的開通，他就如何塑造中國的對外信息向最高領導人提出建議。今年7月，他用一集的篇幅讚揚了他所謂的「美國智者」，用他的話來說，這些人已經開始承認中國的崛起和美國的衰落。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Since Trump’s return to the White House,” he said, “more Western voices have been reflecting on what the U.S. has done wrong and what China has done right. Their conclusion: America’s problems are intractable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「總之，川普再度入主白宮以來，從各個角度反思美國做錯了什麼、中國做對了什麼的西方人士越來越多，而他們最後的結論似乎都是一樣的，即美國的問題基本無解，」他說。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese state media also widely reported a Pew survey showing that views of the United States have worsened this year in 10 high-income countries while views of China have improved.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國官方媒體還廣泛報導了皮尤研究中心的一項調查，該調查顯示，今年10個高收入國家對美國的看法有所惡化，而對中國的看法有所改善。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American elites who visit China typically stay at high-end hotels, visit companies that are making money and meet with officials who have survived under the iron rule of Xi Jinping, China’s top leader. A Hong Kong-based economist I interviewed, requesting anonymity because Beijing had warned the person not to speak ill of the economy, said visitors rarely got to meet with people who had lost their businesses or been detained under Mr. Xi. Americans also rarely encounter ordinary Chinese who face economic pressures that might feel familiar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">訪華的美國精英通常下榻高端酒店，參觀利潤豐厚的企業，會見在習近平鐵腕統治下生存下來的官員。一位要求匿名的香港經濟學家接受採訪時表示，訪華者很少能接觸到在習近平執政期間破產或被拘留的人士。美國人也很少接觸到那些承受著他們可能熟悉的經濟壓力的普通中國人。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="7月，上海世界人工智慧大會上，眾多人形機器人爭相吸引觀眾目光。" data-src="https://static01.nyt.com/images/2025/12/18/multimedia/18Biz-Newworld-02-mkvj/18Biz-Newworld-02-mkvj-master1050.jpg" src="https://static01.nyt.com/images/2025/12/18/multimedia/18Biz-Newworld-02-mkvj/18Biz-Newworld-02-mkvj-master1050.jpg"/></div><figcaption><span>7月，上海世界人工智慧大會上，眾多人形機器人爭相吸引觀眾目光。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s advances in artificial intelligence, robotics and manufacturing pose real challenges for the United States. But the larger risk is the extent to which the American psyche internalizes a Beijing-driven narrative of U.S. decline, often without understanding China’s own weaknesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在人工智慧、機器人和製造業方面的進步對美國構成了真正的挑戰。但更大的風險在於，美國人的心理在多大程度上內化了北京主導的美國衰落敘事，而往往不了解中國自身的弱點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What worries some observers most is not China’s rising confidence but what they say is America’s diminishing faith in its own abilities. To Jianying Zha, a writer in New York City who has chronicled Chinese politics for decades, that shift is the real strategic danger.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些觀察家最擔心的不是中國日益增強的自信，而是他們所說的美國對自己能力的信心正在減弱。幾十年來一直記錄中國政治的紐約作家查建英認為，這種轉變是真正的戰略危險。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIy-9LX3ypEDFXnF_QUdfWUUrw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“America’s greatest enemy is itself — losing faith in its core values and its fighting spirit,” she told me. “That’s exactly what plays into China’s ancient art of war: defeating you without waging war, because you’ll defeat yourself.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國最大的敵人是它自己——對它的核心價值觀和戰鬥精神失去信心，」她告訴我。「中國的辦法就是讓你們自己戰敗自己，都不用我們來打你們，不戰而屈人之兵。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">袁莉為《紐約時報》撰寫「新新世界」專欄，專注中國及亞洲科技、商業和政治交叉議題。</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/china/20251219/trump-xi-us-china/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
