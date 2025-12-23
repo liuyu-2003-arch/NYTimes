@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「歐威爾式的恐懼氛圍」：中國如何在海外噤聲批評者 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">「歐威爾式的恐懼氛圍」：中國如何在海外噤聲批評者</h1>
+        <h2 class="en-headline">‘Orwellian Climate of Fear’: How China Cracks Down on Critics in the U.S.</h2>
+        <div class="meta-line">MARK WALKER, ALICIA CHEN <span style="margin: 0 8px;">•</span> 2025-12-22</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="590" src="https://static01.nyt.com/images/2025/11/22/multimedia/00x-artist2/00x-artist2-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Hui Bo</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was October 2023, and F.B.I. agents told Hui Bo not to come to their office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那是2023年10月，聯邦調查局的特工告訴惠波不要去他們的辦公室。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For his own safety, it would be better to meet in public, he recalled them saying, so he waited near a park in Los Angeles. He was warned that he was being watched by agents of the People’s Republic of China after he commissioned sculptures in protest of China’s government.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他回憶說，特工們表示，為了他的安全最好在公共場所見面，於是他在洛杉磯的一個公園附近等他們。他被警告稱，由於委託製作了抗議中國政府的雕塑，他正受到中國特工的監視。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The F.B.I. said that you are in great danger, that we strongly recommend that you move and not live here anymore,” Mr. Hui said in an interview. “That’s when I felt fear.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「FBI說，你的處境非常危險，我們強烈建議你搬家，不要再住在這裡，」惠波在接受採訪時說。「那一刻我感到了恐懼。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hui’s story is part of a larger trend, one that federal law enforcement officials said exposes an aggressive new phase in China’s global campaign to silence dissent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波的遭遇並非個案，聯邦執法官員表示，這揭示了中國在全球範圍內壓制異見人士的行動已進入一個更為強硬的新階段。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLffgsu90pEDFRfylAkduZMf3A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Where once the Chinese state focused on political dissidents and exiled activists, it now targets artists like Mr. Hui, whose creative protests have tested the government’s tolerance and reach, the officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些聯邦執法官員說，過去中國政府主要針對政治異見人士和流亡活動人士，如今則把目標對準了像惠波這樣的藝術家——他們以充滿創意的抗議方式考驗著政府的容忍度和影響範圍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The crackdown has intensified and extended beyond China’s borders since the country’s top leader, President Xi Jinping, rose to power in 2012.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自中國最高領導人習近平於2012年上台以來，這種打壓行動日益加劇，並延伸至境外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government has even expanded its influence to elections abroad, including races in New York City, to try to quash criticism of the Chinese state in places where people are more free to speak out than they are in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國政府甚至對海外的選舉施加影響，包括紐約市的競選活動，試圖在言論環境比中國更自由的地方壓制針對中國政府的批評聲音。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is not alone in seeking to silence critics abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國並非唯一一個試圖在海外噤聲批評者的國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia does it. Iran does it. Saudi Arabia does, too, according to Roman Rozhavsky, the assistant director of the F.B.I.’s counterintelligence division in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據華盛頓的聯邦調查局反情報部門助理主任羅曼·羅扎夫斯基稱，俄羅斯、伊朗和沙烏地阿拉伯也這樣做。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China, he said, is the most prolific, devoting substantial resources to the effort in the United States. Suppressing dissent is a priority for China’s president, Mr. Rozhavsky said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他表示，中國是規模最大的一個，在美國投入了大量資源用於此類行動。羅扎夫斯基指出，壓制異議是中國國家主席的一個優先事項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are seeing more of these cases and we’re seeing the Chinese government be more aggressive in going after people on U.S. soil,” Mr. Rozhavsky said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們看到這類案件越來越多，也看到中國政府在美國本土針對個人採取行動時變得更加強硬，」羅扎夫斯基說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The cases involving the artists share a common thread: They were targeted for criticizing President Xi, the Chinese Communist Party, or the workings of the Chinese government.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">涉及這些藝術家的案件都有一個共同點：他們因批評習近平主席、中國共產黨或中國政府的行事方式而成為針對目標。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="2023年10月，中國國家主席習近平在韓國釜山與美國總統川普舉行會晤。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-xijinping-kgvb/00xp-artist-xijinping-kgvb-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-xijinping-kgvb/00xp-artist-xijinping-kgvb-jumbo.jpg"/></div><figcaption><span>2023年10月，中國國家主席習近平在韓國釜山與美國總統川普舉行會晤。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokesman for the Chinese embassy in Washington said that he was unfamiliar with Mr. Hui’s case.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國駐華盛頓大使館的發言人表示，他不了解惠波的案件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He rejected the claims made by the U.S. Department of Justice that China had been silencing critics abroad, calling it, in a statement, a “completely unwarranted accusation and a malicious smear against China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他在一份聲明中駁斥了美國司法部關於中國在海外噤聲批評者的說法，稱這是「完全毫無根據的指責，是對中國的惡意抹黑」。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJrzgsu90pEDFaPw4wcdcj05FA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Rozhavsky said that critics of China have had relatives living in the country threatened by the Chinese government, or that China has hired a person in the United States to intimidate or physically hurt them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅扎夫斯基表示，中國的批評者曾遭遇生活在國內的親屬被政府威脅的情況，或者在美國僱用他人對批評者進行恐嚇或人身傷害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Their job is to silence people and, unfortunately, it works,” Mr. Rozhavsky said. “It creates this Orwellian climate of fear where people are afraid to speak their mind even though they’re on U.S. soil and they’re just exercising their right to freedom of speech.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們的工作就是讓人閉嘴，遺憾的是，這確實奏效了，」羅扎夫斯基說。「這製造了一種歐威爾式的恐懼氛圍，讓人們即便身處美國領土、只是在行使言論自由權利時，也會害怕表達自己的想法。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hui, 57, left China for Los Angeles in 2017 with his wife and two children. He hoped to give his children a better life, one far from the reach of an oppressive government, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波現年57歲，他於2017年帶著妻子和兩個孩子離開中國前往洛杉磯。他說，他希望給孩子更好的生活，一個遠離高壓政府掌控的生活。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Years after leaving China, disillusioned by its handling of public health crises and its suppression of free expression, Mr. Hui began working with a sculptor in secret.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">離開中國數年後，由於對中國處理公共衛生危機的方式以及對言論自由的壓制感到失望，惠波開始與一位雕塑家祕密展開合作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Together, they created four statues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們共同創作了四尊雕像。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The statues depict Mr. Xi and the first lady, Peng Liyuan, kneeling and their hands bound behind them. In one set, they are clothed. In the other, they are bare-chested, emphasizing their humiliation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些雕塑描繪了習近平和第一夫人彭麗媛跪著、雙手反綁在身後的形象。其中一組身著衣物，另一組則赤裸上身，刻意強化了受辱的意味。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKWBg8u90pEDFc_MlAkd8jYe3w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This depiction of a disgraced, kneeling couple evokes a potent and specific Chinese historical parallel: the enduring example of Qin Hui.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種跪地、蒙羞的夫婦的形象，讓人想到了一個有力而具體的中國歷史參照：千古罪人秦檜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was the 12th-century official blamed for the wrongful execution of General Yue Fei, an admired national figure. A bronze statue of the official, and another of his wife, kneel in atonement outside the general’s tomb in Hangzhou, China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">秦檜是12世紀的一名官員，被認為應為冤殺受人景仰的民族英雄岳飛將軍負責。在中國杭州的岳飛墓外分別放置著這位官員及其妻子以示贖罪的青銅跪像。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="杭州岳飛廟內的秦檜夫婦銅像。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-qinhui/00xp-artist-qinhui-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-qinhui/00xp-artist-qinhui-master1050.jpg"/></div><figcaption><span>杭州岳飛廟內的秦檜夫婦銅像。</span> <cite>Zhu Haiwei/Zhejiang Daily, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hui understood the symbolism of the statues of the Chinese president and his wife kneeling. He also understood the risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波明白中國國家主席及其夫人的跪像所蘊含的象徵意義。他也明白其中的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In November 2023, as Mr. Xi prepared to attend the Asia-Pacific Economic Cooperation summit in San Francisco, Mr. Hui was preparing his protest. He had posted on social media that he planned to display the sculptures near the summit as a silent rebuke to a government he believed had abandoned its people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2023年11月，正當習近平準備參加在舊金山舉行的亞太經合組織峰會時，惠波也在籌備他的抗議活動。他在社群媒體上發布消息稱計劃在峰會附近展示這些雕塑，作為對他所認為的背棄了人民的政府進行無聲譴責。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Federal prosecutors said that two men, Cui Guanghai, 44, of China, and John Miller, 64, a British national who is a permanent U.S. resident, orchestrated a harassment campaign to derail Mr. Hui’s protest. The harassment took place from October 2023 through at least April 2025, according to court documents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聯邦檢察官稱，兩名男子——44歲的中國公民崔廣海（音），以及64歲的英國籍、擁有美國永久居留權的約翰·米勒——策划了一場騷擾行動，意在破壞惠波的抗議。據法庭文件，這些騷擾行為從2023年10月持續到至少2025年4月。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tracking devices were placed on Mr. Hui’s car. His tires were slashed to keep him from making the six-plus-hour drive with the sculptures to the conference in San Francisco.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波的車被裝上了追蹤設備。他的輪胎被割破，以阻止他帶著雕塑驅車六個多小時前往舊金山舉行的峰會。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLqlg8u90pEDFXbQ4wcd5qcHrQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In May, a grand jury indicted Mr. Cui and Mr. Miller on charges of conspiracy, interstate stalking and smuggling. The Justice Department called the incident part of “a blatant assault on both our national security and our democratic values.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年5月，大陪審團以共謀、跨州跟蹤和走私等罪名對崔廣海和米勒提起公訴。司法部稱該事件是「對我們國家安全和民主價值的公然攻擊」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was unclear from court records whether Mr. Cui and Mr. Miller had legal representation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">法庭記錄未顯示崔廣海和米勒是否有法律代表。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hui said he had also learned that in China, police officers had taken his parents in for questioning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波說，他得知他在中國的父母被警方帶走問話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A few days before the summit, his mother, who is in her 80s, called from his hometown in Liaoning, China. She was in tears, begging him not to attend the summit, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">峰會前幾天，他80多歲的母親從中國遼寧的老家給他打來電話，哭著懇求他不要前往峰會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Mr. Hui, it wasn’t the first signal of trouble, but it was the clearest. “I had no other choice but to cancel my plan,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對惠波來說，這並非麻煩降臨的第一個信號，卻是最清晰的一個。「我別無選擇，只能取消計劃，」他說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hui was not alone in his experience.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波並非唯一有此遭遇的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Mojave Desert, Chen Weiming, a California-based sculptor from China, created a towering installation made of fiberglass that partially portrayed Mr. Xi with protruding spikes of the coronavirus on his head. It was titled “CCP Virus,” alluding to the Chinese Communist Party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在莫哈韋沙漠，來自中國、現居加州的雕塑家陳維明創作了一件大型玻璃鋼裝置作品，部分形象描繪了習近平，其頭部伸出類似新冠病毒的突刺。作品名為《中共病毒》，影射中國共產黨。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="陳維明創作的《中共病毒》。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-02/00xp-artist-02-master1050.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-02/00xp-artist-02-master1050.jpg"/></div><figcaption><span>陳維明創作的《中共病毒》。</span> <cite>Liberty Sculpture Park</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In spring 2021, vandals set it ablaze. Mr. Chen said it wasn’t the first time — or the last.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2021年春天，這件作品遭縱火焚毀。陳維明說，這既不是第一次，也不會是最後一次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The pressure is constant,” he said. “But the message must stand.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「壓力是持續不斷的，」他說。「但信息必須傳達出去。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJzMg8u90pEDFVXo4wcdTCU1xA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Chen, 68, runs Liberty Sculpture Park in Yermo, Calif., where dozens of politically charged works are on display, including those that memorialize Tiananmen Square and denounce Hong Kong’s national security laws.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">68歲的陳維明在加州耶爾莫經營著自由雕塑公園，園內展出著數十件帶有強烈政治色彩的作品，其中包括紀念天安門廣場事件、譴責香港國安法的作品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Chen said that he and his volunteers have faced repeated harassment since 2022: studio break-ins, surveillance and threats. Even collaborators — curators, filmmakers, publishers — have reported harassment, Mr. Chen said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">陳維明表示，自2022年以來，他和他的義工團隊屢屢遭到騷擾：工作室被闖入、被監視、受到威脅。他說，甚至連合作夥伴——策劃人、電影製作人、出版商——也報告受到了騷擾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The attacks, he said, have only deepened his resolve.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這些攻擊只會讓他變得更加堅定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I had to rebuild it,” Mr. Chen said of the sculpture. “This time in steel so they can’t destroy it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我必須把它重建起來，」陳維明談到那座雕塑時說。「這一次要用鋼材建造，這樣他們就無法摧毀它了。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="雕塑遭到輕微破壞。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-03/00xp-artist-03-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-03/00xp-artist-03-jumbo.jpg"/></div><figcaption><span>雕塑遭到輕微破壞。</span> <cite>Liberty Sculpture Park</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="裝置上的一根突刺遭到了破壞。" data-src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-03-02/00xp-artist-03-02-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/12/multimedia/00xp-artist-03-02/00xp-artist-03-02-jumbo.jpg"/></div><figcaption><span>裝置上的一根突刺遭到了破壞。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March 2022, federal prosecutors announced charges against three people over their involvement in a repression scheme, which included setting fire to Mr. Chen’s sculpture and spying on the artist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年3月，聯邦檢察官宣布對三人提起指控，指控他們參與了一項打壓行動，其中包括焚毀陳維明的雕塑以及監視這位藝術家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maya Wang, an associate Asia director at Human Rights Watch, said these cases underscore how far the Chinese government will go.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人權觀察的亞洲區副主任王松蓮表示，從這些案例可以看出中國政府為了達到目的而願意將行動推進到何種程度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The use of transnational repression demonstrates a symptom of the underlying structure of the Chinese government’s influence operations around the world,” Ms. Wang said. “It has marginalized voices critical of Beijing and elevated those who are friendly to it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「動用跨國打壓手段，反映出中國政府全球影響力行動背後的一個結構性特徵，」王松蓮說。「它對批評北京的聲音加以邊緣化，同時提升了對其友好的聲音。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since 2023, Mr. Hui has lost more than 30 pounds, he said. He struggles to sleep. He keeps his phone close.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">惠波表示，自2023年以來，他已經瘦了近14公斤。他經常失眠，手機從不離身。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, Mr. Hui opened his exhibition at the Pandemic Victims Memorial Organization in Corona, Calif. The sculptures stand in place. Security cameras watch the doors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，惠波還是在加利福尼亞州科羅納的「疫情受難者紀念組織」舉辦了他的展覽。雕塑安放就位。監控攝像頭緊盯著大門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As for continuing to commission art in protest of the government, he said: “Whether I do it or not, I will face huge risks. Therefore, I will continue.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至於是否繼續委託創作抗議政府的藝術作品，他說：「不管我做不做，都會面臨巨大的風險。所以，我會繼續。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Mark Walker是時報記者，報導突發新聞和文化新聞。</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/usa/20251222/chinese-dissidents-protest-art/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>

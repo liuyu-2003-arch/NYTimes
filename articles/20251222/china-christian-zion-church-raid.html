@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中國如何鎮壓錫安教會 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">中國如何鎮壓錫安教會</h1>
+        <h2 class="en-headline">The Anatomy of a Chinese Church Crackdown</h2>
+        <div class="meta-line">王月眉 <span style="margin: 0 8px;">•</span> 2025-12-22</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/12/01/00vid-zion-39982-cover/00vid-zion-39982-cover-jumbo.jpg" width="576"/><figcaption><span></span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One pastor was at an airport in Shanghai. Another was in the rural outskirts of Beijing. Another was at home in Guangxi, in southwestern China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名牧師當時在上海的一座機場。另一名在北京的城鄉結合部。還有一名在位於中國西南部廣西的家中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In early October, they were all detained, alongside nearly 30 other pastors and church members across China, as the police rounded up people affiliated with Zion Church, one of the country’s largest unofficial Protestant congregations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">10月初，他們與全國各地近30名牧師和教會成員一同被拘留。警方當時在全國範圍內展開行動，抓捕與錫安教會有關聯的人士。錫安教會是中國規模最大的非官方新教教會之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was the most wide-ranging crackdown on Chinese Christians in years, according to activists and supporters. And many fear it is just beginning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據維權人士和支持者稱，這是多年來針對中國基督徒範圍最廣的一次打壓。許多人擔心，這只是一個開始。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在警方10月那次行動中被捕的人士。" data-src="https://static01.nyt.com/images/2025/12/21/multimedia/c22int-china-church-headshots/c22int-china-church-master1050.jpg" src="https://static01.nyt.com/images/2025/12/21/multimedia/c22int-china-church-headshots/c22int-china-church-master1050.jpg"/></div><figcaption><span>在警方10月那次行動中被捕的人士。</span> <cite>Headshots courtesy of Zion Church. By Pablo Robles/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The detained members included people who had been Christians since childhood, and others who had joined the church recently. They ranged in age from their 30s to their 50s, and included lawyers, physicists and music students.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">被拘留者中有些人自幼就是基督徒，也有近年才加入教會的人。他們年齡從30多歲到50多歲不等，職業包括律師、物理學家和音樂專業學生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far, 18 of the detainees have been formally arrested. The police have provided little information about the investigation, other than issuing the families of those arrested one-sentence notices listing only the suspected crime and where the person is being held.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至目前，已有18人被正式逮捕。除了向被捕者家屬發出僅列明涉嫌罪名和被關押地點的簡短通知外，警方几乎沒有披露調查細節。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/12/21/multimedia/c22int-china-church-arrest-notice/c22int-china-church-02-jumbo.png" src="https://static01.nyt.com/images/2025/12/21/multimedia/c22int-china-church-arrest-notice/c22int-china-church-02-jumbo.png"/></div><figcaption><span></span> <cite>Zion Church</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most prominent of those arrested was the church’s lead pastor, Jin Mingri, who also goes by the name Ezra. He founded Zion in Beijing in 2007 as an unregistered evangelical church.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">被捕者中最引人注目的是教會的主任牧師金明日，他也使用以斯拉(Ezra)這一名字。2007年他在北京創立了錫安教會，這是一個未註冊的福音派教會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese law guarantees freedom of religion, but in reality, the governing Chinese Communist Party requires religious groups to register with the government and submit to strict political controls. Those who do not want to do so — including by some estimates, tens of millions of unregistered Chinese Christians — have to worship underground.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國法律保障宗教信仰自由，但在現實中，中共當局要求宗教團體向政府登記，並接受嚴格的政治控制。那些不願意這樣做的群體——據估計包括數以千萬計未登記的中國基督徒——只能在地下進行宗教活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That has become especially difficult under China’s current leader, Xi Jinping. As he has tightened control over Chinese society, major underground churches have been shut down, including Beijing Zion in 2018.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在現任領導人習近平上台後，這變得尤為艱難。隨著他不斷收緊對社會的控制，許多大型地下教會被關閉，其中就包括2018年遭到取締的北京錫安教會。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="金明日（又名以斯拉），錫安教會牧師，該教會是中國國內最著名的地下教會之一，2018年攝於北京。他的家人表示，金明日於週五被拘留。" data-src="https://static01.nyt.com/images/2025/10/12/multimedia/12int-china-pastor-glvb/12int-china-pastor-glvb-master1050.jpg" src="https://static01.nyt.com/images/2025/10/12/multimedia/12int-china-pastor-glvb/12int-china-pastor-glvb-master1050.jpg"/></div><figcaption><span>金明日（又名以斯拉），錫安教會牧師，該教會是中國國內最著名的地下教會之一，2018年攝於北京。他的家人表示，金明日於週五被拘留。</span> <cite>Ng Han Guan/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some churches, like Zion, have moved largely online instead. But the government is cracking down on that, too. The charge that the Zion members are being accused of, “illegally using information networks,” broadly targets the sharing of so-called illegal or criminal information online. The government has moved recently to classify unauthorized religious activities under that label. It issued new regulations in September that online preaching may be done only through the licensed websites and platforms of officially registered faith groups.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些像錫安這樣的教會轉而主要在網上活動。但政府對此同樣展開了打壓。錫安教會成員被指控的罪名是「非法使用信息網路」，這一罪名範圍廣泛，主要針對所謂在網上傳播非法或犯罪信息。近年來，政府已將未經授權的宗教活動納入這一範疇。9月出台的新規規定，線上佈道只能通過依法登記的宗教團體所運營、並獲得許可的網站和平台進行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Jin had helped turn Zion into one of the most successful online churches, according to members. He still met church members offline, but he also gave sermons online, using platforms like YouTube or WeChat. There are hundreds of videos on Zion Church’s YouTube page featuring members singing hymns and putting on Christmas shows.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據教會成員介紹，金牧師曾將錫安教會打造為最成功的線上教會之一。他仍然在線下與信徒見面，同時也通過YouTube、微信等平台進行線上佈道。錫安教會的YouTube頻道有數百段影片，記錄著成員們唱聖詩、舉辦聖誕演出的畫面。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJbeq8W90pEDFaENTwgdS80Yzg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the coronavirus pandemic forced many unofficial churches to stop in-person services, Zion, with its established online presence, grew rapidly, according to Dr. Jin’s daughter, Grace Jin, who lives in the United States. More than 100 small groups met every Sunday across dozens of Chinese cities, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金牧師的女兒金婷雅現居美國。她說，新冠疫情迫使許多非官方教會停止線下活動，而錫安教會憑藉既有的線上基礎迅速壯大。她表示，當時每個週日全國數十座城市裡有100多個小組同時聚會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the government surveillance followed. In the past three years, officials stepped up the pressure on Zion. Before his arrest, Dr. Jin said in a series of video conversations with Grace and her husband that church staff members had been detained or groundlessly accused of offenses like bribery or disorderly conduct.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但政府的監控隨之而來。過去三年裡，當局不斷加大對錫安教會的壓力。在被捕前，金牧師曾在與女兒及女婿的一系列影片通話中表示，教會工作人員被拘留，或被無端指控行賄、尋釁滋事等罪名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156410_1_04visualUploader-84225_wg_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156410_1_04visualUploader-84225_wg_1080p.mp4" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Jin’s family said it had decided to record those conversations because it was concerned that a bigger crackdown was coming and wanted to keep a record.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金牧師的家人說，他們決定錄下這些對話，是因為擔心會有更大規模的鎮壓行動，希望留下記錄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The authorities also frequently disrupted church gatherings, like one in July in the city of Zhongshan, in southern China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當局也頻繁干擾教會聚會活動。例如7月在中國南方城市中山的一次聚會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least seven men in police uniforms stormed in during a Sunday service in an office building, alongside multiple men and women in plainclothes who later identified themselves as police officers or employees of the religious affairs bureau, according to videos. One officer in a white T-shirt said that they suspected the group, which included children, was holding an illegal gathering.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據現場影片顯示，至少七名身著警服的男子闖入一棟寫字樓內的週日禮拜現場，同行的還有多名便衣男女，後來他們自稱警察或宗教事務部門工作人員。一名身穿白色T恤的人員表示，他們懷疑這場包含兒童在內的聚會屬於非法集會。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNOOrMW90pEDFQAHTwgd2CsiZA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156411_1_04visualUploader-86245_wg_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156411_1_04visualUploader-86245_wg_1080p.mp4" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As worshipers tried to leave the room, officers demanded that they first register their personal information. A uniformed officer filmed people on his phone as they filed out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當信徒試圖離開房間時，執法人員要求他們先登記個人信息。一名穿制服的警察還用手機拍攝信徒離開的過程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156413_1_04visualUploader-85181_wg_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156413_1_04visualUploader-85181_wg_1080p.mp4" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then, in October, officials cracked down, just as Dr. Jin and his family had feared.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後，正如金牧師一家所擔心的那樣，當局在10月展開了集中打壓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Oct. 10, Sun Cong, a Zion Church pastor, was at a guesthouse on the outskirts of Beijing at a retreat for older church members. Around 10:30 p.m., as the group was getting ready for bed, multiple men in plainclothes and one uniformed police officer appeared, according to Mr. Sun’s wife, Gu Xiaoyu. They handcuffed Mr. Sun as other attendees demanded to know what he had done wrong.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">10月10日，錫安教會牧師孫聰正在北京郊外一家招待所參加為年長教會成員舉辦的團契活動。大約晚上10點半，當大家準備就寢時，多名便衣男子和一名穿制服的警察出現了。孫牧師的妻子谷曉羽說，對方當場給孫聰戴上手銬，其他參與者則質問他究竟犯了什麼錯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156414_1_04visualUploader-97897_wg_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/04/156414_1_04visualUploader-97897_wg_1080p.mp4" width="480"></iframe></div></div></div></div></div></div><div class="big_ad" data-google-query-id="CL-rrMW90pEDFRuw0QQdqH0JGA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then a group of eight officers took Mr. Sun, still handcuffed, to his home in Beijing. They rang the doorbell at nearly 1 a.m., demanding that his wife let them in.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後，八名警員將仍被銬著的孫聰帶回他在北京的家中。接近凌晨1點，他們按響門鈴，要求谷曉羽開門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/11/28/155928_1_28visualUploader-91607_wg_mobile_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/11/28/155928_1_28visualUploader-91607_wg_mobile_1080p.mp4" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once inside, the police began searching the home. They copied files from Mr. Sun’s laptop and rummaged through books of Christian literature, Ms. Gu said. When Ms. Gu asked if they had a search warrant, they filled one out on the spot, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">進入屋內後，警方開始搜查。他們拷貝了孫聰筆記型電腦裡的文件，並翻查基督教書籍。谷曉羽詢問是否有搜查令時，對方當場填寫了一份。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/12/03/mosaic-china-church-crackdown33310-121/mosaic-china-church-crackdown33310-121-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/03/mosaic-china-church-crackdown33310-121/mosaic-china-church-crackdown33310-121-jumbo.jpg"/></div><figcaption><span></span> <cite>Sean Long, via Associated Press</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/10/12/multimedia/c22int-china-pastor-fkpc-copy/12int-china-pastor-fkpc-jumbo.jpg" src="https://static01.nyt.com/images/2025/10/12/multimedia/c22int-china-pastor-fkpc-copy/12int-china-pastor-fkpc-jumbo.jpg"/></div><figcaption><span></span> <cite>Sean Long, via Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Similar raids were happening across China. That same day, Dr. Jin was arrested at his home in Guangxi. Around 2 a.m. on Oct. 11, the police also arrived at a house in Beijing where Gao Yingjia, another Zion pastor, and his wife, Geng Pengpeng, were staying with friends. (The couple had left their own home after hearing about the arrests, Ms. Geng said.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">類似的突襲行動在全國多地同時發生。金明日牧師當天在廣西的家中被捕。10月11日凌晨2點左右，警方還來到北京一處住所，錫安教會牧師高穎佳和妻子耿朋朋當時正借住在朋友家。（耿朋朋說，他們夫婦在得知逮捕行動後離開了自己家。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The police took Mr. Gao away while Ms. Geng remained behind with their 5-year-old son, she said. When she returned to her own home the next morning, she found the front door ajar and the electronic lock had been dismantled and replaced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">警方將高穎佳帶走，留下了耿朋朋與他們五歲的兒子。第二天早晨，當她回到自己家時，發現大門虛掩，電子門鎖已被拆除更換。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/03/156258_1_03visualUploader-14316_wg_1080p.mp4" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://vp.nyt.com/video/2025/12/03/156258_1_03visualUploader-14316_wg_1080p.mp4" width="480"></iframe></div></div></div></div></div></div><div class="big_ad" data-google-query-id="CLK4rMW90pEDFe-y0QQd1T4mBw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her home had been searched by the authorities. More than a dozen of her diaries were missing, she said, as well as some religious and philosophy books, the couple’s laptops and their bank cards.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她的家已被當局搜查。她說，十多本日記不見了，一些宗教和哲學書籍、夫妻二人的筆記型電腦以及銀行卡也被帶走。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since October, the raids have continued. More than 20 police officers broke up a Thanksgiving gathering of Zion members in Beijing and took away one member, according to a statement from the church on X. Several of the arrested pastors’ relatives have fled overseas, including Ms. Gu, Mr. Sun’s wife. She said by phone that she did not dare return to China, even though it meant uprooting her three young children.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自10月以來，突襲行動仍在繼續。據教會在社交平台X上發布的聲明，20多名警察在北京突襲了錫安教會成員的感恩節聚會，並帶走了一名成員。多名被捕牧師的親屬已逃往海外，包括孫聰的妻子谷曉羽。她在電話中表示，自己不敢回中國，即使這意味著不得不帶著三個年幼的孩子背井離鄉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In the current religious environment in China, especially with the waves of persecution of Christians, we had some mental preparation,” she said, choking up. “But when it really happened — and even now, even though two months have passed — my heart still hurts.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在中國現在的這個宗教環境下，尤其基督教的迫害，一波接著一波, 我們是有心理準備的，」她哽咽道。「但是當真的到的時候，包括現在，這個事情已經過去兩個月了，我心裡也會很痛。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">王月眉(Vivian Wang)是《紐約時報》駐華記者，常駐北京，撰寫關於中國的崛起及雄心如何塑造普通人日常生活的報導。</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/china/20251222/china-christian-zion-church-raid/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
