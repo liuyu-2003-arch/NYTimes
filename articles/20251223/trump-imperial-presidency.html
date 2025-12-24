@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自我膨脹與權力集中 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">自我膨脹與權力集中</h1>
+        <h2 class="en-headline">Trump Takes America’s ‘Imperial Presidency’ to a New Level</h2>
+        <div class="meta-line">PETER BAKER <span style="margin: 0 8px;">•</span> 2025-12-23</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="重返白宮的第一年裡，川普毫不掩飾地對皇室排場的模仿，正如他以近乎不受約束的權力按個人喜惡改造美國政府與社會那般。" height="700" src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-13-kcgv/00dc-trump-year-13-kcgv-master1050.jpg" width="1050"/><figcaption><span>重返白宮的第一年裡，川普毫不掩飾地對皇室排場的模仿，正如他以近乎不受約束的權力按個人喜惡改造美國政府與社會那般。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When President Trump hosted the crown prince of Saudi Arabia last month, he pulled out all the stops. To the traditional pomp of a formal White House visit, he added a few even fancier touches: a stirring military flyover, a procession of black horses and long, regal tables for the lavish dinner in the East Room instead of the typical round tables.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>上個月在白宮接待沙烏地阿拉伯王儲時，川普可謂使出了渾身解數。在正式白宮訪問的傳統排場之外，他又加上了一些更為奢華的點綴：一場激動人心的</span>軍機飛行表演，黑馬儀仗隊，還在東廳舉行的盛大晚宴上用華貴的長桌取代了傳統的圓桌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For surprised White House veterans who were paying attention, the unusual flourishes looked a little familiar. Just two months earlier, King Charles III of Britain welcomed Mr. Trump for a state visit that included, yes, a stirring military flyover, a procession of black horses and a long, regal table for the lavish dinner in St. George’s Hall at Windsor Palace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在留意觀察的白宮資深人士眼中，這些非同尋常的安排透著些許熟悉。僅僅兩個月前，在接待川普的國事訪問時，英國國王查爾斯三世同樣安排了激動人心的軍機飛行表演、黑馬儀仗隊，以及溫莎堡聖喬治大廳盛大晚宴上的華貴長桌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his first year back in office, Mr. Trump has unabashedly adopted the trappings of royalty just as he has asserted virtually unbridled power to transform American government and society to his liking. In both pageantry and policy, Mr. Trump has established a new, more audacious version of the imperial presidency that goes far beyond even the one associated with Richard M. Nixon, for whom the term was popularized half a century ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">重返白宮的第一年裡，川普毫不掩飾地對皇室排場有樣學樣，正如他以近乎不受約束的權力按個人喜惡改造美國政府與社會那般。無論儀式排場還是政策上，川普都確立了一種新的、更為大膽的「帝王式總統」，其程度甚至遠超半個世紀前因理查德·尼克森而被廣泛討論的那種模式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He no longer holds back, or is held back, as in the first term. Trump 2.0 is Trump 1.0 unleashed. The gold trim in the Oval Office, the demolition of the East Wing to be replaced by a massive ballroom, the plastering of his name and face on government buildings and now even the John F. Kennedy Center for the Performing Arts, the designation of his own birthday as a free-admission holiday at national parks — it all speaks to a personal aggrandizement and accumulation of power with meager resistance from Congress or the Supreme Court.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他已不再像第一任期那樣有所克制，或受到制約。川普2.0就是全面釋放的川普1.0。從橢圓形辦公室裡的金色裝飾到拆除東翼改建巨型宴會廳，從政府建築乃至甘迺迪表演藝術中心布滿他的姓名與肖像到將個人生日定為國家公園免費開放日——這一切都顯示出一種個人自我膨脹與權力集中的趨勢，而國會或最高法院幾乎沒有形成有效制衡。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nearly 250 years after American colonists threw off their king, this is arguably the closest the country has come during a time of general peace to the centralized authority of a monarch. Mr. Trump takes it upon himself to reinterpret a constitutional amendment and to eviscerate agencies and departments created by Congress. He dictates to private institutions how to run their affairs. He sends troops into American streets and wages an unauthorized war against nonmilitary boats in the Caribbean. He openly uses law enforcement for what his own chief of staff calls “score settling” against his enemies, he dispenses pardons to favored allies and he equates criticism to sedition punishable by death.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國殖民者推翻國王、建立共和國將近250年後，這或許是這個國家在總體和平時期最接近君主式集權<span>的時刻。川普自行其是地重新解讀憲法修正案，架空國會設立的機構和部門。他向私營機構發號施令。他把軍隊派上美國街頭，並在加勒比海對非軍事船隻發動未經授權的戰爭。他公然將執法行為用於其幕僚長所稱的「清算宿敵」，向親信盟友濫施赦免，並將批評等同於可判處死刑的叛亂行為。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="川普在白宮宴請沙烏地阿拉伯王儲，其排場與他與英國國王查理三世會面時如出一轍。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-07-kcgv/00dc-trump-year-07-kcgv-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-07-kcgv/00dc-trump-year-07-kcgv-master1050.jpg"/></div><figcaption><span>川普在白宮宴請沙烏地阿拉伯王儲，其排場與他與英國國王查理三世會面時如出一轍。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s reinvention of the presidency has altered the balance of power in Washington in profound ways that may endure long after he departs the scene. Authority once seized by one branch of government is rarely given back willingly. Actions that once shocked the system can eventually become seen as normal. While other presidents pushed the limits, Mr. Trump has blown right through them and dared anyone to stop him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普對總統職權的重塑已深刻改變了華盛頓的權力平衡，這種影響或許將延續至他離任之後。權力一旦被某個政府部門攫取，便鮮有自願歸還。曾經震驚體制的舉動終將被視為常態。儘管其他總統也曾試探權力邊界，但川普已徑直衝破界限，並挑戰任何阻止他的力量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“His second term in many respects represents not simply a break from presidential norms and expectations,” said Matthew Dallek, a political historian at George Washington University. “It’s also a culmination of 75 years in which presidents have reached for more and more power.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">喬治·華盛頓大學政治史學家馬修·達萊克指出：「他的第二任期在許多方面不僅意味著對總統規範與預期的背離，更是75年來總統權力持續擴張的頂峰。」</div></div></div></div></div><div class="big_ad" data-google-query-id="COyCr7X_1JEDFRxxCAQd_jMfvA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is also a culmination of four years of planning between Mr. Trump’s first term and his second. The last time around, he was a political novice who did not understand how government worked and surrounded himself with advisers who tried to restrain his most extreme instincts. This time, he arrived in office with a plan to accomplish what he did not in his first term, and a team of like-minded loyalists intent on remaking the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這同樣也是川普在兩個任期之間四年籌劃的結果。上一次執政時，他還是一名政治新手，不了解政府如何運作，身邊是試圖約束其極端想法的幕僚。而這一次，他帶著完成第一任期未竟之業的計劃上任，並配備了一支志同道合、忠誠於他的團隊，決心重塑這個國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The president knew exactly what he wanted to do coming into office this time,” said Jason Miller, a longtime Trump adviser. “Now the president had four years under his belt. He knows exactly how everything works. He knows all the international players. He knows all the national players. He knew what strategies and tactics worked the first go around and what strategies didn’t work.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「總統這次上任時非常清楚自己想做什麼，」川普的長期顧問傑森·米勒說。「總統現在已經有了四年的執政經驗。他非常清楚一切如何運轉。他了解所有國際參與者，也了解所有國內關鍵人物。他知道第一次執政時哪些戰略和戰術奏效，哪些行不通。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Strong and Weak</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><strong>強與弱</strong></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The presidency is a living organism, shaped by the person inhabiting it, whether it be self-styled men of action like Andrew Jackson and Theodore Roosevelt, father figures like Dwight D. Eisenhower, legislative wizards like Lyndon B. Johnson or captivating communicators like Ronald Reagan and Barack Obama. More than the sum of the clauses of the Constitution’s Article II, it is an evolving construct, one that has adapted to the ever-changing challenges of a complex and fast-moving world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總統職位是一個鮮活的有機體，由具體執掌它的人塑造而成——無論是像安德魯·傑克遜和西奧多·羅斯福那樣自詡為行動派的人物，還是像德懷特·D·艾森豪威爾那樣的父親式形象，抑或是林登·B·強生那樣的立法高手，或是羅納德·雷根和貝拉克·歐巴馬那樣極具感染力的溝通者。它不僅僅是憲法第二條各個款項的總和，而是一個不斷演進的體系，以適應複雜多變的世界所帶來的種種挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump wears it like a cloak. Power is the leitmotif of his second term. For the record, he disclaims royal aspirations. “I’m not a king,” he said after millions of Americans took to the streets in “No Kings” demonstrations in October. But at the same time, he embraces the comparison, at least in part to troll his critics but also, it seems, because he enjoys the notion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普將總統職權披在身上，如同披著一件斗篷。權力是他第二個任期的主題。表面上，他否認自己有君主野心。「我不是國王，」在10月數百萬美國人走上街頭參加「No Kings（不要國王）」示威後，他這樣表示。但與此同時，他又在欣然接受這種類比——部分是為了嘲諷批評者，但顯然也因為他樂於接受這種說法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He and his staff have posted images of him in monarchical regalia, including an A.I.-generated illustration of him wearing a crown and flying a fighter jet labeled “KING TRUMP” that dumps excrement on protesters. He delighted when the South Koreans gave him a replica of an ancient golden crown. “LONG LIVE THE KING!” he wrote about himself on social media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他和團隊曾發布多張他身著君主服飾的圖片，包括一幅由人工智慧生成的插圖：他頭戴王冠、駕駛標有「KING TRUMP（川普國王）」的戰鬥機，向抗議者傾倒糞便。當韓國人送給他一頂古代金冠的複製品時，他很高興。「國王萬歲！」他在社群媒體上這樣寫道。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="6月，奧勒岡州波特蘭市舉行的「不要國王」示威活動。這是今年全國各地為抗議川普的君主制傾向而舉行的多場示威活動之一。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-08-kcgv/00dc-trump-year-08-kcgv-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-08-kcgv/00dc-trump-year-08-kcgv-master1050.jpg"/></div><figcaption><span>6月，奧勒岡州波特蘭市舉行的「不要國王」示威活動。這是今年全國各地為抗議川普的君主制傾向而舉行的多場示威活動之一。</span> <cite>Jordan Gale for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To his supporters, Mr. Trump’s assertion of vast power is invigorating, not disturbing. In a country they see in decline, a strong hand is the only way to dislodge a liberal, “woke” deep state that in their view has suffocated everyday Americans to the advantage of unwelcome immigrants, street criminals, globalist tycoons, underqualified minorities and out-of-touch elites. Voters struggling to maintain their standards of living or make sense of a society changing rapidly around them have twice given Mr. Trump a chance to make good on his promise to blow up politics as usual and address their concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在支持者眼中，川普對巨大權力的主張令人振奮而非不安。在他們看來，美國正在衰落，只有強腕才能撼動自由派「覺醒」的深層政府。在他們看來，這一體系壓迫普通美國人，卻讓不受歡迎的移民、街頭罪犯、全球主義富豪、低素質的少數族裔以及脫離現實的精英階層受益。那些難以維持生計、或難以適應社會急劇變化的選民已經兩次給予川普機會，希望他兌現瓦解陳規舊制的政治運作的承諾，並回應他們的訴求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To his critics, Mr. Trump is narcissistic, uncouth, corrupt and a danger to American democracy. He has used the office to enrich himself and his family, sullied the image of the United States around the world, sought to erase the true history of Black Americans and pursued policies that harm the very people he purports to represent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而在批評者看來，川普自戀、粗俗、腐敗，是美國民主的威脅。他利用總統職位為自己和家人牟利，玷污了美國在全球的形象，試圖抹去非裔美國人的真實歷史，並推行了一系列傷害其宣稱所代表群體的政策。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNKor7X_1JEDFQZOCAQduu4zNg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What everyone agrees on is that Mr. Trump dominates the political landscape like none of his predecessors going back generations, single-handedly setting the agenda and forcing his will on the rest of the system. At the same time, he is the most consistently unpopular president since the advent of polling. He has never had the support of a majority of Americans, not in any of his three presidential elections and not for a single day of either term in Gallup surveys.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所有人都認同的是，川普正以前所未有的方式主宰政治格局。他只手設定議程，並將自己的意志強加於整個體制之上。與此同時，他也是自民意調查出現以來持續不受歡迎程度最高的總統。根據蓋洛普民意調查，在他參與的三次總統選舉以及在他兩次任期內的任何一天中，他從未獲得過多數美國人的支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His current 36 percent approval rating in Gallup is lower than that of every elected modern president at the end of their first year, lower even than it was in his first term (39 percent) and seven percentage points below the next-lowest (Joseph R. Biden Jr., at 43 percent). If compared against presidents who served two terms consecutively, Mr. Trump is still below each of them at the end of their fifth year, except Mr. Nixon, who had plummeted to 29 percent in the throes of Watergate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，他在蓋洛普民調中的支持率為36%，低於所有當代經選舉產生的總統在執政第一年結束時的水平，甚至低於他首個任期同期的數字（39%），也比排名倒數第二的總統（小約瑟夫·R·拜登，43%）低七個百分點。如果只與連續執政兩屆的總統相比，川普的支持率仍低於他們幾乎所有人在執政第五年結束時的支持率，唯一的例外是尼克森——在水門事件風暴中其支持率暴跌至29%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some critics predict that Mr. Trump’s unpopularity will begin to erode his power. “It’s been striking that Republicans in Congress have stuck behind him,” said former Senator Jeff Flake, a Republican from Arizona who broke with Mr. Trump in the first term. “But I do think that is changing. Some of it’s not exactly a profile in courage, but it’s looking at the electoral wins and realizing the midterms are going to be very difficult.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些批評者預測，川普的不受歡迎將開始侵蝕他的權力。「國會共和黨人一直站在他身後，這很驚人，」在川普的第一任期與其決裂的亞利桑那州前共和黨參議員傑夫·弗萊克說。「但我認為這種情況正在改變。有些不是勇氣之舉，而是看到近期的選舉結果後意識到期中選舉將非常艱難。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s allies dismiss that as wishful thinking by the president’s critics. Mr. Miller called current polling a “temporary blip” that will reverse as tax cuts passed earlier this year take effect in the first couple of quarters of 2026. “Once the economy rockets to where everyone’s predicting it to be for Q1 and Q2,” he said, “that will all snap back.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的盟友認為這是批評者的一廂情願。米勒稱當前民調只是「暫時波動」，一旦今年早些時候通過的減稅政策在2026年第一、二季度生效，民調將反彈。他說，「一旦經濟像所有人預測的那樣在第一、二季度飆升，一切都會迅速回升。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Bypassing Limits</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>繞過限制</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Presidents have been pushing the boundaries of power going back to the early days of the republic, most aggressively during wartime. Abraham Lincoln suspended habeas corpus even beyond the battlefield and emancipated enslaved people in rebel areas. Woodrow Wilson prosecuted critics of World War I and effectively censored some newspapers. Franklin D. Roosevelt interned more than 100,000 people of Japanese ancestry, including American citizens. In most cases, the pendulum swung back to a degree after the wars were over and security restored.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">共和國伊始，總統們就已經在試探權力邊界，尤其在戰時最為激進。亞伯拉罕·林肯甚至在戰場之外暫停人身保護令，並在叛亂地區解放奴隸。伍德羅·威爾遜起訴一戰批評者，並實質審查部分報紙。富蘭克林·D·羅斯福拘禁了超過10萬日裔，包括美國公民。大多數情況下，戰爭結束且安全得到恢復後，權力天平會在一定程度上回擺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the modern era, the notion of an imperial presidency was made prominent by the book of that name published in 1973 by the historian Arthur M. Schlesinger Jr., who had worked in John F. Kennedy’s White House. Mr. Schlesinger argued that under Mr. Nixon, who refused to spend certain money appropriated by Congress, secretly bombed Cambodia, wiretapped opponents and used government to pursue his enemies, the presidency “has got out of control and badly needs new definition and restraint.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在近現代<span>，「帝王式總統」這一概念因1973年歷史學家小阿瑟·M·施萊辛格出版的同名書籍而廣為人知。施萊辛格曾在約翰·F·甘迺迪</span>的白宮工作。他認為，在尼克森拒絕撥付國會批准的特定款項、祕密轟炸柬埔寨、竊聽對手並利用政府追捕敵人的情況下，總統職位「已經失控，急需重新定義和約束」。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="1970 年，理查德·尼克森總統在新聞發布會上發表講話。「帝王式總統」一詞因用來形容他的執政風格而廣為流傳。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-11-kcgv/00dc-trump-year-11-kcgv-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-11-kcgv/00dc-trump-year-11-kcgv-jumbo.jpg"/></div><figcaption><span>1970 年，理查德·尼克森總統在新聞發布會上發表講話。「帝王式總統」一詞因用來形容他的執政風格而廣為流傳。</span> <cite>Mike Lien/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The system of checks and balances eventually did reassert itself during Watergate. The Supreme Court unanimously ordered Mr. Nixon to release incriminating tapes and a bipartisan coalition in Congress moved to impeach the president, prompting him to resign. Starting late in Mr. Nixon’s tenure, Congress passed new laws meant to restrain the executive on war powers, impoundment, eavesdropping and government ethics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在水門事件期間，制衡體系最終重新確立。最高法院一致裁定尼克森交出罪證錄音帶，國會兩黨聯盟推動彈劾總統，促使其辭職。從尼克森任期末開始，國會接連通過旨在限制行政權的新法案，涵蓋戰爭權力、扣押、竊聽和政府操守。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some argued that the post-Watergate reforms went too far in emasculating the presidency after the voter-abbreviated tenures of Gerald R. Ford and Jimmy Carter. Mr. Reagan and George W. Bush in different ways worked to empower the office again, particularly in foreign policy and national security. Mr. Obama pushed further by exempting from deportation many immigrants who had arrived illegally as children and Mr. Biden unilaterally tried to forgive $400 billion in student loan debt. But all four encountered pushback from the courts and Congress and none went as far as Mr. Trump has.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些人認為，水門事件後的改革在只有一屆任期的傑拉爾德·R·福特和吉米·卡特後過度削弱了總統權力。羅納德·雷根和喬治·W·布希以不同方式重新增強總統權力，尤其是在外交政策和國家安全領域。<span>歐巴馬讓童年時期非法入境的移民免於遣返、</span><span>拜登單方面試圖免除4000億美元學生貸款債務，這</span>都是權力的進一步擴張，但這四位總統都遭遇法院和國會的阻擊，且都沒有像川普走得那麼遠。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLLwr7X_1JEDFUeGOgUdqTA7jQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some of the stuff that people were upset at Nixon for doing was kind of quaint compared to just the totally out-of-control stuff” that Mr. Trump has been doing, said Robert Schlesinger, a son of Arthur Schlesinger and himself a longtime journalist and historian of the White House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「人們對尼克森做的一些事情感到不安，但相比川普完全失控的行為，那些簡直是小巫見大巫，」長期研究白宮歷史的記者和歷史學家、阿瑟·施萊辛格之子羅伯特·施萊辛格說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Even Nixon was a guy who got that there were limits that he had to tread carefully around even as he was trying to push them,” Mr. Schlesinger added. “Whereas Trump, he’s not interested in limits. And whether it’s through a conscious strategy or just unconscious cunning, by being so open about it, it normalizes it to some extent.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「即便是尼克森也明白界限的存在，在試圖突破時仍會小心翼翼，」施萊辛格補充道。「而川普對界限不感興趣。無論是有意策略還是無意識的狡黠，他如此公開行事的方式在某種程度上使越界行為常態化了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Working off a Project 2025 blueprint devised by allies during his four years out of power, Mr. Trump came back to office with a raft of executive orders that have allowed the instant-gratification president to dispense with the slow grind of congressional negotiations. So far this year, Mr. Trump has issued about 225 executive orders, nearly three times as many as any other first-year president in three-quarters of a century.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>依託盟友在他四年失權期間制定的「2025計劃」藍圖，川普重返白宮後頒佈了大量行政命令，讓這位追求即時滿足的總統省去了國會談判的漫長過程。今年迄今，川普已簽署約225項行政命令，幾乎是過去四分之三世紀裡任何一位總統在執政第一年所簽署命令的三倍。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Miller credits a more cohesive team. “There are a lot less hangers-on or superfluous characters floating around,” he said. “That White House is about getting things done.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">米勒認為，團隊更具凝聚力。他說，「少了很多閑人或多餘角色，這個白宮就是為了做事。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But some Republicans said the lack of contrary voices in the West Wing has a cost. While Mr. Trump has successfully sealed the border as he promised and brokered a fragile cease-fire in Gaza, he looks out of touch on affordability and was rolled by the bipartisan coalition demanding the release of files related to the sexual predator Jeffrey Epstein.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但一些共和黨人表示，白宮西翼內缺乏反對聲音是有代價的。雖然川普如承諾般封鎖了邊境，並在加薩促成脆弱停火，但他對生活成本問題的看法顯得與現實脫節，且在要求公開傑弗里·愛潑斯坦性侵案檔案的兩黨聯盟面前被迫讓步。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You live in a bubble if that’s the situation and sometimes you get blindsided by reality,” said Representative Don Bacon of Nebraska, one of the few incumbent Republicans who have been critical at times. “I don’t know that he’s hearing that kind of feedback. His first administration he had people who would say, ‘Mr. President, I know what you’re saying, this is what I’m thinking.’” By contrast, Mr. Bacon said, “this time, you’ve got pretty much yes men.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你生活在泡泡裡，有時會被現實打個措手不及，」少數會偶爾批評川普的在任共和黨人、來自內布拉斯加州的眾議員唐·培根說道。「我不確定他是否聽到這種反饋。第一任期時，他身邊有人會說：『總統先生，我知道您的意思，但這是我的想法。』而現在，基本上都是唯唯諾諾的人。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="川普在白宮召開內閣會議。在其第二個任期內，川普身邊都是對他忠心耿耿的擁護者。" data-src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-12-kcgv/00dc-trump-year-12-kcgv-master1050.jpg" src="https://static01.nyt.com/images/2025/12/17/multimedia/00dc-trump-year-12-kcgv/00dc-trump-year-12-kcgv-master1050.jpg"/></div><figcaption><span>川普在白宮召開內閣會議。在其第二個任期內，川普身邊都是對他忠心耿耿的擁護者。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Imperial or Imperiled?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>帝王還是岌岌可危？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the year ends, there have been signs of resistance to unchecked power. A judge threw out the Trump administration’s indictments against two of the president’s adversaries, Letitia James and James B. Comey, and two grand juries refused to re-indict Ms. James. In addition to legislating release of the Epstein files, Congress passed a measure slashing Defense Secretary Pete Hegseth’s travel budget by 25 percent if he does not turn over video of a second strike on a boat of supposed drug traffickers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一年接近尾聲之際<span>，已經出現了對不受約束權力的抵制跡象。一名法官駁回了川普政府對總統的政敵萊蒂西亞·詹姆斯和詹姆斯·B·科米的兩項起訴，兩</span>個<span>大陪審團也拒絕重新起訴</span>萊蒂西亞·詹姆斯。國會通過立法要求公開愛潑斯坦檔案，此外還通過一項法案，要求國防部長彼特·海格塞斯交出對所謂毒販船隻的第二次打擊的影片，否則將扣減其25%的差旅預算。</div></div></div></div></div><div class="big_ad" data-google-query-id="COner7X_1JEDFYWWOgUdpPgklQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Democrats win the midterm elections next year, they will surely use their newfound power to push back further against Mr. Trump. Some, like Mr. Flake, predict that even some Republicans will begin to speak out after filing deadlines for possible primary challengers have passed. And the Supreme Court could clip Mr. Trump’s wings on tariffs and birthright citizenship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果民主黨在明年期中選舉獲勝，他們必將利用新獲得的權力進一步反擊川普。弗萊克等人預測，甚至一些共和黨人也會在初選挑戰者報名截止後開始發聲。最高法院也可能在關稅和出生公民權問題上限制川普。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russell Riley, a presidential historian at the University of Virginia’s Miller Center, acknowledged the nation’s long history of expanding presidential authority. But, he added, “we have an equally robust history of cramming the presidency back into its constitutional box once war or economic crisis has passed.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維吉尼亞大學米勒中心的總統歷史學家拉塞爾·萊利承認，美國擴張總統權力的歷史源遠流長。但他補充說，「一旦戰爭或經濟危機過去，我們同樣有將總統重新塞回憲法框架的穩定表現。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That history “strongly suggests that what we are seeing today will not, in fact, endure.” Is that a guarantee? “I’m not smart enough to know the answer to that.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些歷史「有力地表明，我們今天看到的不會持久」。敢打包票嗎？「我尚無足夠智慧解答這個問題。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Peter Baker是《紐約時報》首席白宮記者。川普是他報導的第六任美國總統，有時他也撰寫將總統和美國政府置於更宏觀的背景和歷史框架下的分析性文章。</p><div class="" data-poster=""></div></span></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/usa/20251223/trump-imperial-presidency/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
