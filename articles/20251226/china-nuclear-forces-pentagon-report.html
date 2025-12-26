@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「預警即觸發反擊發射」 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">「預警即觸發反擊發射」</h1>
+        <h2 class="en-headline">China Is Shifting Its Nuclear Forces to Swifter Footing, Pentagon Says</h2>
+        <div class="meta-line">儲百亮 <span style="margin: 0 8px;">•</span> 2025-12-26</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="9月，北京閱兵式上展示了可搭載核武器的導彈。" height="708" src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-01-qfzk/24int-china-military-01-qfzk-master1050.jpg" width="1050"/><figcaption><span>9月，北京閱兵式上展示了可搭載核武器的導彈。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been growing its stockpile of nuclear warheads by about 100 a year as its top leader, Xi Jinping, pushes to expand his nuclear options. But its production of warheads slowed last year, the Pentagon said, without specifying a cause.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國最高領導人習近平著手擴充其核選項，中國核武庫近年來以每年約100枚的速度增長。但五角大廈表示，去年其核彈頭生產速度有所放緩，具體原因未予說明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. Department of Defense’s latest annual report on China’s armed forces estimated that its warhead count was in the “low 600s” by the end of 2024, “reflecting a slower rate of production.” That count is roughly the same as the Pentagon’s last estimate that China had around 600 warheads as of mid-2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國國防部最新發布的中國軍力年度報告估計，截至2024年底中國核彈頭數量處於「</span>略超出<span>600枚」的水平，「反映出生產速度放緩」。這一數字與五角大廈此前估計的截至2024年年中約600枚基本持平。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nonetheless, the latest report, released late on Tuesday, says Beijing is on track to have about 1,000 nuclear warheads by 2030, giving Mr. Xi a larger and more diverse range of those highly destructive weapons on missiles, submarines and bombers. In a crisis or war, he could use them to warn and deter — and in the ultimate extreme, strike — enemies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">值得注意的是，這份於週二晚間發布的最新報告指出，按當前發展趨勢，到2030年北京將擁有約1000枚核彈頭，使習近平能在導彈、潛艇和轟炸機上部署的此類高度破壞性武器更大、更多樣。在危機或戰爭狀態下，這些核力量可用於警告威懾，乃至在極端情況下實施打擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Perhaps just as important, the report says that even if China slowed its output of nuclear warheads, Mr. Xi and his commanders appear to be seeking to shorten the time it would take to launch a nuclear counterattack, if China’s nuclear forces came under fire. The shift to what Chinese military planners call an “early-warning counterstrike” is intended to warn potential enemies not to underestimate China’s nuclear readiness and resolve.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">或許同樣重要的是，報告稱，即便中國放慢了核彈頭的生產步伐，習近平及其軍隊的指揮層似乎仍在尋求縮短中國的核力量遭到攻擊後做出核反擊的響應時間。中國軍事規劃者所稱的「預警反擊」模式轉型旨在警示潛在對手切勿低估中國的核戰備狀態與反擊決心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With this hair-trigger posture, the “warning of a missile strike enables a counterstrike launch before an enemy first strike can detonate,” the Pentagon report says. “China likely will continue to refine and train on this capability throughout the rest of the decade.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五角大廈的報告稱，在這種高度戒備的姿態下，「在敵方首輪打擊引爆前，導彈襲擊預警即能觸發反擊發射」。「中國很可能會在這個十年的剩餘時間裡，繼續改進並訓練這一能力。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="五角大廈的一份報告稱，習近平及其軍隊的指揮層似乎正試圖縮短髮起核反擊所需的時間。" data-src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-03-qfzk/24int-china-military-03-qfzk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-03-qfzk/24int-china-military-03-qfzk-master1050.jpg"/></div><figcaption><span>五角大廈的一份報告稱，習近平及其軍隊的指揮層似乎正試圖縮短髮起核反擊所需的時間。</span> <cite>Wang Ye/XinHua, via Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Overall, the report says, “China’s historic military buildup has made the U.S. homeland increasingly vulnerable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總體上，報告評估認為，「中國前所未有的軍事建設，已使美國本土變得日益脆弱。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Department of Defense’s annual report on the People’s Liberation Army is widely read by policymakers and experts as a benchmark for assessing and debating China’s capabilities, especially in the nuclear weapons realm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國國防部關於中國人民解放軍的年度報告被政策制定者和專家廣泛視為評估和討論中國的軍事能力——尤其是核武器領域——的一個重要參考標準。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPiD0aGD2pEDFVaIywEd-Css9g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new report — the first of its kind during President Trump’s second term — amplifies a finding in the 2024 report that China was preparing to adopt early-warning counterstrike capabilities, which nuclear planners also call “launch on warning.” Its findings also echo recent studies by experts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這份新報告是川普總統第二個任期內的首份此類報告，該報告強化了2024年報告中提到的一項發現，即中國正準備採用預警反擊能力，也就是核規劃人員所謂的「預警即發射」。該結論也與近期專家研究成果相互印證。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump and Mr. Xi have been trying to improve relations, pulling back partly from a trade and tariff war. But military tensions persist, and China’s emergence as a nuclear power has become a source of anxiety in Washington, especially while Russia also makes threatening nuclear moves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普和習近平一直在努力改善雙邊關係，從貿易關稅戰中有所回撤。不過，軍事緊張態勢依然持續，而且中國作為核力量的崛起已成為華盛頓的憂慮源頭，尤其當俄羅斯同時展現威脅性核動向之際。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The growing evidence that China is shifting to a higher degree of readiness for nuclear retaliation may add to debate about how the United States should respond to two big nuclear rivals, with fielding more nuclear weapons as one option.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">越來越多的證據表明，中國正在向更高程度的核報復戒備狀態轉變，這可能會加劇人們對於美國應如何應對兩個主要核對手的爭論，部署更多的核武器就是其中的一個選項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Such a change in China’s nuclear posture would have significant implications for U.S. national security, U.S.-China relations, and stability and security in East Asia,” David C. Logan of Tufts University and Phillip C. Saunders of the National Defense University in Washington wrote in a study of China and “launch on warning” that was published last month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>塔夫茨大學的戴維·洛根與華盛頓國防大學的菲利普·桑德斯在上月發表的關於中國「預警即發射」能力的研究報告中指出：「中國核態勢的此種轉變將對美國國家安全、美中關係及東亞穩定與安全產生重大影響。」</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="川普總統和習近平一直在努力改善兩國關係，但軍事緊張局勢依然存在。" data-src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-02-qfzk/24int-china-military-02-qfzk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-02-qfzk/24int-china-military-02-qfzk-master1050.jpg"/></div><figcaption><span>川普總統和習近平一直在努力改善兩國關係，但軍事緊張局勢依然存在。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi “may be the only one with the authority to decide not to execute a pre-planned nuclear response to an accidental or limited nuclear attack,” they wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們寫道，習近平「可能是唯一有權決定是否取消執行針對意外或有限核攻擊的預定核反擊方案的人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States and Russia still have much larger nuclear arsenals than China has. Russia has about 5,459 warheads, including 1,718 that are deployed, while the United States has 5,177, with about 1,770 deployed, according to experts from the Federation of American Scientists. And both Washington and Moscow have long kept some nuclear missiles on high alert to launch within minutes if ordered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國和俄羅斯的核武庫規模仍遠超中國。美國科學家聯盟的專家認為，俄羅斯擁有約5459枚核彈頭，其中1718枚處於部署狀態；美國則擁有5177枚核彈頭，約1770枚已完成部署。長期以來，華盛頓與莫斯科都讓部分核彈處保持高度戒備狀態，一旦接到命令，可以在幾分鐘內發射。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLqR0aGD2pEDFaCMywEd7qQO2A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The addition of China into this mix could make it harder to avoid dangerous miscalculations in a crisis, said Tong Zhao, an expert on China’s nuclear weapons strategy at the Carnegie Endowment for International Peace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>卡內基國際和平基金會中國核武器戰略專家趙通指出，中國的加入可能使危機中避免危險誤判的難度加大。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Today, with China moving to ‘launch on warning,’ it’s happening in a much more technologically challenging environment,” Mr. Zhao said in an interview before the release of the Pentagon report. He cited the potentially destabilizing effects of A.I. and increasingly maneuverable missiles, which could magnify the risks of misunderstanding an enemy’s moves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「今天，中國正在轉向『預警即發射』，而這一切發生在一個技術上更加複雜的環境中,」趙通在五角大廈報告發布前接受採訪時說。他提到，人工智慧以及機動性不斷增強的導彈可能產生潛在的不穩定效應，從而放大誤判對手行動的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China does not disclose how many nuclear weapons it has, and for decades it has declared that it would never be the first country in a war to launch them. The new Pentagon report cites several developments to argue that China’s shift to a more attack-ready nuclear force is well underway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國從不公開核武器數量，數十年來始終聲明絕不首先使用核武器。但新版五角大廈報告列舉多項進展，認為中國正在向更具進攻準備的核力量轉變穩步推進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Above all, the People’s Liberation Army Rocket Force has been installing intercontinental ballistic missiles in launch silos across three fields in arid northern China. The fields have a total of about 320 silos, and probably more than 100 have been loaded with DF-31 intercontinental ballistic missiles, the report says. In September 2024, China test-launched a road-mobile variant of the DF-31, which flew roughly 7,000 miles across the Pacific Ocean.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先，中國人民解放軍火箭軍正在該國<span>北方乾旱地區的三大區域部署用於發射洲際彈道導彈的發射井。報告稱，這些區域總共有大約320個發射井，其中可能已有100多個裝填了東風-31洲際彈道導彈。2024年9月，中國試射了東風-31公路機動型，該導彈穿越太平洋，飛行了大約11000公里。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2021年，中國哈密附近，分析人士認為這裡是一座洲際彈道導彈發射井的施工現場。" data-src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-ftcv/24int-china-military-ftcv-master1050.jpg" src="https://static01.nyt.com/images/2025/12/24/multimedia/24int-china-military-ftcv/24int-china-military-ftcv-master1050.jpg"/></div><figcaption><span>2021年，中國哈密附近，分析人士認為這裡是一座洲際彈道導彈發射井的施工現場。</span> <cite>Planet Labs Inc., via Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has also been putting into orbit more early-warning satellites that can detect intercontinental ballistic missiles heading its way, and installing more land-based radars that can detect incoming missiles while they are still thousands of miles away, the Pentagon report says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五角大廈的報告還指出，中國正將更多能探測來襲洲際彈道導彈的預警衛星送入軌道，同時部署更多能在數千公里外偵測到來襲導彈的陸基雷達系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, China’s move to its new nuclear posture could take some time, said Mr. Zhao of Carnegie. “China needs a well-developed command, control and communication system to connect all the different sensors, and it needs to develop the capability to integrate all the data seamlessly into a central system,” he said. “That is not easy.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡內基的趙通說，儘管如此，中國向這種新的核姿態轉變可能還需要一段時間。「中國需要一個高度完善的指揮、控制和通信系統，所有不同的傳感器連接起來，而且還需要開發將所有數據無縫整合到一個中央系統的能力，這並不容易。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CM2d0aGD2pEDFSmVywEdYmsScQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Pentagon report also says Beijing is not fully confident that it could invade and take control of Taiwan, the island democracy that rejects Beijing’s claims that it is Chinese territory.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五角大廈的報告還稱，北京並不完全確信自己有能力入侵併控制台灣。台灣是一個民主島嶼，它拒絕接受北京關於它是中國領土的主張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States could intervene to support Taiwan if it were attacked, and Chinese leaders “remain unsure of the P.L.A.’s readiness to successfully seize Taiwan while countering U.S. involvement,” the report said. Still, China “continues to refine multiple military options to force Taiwan unification by brute force,” it said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該報告稱，如果台灣遭到襲擊，美國可能會介入支持它，而中國領導人「仍然不確定人民解放軍能否在反制美國介入的同時成功奪取台灣」。儘管如此，報告說，中國「仍在不斷完善多種以武力強行推動台灣統一的軍事選項」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, the report said, China “tested essential components of these options, including through exercises to strike sea and land targets, strike U.S. forces in the Pacific and block access to key ports.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告稱，去年中國「測試了這些選項中的關鍵部分，包括打擊海上和陸地目標，打擊在太平洋的美軍，以及封鎖重要港口通道的演習」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">儲百亮(Chris Buckley)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/china/20251226/china-nuclear-forces-pentagon-report/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
