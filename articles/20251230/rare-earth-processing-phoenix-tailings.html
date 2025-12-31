@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一家試圖打破中國稀土壟斷的美國初創公司 - NYTimes</title>
+<style>
+    :root {
+        --bg-color: #fdfdfd;
+        --text-color: #111;
+        --base-font-size: 18px;
+        --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+        --line-height: 1.8;
+    }
+    body {
+        font-family: var(--base-font-family);
+        font-size: var(--base-font-size);
+        line-height: var(--line-height);
+        margin: 0;
+        padding: 0;
+        background: var(--bg-color);
+        color: var(--text-color);
+        transition: font-size 0.2s, font-family 0.2s;
+    }
+
+    /* --- 语言显示模式核心 CSS (修改版) --- */
+    /* 只隐藏段落，不隐藏标题 */
+
+    /* 英文模式：隐藏中文段落 */
+    body.mode-en .cn-p { display: none; }
+
+    /* 中文模式：隐藏英文段落 */
+    body.mode-cn .en-p { display: none; }
+
+    /* 顶部悬浮控制栏 */
+    .controls-panel {
+        position: sticky;
+        top: 0;
+        background: rgba(255,255,255,0.98);
+        border-bottom: 1px solid #ddd;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .controls-panel::-webkit-scrollbar { display: none; }
+
+    .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .control-group { display: flex; align-items: center; gap: 5px; }
+    .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+    @media (min-width: 500px) { .control-group label { display: block; } }
+
+    .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+    .btn {
+        background: #fff; border: none; border-right: 1px solid #ccc;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+        transition: all 0.2s;
+    }
+    .btn:last-child { border-right: none; }
+    .btn:hover { background: #f5f5f5; }
+    .btn.active { background: #333; color: white; }
+
+    .content-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px 20px; min-height: 100vh; }
+
+    h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+    h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+    .meta-line {
+        font-family: sans-serif; font-size: 0.85rem; color: #666;
+        margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+    }
+
+    .article-paragraph { margin-bottom: 2em; }
+    p { margin: 0 0 1em 0; }
+    .en-p { color: #222; margin-bottom: 0.6em; }
+    .cn-p { color: #004276; font-weight: 500; }
+
+    .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+    .back-link:hover { color: #000; }
+
+    figure { margin: 2em 0; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+    figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+    .footer-link { text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-family: sans-serif; }
+    .footer-link a { color: #888; text-decoration: none; font-size: 0.9em; }
+    .footer-link a:hover { color: #333; text-decoration: underline; }
+</style>
+<script>
+    function setLanguage(lang, btn) {
+        document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+        document.body.classList.add('mode-' + lang);
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-lang', lang);
+    }
+
+    function setFontSize(size, btn) {
+        const root = document.documentElement;
+        if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+        if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-size', size);
+    }
+
+    function setFontFamily(font, btn) {
+        const root = document.documentElement;
+        if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+        if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+        updateActive(btn);
+        localStorage.setItem('nyt-pref-font', font);
+    }
+
+    function updateActive(target) {
+        const group = target.parentElement;
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+    }
+
+    window.onload = function() {
+        const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+        const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+        const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+        let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+        let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+        const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+        if(sizeBtn) sizeBtn.click();
+
+        const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+        if(fontBtn) fontBtn.click();
+
+        const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+        if(langBtn) langBtn.click();
+    }
+</script>
+</head>
+<body>
+    <div class="controls-panel">
+        <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+        <div class="controls-right">
+            <div class="control-group">
+                <label>Lang</label>
+                <div class="btn-group">
+                    <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                    <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                    <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="btn-group">
+                    <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                    <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Font</label>
+                <div class="btn-group">
+                    <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                    <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <h1 class="cn-headline">一家試圖打破中國稀土壟斷的美國初創公司</h1>
+        <h2 class="en-headline">Meet a U.S. Start-Up Trying to Break China’s Rare-Earth Monopoly</h2>
+        <div class="meta-line">REBECCA F. ELLIOTT <span style="margin: 0 8px;">•</span> 2025-12-30</div>
+
+        <div class="article-body">
+            <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="Phoenix Tailings在新罕布什爾州埃克塞特運營一座金屬製造工廠。" height="700" src="https://static01.nyt.com/images/2025/12/29/multimedia/00biz-rare-earth-processing-01-zmhp/00biz-rare-earth-processing-01-zmhp-master1050.jpg" width="1050"/><figcaption><span>Phoenix Tailings在新罕布什爾州埃克塞特運營一座金屬製造工廠。</span> <cite>Tony Luong for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Every few hours, two furnaces in a New Hampshire office park quietly transform batches of taupe-colored powder into rough ingots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每隔幾個小時，新罕布什爾州一處辦公園區內的兩座熔爐就會悄無聲息地將一批批灰褐色粉末轉化為粗糙的金屬錠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These mottled chunks of metal, about the size of a few bricks, ultimately will be used to make electric vehicle motors or maybe a fighter jet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些大小相當於幾塊磚的斑駁金屬塊最終將被用於製造電動汽車的電機，或者可能用於戰鬥機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is what rare-earth processing looks like in the United States, where university researchers and start-ups are trying to wrest a slice of this small but vital industry from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這就是美國的稀土加工：大學研究人員和初創企業正試圖從中國手中奪取這個規模雖小卻至關重要的產業的一席之地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rare earths are a family of elements toward the bottom of the periodic table, with tongue-twister names like neodymium and dysprosium. They are used in powerful magnets, lasers, M.R.I. machines and other instruments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">稀土是一族位於元素週期表下部的元素，名稱拗口，如釹和鏑。它們被用於製造強力磁鐵、雷射、核磁共振成像(M.R.I.)設備以及其他儀器。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNOTzN_M5pEDFSC2AAAdzuQK8w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And while they are not actually rare, they are difficult to process into usable forms. China refines more than 90 percent of the world’s rare earths, a level of control that is of growing concern to Western governments and businesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>儘管它們其實並不稀有，加工成可用形式卻非常困難。中國精鍊了全球超過90%的稀土，這種控制程度正日益引起西方政府和企業的擔憂。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States was a big player in this industry until the mid-1990s, but China’s robust industrial policy, along with looser environmental regulations, allowed companies based there to establish a dominant position and sell metals and magnets for a lot less than suppliers elsewhere. Over time, many rare-earth miners and processors outside China withered away.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>直到20世紀90年代中期，美國還是這一行業的重要參與者，但中國強有力的產業政策加上較為寬鬆的環境法規令中國企業確立了主導地位，並以遠低於其他供應商的價格銷售金屬和磁體。隨著時間推移，中國以外的許多稀土礦商和加工企業逐漸消亡。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is too little money to be made in rare earths for the elements to be of much interest to mining giants, so the challenge of re-establishing a domestic industry has fallen to small companies like Phoenix Tailings, a Boston-area start-up that runs the metal-making plant in Exeter, N.H. A handful of other companies in the United States are processing rare earths in small quantities, including MP Materials, which owns a mine in Mountain Pass, Calif., and recently began producing rare-earth metal in Fort Worth. Similar efforts are underway in Europe and Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>稀土元素的利潤太低，難以吸引礦業巨頭，因此重建本土產業的重任落在了像Phoenix Tailings這樣的小型公司身上。這家位於波士頓地區的初創企業在新罕布什爾州埃克塞特運營金屬製造工廠。美國還有少數幾家公司在小規模加工稀土，包括擁有加州山口礦的MP Materials，該公司最近在沃思堡開始生產稀土金屬。歐洲和亞洲也有類似努力正在進行。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s small volumes of low-value materials that are very expensive to process,” said Elsa Olivetti, a materials science and engineering professor at M.I.T. “Meaning it’s hard to make money.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是小批量、低價值材料的加工，成本卻非常高，」麻省理工學院材料科學與工程教授埃爾莎·奧利維蒂說。「這意味著很難賺錢。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Phoenix Tailings’ New Hampshire operation is about two months old, housed in a converted medical device plant. The company buys metric-ton bags of powder — a mixture of neodymium and praseodymium bound with oxygen — from mining and refining companies in the United States, South America and Australia. It funnels that flour-like material into a drying oven and eventually into furnaces that heat it to the temperature of volcanic lava.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Phoenix Tailings在新罕布什爾州的工廠投入運營約兩個月，位於一棟改建的醫療器械工廠內。公司從美國、南美和澳洲的採礦與精鍊公司購買成噸重的粉末袋——釹和鐠的氧化物。然後將這種麵粉狀物質送入乾燥爐，最終進入加熱至火山熔岩溫度的熔爐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This circuit takes up less than 15,000 square feet and is designed to generate no emissions other than those associated with the electricity Phoenix Tailings uses. The closed-loop design distinguishes this process from the more energy-intensive techniques used in China, where workers scoop up molten metal with ladles. That approach releases perfluorocarbons, potent greenhouse gases that do not break down easily.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">整個流程佔地不到1.5萬平方英尺，設計上除公司使用的電力相關排放外不產生其他排放。這種閉環設計使其有別於中國更為能源密集的技術——中國工人需要勺取熔融金屬，這種方式會釋放持久性極強的溫室氣體全氟化碳。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNeQzN_M5pEDFa3u9QIdH5kyDg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Phoenix Tailings used to buy some raw material that came from China but hasn’t relied on that country in several years, said Nick Myers, the company’s chief executive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Phoenix Tailings曾經購買部分來自中國的原料，但公司首席執行官尼克·邁爾斯表示，近年來已不再依賴中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“To untangle yourself from China, you have to force yourself off the original drug,” Mr. Myers said during a recent tour of the New Hampshire plant, his words tumbling out like a podcast played at 1.5 speed. “You can wean yourself off, or you can go cold turkey. But at the end of the day, you’ve got to get off.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「要擺脫對中國依賴，你必須強迫自己戒掉最初的『毒癮』，」最近在新罕布什爾州工廠參觀時，邁爾斯用1.5倍速播放的播客般的語速急切地說道。「你可以逐漸消解，也可以直接戒斷。但歸根結底，你必須徹底擺脫。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has been a whirlwind year for Mr. Myers, 34. His company, recently valued at $189 million, was three weeks from bankruptcy in late 2024. President Trump’s trade war lifted the company’s fortunes, as China responded to higher U.S. tariffs by restricting exports of rare earths. That got more investors interested in Phoenix Tailings and led new customers to place orders, putting the company on surer financial footing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於34歲的邁爾斯來說，這一年可謂風起雲湧。他這家近期估值1.89億美元的公司在2024年末曾距離破產僅剩三週。川普總統的貿易戰扭轉了公司命運——中國對美國更高關稅的回應是限制稀土出口。這吸引了更多投資者關注Phoenix Tailings，並帶來新客戶訂單，使公司財務狀況更加穩固。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The large majority of Phoenix Tailings’ customers are in the auto industry, and a small share are U.S. defense contractors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Phoenix Tailings的大多數客戶來自汽車行業，一小部分是美國國防承包商。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration has agreed in recent months to pour more than $1 billion into the industry, taking stakes in companies involved in mining, refining and magnet production. It also is subsidizing MP Materials products by guaranteeing the company receives a set price for them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府最近幾個月同意向該行業投入超過10億美元，在涉及採礦、精鍊和磁體生產的公司中持股。它還通過保證固定價格的方式補貼MP Materials的產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Phoenix Tailings has been awarded more than $6 million in federal funding, most of it before Mr. Trump returned to power in January, and is hoping to secure more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Phoenix Tailings已獲得超過600萬美元的聯邦資金，其中大部分是在川普今年1月再次上台前獲得的，目前它正尋求拿到更多資助。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNalzN_M5pEDFZLu9QId5SkZjg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My grandmother tells me about rare-earth elements now,” Mr. Myers said. “Previously, it was a very lonely journey.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「現在我祖母都會跟我談論稀土元素了，」邁爾斯說。「以前，這是非常孤獨的旅程。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Myers co-founded Phoenix Tailings in 2019 after meeting Tomás Villalón Jr., the company’s chief technology officer, at a Bible study retreat outside Boston the year before. Mr. Myers was working for a genomic sequencing company while Dr. Villalón was finishing his doctorate in materials engineering at Boston University. The pair identified rare-earth processing as an opportunity during a late-night discussion about markets they found interesting, Dr. Villalón recalled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">邁爾斯與公司首席技術官小托馬斯·巴拉隆於2018年在波士頓郊外的一個聖經學習活動上結識，次年一起創辦了Phoenix Tailings。當時邁爾斯在一家基因測序公司工作，巴拉隆則即將完成波士頓大學材料工程博士學位。據巴拉隆回憶，兩人在深夜討論感興趣的市場機會時，將稀土加工確定為突破方向。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They eventually teamed up with three others and built a prototype of their processing system in Dr. Villalón’s backyard in Cambridge, Mass., home to M.I.T., where two of the five founders earned their undergraduate degrees. “I don’t know how legal it was,” Mr. Myers said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們最終聯合其他三位夥伴，在麻省劍橋市（麻省理工所在地，五位創始人中有兩位本科畢業於該校）巴拉隆家的後院搭建起加工系統原型。「我都不知道這是否合法，」邁爾斯坦言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors in the company include the Central Intelligence Agency’s venture capital fund, In-Q-Tel, and BMW’s venture capital arm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司投資者包括中央情報局的風險投資基金In-Q-Tel，以及寶馬的風投部門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Metal making is the last step in the long and often fragmented process that is rare-earth refining. Eventually, Phoenix Tailings aims to control all of those stages, taking in waste from iron mining — known as tailings — removing the rare earths and separating them into individual elements to be made into metal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">稀土精鍊過程漫長且常常被分割為多個環節，金屬冶煉是這個流程的最後一步。長期來看，Phoenix Tailings希望控制所有環節：接收鐵礦開採產生的廢料（即尾礦），提取其中的稀土，並將其分離成單個元素，最終製成金屬材料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It will not be easy. Tom Lograsso, who directs the Critical Materials Innovation Hub at Ames National Laboratory in Iowa, described the technical challenge of metal making as “undoing what Mother Nature has naturally done.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這絕非易事。愛荷華州埃姆斯國家實驗室的關鍵材料創新中心主任湯姆·洛格拉索將金屬冶煉的技術挑戰形容為「逆轉自然母親的造化之功」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIbWzN_M5pEDFfru9QIduyQqCQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the pollution risk associated with rare-earth production occurs in the early stages, as companies remove thorium, a radioactive element that is not one of the rare earths but is almost always found mixed into them. The thorium and the powerful acids used to extract it need to be disposed of safely.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">稀土生產的大部分污染風險集中在前期階段——企業需去除釷元素，這种放射性元素雖非稀土，卻常與稀土共生）。釷以及用於提取它的強酸都必須被安全處置。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then there is the matter of making money. China’s grip on the industry is so tight that it can be difficult to answer even seemingly simple questions, such as how much demand there is for rare-earth metal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接下來就是盈利問題。中國對該行業的掌控如此嚴密，甚至連看似簡單的問題都難有定論，比如稀土金屬的實際需求量究竟多大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Estimates vary widely, and the market is difficult to assess due to gray- and black-market trade,” the Atlantic Council, a Washington research organization, said in a report this year, referring to the value of the global rare earths trade.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>華盛頓智庫大西洋理事會在今年的一份報告中指出：「由於灰市與黑市交易的存在，全球稀土貿易價值評估差異巨大，市場難以準確測算。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of particular concern for Phoenix Tailings is that China has been known to sell rare-earth metal for less than it costs to produce it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Phoenix Tailings特別擔憂的是，中國向來以低於生產成本的價格出售稀土金屬。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We chose to do the hard path because we weren’t focused monetarily at first,” said Mr. Myers, who incorporated prayer into early board meetings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們選擇走一條困難的道路，因為一開始我們並沒有把重心放在賺錢上，」邁爾斯說，他在早期董事會會議中還加入了祈禱環節。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="Phoenix Tailings的首席執行官尼克·邁爾斯表示，「要擺脫對中國依賴，你必須強迫自己戒掉最初的『毒癮』。」" data-src="https://static01.nyt.com/images/2025/12/16/multimedia/00biz-rare-earth-processing-02-zmhp/00biz-rare-earth-processing-02-zmhp-master1050.jpg" src="https://static01.nyt.com/images/2025/12/16/multimedia/00biz-rare-earth-processing-02-zmhp/00biz-rare-earth-processing-02-zmhp-master1050.jpg"/></div><figcaption><span>Phoenix Tailings的首席執行官尼克·邁爾斯表示，「要擺脫對中國依賴，你必須強迫自己戒掉最初的『毒癮』。」</span> <cite>Tony Luong for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But metal prices have risen in recent months, he said, as Western companies have sought supplies outside China. A poster showing the planned capacity of the New Hampshire plant had been taped over three times. As of early December, it read 1,000 metric tons, equal to about 1 percent of global demand by Mr. Myers’s estimate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過他表示，隨著西方公司試圖在中國之外尋找供應來源，近幾個月來金屬價格有所上漲。新罕布什爾州工廠計劃產能的海報已修改了三次。截至12月初，數字寫的是1000公噸，按邁爾斯的估算，約佔全球需求的1%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you see everything from tailings to metal, you have the capacity to be able to mitigate price fluctuations,” Mr. Myers said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「若能實現從尾礦到金屬的全流程覆蓋，就有能力應對價格波動，」邁爾斯表示。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJXKzN_M5pEDFWucAAAdH5IEng" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A big question is whether the U.S. government will continue to subsidize the domestic industry, and at what level. It will be hard for companies to compete with China without significant intervention, said Dr. Olivetti, the M.I.T. professor. “Traditional market mechanisms are going to struggle.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個大問題是，美國政府是否會繼續補貼國內產業，以及補貼到什麼程度。麻省理工學院的奧利維蒂表示，如果沒有重大的政府干預，企業將很難與中國競爭。「傳統的市場機制會很吃力。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Keith Bradsher對本文有報導貢獻，</p><p class="cn-p">Rebecca F. Elliott為時報報導能源新聞。</p></footer></div></article>
+        </div>
+
+        <div class="footer-link">
+            <a href="https://cn.nytimes.com/business/20251230/rare-earth-processing-phoenix-tailings/zh-hant/dual/" target="_blank">View Original Article on NYTimes.com ↗</a>
+        </div>
+    </div>
+</body>
+</html>
