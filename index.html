@@ -44,15 +44,24 @@
             border-bottom: 1px solid #e2e2e2;
         }
 
+        /* Logo 容器 */
+        .masthead-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px; /* Logo 与文字的间距 */
+            margin-bottom: 5px;
+        }
+
         .logo {
             height: 50px;
-            margin-bottom: 10px;
+            margin-bottom: 0; /* 移除原有底部边距 */
         }
 
         .masthead {
             font-family: var(--font-serif);
             font-size: 2.8rem;
-            margin: 0 0 5px 0;
+            margin: 0; /* 移除原有边距，由容器控制 */
             font-weight: 900;
             letter-spacing: -0.5px;
             color: #000;
@@ -91,7 +100,6 @@
 
         .controls {
             display: flex;
-            /* [修改点] 显著加大间距：改为 60px */
             gap: 60px;
             align-items: center;
             flex-grow: 1;
@@ -281,6 +289,14 @@
             margin-top: 20px;
         }
 
+        .home-link {
+            display: inline-block;
+            margin-top: 12px;
+            color: #999;
+            text-decoration: underline;
+        }
+        .home-link:hover { color: #666; }
+
         @media (max-width: 600px) {
             .toolbar {
                 flex-direction: column;
@@ -290,7 +306,7 @@
             .controls {
                 width: 100%;
                 justify-content: space-between;
-                gap: 8px; /* 移动端保持原样，避免拥挤 */
+                gap: 8px;
             }
             .date-wrapper { min-width: 100px; }
             .date-display { min-width: auto; }
@@ -298,164 +314,167 @@
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
+<div class="app-container">
+    <header>
+        <div class="masthead-container">
             <img src="logo.png" alt="NYT Logo" class="logo">
             <div class="masthead">The New York Times</div>
-            <div class="sub-masthead">Bilingual Archive</div>
-
-            <div class="toolbar">
-                <div class="date-display" id="header-date">Loading...</div>
-
-                <div class="controls">
-                    <div class="input-group" style="flex-grow: 1;">
-                        <input type="text" id="search-input" placeholder="Search title..." oninput="applyFilters()">
-                        <span class="icon-search">🔍</span>
-                    </div>
-
-                    <div class="date-wrapper" title="Filter by date" onclick="openDatePicker()">
-                        <span id="date-label" class="date-label">📅 All Dates</span>
-                        <input type="date" id="date-picker" onchange="applyFilters()">
-                    </div>
-
-                    <button id="reset-btn" class="clear-btn" style="display:none;" onclick="resetFilters()">Reset</button>
-                </div>
-            </div>
-        </header>
-
-        <div id="loading">Loading library...</div>
-        <ul id="article-list"></ul>
-
-        <div class="pagination" id="pagination-container">
-            <button id="prev-btn" class="page-btn" onclick="changePage(-1)">Previous</button>
-            <span id="page-info"></span>
-            <button id="next-btn" class="page-btn" onclick="changePage(1)">Next</button>
         </div>
+        <div class="sub-masthead">Bilingual Archive</div>
 
-        <footer>
-            Generated locally • Archives from NYTimes.com
-        </footer>
+        <div class="toolbar">
+            <div class="date-display" id="header-date">Loading...</div>
+
+            <div class="controls">
+                <div class="input-group" style="flex-grow: 1;">
+                    <input type="text" id="search-input" placeholder="Search title..." oninput="applyFilters()">
+                    <span class="icon-search">🔍</span>
+                </div>
+
+                <div class="date-wrapper" title="Filter by date" onclick="openDatePicker()">
+                    <span id="date-label" class="date-label">📅 All Dates</span>
+                    <input type="date" id="date-picker" onchange="applyFilters()">
+                </div>
+
+                <button id="reset-btn" class="clear-btn" style="display:none;" onclick="resetFilters()">Reset</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="loading">Loading library...</div>
+    <ul id="article-list"></ul>
+
+    <div class="pagination" id="pagination-container">
+        <button id="prev-btn" class="page-btn" onclick="changePage(-1)">Previous</button>
+        <span id="page-info"></span>
+        <button id="next-btn" class="page-btn" onclick="changePage(1)">Next</button>
     </div>
 
-    <script>
-        const ARTICLES_PER_PAGE = 10;
-        let allArticles = [];
-        let filteredArticles = [];
-        let currentPage = 1;
+    <footer>
+        Generated locally • Archives from NYTimes.com<br>
+        <a href="https://324893.xyz/" class="home-link">324893.xyz</a>
+    </footer>
+</div>
 
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+<script>
+    const ARTICLES_PER_PAGE = 10;
+    let allArticles = [];
+    let filteredArticles = [];
+    let currentPage = 1;
 
-        function updateHeaderDate(dateString = null) {
-            const dateObj = dateString ? new Date(dateString) : new Date();
-            if(dateString) {
-                const parts = dateString.split('-');
-                const safeDate = new Date(parts[0], parts[1]-1, parts[2]);
-                document.getElementById('header-date').textContent = safeDate.toLocaleDateString('en-US', dateOptions);
-            } else {
-                document.getElementById('header-date').textContent = dateObj.toLocaleDateString('en-US', dateOptions);
-            }
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+    function updateHeaderDate(dateString = null) {
+        const dateObj = dateString ? new Date(dateString) : new Date();
+        if(dateString) {
+            const parts = dateString.split('-');
+            const safeDate = new Date(parts[0], parts[1]-1, parts[2]);
+            document.getElementById('header-date').textContent = safeDate.toLocaleDateString('en-US', dateOptions);
+        } else {
+            document.getElementById('header-date').textContent = dateObj.toLocaleDateString('en-US', dateOptions);
         }
-        updateHeaderDate();
+    }
+    updateHeaderDate();
 
-        async function loadArticles() {
-            try {
-                const response = await fetch(`articles.json?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error('Failed to load articles.json');
-                allArticles = await response.json();
+    async function loadArticles() {
+        try {
+            const response = await fetch(`articles.json?t=${new Date().getTime()}`);
+            if (!response.ok) throw new Error('Failed to load articles.json');
+            allArticles = await response.json();
 
-                allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-                filteredArticles = [...allArticles];
+            allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+            filteredArticles = [...allArticles];
 
-                document.getElementById('loading').style.display = 'none';
-                renderPage();
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerHTML = 'Error loading content.<br>Please ensure <b>articles.json</b> exists.';
-            }
-        }
-
-        function openDatePicker() {
-            const picker = document.getElementById('date-picker');
-            try {
-                picker.showPicker();
-            } catch (error) {
-                picker.style.opacity = 1;
-                picker.style.width = '100%';
-                picker.style.height = '100%';
-                picker.focus();
-            }
-        }
-
-        function applyFilters() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-            const dateInput = document.getElementById('date-picker');
-            const selectedDate = dateInput.value;
-            const resetBtn = document.getElementById('reset-btn');
-            const dateLabel = document.getElementById('date-label');
-
-            if (selectedDate) {
-                dateLabel.textContent = selectedDate;
-                dateLabel.style.color = "#000";
-            } else {
-                dateLabel.textContent = "📅 All Dates";
-                dateLabel.style.color = "#555";
-            }
-
-            if (searchTerm || selectedDate) {
-                resetBtn.style.display = 'inline-block';
-            } else {
-                resetBtn.style.display = 'none';
-            }
-
-            if (selectedDate) {
-                updateHeaderDate(selectedDate);
-            } else {
-                updateHeaderDate();
-            }
-
-            filteredArticles = allArticles.filter(article => {
-                const matchDate = selectedDate ? (article.date === selectedDate) : true;
-
-                let matchSearch = true;
-                if (searchTerm) {
-                    const cn = article.title_cn ? article.title_cn.toLowerCase() : "";
-                    const en = article.title_en ? article.title_en.toLowerCase() : "";
-                    matchSearch = cn.includes(searchTerm) || en.includes(searchTerm);
-                }
-
-                return matchDate && matchSearch;
-            });
-
-            currentPage = 1;
+            document.getElementById('loading').style.display = 'none';
             renderPage();
+        } catch (error) {
+            console.error(error);
+            document.getElementById('loading').innerHTML = 'Error loading content.<br>Please ensure <b>articles.json</b> exists.';
+        }
+    }
+
+    function openDatePicker() {
+        const picker = document.getElementById('date-picker');
+        try {
+            picker.showPicker();
+        } catch (error) {
+            picker.style.opacity = 1;
+            picker.style.width = '100%';
+            picker.style.height = '100%';
+            picker.focus();
+        }
+    }
+
+    function applyFilters() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+        const dateInput = document.getElementById('date-picker');
+        const selectedDate = dateInput.value;
+        const resetBtn = document.getElementById('reset-btn');
+        const dateLabel = document.getElementById('date-label');
+
+        if (selectedDate) {
+            dateLabel.textContent = selectedDate;
+            dateLabel.style.color = "#000";
+        } else {
+            dateLabel.textContent = "📅 All Dates";
+            dateLabel.style.color = "#555";
         }
 
-        function resetFilters() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('date-picker').value = '';
-            applyFilters();
+        if (searchTerm || selectedDate) {
+            resetBtn.style.display = 'inline-block';
+        } else {
+            resetBtn.style.display = 'none';
         }
 
-        function renderPage() {
-            const list = document.getElementById('article-list');
-            const pagination = document.getElementById('pagination-container');
-            list.innerHTML = '';
+        if (selectedDate) {
+            updateHeaderDate(selectedDate);
+        } else {
+            updateHeaderDate();
+        }
 
-            if (filteredArticles.length === 0) {
-                list.innerHTML = `<div class="no-results">No articles found matching your criteria.</div>`;
-                pagination.style.display = 'none';
-                return;
+        filteredArticles = allArticles.filter(article => {
+            const matchDate = selectedDate ? (article.date === selectedDate) : true;
+
+            let matchSearch = true;
+            if (searchTerm) {
+                const cn = article.title_cn ? article.title_cn.toLowerCase() : "";
+                const en = article.title_en ? article.title_en.toLowerCase() : "";
+                matchSearch = cn.includes(searchTerm) || en.includes(searchTerm);
             }
 
-            pagination.style.display = 'flex';
+            return matchDate && matchSearch;
+        });
 
-            const start = (currentPage - 1) * ARTICLES_PER_PAGE;
-            const end = start + ARTICLES_PER_PAGE;
-            const pageItems = filteredArticles.slice(start, end);
+        currentPage = 1;
+        renderPage();
+    }
 
-            pageItems.forEach(article => {
-                const li = document.createElement('li');
-                li.innerHTML = `
+    function resetFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('date-picker').value = '';
+        applyFilters();
+    }
+
+    function renderPage() {
+        const list = document.getElementById('article-list');
+        const pagination = document.getElementById('pagination-container');
+        list.innerHTML = '';
+
+        if (filteredArticles.length === 0) {
+            list.innerHTML = `<div class="no-results">No articles found matching your criteria.</div>`;
+            pagination.style.display = 'none';
+            return;
+        }
+
+        pagination.style.display = 'flex';
+
+        const start = (currentPage - 1) * ARTICLES_PER_PAGE;
+        const end = start + ARTICLES_PER_PAGE;
+        const pageItems = filteredArticles.slice(start, end);
+
+        pageItems.forEach(article => {
+            const li = document.createElement('li');
+            li.innerHTML = `
                     <a href="${article.url}">
                         <div class="article-title-cn">${article.title_cn}</div>
                         ${article.title_en ? `<div class="article-title-en">${article.title_en}</div>` : ''}
@@ -465,35 +484,35 @@
                         </div>
                     </a>
                 `;
-                list.appendChild(li);
-            });
+            list.appendChild(li);
+        });
 
-            updatePagination();
-            window.scrollTo(0, 0);
+        updatePagination();
+        window.scrollTo(0, 0);
+    }
+
+    function isNew(dateString) {
+        const today = new Date().toISOString().split('T')[0];
+        return dateString === today;
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE) || 1;
+        document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
+        document.getElementById('prev-btn').disabled = currentPage === 1;
+        document.getElementById('next-btn').disabled = currentPage === totalPages;
+    }
+
+    function changePage(delta) {
+        const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+        const newPage = currentPage + delta;
+        if (newPage >= 1 && newPage <= totalPages) {
+            currentPage = newPage;
+            renderPage();
         }
+    }
 
-        function isNew(dateString) {
-            const today = new Date().toISOString().split('T')[0];
-            return dateString === today;
-        }
-
-        function updatePagination() {
-            const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE) || 1;
-            document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
-            document.getElementById('prev-btn').disabled = currentPage === 1;
-            document.getElementById('next-btn').disabled = currentPage === totalPages;
-        }
-
-        function changePage(delta) {
-            const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
-            const newPage = currentPage + delta;
-            if (newPage >= 1 && newPage <= totalPages) {
-                currentPage = newPage;
-                renderPage();
-            }
-        }
-
-        loadArticles();
-    </script>
+    loadArticles();
+</script>
 </body>
 </html>
