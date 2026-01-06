@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「AI救了他的命」：中國醫生藉助人工智慧識別胰腺癌 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「AI救了他的命」：中國醫生藉助人工智慧識別胰腺癌</h1>
+    <h2 class="en-headline">In China, A.I. Is Finding Deadly Tumors That Doctors Might Miss</h2>
+    <div class="meta-line">王月眉 <span style="margin: 0 8px;">•</span> 2026-01-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="寧波大學附屬人民醫院的自助服務終端。該院正在測試一款由人工智慧驅動的胰腺癌檢測工具。
+" height="700" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-01-lpqv/00china-ai-cancer-01-lpqv-master1050.jpg" width="1050"/><figcaption><span>寧波大學附屬人民醫院的自助服務終端。該院正在測試一款由人工智慧驅動的胰腺癌檢測工具。 </span><cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three days after Qiu Sijun, a retired bricklayer in eastern China, went for a routine diabetes checkup, he received a call from a doctor he hadn’t met before. The doctor, the head of the hospital’s pancreatic department, wanted him to come in for a follow-up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國東部的退休泥瓦工邱嗣軍去做了常規的糖尿病檢查，三天後接到了一位素未謀面的醫生來電。那位醫生是這家醫院胰腺科的主任，讓他再來做一次複查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I knew it couldn’t be anything good,” Mr. Qiu, 57, recalled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我知道，肯定是沒有好東西的，」57歲的邱先生回憶說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was partly right. The bad news was that Mr. Qiu had pancreatic cancer. But there was good news, too: The tumor had been detected early. The doctor, Zhu Kelei, was able to remove it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他只猜對了一半。壞消息是邱先生得了胰腺癌。好消息是腫瘤發現得很早。這位名叫朱柯磊的大夫成功地把它切除了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This was possible only because of a new artificial-intelligence-powered tool that the hospital was testing, which had flagged Mr. Qiu’s routine CT scan before he had any symptoms. The tool is one example of how Chinese tech companies and hospitals are racing to apply A.I. to some of medicine’s most stubborn problems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這都是因為醫院當時正在測試一款新的人工智慧工具——該工具在邱先生尚未出現任何癥狀前，就在他的常規CT掃描結果中標出了問題。這一工具是中國科技公司與醫院競相將人工智慧應用於醫學領域一些最棘手難題的一個實例。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pancreatic cancer is one of the deadliest forms of cancer, with a five-year survival rate of around 10 percent, largely because early detection is so hard. Symptoms often do not appear until the cancer has advanced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>胰腺癌是最兇險的癌症之一，五年生存率僅約10%，很大程度上是因為早期發現極其困難。癥狀往往要等到癌症</span>惡化之後才會出現。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="退休泥瓦工邱嗣軍與朱柯磊醫生，攝於2024年11月。這個新工具幫助醫生在早期發現了邱先生的胰腺癌。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-hbmt/00china-ai-cancer-hbmt-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-hbmt/00china-ai-cancer-hbmt-master1050.jpg"/></div><figcaption><span>退休泥瓦工邱嗣軍與朱柯磊醫生，攝於2024年11月。這個新工具幫助醫生在早期發現了邱先生的胰腺癌。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="查看邱先生的掃描結果。該工具在平掃CT影像中尋找胰腺癌跡象，這類掃描不如增強CT清晰。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-03-lpqv/00china-ai-cancer-03-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-03-lpqv/00china-ai-cancer-03-lpqv-master1050.jpg"/></div><figcaption><span>查看邱先生的掃描結果。該工具在平掃CT影像中尋找胰腺癌跡象，這類掃描不如增強CT清晰。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tests used to confirm its presence, such as contrast CT scans, involve large amounts of radiation, so many experts advise against widespread screening. But lower-radiation alternatives, such as noncontrast CTs — in which no contrast dye is injected into patients’ bloodstreams — produce less clearly defined pictures, making it hard for radiologists to identify abnormalities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>增強CT掃描等確診手段涉及大量輻射，因此許多專家不建議</span>普及這種篩查。而低輻射替代方案——比如不注射造影劑的平掃CT——生成的圖像清晰度較低，導致放射科醫生難以識別異常病變。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Artificial intelligence may change that. The tool at Dr. Zhu’s hospital, which was developed by researchers affiliated with the Chinese tech giant Alibaba, was trained to look for pancreatic cancer in noncontrast CTs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧也許會改變這一切。朱柯磊所在醫院使用的這款工具由中國科技巨頭阿里巴巴集團的研究人員開發，經過訓練後可用於在平掃CT中識別胰腺癌。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPDFzIrY9ZEDFaOiAwgdO-w5Xw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tool is called PANDA, short for “pancreatic cancer detection with artificial intelligence.” At the hospital where Dr. Zhu works, the Affiliated People’s Hospital of Ningbo University in eastern China, doctors started using it as part of a clinical trial in November 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款名為PANDA（「人工智慧胰腺癌檢測系統」的縮寫）的工具，於2024年11月在朱柯磊所在的寧波大學附屬人民醫院投入臨床試驗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tool has since analyzed more than 180,000 abdominal or chest CTs, helping doctors detect about two dozen cases of pancreatic cancer, 14 of which were in the early stage, Dr. Zhu said. The tool found 20 cases of ductal adenocarcinoma, the most common and deadliest type of pancreatic cancer. (Mr. Qiu had a neuroendocrine tumor, which is a rarer and less aggressive cancer.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據他<span>介紹，到目前為止，這個工具已經分析了逾18萬例腹部或胸部CT，幫助醫生發現了二十多例胰腺癌，其中14例為早期。工具共發現了20例胰腺導管腺癌——這是最常見、也最致命的一種胰腺癌。（邱先生所患的神經內分泌腫瘤則屬較罕見且侵襲性較低的類型。）</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All of those patients had come to the hospital with complaints like bloating or nausea and had not initially seen a pancreatic specialist, Dr. Zhu said. Several of their CT scans had raised no alarms until they were flagged by the A.I. tool.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">朱柯磊指出，這些患者均因腹脹或噁心等癥狀就診，一開始並未接受胰腺專科檢查。其中多例CT影像在經AI工具標記前未引發任何警報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think you can 100 percent say A.I. saved their lives,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這些人我可以說百分之一百是AI救了他的命，」他表示。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="寧波大學附屬人民醫院的就診者。
+" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-05-lpqv/00china-ai-cancer-05-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-05-lpqv/00china-ai-cancer-05-lpqv-master1050.jpg"/></div><figcaption><span>寧波大學附屬人民醫院的就診者。 </span><cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="這款人工智慧工具名為PANDA，由中國科技公司阿里巴巴集團研發。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-07-lpqv/00china-ai-cancer-07-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-07-lpqv/00china-ai-cancer-07-lpqv-master1050.jpg"/></div><figcaption><span>這款人工智慧工具名為PANDA，由中國科技公司阿里巴巴集團研發。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, Alibaba said the U.S. Food and Drug Administration had granted PANDA “breakthrough device” status, meaning that its review would be expedited to help it get to market. It is also the subject of several clinical trials in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年4月，阿里巴巴宣布美國食品藥品監督管理局已認定PANDA為「突破性醫療器械」，意味著其評審流程將加速，以便更快進入市場。該系統目前也在中國進行多個臨床試驗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers cautioned that more real-world data was needed to show whether the tool could detect enough early-stage cases to outweigh the risks of false positives and unnecessary testing. Scientists elsewhere are studying other A.I.-assisted approaches to early pancreatic cancer detection that focus more narrowly on high-risk groups, in large part because the cancer’s prevalence is low.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員提醒說，還需要更多真實世界的數據，來證明這款工具能否發現足夠多的早期病例，從而抵消誤報和不必要檢查帶來的風險。由於胰腺癌總體發病率較低，世界各地的科學家正在研究其他藉助人工智慧的早期篩查方法，而且更側重於高風險人群。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLjGzIrY9ZEDFV6eAwgd2NgsFQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Several experts not involved with the Chinese research said they were skeptical that noncontrast CTs could offer as much valuable information as other forms of imaging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於平掃CT能否提供與其他影像檢查同等價值的信息，多位未參與中國這項研究的專家持懷疑態度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even the engineers behind PANDA initially shared that concern, said Ling Zhang, a senior staff algorithm engineer at Damo Academy, Alibaba’s research arm, who is one of the tool’s creators.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿里巴巴研究機構達摩院資深算法專家、PANDA的研發者之一張靈坦言，就連研發團隊最初也有同樣擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To address it, they asked a radiologist to manually annotate the contrast CTs of more than 2,000 known pancreatic patients with the locations of their lesions. The engineers then algorithmically mapped the highlighted lesions onto the same patients’ noncontrast CTs. Those noncontrast scans were then fed to the A.I. model, so that it could learn to detect potential cancer even in less detailed images.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為解決這個問題，他們請一名放射科醫生在2000多名已知胰腺癌患者的增強CT影像上手動標註了病灶位置。工程師隨後通過算法將這些標註病灶映射至同一患者的平掃CT影像上，再將平掃影像輸入AI模型進行訓練，使其能在清晰度較低的圖像中識別潛在癌症。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the tool was subsequently tested on more than 20,000 noncontrast CTs, it correctly identified 93 percent of people who had pancreatic lesions, according to a study published in Nature Medicine in 2023.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>根據2023年發表在《自然·醫學》上的研究論文，當這款工具隨後在</span>超過20000例平掃CT上進行測試時，它能夠準確識別出93%的胰腺病灶患者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The effectiveness actually surprised us,” Mr. Zhang said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這樣的效果其實讓我們很驚訝，」張靈說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the Ningbo hospital, the system is being used to analyze scans that doctors had already ordered for other reasons, so there is no additional testing cost to the hospital or patients. (In China, many people routinely undergo noncontrast CTs as part of their annual checkups; at the Ningbo hospital, a noncontrast CT costs about $25, before insurance.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在寧波這家醫院，該系統只用於分析醫生本來就已經開具檢查的影像，因此不會給醫院或患者增加額外的檢測成本。（在中國，很多人把平掃CT作為年度體檢的一部分；在寧波這家醫院，一次平掃CT檢查在保險報銷前的費用大約是180元。）</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="PANDA正在中國開展多項臨床試驗，其中一項就在寧波的這所醫院進行。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-04-lpqv/00china-ai-cancer-04-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-04-lpqv/00china-ai-cancer-04-lpqv-master1050.jpg"/></div><figcaption><span>PANDA正在中國開展多項臨床試驗，其中一項就在寧波的這所醫院進行。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="「我認為可以百分之百地說，是人工智慧救了他們的命，」朱柯磊說，他說這些CT影像原本沒有引起注意，但AI工具發出了警報。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-06-lpqv/00china-ai-cancer-06-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-06-lpqv/00china-ai-cancer-06-lpqv-master1050.jpg"/></div><figcaption><span>「我認為可以百分之百地說，是人工智慧救了他們的命，」朱柯磊說，他說這些CT影像原本沒有引起注意，但AI工具發出了警報。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Zhu and his team review any scans that the system marks as high-risk, and if necessary, they call the patients in for more detailed testing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">朱柯磊及他的團隊會複核所有系統標記為高風險的患者掃描影像，必要時將通知患者做進一步檢查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The model still can’t compare to a pancreatic specialist, Dr. Zhu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這個模型仍然無法與胰腺專科醫生相比。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNSKzYrY9ZEDFeLB8gcdCF0FGg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It sometimes highlights cases of pancreatitis, and it cannot say whether a tumor originated in the pancreas or spread from a different organ. Since its launch, the model has issued alerts for about 1,400 scans, but only about 300 of them needed follow-up, doctors decided.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它有時會把胰腺炎病例標出來，而且無法判斷腫瘤是起源於胰腺，還是從其他器官轉移而來。自啟用以來，該模型對大約1400份掃描影像發出了警報，但醫生們認定，其中只有大約300份需要進一步判斷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Ajit Goenka, a radiologist at Mayo Clinic who is researching the early diagnosis of pancreatic cancer, said it was crucial to reduce the number of false alarms. It is possible that hundreds of people in Ningbo “faced the terror of a potential pancreatic cancer diagnosis, underwent unnecessary callbacks, and likely endured expensive, invasive follow-up testing — only to find out they were healthy,” he wrote in an email.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>正在研究胰腺癌早期診斷的梅奧診所放射科醫生阿吉特·戈恩卡說，降低誤報率至關重要。他在電郵中寫道，寧波可能有數百人「承受著可能患胰腺癌的恐懼，接受了不必要的</span>複查，並且可能還接受了昂貴的、侵入性的後續檢查——結果卻發現自己是健康的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tool might also be more useful for trainee doctors than for experienced specialists, said Dr. Diane Simeone, a pancreatic surgeon at the University of California San Diego. Some of the tumors that the tool caught in the Nature Medicine study should have been “super obvious” to well-trained radiologists even without A.I., she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>加州大學聖地亞哥分校的胰腺外科醫生黛安·西梅奧內說，</span>相比經驗豐富的專家，這個工具對受訓中的醫生可能更有價值。她表示，在發表在《自然·醫學》上的那篇研究論文中，該工具捕捉到的一些腫瘤，對訓練有素的放射科醫生來說，即便沒有人工智慧，也應該是「非常明顯」的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But she acknowledged that it could be a valuable backstop for hospitals where specialists are in short supply. (PANDA is also being tested at a clinic in rural Yunnan Province.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但她承認，在專科醫生短缺的醫院（PANDA也正在雲南農村的一家醫院進行實驗），這類工具可作為重要的輔助手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You’re going to have different skill sets at different centers, depending on where in the world you are or the clinical volume,” Dr. Simeone said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西梅奧內說：「不同醫療中心掌握的技術能力會有所不同，具體取決於你身在何處，或者你有多少臨床病例。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Ningbo, the technology’s apparent success has brought some new challenges. The hospital currently does not have enough staff to contact all the patients who need follow-up, Dr. Zhu said. And its aging hardware has trouble keeping up with the model’s large amounts of data. Several times, when Dr. Zhu tried to pull up PANDA on his computer, it froze.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在寧波，這項看起來成功的技術也帶來了一些新挑戰。朱柯磊說，醫院目前沒有足夠的人手去聯絡所有需要做進一步檢查的病人。而且老化的硬件難以應付模型產生的大量數據。他有好幾次遇到試圖在電腦上打開PANDA時死機的問題。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="寧波大學附屬人民醫院的一間候診室。研究人員表示，需要更多數據來證明PANDA能否發現足夠多的早期病例，從而抵消誤報和不必要檢查帶來的風險。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-08-lpqv/00china-ai-cancer-08-lpqv-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-08-lpqv/00china-ai-cancer-08-lpqv-master1050.jpg"/></div><figcaption><span>寧波大學附屬人民醫院的一間候診室。研究人員表示，需要更多數據來證明PANDA能否發現足夠多的早期病例，從而抵消誤報和不必要檢查帶來的風險。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="醫院老化的硬件難以應付該工具所需的數據處理量，系統有時會在運算過程中崩潰。" data-src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-jqpg/00china-ai-cancer-jqpg-master1050.jpg" src="https://static01.nyt.com/images/2025/11/25/multimedia/00china-ai-cancer-jqpg/00china-ai-cancer-jqpg-master1050.jpg"/></div><figcaption><span>醫院老化的硬件難以應付該工具所需的數據處理量，系統有時會在運算過程中崩潰。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Detecting cancer before patients have symptoms can also create its own problems. In China, widespread medical corruption has eroded public trust in doctors. Some people may refuse to come in for follow-ups, Dr. Zhu said, because they worry that the hospital is simply trying to make money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在患者出現癥狀之前發現癌症，本身也會帶來問題<span>。在中國，普遍的醫療腐敗侵蝕了公眾對醫生的信任。</span>朱柯磊說，有些人可能會拒絕進一步檢查，因為他們擔心醫院只是為了賺錢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Qiu was not one of them. He did not hesitate when Dr. Zhu advised him to have his tumor removed, though he later said he did not use A.I. or understand how it worked. During a follow-up visit with the doctor in November, Mr. Qiu said he felt perfectly healthy and was busy growing vegetables on his family farm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">邱先生不是這樣的人。當醫生建議他切除腫瘤時，他沒有絲毫猶豫，儘管他後來說他沒有用過人工智慧，也不了解它的原理。在11月的一次隨訪中，邱先生告訴醫生，他感覺非常健康，正忙著在自家的農地裡種菜。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNCMzYrY9ZEDFWvD8gcdJVIFDQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“He said I was very lucky,” Mr. Qiu said. “So there was nothing else for me to say. I could only be relieved.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">邱先生說：「（醫生）說（我）運氣很好的，（發現得）早嘛，那我也沒有什麼好說的，就放心了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="" data-poster=""><div class="css-s99gbd StoryBodyCompanionColumn" data-poster=""><div class="css-53u6y8" data-poster=""><p class="cn-p">攝影：Andrea Verdelli</p><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><div class="" data-poster=""><span><p class="cn-p">王月眉(Vivian Wang)是《紐約時報》駐華記者，常駐北京，撰寫關於中國的崛起及雄心如何塑造普通人日常生活的報導。</p><div class="" data-poster=""></div></span></div></div></div></div><div class="bottom-of-article" data-poster=""><div class="css-5dm9xx" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260105/china-ai-cancer-pancreatic/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

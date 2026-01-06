@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國抓捕馬杜羅行動內情 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國抓捕馬杜羅行動內情</h1>
+    <h2 class="en-headline">Inside ‘Operation Absolute Resolve,’ the U.S. Effort to Capture Maduro</h2>
+    <div class="meta-line">JULIAN E. BARNES, TYLER PAGER, ERIC SCHMITT <span style="margin: 0 8px;">•</span> 2026-01-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/01/03/multimedia/03us-venezuela-carousel-hqgk/03us-venezuela-carousel-hqgk-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Luis Jaimes/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In August, a clandestine team of C.I.A. officers slipped into Venezuela with a plan to collect information on Nicolás Maduro, the country’s president, whom the Trump administration had labeled a narco-terrorist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年8月，一支中情局祕密行動小組悄然潛入委內瑞拉，執行一項收集該國總統尼古拉斯·馬杜羅情報的計劃。川普政府此前將馬杜羅認定為毒品恐怖分子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The C.I.A. team moved about Caracas, remaining undetected for months while it was in the country. The intelligence gathered about the Venezuelan leader’s daily movements — combined with a human source close to Mr. Maduro and a fleet of stealth drones flying secretly above — enabled the agency to map out minute details about his routines.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這支中情局小組在卡拉卡斯一帶行動，在委內瑞拉境內數月一直未被發現。他們收集到的有關這位委內瑞拉領導人日常行蹤的情報——加上一名馬杜羅身邊的線人，以及祕密盤旋在上空的隱形無人機群——使中情局得以勾勒出他日常行程的詳細圖景。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was a highly dangerous mission. With the U.S. embassy closed, the C.I.A. officers could not operate under the cloak of diplomatic cover. But it was highly successful. Gen. Dan Caine, the chairman of the Joint Chiefs of Staff, said at a news conference that because of the intelligence gathered by the team, the United States knew where Mr. Maduro moved, what he ate and even what pets he kept.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一項極其危險的任務。由於美國駐委內瑞拉大使館關閉，中情局官員無法以外交身份作掩護。但這項任務取得了巨大成功。參謀長聯席會議主席丹·凱恩上將在新聞發布會上表示，正是由於該小組收集到的情報，美國才得以掌握馬杜羅的行動路線、飲食習慣，甚至連他養了什麼寵物都一清二楚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That information was critical to the ensuing military operation, a pre-dawn raid Saturday by elite Army Delta Force commandos, the riskiest U.S. military operation of its kind since members of the Navy’s SEAL Team 6 killed Osama bin Laden in a safe house in Pakistan in 2011.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些信息對隨後展開的軍事行動至關重要。週六拂曉前，陸軍精銳力量三角洲部隊實施了突襲，這是自2011年海軍海豹突擊隊第六分隊在巴基斯坦一處安全屋擊斃奧薩馬·賓·拉登以來，美國同類軍事行動中風險最高的一次。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIDf_YbY9ZEDFZfE8gcdWL4LZA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result was a tactically precise and swiftly executed operation that extracted Mr. Maduro from his country with no loss of American life, a result heralded by President Trump amid larger questions about the legality and rationale for the U.S. actions in Venezuela.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最終，行動戰術精準、執行迅速，成功將馬杜羅從委內瑞拉帶走，且沒有美方人員喪生。唐納德·川普總統對這一結果大為讚賞，儘管外界對美國在委內瑞拉行動的合法性和合理性提出了諸多質疑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has justified what was named Operation Absolute Resolve as a strike against drug trafficking. But Venezuela is hardly as big a player in the international drug trade as other countries. Officials had previously told congressional leaders that their objective in Venezuela was not regime change. And Mr. Trump has long said he opposes U.S. foreign occupations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普辯稱此次代號為「絕對決心行動」的軍事行動是對毒品販運的打擊。但委內瑞拉在國際毒品貿易中的影響遠不及其他國家。此前，官員們曾向國會領導人表示，美國在委內瑞拉的目標並非政權更迭。而川普本人也長期宣稱反對美國在海外的佔領行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet on Saturday, the president proclaimed that American officials were in charge of Venezuela, and that the United States would rebuild the country’s oil infrastructure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而就在週六，總統卻宣稱美國官員已經接管了委內瑞拉，並表示美國將重建該國的石油基礎設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In contrast to messy U.S. interventions of the past — by the military in Panama or the C.I.A. in Cuba — the operation to grab Mr. Maduro was virtually flawless, according to multiple officials familiar with the details, some of whom spoke on the condition of anonymity to describe the plans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多名熟悉行動細節的官員表示，與美國過去一些混亂的干預行動（如美軍在巴拿馬的行動，以及中情局在古巴的行動）相比，此次抓捕馬杜羅的行動堪稱完美。為了方便披露相關計劃，其中一些官員要求匿名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the run-up, Delta Force commandos rehearsed the extraction inside a full-scale model of Mr. Maduro’s compound that the Joint Special Operations Command had built in Kentucky. They practiced blowing through steel doors at ever-faster paces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在行動準備階段，三角洲部隊突擊隊員在肯塔基州一處由聯合特種作戰司令部搭建、按馬杜羅住所一比一複製的模型內進行演練。他們不斷練習以越來越快的速度炸開鋼製大門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The military had been readying for days to execute the mission, waiting for good weather conditions and a time when the risk of civilian casualties would be minimized.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">軍方為執行任務準備多日，等待天氣條件適宜且平民傷亡風險最小化的時機。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM6Y_obY9ZEDFUDT8gcdJtQA8Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Amid the heightened tensions, Mr. Maduro had been rotating between six and eight locations, and the United States did not always learn where he intended to stay until late in the evenings. To execute the operation, the U.S. military needed confirmation that Mr. Maduro was at the compound they had trained to attack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在局勢高度緊張的情況下，馬杜羅頻繁在六到八處地點來回換地方，美方往往要到深夜才能掌握他當天住在哪裡。要執行此次行動，美軍必須確認馬杜羅在他們事先演練過的那處攻擊目標設施內。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was likely little doubt in the Venezuelan government that the United States was coming. But the military took pains to maintain so-called tactical surprise, like it did with its operation over the summer to destroy Iran’s nuclear facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">委內瑞拉政府很可能知道美國即將採取行動。但美軍仍然竭力保持所謂的戰術突襲，就像今年夏天摧毀伊朗核設施的行動一樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump had authorized the U.S. military to go ahead as early as Dec. 25, but left the precise timing to Pentagon officials and Special Operations planners to ensure that the attacking force was ready, and that conditions on the ground were optimal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普早在12月25日就已授權美軍推進這項行動，但將具體時間交由五角大廈官員和特種作戰計劃人員決定，以確保攻擊部隊做好準備，且地麵條件達到最佳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The operation officially got underway around 4:30 p.m. on Friday, when U.S. officials gave the first set of approvals to launch certain assets into the air. But that did not mean the full mission would be authorized. For the next six hours, officials continued to monitor the conditions on the ground, including the weather and Mr. Maduro’s whereabouts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">行動在週五下午約4點30分正式啟動，當時美國官員批准了第一批空中部署。但這並不意味著整個任務都會獲得授權。在接下來的六個小時裡，官員們持續監控地面情況，包括天氣狀況以及馬杜羅的行蹤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump spent the evening on the patio at Mar-a-Lago, his Florida club, where he had dinner with aides and cabinet secretaries. The president’s aides told him that they would be calling him later that evening, around 10:30 p.m., for the final approval. Mr. Trump did so by phone, then joined his senior national security officials in a secure location on the property.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當晚，川普在其位於佛羅里達州的馬阿拉歌莊園露台上與助手和內閣部長共進晚餐。總統的助手告訴他，他們將在當晚約10點30分再次致電，請他作出最終批准。川普隨後通過電話批准行動，並在莊園內的一處安全地點與高級國家安全官員會合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Inside Venezuela, the effort began with a cyberoperation that cut power to large swaths of Caracas, shrouding the city in darkness to allow the planes, drones and helicopters to approach undetected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在委內瑞拉，行動以一次網路攻擊拉開序幕，大範圍切斷了卡拉卡斯的電力供應，使整座城市陷入黑暗，從而讓飛機、無人機和直升機得以在不被察覺的情況下接近目標。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI3s_obY9ZEDFaOPAwgde-QBGA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 150 military aircraft, including drones, fighter planes and bombers, took part in the mission, taking off from 20 different military bases and Navy ships.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括無人機、戰鬥機和轟炸機在內的150多架軍用飛機參與了此次行動，這些飛機從20個不同的軍事基地和海軍艦艇上起飛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the aircraft advanced on Caracas, military and intelligence agencies determined that they had maintained tactical surprise: Mr. Maduro had not been warned that the operation was coming.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當這些飛行器向卡拉卡斯推進時，軍方和情報機構確認他們成功保持了戰術突襲性：馬杜羅並未收到有關行動即將展開的預警。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early Saturday morning, thunderous explosions boomed across Caracas as U.S. warplanes struck at radar and air defense batteries. While some of the explosions posted on social media looked dramatic, a U.S. official said that they were mostly radar installations and radio transmission towers being taken out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週六凌晨，美軍戰機襲擊了卡拉卡斯的雷達站和防空陣地，雷鳴般的爆炸聲響徹雲霄。儘管社群媒體上流傳的一些爆炸畫面看起來很震撼，但一位美國官員表示，被摧毀的大多是雷達設施和無線電發射塔。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least 40 people were killed in Saturday’s attack on Venezuela, including military personnel and civilians, according to a senior Venezuelan official who spoke on condition of anonymity to describe preliminary reports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名要求匿名的委內瑞拉高級官員在描述初步情況時表示，週六的襲擊造成至少40人死亡，包括軍方人員和平民。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Later, General Caine told reporters that the fighter planes, bombers and drones came into Venezuela to find and destroy the country’s air defenses, to clear a safe pathway for the helicopters carrying Special Operations forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後來，凱恩將軍告訴記者，戰鬥機、轟炸機和無人機進入委內瑞拉的任務是搜尋並摧毀該國的防空系統，為搭載特種作戰部隊的直升機開闢安全通道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even though Venezuelan air defenses were suppressed, the U.S. helicopters came under fire as they moved in on Mr. Maduro’s compound at about 2:01 a.m. local time. General Caine said the helicopters responded with “overwhelming force.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管委內瑞拉的防空系統已被壓制，但美軍直升機在當地時間凌晨2點01分左右接近馬杜羅的住所時，仍遭到火力攻擊。凱恩將軍表示，直升機以「壓倒性的火力」進行了還擊。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLn-_obY9ZEDFXfF8gcdxycf8g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the helicopters was hit. Two U.S. officials said that about half a dozen soldiers were injured in the overall operation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一架直升機被擊中。兩名美國官員稱，整個行動中約有六名士兵受傷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Delta Force operators assigned to capture Mr. Maduro were whisked to their target — on Venezuela’s most fortified military base — by an elite Army Special Operations aviation unit, the 160th Special Operations Aviation Regiment, which flies modified MH-60 and MH-47 helicopters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">負責抓捕馬杜羅的三角洲部隊人員被一支精銳的陸軍特種作戰航空部隊（第160特種作戰航空團）使用改裝過的MH-60和MH-47直升機迅速送抵目標地點——委內瑞拉戒備最森嚴的軍事基地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once on the ground, Delta Force moved quickly through the building to find Mr. Maduro. About 1,300 miles away, in a room inside Mar-a-Lago, Mr. Trump and key aides watched the raid play out in real time, courtesy of a camera positioned on an aircraft overhead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">三角洲部隊一落地便迅速在建築內展開搜索，尋找馬杜羅。與此同時，在2000多公里外的馬阿拉歌莊園一個房間裡，川普與其核心助手通過架設在空中飛行器上的攝像頭實時觀看了突襲全過程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the president monitored the raid from Florida, the Delta Force operators used an explosive to enter the building.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總統在佛羅里達州監控行動時，三角洲部隊使用爆炸裝置進入了建築。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. official said that the Special Operations forces took three minutes after blowing open the door to move through the building to Mr. Maduro’s location.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，特種作戰部隊在炸開大門後，僅用了三分鐘便穿越建築到達馬杜羅所在的位置。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump said that once the Special Operations forces made it through the compound to Mr. Maduro’s room, the Venezuelan leader and his wife tried to escape into a steel-reinforced room, but were stopped by the U.S. forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普表示，當特種作戰部隊進入馬杜羅房間時，這位委內瑞拉領導人及其妻子試圖逃入一間鋼筋加固的安全室，但被美軍攔下。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK_M_4bY9ZEDFUqCAwgdr-MjmA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“He was trying to get to a safe place,” Mr. Trump said during the news conference with General Caine, adding: “It was a very thick door, a very heavy door. But he was unable to get to that door. He made it to the door, he was unable to close it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他想去一個安全的地方，」川普在與凱恩將軍共同舉行的新聞發布會上說。「那是一扇非常厚、非常重的門。但他沒能進去。他到了門口，卻沒能把門關上。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">About five minutes after entering the building, Delta Force reported that they had Mr. Maduro in custody.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在進入建築大約五分鐘後，三角洲部隊報告稱，馬杜羅已被抓捕。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Anatoly Kurmanaev和Mariana Martínez自委內瑞拉、Riley Mellen自紐約、Carol Rosenberg自邁阿密對本文有報導貢獻。</p><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Tyler Pager是《紐約時報》白宮記者，報導川普總統及其政府新聞。</p><p class="cn-p"><span>Eric Schmitt是《紐約時報》國家安全記者，主要關注美軍事務以及海外反恐議題，他報導此類新聞已超過30年。</span></p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260105/trump-capture-maduro-venezuela/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
