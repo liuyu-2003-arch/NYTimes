@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扇貝，中日緊張局勢中的一枚棋子 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">扇貝，中日緊張局勢中的一枚棋子</h1>
+    <h2 class="en-headline">How Japanese Scallops Became a Pawn in Diplomatic Tensions With China</h2>
+    <div class="meta-line">RIVER AKIRA DAVIS, KIUKO NOTOYA <span style="margin: 0 8px;">•</span> 2026-01-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="北海道札幌市場上出售的扇貝。北海道是日本最北端的島嶼，日本大部分扇貝產自這裡。" height="700" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-02-qcfk/31Biz-Scallop-Diplomacy-02-qcfk-master1050.jpg" width="1050"/><figcaption><span>北海道札幌市場上出售的扇貝。北海道是日本最北端的島嶼，日本大部分扇貝產自這裡。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In early November, a ship carrying six tons of Hokkaido scallops slipped out of a northern Japanese port, bound for China. The shipment was meant to be a milestone, a sign of warming ties between the countries after Beijing lifted a yearslong ban on Japanese seafood.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">11月初，一艘載有六噸北海道扇貝的船隻從日本北部港口悄然出發，駛往中國。這批貨物本應是一個里程碑，標誌著北京解除對日本海產品長達數年的禁令後兩國關係回暖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But midway through the vessel’s journey, tensions flared again when Japan’s prime minister signaled a willingness to defend Taiwan against China. Her comment drew a sharp rebuke from Beijing and an announcement that the seafood ban was back on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但就在這艘船航行途中，日本首相表示在台灣遭中國攻擊時願意出手防衛，此言一出，緊張局勢再度升級。北京嚴厲斥責其言論，並宣布海產品禁令重新生效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Hokkaido scallop has emerged as an unlikely pawn in the volatile relationship between Tokyo and Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北海道扇貝已成為東京與北京之間動盪關係中一枚意想不到的棋子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Beijing, scallops have served as a diplomatic pressure point. For Japan’s allies, consuming them is portrayed as an act of defiance against what they characterize as economic coercion. For Tokyo, the mollusks have become a case study in the difficult — and perhaps increasingly necessary — task of curbing its reliance on China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對北京而言，扇貝已成為外交施壓的工具。對於日本的盟友來說，食用這些扇貝成了對他們所稱的經濟脅迫的一種反抗。對於東京來說，這些貝類已成為一個案例研究，說明減少對中國的依賴是多麼困難——但或許又越來越必要。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKiE-53f_5EDFbwjTwgdJeAlyQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Hokkaido, the country’s northernmost island, where most Japanese scallops are harvested, the prevailing sentiment is confusion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在日本最北端的島嶼、大多數日本扇貝的產地北海道，普遍的情緒是困惑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re being used as some kind of tool in political maneuvering,” said Mitsugu Saito, executive managing director of the group that represents Hokkaido’s seafood-processing industry. “I never would have thought that Japanese seafood products, especially scallops, would become a card in diplomatic negotiations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們被當作政治操縱的工具，」一個代表北海道海產品加工行業的團體的執行董事齋藤貢說。「我從未想過日本海產品——尤其是扇貝——會成為外交談判中的一張牌。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As China has emerged as a global economic power, its 1.4 billion citizens have become critical consumers of international goods. Beijing has dangled market access to its growing middle class as a diplomatic lever, imposing import restrictions for Taiwanese pineapples, Australian wine, American soybeans and Lithuanian beef in recent years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>隨著中國崛起為全球經濟大國，其14億公民已成為國際商品的關鍵消費者。北京將進入其不斷壯大的中產階級市場的機會作為外交槓桿，近年來對台灣菠蘿、澳洲葡萄酒、美國大豆和立陶宛牛肉實施進口限制。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="札幌市中央批發市場是扇貝銷售的主要樞紐。在禁令實施前，中國是日本最大的海產品買家，其中扇貝佔據了大部分貿易額。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-03-qcfk/31Biz-Scallop-Diplomacy-03-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-03-qcfk/31Biz-Scallop-Diplomacy-03-qcfk-master1050.jpg"/></div><figcaption><span>札幌市中央批發市場是扇貝銷售的主要樞紐。在禁令實施前，中國是日本最大的海產品買家，其中扇貝佔據了大部分貿易額。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The latest trade spat between Japan and China began in August 2023, when Beijing suspended imports of Japanese seafood after the release of treated wastewater from the decommissioned Fukushima Daiichi nuclear plant. While Japanese officials and U.N. regulators defended the move — noting the water was filtered and heavily diluted — Beijing protested.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>日本與中國最新的貿易爭端始於2023年8月，當時北京在福島第一核電站處理廢水排放後暫停進口日本海產品。儘管日本官員和聯合國監管機構為排水進行了辯護，稱水經過過濾並大幅稀釋，北京仍提出了抗議。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the freeze, China was the top buyer of Japanese seafood, with scallops accounting for most of that trade. Hokkaido’s scallops, harvested from the region’s nutrient-rich, frigid waters, are prized for a distinct buttery flavor and deep umami. They command a premium in China, where they have become a staple luxury at high-end celebratory banquets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在禁令實施之前，中國是日本海產品的最大買家，其中扇貝佔了貿易的大部分。北海道扇貝產自該地區營養豐富、冰冷的水域，以獨特的醇厚風味和濃郁的鮮味備受推崇。在中國，它們成為高端慶典宴席上的主流奢侈品，售價不菲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Japan had also shipped scallops to China for processing before re-exporting them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本還將扇貝運往中國加工後再出口。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMjx-53f_5EDFd-w0QQdx44xeA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The disruption was immediate. In 2022, the year before the halt, Japan exported roughly $641 million worth of scallops, with China accounting for more than half of all sales. Scallop exports plunged 30 percent in 2023 from a combination of China’s trade ban and a fallow period of production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中斷的影響立竿見影。2022年，即禁令前一年，日本出口了約44.7億元人民幣的扇貝，中國佔據其過半銷售額。由於中國的貿易禁令和生產休整期，2023年扇貝出口量下降了30%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At Kyuichi, a scallop processing company in Hokkaido, China-bound products once accounted for a quarter of total sales. Shipments ground to a halt overnight. Tatsuhiko Etori, the company’s president, said he had never imagined the mollusk would become a diplomatic point of contention when his Osaka-based firm acquired Kyuichi in 2022, a year before the import ban.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北海道的一家扇貝加工公司Kyuichi，對華產品一度佔總銷售額的四分之一。發貨一夜之間停止。公司總裁餌取達彥表示，當他的大阪公司於2022年收購Kyuichi時——禁令前一年——他從未想像過這種貝類會成為外交爭端的焦點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was entirely unfathomable,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這完全不可思議，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="北海道扇貝加工公司Kyuichi的對華出口曾占其總銷售額的四分之一，直到發貨突然中斷。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-04-qcfk/31Biz-Scallop-Diplomacy-04-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-04-qcfk/31Biz-Scallop-Diplomacy-04-qcfk-master1050.jpg"/></div><figcaption><span>北海道扇貝加工公司Kyuichi的對華出口曾占其總銷售額的四分之一，直到發貨突然中斷。</span> <cite>via Kyuichi</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="正在加工的扇貝。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-05-qcfk/31Biz-Scallop-Diplomacy-05-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-05-qcfk/31Biz-Scallop-Diplomacy-05-qcfk-master1050.jpg"/></div><figcaption><span>正在加工的扇貝。</span> <cite>via Kyuichi</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="Kyuichi的一系列扇貝和海鮮產品。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-08-qcfk/31Biz-Scallop-Diplomacy-08-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-08-qcfk/31Biz-Scallop-Diplomacy-08-qcfk-master1050.jpg"/></div><figcaption><span>Kyuichi的一系列扇貝和海鮮產品。</span> <cite>via Kyuichi</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As China pulled away, Japanese allies rallied. Rahm Emanuel, then the U.S. ambassador to Japan, coordinated bulk purchases for the American military and championed the “#Taberuze Nippon!” (Let’s Eat, Japan!) movement, framing the consumption of Hokkaido scallops as a patriotic act of defiance against China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國退出，日本的盟友紛紛響應。當時的美國駐日本大使拉姆·埃馬紐埃爾協調美國軍方批量採購，並推動「#Taberuze Nippon！」（吃吧，日本！）運動，將消費北海道扇貝形容為反抗中國的愛國行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Hokkaido, producers began moving scallop-processing operations to Vietnam and other parts of Southeast Asia. They also exported directly to the United States whenever possible. In 2024, the American share of Japan’s scallop exports grew to 28 percent, from single digits before.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北海道，生產商開始將扇貝加工業務轉移到越南和東南亞其他地區。他們還盡可能直接出口到美國。2024年，美國在日本扇貝出口中的份額從之前的個位數增長到28%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This past year, the geopolitical winds shifted yet again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去一年，地緣政治風向再度轉變。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJL0-53f_5EDFSy-0QQdFhIBKw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, the Trump administration announced a wave of “reciprocal” tariffs targeting U.S. trade partners, including Japan and its scallops. Sensing an opening to court regional allies, Beijing announced in May that it would lift its ban on Japanese seafood exports that had undergone testing for radioactive materials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>4月，川普政府宣布針對美國貿易夥伴的一波「對等」關稅，包括日本及其扇貝。北京察覺到拉攏地區盟友的機會，於5月宣布解除對經過放射性物質檢測的日本海產品出口的禁令。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Kyuichi joined nearly 700 Japanese firms scrambling for certification, and on Nov. 5, the milestone shipment of six tons of frozen scallops departed Hokkaido for China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Kyuichi加入了近700家爭相獲得認證的日本企業行列，11月5日，六噸冷凍扇貝從北海道出發前往中國，開啟一段里程碑式的航程。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在北海道，工廠正在適應變化：Kyuichi已將扇貝加工流程收回國內，其他公司則轉向政府補貼的自動化去殼設備，取代此前在中國由人工完成的勞動。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-06-qcfk/31Biz-Scallop-Diplomacy-06-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-06-qcfk/31Biz-Scallop-Diplomacy-06-qcfk-master1050.jpg"/></div><figcaption><span>在北海道，工廠正在適應變化：Kyuichi已將扇貝加工流程收回國內，其他公司則轉向政府補貼的自動化去殼設備，取代此前在中國由人工完成的勞動。</span> <cite>via Kyuichi</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="Kyuichi是近700家爭取獲得認證的日本企業之一。11月5日，該公司從北海道向中國運送了六噸冷凍扇貝。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-07-qcfk/31Biz-Scallop-Diplomacy-07-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-07-qcfk/31Biz-Scallop-Diplomacy-07-qcfk-master1050.jpg"/></div><figcaption><span>Kyuichi是近700家爭取獲得認證的日本企業之一。11月5日，該公司從北海道向中國運送了六噸冷凍扇貝。</span> <cite>via Kyuichi</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two days after trade resumed, Japan’s prime minister, Sanae Takaichi, stated in the National Diet that a Chinese attack on Taiwan could be a “survival-threatening situation,” a legal trigger implying Japan could use military force. It was a rare public declaration regarding an island that Beijing considers a breakaway province.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">貿易恢復兩天後，日本首相高市早苗在國會表示，中國攻擊台灣可能構成「存亡危機事態」，這是法律觸發條款，暗示日本可能動用武力。這是針對這座北京視為分裂省份的島嶼發出的一次罕見的公開聲明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Within two weeks, Beijing abruptly froze all new seafood export applications. For Kyuichi and hundreds of other firms still in the registration queue, the window slammed shut.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩週內，北京突然凍結所有新的海產品出口申請。對於Kyuichi和數百家仍在註冊隊列中的其他公司，這扇窗口猛地關上了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everyone was waiting to see what would happen, and then the ban hit,” Mr. Etori of Kyuichi said. “To be honest, I felt, ‘Oh, here we go again.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大家都在等待觀察會發生什麼，然後禁令就來了，」Kyuichi的餌取說。「老實說，我感覺『哎呀，又來了』。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China experts say targeting scallops is a logical move in Beijing’s playbook. Given its own domestic economic challenges, Beijing is wary of more drastic measures that could endanger broader commercial ties with Tokyo, according to Shin Kawashima, a professor of Asian politics and diplomacy at the University of Tokyo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國問題專家表示，在北京的策略中，針對扇貝是一個合乎邏輯的舉動。東京大學亞洲政治與外交教授川島真表示，<span>鑒於自身國內經濟挑戰，北京對可能危及與東京更廣泛商業關係的更激烈措施持謹慎態度。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CM7l_J3f_5EDFWoKTwgdVREpqg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The seafood ban, coupled with recent advisories urging Chinese tourists to reconsider travel to Japan, is an effort to “irritate Japan” without triggering a full-scale diplomatic rupture. For China, “it keeps its line there to protect its economy,” Mr. Kawashima said. “But for Japanese scallop producers, I can understand why it’s like, ‘Why us?’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>海產品禁令以及最近敦促中國遊客重新考慮前往日本的建議意在「激怒日本」，但又不會引發全面外交破裂。對於中國，這樣做「</span>是為了捍衛本國的經濟利益」，川島說。「但對於日本扇貝生產商，我能理解為什麼他們會想，『為什麼是我們？』」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, Japanese allies are again rallying to the cause.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，日本的盟友再次紛紛伸出援手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Dec. 2 — the day Japanese and Chinese coast guard vessels engaged in a tense standoff in the East China Sea — the U.S. ambassador to Japan, George Glass, posted on social media that “Americans can’t get enough of scallops” and included a flag of Japan. In Taipei, President Lai Ching-te shared photos of himself dining on Japanese sushi. Featured prominently in the spread: Hokkaido scallops.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>12月2日——當天日本和中國海岸警衛隊艦艇在東海發生緊張對峙——美國駐日本大使喬治·格拉斯在社群媒體上發帖稱「美國人對扇貝欲罷不能」，並附上日本國旗。在台北，總統賴清德分享了自己享用日本壽司的照片。宴席上醒目地擺放著：北海道扇貝。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="「我們被當作政治操縱的某種工具，」一個代表北海道海產品加工行業的團體的執行董事齋藤光（音）說。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-09-qcfk/31Biz-Scallop-Diplomacy-09-qcfk-jumbo.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-09-qcfk/31Biz-Scallop-Diplomacy-09-qcfk-jumbo.jpg"/></div><figcaption><span>「我們被當作政治操縱的某種工具，」一個代表北海道海產品加工行業的團體的執行董事齋藤光（音）說。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Saito of the Hokkaido seafood group said that while the industry was “definitely shaken up” in 2023, the latest ban had not stung as much after two years of forced diversification. Businesses, he said, are adapting as the situation lingers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北海道海產品團體的齋藤表示，雖然該行業在2023年「肯定受到了震動」，但經過兩年強行推動的多元化後，最新的禁令沒有那麼刺痛了。他表示，企業正在適應局勢的持續。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Hokkaido, changes are visible on factory floors. Kyuichi has repatriated part of the scallop processing process that was once outsourced. Other companies have begun using government-subsidized automated shucking machines to replace the manual labor previously performed in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北海道，工廠車間的變化顯而易見。Kyuichi已將曾經外包的部分扇貝加工流程收回國內。其他公司開始使用政府補貼的自動化去殼機器，取代此前在中國由人工完成的勞動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ayumu Katano, chief executive of the fisheries consultancy Fisk Japan, views the 2023 “China shock” as a necessary corrective. “Because the China route vanished, markets diversified,” he said, noting that Japanese firms now have higher margins after cutting out middlemen processors in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">漁業諮詢公司Fisk Japan的首席執行官片野步認為，2023年的「中國衝擊」是一個必要的矯正。「因為中國管道消失了，市場實現了多元化，」他說，並指出日本企業在去掉中國中間加工商後利潤更高了。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLiv_J3f_5EDFZGx0QQdS_I8bA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With trade policies in the world’s two largest economies shifting — from U.S. tariffs to Beijing’s import bans — Mr. Katano is urging more seafood businesses to put in place safety standards required for them to sell in the European Union.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著世界兩大經濟體的貿易政策發生變化——從美國的關稅到北京的進口禁令——片野敦促更多海產品企業落實進入歐盟所需的安全標準。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The most important thing is not to rely on a single market,” Mr. Katano said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「最重要的是不要依賴單一市場，」片野說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At Kyuichi, the Hokkaido-based processor, Mr. Etori said the company would not be quick to make a significant pivot back to China, even if the ban was lifted again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北海道加工商Kyuichi的餌取達彥表示，即使禁令再次解除，公司也不會急於大幅轉向中國。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在北京的策略中，針對扇貝是一個合乎邏輯的舉動。" data-src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-10-qcfk/31Biz-Scallop-Diplomacy-10-qcfk-master1050.jpg" src="https://static01.nyt.com/images/2025/12/31/multimedia/31Biz-Scallop-Diplomacy-10-qcfk/31Biz-Scallop-Diplomacy-10-qcfk-master1050.jpg"/></div><figcaption><span>在北京的策略中，針對扇貝是一個合乎邏輯的舉動。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s the saying, ‘What happens once can happen twice,’” he said. “Well, it happened twice. It could happen a third time.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有句諺語，『有一就有二』，」他說。「嗯，已經發生了兩次。可能會有第三次。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, even as Mr. Etori builds a business model designed to bypass Beijing, he wonders whether the doors will eventually swing back open.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，即使餌取達彥正在構建一種繞過北京的商業模式，他仍好奇大門是否最終會重新打開。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Hokkaido scallops and China are perhaps inseparable,” he said, citing a demand he believes could ultimately transcend politics. “They have originality. They are sweet and delicious — something that everyone finds tasty.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「北海道扇貝和中國或許是密不可分的，」他說，並提到一種他相信最終能超越政治的需求。「它們獨具特色。甜美而美味——人人都會覺得好吃。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="" data-poster=""><div class="article-partial" data-poster=""><br/><div class="article-body-aside col-lg-3" data-poster=""></div></div></div><div class="" data-poster=""><span><p class="cn-p">River Akira Davis常駐東京，報導日本經濟和商業新聞。</p><p class="cn-p">Kiuko Notoya是一名常駐東京的記者/研究員，報導日本新聞。</p></span></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260109/japan-china-scallops/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川普的權力願景 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">川普的權力願景</h1>
+    <h2 class="en-headline">Trump Lays Out a Vision of Power Restrained Only by ‘My Own Morality’</h2>
+    <div class="meta-line">DAVID E. SANGER, TYLER PAGER, KATIE ROGERS, ZOLAN KANNO-YOUNGS <span style="margin: 0 8px;">•</span> 2026-01-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/01/08/multimedia/08dc-trump-power-sub-qpzl/08dc-trump-power-sub-qpzl-jumbo.jpg" width="759"/><figcaption><span></span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump declared on Wednesday evening that his power as commander in chief is constrained only by his “own morality,” brushing aside international law and other checks on his ability to use military might to strike, invade or coerce nations around the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三晚間，川普總統宣稱，作為三軍統帥，他的權力僅受「自己的道德」限制，全然無視國際法以及其他約束他對全球各國動用軍事力量、實施入侵或脅迫行為的制衡機制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked in a wide-ranging interview with The New York Times if there were any limits on his global powers, Mr. Trump said: “Yeah, there is one thing. My own morality. My own mind. It’s the only thing that can stop me.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在《紐約時報》的一場涉及諸多話題的訪談中，當被問及他的全球權力是否存在任何限制，川普表示：「有，只有一樣東西——我自己的道德，我自己的判斷。這是唯一能阻止我的東西。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I don’t need international law,” he added. “I’m not looking to hurt people.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我不需要國際法，」他還說。「我無意傷害他人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When pressed further about whether his administration needed to abide by international law, Mr. Trump said, “I do.” But he made clear he would be the arbiter when such constraints applied to the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被進一步追問其政府是否需要遵守國際法時，川普稱：「我遵守。」但他明確表示，當此類約束適用於美國時，他將是最終的仲裁者。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIPKwJrf_5EDFa6UywEd-WIEtA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It depends what your definition of international law is,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這取決於你對國際法的定義，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s assessment of his own freedom to use any instrument of military, economic or political power to cement American supremacy was the most blunt acknowledgment yet of his worldview. At its core is the concept that national strength, rather than laws, treaties and conventions, should be the deciding factor as powers collide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普對自身運用軍事、經濟或政治手段鞏固美國霸權自由度的評估是他迄今最直接的價值觀表白。其核心理念是，在大國博弈中，決定性因素應該是國家實力，而不是法律、條約和公約。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He did acknowledge some constraints at home, even as he has pursued a maximalist strategy of punishing institutions he dislikes, exacting retribution against political opponents and deploying the National Guard to cities over the objections of state and local officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他承認國內存在某些制約因素，儘管他推行了強硬策略：懲罰自己不喜歡的機構、報復政治對手、不顧州和地方官員的反對向城市部署國民警衛隊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He made clear that he uses his reputation for unpredictability and a willingness to resort quickly to military action, often in service of coercing other nations. During his interview with The Times, he took a lengthy call from President Gustavo Petro of Colombia, who was clearly concerned after repeated threats that Mr. Trump was thinking of an attack on the country similar to the one on Venezuela.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他明確表示，他利用自己行事難以預測的名聲和迅速訴諸軍事行動的意願，通常是用來脅迫其他國家。在接受《紐約時報》採訪期間，他接聽了哥倫比亞總統佩特羅的長時間來電。此前川普多次威脅可能對哥倫比亞發動類似在委內瑞拉的襲擊，佩特羅對此顯然憂心忡忡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Well, we are in danger,” Mr. Petro said in an interview with The Times just before the call. “Because the threat is real. It was made by Trump.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「我們正處於危險之中，」佩特羅在通話前接受《紐約時報》採訪時說。「因為威脅是真實存在的，是川普發出的。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The call between the two leaders, the contents of which were off the record, was an example of coercive diplomacy in action. And it came just hours after Mr. Trump and Secretary of State Marco Rubio had extracted the United States from dozens of international organizations intended to foster multinational cooperation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這次內容未公開的領導人通話正是脅迫外交的實際案例。而就在幾小時前，川普和國務卿魯比奧剛剛宣布，美國退出數十個旨在促進多國合作的國際組織。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CPWKwZrf_5EDFaGDywEd3UQ42g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his conversation with The Times, Mr. Trump sounded more emboldened than ever. He cited the success of his strike on Iran’s nuclear program — he keeps a model of the B-2 bombers used in the mission on his desk; the speed with which he decapitated the Venezuelan government last weekend; and his designs on Greenland, which is controlled by Denmark, a NATO ally.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在接受《紐約時報》採訪時，川普顯得比以往任何時候都更加大膽。他列舉了打擊伊朗核計劃的成功——他的辦公桌上擺放著執行該任務的B-2轟炸機模型、上週末迅速推翻委內瑞拉政府的行動，以及對北約盟國丹麥控制的格陵蘭島的圖謀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When asked what was his higher priority, obtaining Greenland or preserving NATO, Mr. Trump declined to answer directly, but acknowledged “it may be a choice.” He made clear that the trans-Atlantic alliance was essentially useless without the United States at its core.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及獲取格陵蘭島和維護北約哪個優先級更高時，川普拒絕直接回答，但承認「這可能要做選擇」。他明確表示，若沒有美國作為核心，這個跨大西洋聯盟基本上毫無用處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even as he characterized the norms of the post-World War II order as unnecessary burdens on a superpower, Mr. Trump was dismissive of the idea that the leader of China, Xi Jinping, or President Vladimir V. Putin of Russia could use similar logic to the detriment of the United States. On topic after topic, he made clear that in his mind, U.S. power is the determining factor — and that previous presidents have been too cautious to make use of it for political supremacy or national profit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管他將二戰後國際秩序的規範描述為超級大國不必要的負擔，但川普對中國領導人習近平或俄羅斯總統普丁可能會用類似邏輯損害美國利益的觀點不屑一顧。在一個又一個話題上，他明確表示，在他看來，美國的實力才是決定性因素——而過往的總統們過於謹慎，未能將其用於政治霸權或國家利益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president’s insistence that Greenland must become part of the United States was a prime example of his worldview. It was not enough to exercise the U.S. right, under a 1951 treaty, to reopen long-closed military bases on the huge landmass, which is a strategically important crossroads for U.S., European, Chinese and Russian naval operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總統堅持認為格陵蘭島必須成為美國的一部分，這是他世界觀的典型例證。根據1951年的一項條約，美國有權在這片戰略要地（美國、歐洲、中國和俄羅斯海軍行動的交匯點）重新開放長期關閉的軍事基地，但這對他來說還不夠。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="總統堅持認為格陵蘭島必須成為美國領土，這充分體現了他的世界觀。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/08dc-trump-power2-qvjm/08dc-trump-power2-qvjm-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/08dc-trump-power2-qvjm/08dc-trump-power2-qvjm-master1050.jpg"/></div><figcaption><span>總統堅持認為格陵蘭島必須成為美國領土，這充分體現了他的世界觀。</span> <cite>Esther Horvath for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Ownership is very important,” Mr. Trump said as he discussed, with a real estate mogul’s eye, the landmass of Greenland — three times the size of Texas but with a population of less than 60,000. He seemed to dismiss the value of having Greenland under the control of a close NATO ally.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「所有權非常重要，」川普以房地產大亨的眼光審視格陵蘭島時宣稱。格陵蘭島面積是得克薩斯州的三倍，但人口不足6萬。他似乎不屑於讓格陵蘭島處於北約親密盟友的控制之下。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When asked why he needed to possess the territory, he said: “Because that’s what I feel is psychologically needed for success. I think that ownership gives you a thing that you can’t do with, you’re talking about a lease or a treaty. Ownership gives you things and elements that you can’t get from just signing a document.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及為何需要擁有這片領土時，他說：「因為我認為這是心理層面上取得成功的必要條件。我認為，所有權能帶來的東西是你無法通過租賃或條約獲得的。所有權能給你帶來只靠簽署文件無法獲得的實質要素。」</div></div></div></div></div><div class="big_ad" data-google-query-id="COGQwprf_5EDFWkM2wEd4BwapA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The conversation made clear that in Mr. Trump’s view, sovereignty and national borders are less important than the singular role the United States plays as the protector of the West.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這次訪談表明，在川普看來，主權和國家邊界的重要性不及美國作為西方守護者所扮演的獨特角色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He argued that only he — and not two predecessors on whom he heaped scorn, Joseph R. Biden Jr. and Barack Obama — had proved capable of persuading NATO nations to spend 5 percent of the gross domestic product on defense. (About 1.5 percent of that is actually for domestic infrastructure — from power grids to cybersecurity — that can support defense. The target does not kick in until 2035, six years after Mr. Trump leaves office.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他聲稱，事實證明，唯有他本人——而非他極盡嘲諷的前任拜登和歐巴馬——有能力說服北約國家將國內生產總值的5%用於國防開支。（其中約1.5%實際用於支持國防的國內基礎設施建設——從電網到網路安全。該目標到2035年才生效，即川普離任六年後。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I want them to shape up,” he said. “I think we’ll always get along with Europe, but I want them to shape up. I’m the one that got them to spend more on the, you know, more G.D.P. on NATO. But if you look at NATO, Russia I can tell you is not at all concerned with any other country but us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我希望他們振作起來，」他說。「我認為我們會和歐洲永遠和睦，但我希望他們振作起來。是我讓他們在北約投入了更多的GDP。但如果你看看北約，我可以告訴你，俄羅斯眼裡只有我們，根本不關心其他國家。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president added: “I’ve been very loyal to Europe. I’ve done a good job. If it weren’t for me, Russia would have all of Ukraine right now.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總統還說：「我一直對歐洲非常忠誠。我做得很好。如果不是我，俄羅斯現在早就佔領整個烏克蘭了。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上月，烏克蘭士兵在頓巴斯地區向俄軍陣地發射榴彈炮。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/08dc-trump-power3-jlzw/08dc-trump-power3-jlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/08dc-trump-power3-jlzw/08dc-trump-power3-jlzw-master1050.jpg"/></div><figcaption><span>上月，烏克蘭士兵在頓巴斯地區向俄軍陣地發射榴彈炮。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He seemed unconcerned that the last major nuclear arms control agreement with Russia was set to expire in four weeks, leaving the world’s two largest nuclear powers free to expand their arsenals without limit, for the first time in half a century.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他似乎並不擔心與俄羅斯的最後一項主要核軍備控制協議將在四周後到期，這將使世界上兩個最大的核大國半個世紀以來首次可以不受限制地擴充核武庫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If it expires, it expires,” he said. “We’ll just do a better agreement,” he added, insisting that China, which has the fastest-growing arsenal in the world, should be incorporated in any future agreement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「到期就到期吧，」他說。「我們會達成更好的協議。」他堅持認為，擁有世界上增長最快核武庫的中國應被納入所有未來協議之中。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMqWwprf_5EDFfCVywEdBQkKUQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You probably want to get a couple of other players involved also,” Mr. Trump said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你可能還想讓其他幾方也加入進來，」川普說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president seemed equally sanguine about whether his decision to send Special Operations forces into Caracas to remove Nicolás Maduro of Venezuela would be exploited by China or Russia. In the days since the action in Venezuela, there have been arguments that the U.S. precedent would help justify a Chinese effort to take Taiwan, or Russia’s attempt to seize Ukraine, which Mr. Putin has described as a historical part of the Russian empire, dating back more than a dozen centuries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於派遣特種部隊進入卡拉卡斯推翻委內瑞拉總統馬杜羅的決定可能被中國或俄羅斯利用的觀點，總統顯得同樣不以為然。委內瑞拉行動後的幾天裡，有人認為美國開創的先例可能會為中國試圖奪取台灣或俄羅斯試圖佔領烏克蘭（普丁稱十幾個世紀以來，該國在歷史上一直是俄羅斯帝國的一部分）提供藉口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked whether he had created a precedent that he may later regret, Mr. Trump argued that his view of the threat posed by Mr. Maduro’s Venezuela was quite different than Mr. Xi’s view of Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及他是否開創了一個日後可能後悔的先例時，川普辯稱，他對馬杜羅領導的委內瑞拉構成的威脅的看法與習近平對台灣的看法截然不同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This was a real threat,” he said of Venezuela. “You didn’t have people pouring into China,” he argued, repeating his oft-made claim that Mr. Maduro dumped gang members into the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一個真正的威脅，」他在談到委內瑞拉時說。「你不會看到有人湧入中國，」他重複了自己經常提出的說法，稱馬杜羅向美國大量輸送幫派成員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump added: “You didn’t have drugs pouring into China. You didn’t have all of the bad things that we’ve had. You didn’t have the jails of Taiwan opened up and the people pouring into China,” or, he said later, criminals and others “pouring into Russia.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普還說：「你不會看到毒品湧入中國，不會看到我們所經歷的所有壞事。你不會看到台灣的監獄被打開，人們湧入中國。」他稍後又說，犯罪分子等群體「湧入俄羅斯」的情況也不存在。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When a reporter noted that Mr. Xi regarded Taiwan as a separatist threat to China, Mr. Trump said: “That’s up to him, what he’s going to be doing. But, you know, I’ve expressed to him that I would be very unhappy if he did that, and I don’t think he’ll do that. I hope he doesn’t.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當記者指出習近平將台灣視為對中國的分裂主義威脅時，川普說：「這取決於他想做什麼。但你知道，我已經向他表示，如果他那樣做，我會非常不高興，我認為他不會那樣做。我希望他不會。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CPWswprf_5EDFUqVywEdRjAkbQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then, asked whether Mr. Xi might seize on recent events to attack or choke off Taiwan, he suggested that the Chinese leader would not dare to take that step while Mr. Trump was in office. “He may do it after we have a different president, but I don’t think he’s going to do it with me as president,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後，當被問及習近平是否可能利用最近的事件對台灣發動攻擊或實施封鎖時，他表示，這位中國領導人在川普執政期間不敢採取這一步驟。「等我們換了總統以後他可能會這麼做，但我認為在我擔任總統期間他不會，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Thursday, in a rare assertion of congressional authority over the president’s war powers, the Senate agreed to debate a resolution aimed at curbing Mr. Trump’s use of military force in Venezuela. Senator Rand Paul, Republican of Kentucky, said one factor that may have tipped the vote was the president’s comment during Wednesday’s interview that the United States might remain involved in Venezuela for years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>週四，參議院罕見地主張國會對總統戰爭權力的監管權，同意就一項旨在限制川普在委內瑞拉使用軍事力量的決議進行辯論。肯塔基州共和黨參議員蘭德·保羅表示，促使投票結果傾向於</span>進行<span>辯論的一個因素是總統在週三採訪中提及美國可能在委內瑞拉保持多年介入。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the domestic front, Mr. Trump suggested that judges only have power to restrict his domestic policy agenda — from the deployment of the National Guard to the imposition of tariffs — “under certain circumstances.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在國內事務方面，川普暗示，法官只有在「特定情況下」才有權力限制他的國內政策議程——從部署國民警衛隊到徵收關稅都是如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But he was already considering workarounds. He raised the possibility that if his tariffs issued under emergency authorities were struck down by the Supreme Court, he could repackage them as licensing fees. And Mr. Trump, who said he was elected to restore law and order, reiterated that he was willing to invoke the Insurrection Act and deploy the military inside the United States and federalize some National Guard units if he felt it was important to do so.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但他已經在考慮變通辦法。他提出，如果最高法院推翻他根據緊急權限發布的關稅，他可以將其重新包裝為許可費。川普曾表示自己當選是為了恢復法律和秩序，如今他重申，如果認為有必要，他願意援引《叛亂法》在美國境內部署軍隊，並將部分國民警衛隊部隊聯邦化。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far, he said, “I haven’t really felt the need to do it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，到目前為止，「我還沒有真正覺得有必要這麼做。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">David E. Sanger報導川普政府和一系列國家安全問題。他在時報任職超過40年，著有數本關於美國國家安全挑戰的書。</p><p class="cn-p">Tyler Pager是《紐約時報》白宮記者，報導川普總統及其政府新聞。</p><p class="cn-p">Katie Rogers是《紐約時報》白宮記者，報導川普總統相關新聞。</p><p class="cn-p">Zolan Kanno-Youngs是時報白宮記者，報導川普總統及其政府。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260109/trump-interview-power-morality/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
