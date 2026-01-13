@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國在拉美影響力受威脅 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國在拉美影響力受威脅</h1>
+    <h2 class="en-headline">Trump Is Making a Power Play in Latin America. China Is Already There.</h2>
+    <div class="meta-line">艾莎 <span style="margin: 0 8px;">•</span> 2026-01-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2014年，中國最高領導人習近平和委內瑞拉總統尼古拉斯·馬杜羅在卡拉卡斯握手。" height="699" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-01-clbf/00Biz-China-LatAm-01-clbf-master1050.jpg" width="1050"/><figcaption><span>2014年，中國最高領導人習近平和委內瑞拉總統尼古拉斯·馬杜羅在卡拉卡斯握手。</span> <cite>Leo Ramirez/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For China, President Trump’s power grab in Venezuela is a frontal attack on a longstanding source of oil, cultivated through billions of dollars in loans and years of political courtship. But Mr. Trump has also expressed a wider vision for power that involves breaking China’s economic dominance across Latin America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對中國而言，川普總統在委內瑞拉的奪權行動直接衝擊了它通過數百億美元的貸款和多年政治拉攏培育起來的長期石油供應源。但川普還表達了一個更廣泛的戰略願景，其中就包括打破中國在整個拉丁美洲的經濟主導地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His new focus — and willingness to put military force behind it — threatens to loosen China’s economic grip in a region where it has quietly used abundant trade, enormous loans and financial tie-ups to build influence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的新關注點以及不惜動用武力的意願可能削弱中國在拉丁美洲的經濟控制力。中國一直在該地區悄然通過龐大的貿易規模、巨額貸款以及錯綜複雜的金融綁定來建立影響力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has gone from doing nearly no business in the region two decades ago to bilateral trade worth more than $500 billion in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">20年前，中國在該地區幾乎沒有任何商業活動；而到2024年，中國與拉美的雙邊貿易額已超過5000億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese mining companies extract copper from Peru and lithium from Argentina. China’s agricultural conglomerates import lifeline commodities like soybeans from Brazil. Chinese utilities power entire cities. China controls much of the shipping infrastructure and the ports that transit goods across the Pacific.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的礦業公司在秘魯開採銅礦，在阿根廷開採鋰礦。中國的農業巨頭從巴西進口大豆等關鍵農產品。中國的電力企業為整座城市供電。中國更掌控著跨太平洋貨運基礎設施與港口網路。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJyfxJSkh5IDFfWQAwgdowY8MA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Latin America’s 670 million consumers are also buying Chinese brands. In Mexico, dealerships sell gasoline-powered Chery cars and MG sedans. In Brazil, the fast-food chain Mixue sells ice cream, the e-commerce platform Meituan delivers food and the ride-hailing service Didi ferries people around. In Peru, Xiaomi smartphones are popular.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉丁美洲約6.7億消費者也在購買中國品牌。在墨西哥，經銷商銷售奇瑞燃油車和MG轎車。在巴西有蜜雪冰城連鎖店、美團外賣平台和滴滴出行服務。在秘魯，小米智慧型手機廣受歡迎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has closely followed Mr. Trump’s comments singling out countries like Colombia, Cuba and Mexico, and it has expressed its opposition to the U.S. actions in Venezuela, saying China’s economic relationship with the country is “protected by international law and relevant laws.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國密切關注川普針對哥倫比亞、古巴和墨西哥等國家的表態，並對美國在委內瑞拉的行動表示反對，稱中國與該國的經濟關係「受到國際法和相關法律的保護」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="秘魯查瓦瓦喬，一座由中國公司運營的銅礦。（資料照片，拍攝時間不詳）" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-03-clbf/00Biz-China-LatAm-03-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-03-clbf/00Biz-China-LatAm-03-clbf-master1050.jpg"/></div><figcaption><span>秘魯查瓦瓦喬，一座由中國公司運營的銅礦。（資料照片，拍攝時間不詳）</span> <cite>Minerals and Metals Group, via Agence France-Presse — Getty Images</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="2023年，習近平和馬杜羅在北京會面。（資料照片）" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-04-clbf/00Biz-China-LatAm-04-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-04-clbf/00Biz-China-LatAm-04-clbf-master1050.jpg"/></div><figcaption><span>2023年，習近平和馬杜羅在北京會面。（資料照片）</span> <cite>Miraflores Palace, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokesman for China’s Commerce Ministry said this week that “China will continue to work with Latin American countries to address international vicissitudes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部一名發言人本週表示：「中方願同拉方一道，繼續團結協作應對國際風雲變幻。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is still owed, by one estimate, about $10 billion that Venezuela is paying off through oil shipments. Last year, more than half of its crude exports — or 768,000 barrels per day — went to China, according to Kpler, a global oil monitoring service.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據估計，委內瑞拉仍欠中國約100億美元，正通過石油出口償還。根據全球石油監測機構Kpler的數據，去年委內瑞拉超過一半的原油出口——即每日76.8萬桶——流向中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washington’s new strategy “explicitly focuses on China’s influence in Latin America, which will pose certain challenges to Chinese investment,” said Tao Zhigang, a Chinese economist. This investment “faces a lot of uncertainty,” Mr. Tao told local Chinese media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國經濟學家陶志剛表示，華盛頓的新戰略「明確關注中國在拉美的影響力，這會給中企投資帶來一定挑戰」。他對中國當地媒體說，這類投資「確實有不確定性」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s pursuit of deeper ties in Latin America began two decades ago. At the time, Chinese companies were scouring the world to secure copper, oil and iron ore to power China’s breathtaking economic growth. Chinese banks extended ever-larger loans to countries across Latin America in exchange for oil and critical minerals, and along the way China began building railways and highways and selling its goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國深化與拉丁美洲關係的努力始於20年前。當時，中國企業在全球各地搜尋銅、石油和鐵礦石，以支撐中國驚人的經濟增長。中國的銀行向拉美國家提供規模越來越大的貸款，換取石油和關鍵礦產。與此同時，中國開始修建鐵路和公路，並向當地銷售商品。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMHIxJSkh5IDFU7B8gcdXTsbMQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since then, China has economically displaced the United States in 10 of 12 countries in South America alone, according to research by Francisco Urdinez, an associate professor of political science at the Pontifical Catholic University of Chile. China now engages in more trade, investment and development financing than the United States in most of the region, including Central America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據智利天主教大學政治學副教授弗朗西斯科·烏爾迪內斯的研究，自那以後，僅在南美的12個國家中，中國在10個國家的經濟影響力上取代了美國。如今，在拉丁美洲大多數國家（包括中美洲），中國在貿易、投資和發展融資方面都超過了美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is Latin America’s largest official source of aid and credit, offering an estimated $303 billion in financing across the region between 2000 and 2023, according to AidData, a research institute at the College of William and Mary in Williamsburg, Va.<i> </i>Between 2014 and 2023, for every $1 lent or given in aid by the United States in Latin America and the Caribbean, China provided $3, said Brad Parks, the executive director of AidData.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據威廉與瑪麗學院研究機構AidData的數據，2000年至2023年間，中國已成為拉丁美洲最大的官方援助和信貸來源，向該地區提供了約3030億美元融資。AidData執行主任布拉德·帕克斯表示，在2014年至2023年間，美國在拉丁美洲和加勒比地區每提供1美元的貸款或援助，中國就提供了3美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These investments in many cases have left the countries saddled with debt and obligations to fulfill contracts for commodities like oil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在許多案例中，這些投資讓相關國家背負了沉重債務，並需履行石油等大宗商品合同的義務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s lending binge also gave its companies an advantage when they bid for government contracts to build roads, power lines and major projects like a multibillion-dollar dam in the Ecuadorean jungle (which turned out to be ill fated). Over time, China’s economic activities translated into a handful of free-trade agreements and better access for Chinese companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的大規模放貸也讓該國企業在競標政府基建項目時佔據優勢——從道路、輸電線路到大型工程項目（例如厄瓜多叢林中耗資數十億美元、最終以失敗告終的的大壩）。隨著時間推移，中國的經濟活動促成了若干自由貿易協定，並為中國企業帶來了更便利的市場准入條件。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="位於厄瓜多叢林中的科卡科多辛克雷大壩。中國的貸款幫助其企業獲得了政府的基礎設施建設合同。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-06-clbf/00Biz-China-LatAm-06-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-06-clbf/00Biz-China-LatAm-06-clbf-master1050.jpg"/></div><figcaption><span>位於厄瓜多叢林中的科卡科多辛克雷大壩。中國的貸款幫助其企業獲得了政府的基礎設施建設合同。</span> <cite>Federico Rios Escobar for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="MG這樣的中國汽車製造商已經在墨西哥站穩了腳跟。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-05-clbf/00Biz-China-LatAm-05-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-05-clbf/00Biz-China-LatAm-05-clbf-master1050.jpg"/></div><figcaption><span>MG這樣的中國汽車製造商已經在墨西哥站穩了腳跟。</span> <cite>Benedicte Desrus for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Latin America swelled with a range of goods from Chinese factories, from car parts, electronic devices and appliances to equipment for satellites and space infrastructure — another area where China has invested heavily.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">來自中國工廠的各類商品大量湧入拉丁美洲，從汽車零部件、電子產品和家用電器到衛星和太空基礎設施設備——中國重金投入的另一領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The region, in turn, became China’s most important source of critical minerals, including rare earths, an industry that China has near-total global control over.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉丁美洲也因此成為中國最重要的關鍵礦產來源地，包括稀土這個被中國近乎壟斷全球供應鏈的產業。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPTtxJSkh5IDFYCBAwgdRQA6WA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Hundreds of Chinese enterprises, and five to 10 banks from China, are on the ground in Latin America that were not active 20 years ago,” said Mr. Urdinez, the professor in Chile.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如今有數百家中國企業以及五到10家中國銀行在拉丁美洲開展業務，而在20年前它們還並不活躍，」烏爾迪內斯教授說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China hasn’t replaced the U.S. hegemony, but it has eroded the leverage that Washington once had in the 1980s and 1990s,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「中國尚未取代美國的霸權，但它削弱了華盛頓在上世紀80年代和90年代曾經擁有的影響力。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By countless measures, China has outpaced competitors. Chinese companies are selling more cars to Mexico than any other country. Chile is the second-largest overseas destination for Chinese electric buses. Some of the trade also travels in the other direction: Nearly half of Chile’s exports now go to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從諸多指標來看，中國已明顯領先於競爭對手。中國企業向墨西哥出售的汽車數量超過任何其他國家。智利是中國電動公車的第二大海外目的地。部分貿易也是雙向的：智利近一半的出口產品如今銷往中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But President Trump has signaled that he wants to curb China’s advances in the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但川普已表明，他希望遏制中國在該地區的擴張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before his military raid that removed Venezuela’s president, Nicolás Maduro, and took control of the country’s oil, Mr. Trump had threatened to “take back” the Panama Canal. He accused the canal’s main port operator, the Hong Kong conglomerate CK Hutchison Holdings, of being an extension of China’s Communist Party. He called out Mexico for being a “back door” to the United States for Chinese goods. He has tried to use a 50 percent tariff on Brazil to secure a trade deal that limits Chinese investment in the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在發動軍事行動、推翻委內瑞拉總統尼古拉斯·馬杜羅並控制該國石油資源之前，川普曾威脅要「收回」巴拿馬運河。他指責運河主要港口運營商香港企業長江和記實業實際上受中國共產黨控制。他稱墨西哥是中國商品進入美國的「後門」。他還試圖通過對巴西徵收50%的關稅迫使其達成限制中國投資的貿易協議。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2021年，委內瑞拉蓬托菲霍附近，遠處可見油輪和煉油廠。委內瑞拉一直以石油運輸償還中國的貸款。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-02-clbf/00Biz-China-LatAm-02-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-02-clbf/00Biz-China-LatAm-02-clbf-master1050.jpg"/></div><figcaption><span>2021年，委內瑞拉蓬托菲霍附近，遠處可見油輪和煉油廠。委內瑞拉一直以石油運輸償還中國的貸款。</span> <cite>The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="馬杜羅被美國抓捕後，他在卡拉卡斯的支持者要求釋放他。" data-src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-07-clbf/00Biz-China-LatAm-07-clbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/08/multimedia/00Biz-China-LatAm-07-clbf/00Biz-China-LatAm-07-clbf-master1050.jpg"/></div><figcaption><span>馬杜羅被美國抓捕後，他在卡拉卡斯的支持者要求釋放他。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And Mr. Trump released a national security strategy last month that asserted that he would deny “competitors” from outside the Western Hemisphere the ability “to own or control strategically vital assets, in our hemisphere.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，川普發布了一份國家安全戰略，宣稱將阻止來自西半球以外的「競爭對手」「擁有或控制我們半球內具有戰略意義的關鍵資產」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s business world is on alert. A consortium of Chinese companies that is developing a major copper mine in Ecuador said this week that it would put the project on hold, citing a “volatile” political situation in the country. China and Ecuador signed a free-trade agreement in 2023. At the time, Ecuadorean officials indicated that they would have preferred to sign with the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商界已高度警惕。一個正在厄瓜多開發大型銅礦項目的中資企業聯盟本週表示，將暫緩推進該項目，理由是當地政治局勢「動盪」。中國與厄瓜多於2023年簽署了自由貿易協定；當時厄瓜多官員曾暗示，他們更希望與美國簽署協議。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI2cxZSkh5IDFRLE8gcdSS03MQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is normal and understandable that some Chinese companies might halt their investments after such a sudden geopolitical event,” said Cui Shoujun, director of the Research Center for Latin American Studies at Renmin University in Beijing, referring to Mr. Maduro’s capture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國企業在如此突發的地緣政治事件之後暫停投資，是正常且可以理解的，」中國人民大學拉丁美洲研究中心主任崔守軍說，他指的是馬杜羅被捕一事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analysts said many governments would most likely turn to the United States if given an option to engage more deeply.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士表示，如果存在選擇空間，許多拉美國家很可能會轉向與美國更深入地合作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But they need funding for developmental needs that the United States, under Mr. Trump, may not be ready to address.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這些國家的發展需求急需資金支持，而川普領導下的美國未必願意提供。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Is the U.S. just worried about the defensive element of competition with China or is the U.S. going to deliver a credible offensive play?” asked Henrietta Levin, senior fellow for the Freeman Chair in China Studies at the Center for Strategic and International Studies in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國只是擔心與中國競爭中的防禦因素，還是會拿出切實有效的進攻方案？」華盛頓戰略與國際問題研究中心弗里曼中國研究講席高級研究員李文(Henrietta Levin)問道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China has established such a powerful position within the economic status quo that it will be challenging for the administration to counter all of it in an effective way,” Ms. Levin said. She said the United States would need to offer a large and comprehensive aid program like the Marshall Plan, which helped to rebuild Europe after World War II.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她表示：「中國已經在既有的經濟格局中建立了如此強大的地位，政府很難有效地全面反制。」她認為，美國需要提供類似二戰後重建歐洲的馬歇爾計劃那樣大規模的綜合援助方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Several big Latin American countries, including Brazil, Mexico, Chile and Colombia, have denounced Mr. Trump’s actions in Venezuela, something that Mr. Cui, the Chinese professor, said could strengthen China’s ties with these countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括巴西、墨西哥、智利和哥倫比亞在內，多個拉美大國已公開譴責川普在委內瑞拉的行動。崔守軍認為，這可能會加強中國與這些國家的關係。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIqNxZSkh5IDFe7R8gcd3fMIbw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Besides, Mr. Cui added, it is impossible for China and Latin America to walk away from each other. “Who will Latin America sell its soybeans and corn to?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，他還說，中國與拉丁美洲不可能彼此脫鉤。「拉美的大豆和玉米要賣給誰呢？」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Pei-Lin Wu對本文有報導貢獻。</p><p class="cn-p"><span>艾莎(Alexandra Stevenson)是《紐約時報》上海分社社長，報導中國經濟和社會新聞。</span></p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260112/china-latin-america-trump-venezuela/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
