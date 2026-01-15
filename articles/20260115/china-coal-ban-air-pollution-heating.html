@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京“藍天保衛戰”的代價 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">北京“藍天保衛戰”的代價</h1>
+    <h2 class="en-headline">Beijing Won Its War for Blue Skies, but Villagers Are Paying the Price</h2>
+    <div class="meta-line">王月眉 <span style="margin: 0 8px;">•</span> 2026-01-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="為了盡量減少取暖開支，中國北方曲陽縣一個村莊的村民在中午曬太陽取暖。" height="700" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-01-ptlb/14int-china-cold-01-ptlb-master1050.jpg" width="1050"/><figcaption><span>為了盡量減少取暖開支，中國北方曲陽縣一個村莊的村民在中午曬太陽取暖。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The temperature was 28 degrees, but Dong Tongzhou had turned off his heat at home and was standing in the village square wrapped in a tattered black coat, trying to soak up the midday sun. He wasn’t alone — other villagers sat on folding chairs and at a card table, as chickens strutted around and clucked.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">氣溫已經是零下2攝氏度，但董同舟（音）關掉了家裡的暖氣，裹著一件破舊的黑色外套站在村廣場上，試圖用中午的太陽取暖。這樣做的不止他一個——其他村民坐在摺疊椅和一張牌桌旁，雞群則在周圍昂首闊步，發出咯咯的叫聲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Dong, 68, used to warm his one-room home by burning coal, he explained on a recent afternoon. Then the government banned that for environmental reasons, and offered natural gas as a replacement. But that could cost three times as much. To save money, Mr. Dong often sunbathed for warmth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久前的一個下午，68歲的董同舟解釋說，他過去靠燒煤來給自家的一居室供暖。後來政府出於環保原因禁止燒煤，改為燒天然氣。但燒氣比燒煤能貴出三倍。為了省錢，董先生常常靠曬太陽取暖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even so, Mr. Dong said he spent about 1,000 yuan, or about $143, each winter to heat his home in Quyang county, in northern China’s Hebei Province. On a monthly basis, that works out to over a third of his pension of 800 yuan as a retired farmer and former soldier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">住在河北省曲陽縣的董先生說，即便如此，每年冬天的取暖費要花大約1000元人民幣。按月計算，這超過了他作為退休農民和退伍軍人每月800元養老金的三分之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If it gets even more expensive and I can’t afford it, then I’ll stop using it,” Mr. Dong said. On a nearby wall, a slogan painted in red urged villagers to be mindful of safety when using gas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「再貴燒不起就不燒了，」董同舟說。附近的牆上，用紅漆刷寫的標語提醒村民注意用氣安全。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="曲陽縣那座村莊裡，一條標語寫著「使用燃氣講安全」，攝於週日。" data-src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-02-tcwb/14int-china-cold-02-tcwb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-02-tcwb/14int-china-cold-02-tcwb-master1050.jpg"/></div><figcaption><span>曲陽縣那座村莊裡，一條標語寫著「使用燃氣講安全」，攝於週日。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Across Hebei, which encircles China’s capital, Beijing, villagers like Mr. Dong are confronting the full cost of the country’s push for cleaner air. The central government has banned burning coal for residential heating in much of the province since 2017, in an effort to reduce the choking air pollution that enveloped the capital every winter. At first, local governments eased the transition by heavily subsidizing natural gas, which is cleaner but more expensive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在環繞首都北京的河北各地，像董同舟這樣的村民正切身承受著國家推進清潔空氣行動的全部代價。自2017年起，中央政府已在河北大部分地區禁止居民燃煤取暖，以緩解每年冬季籠罩著首都令人窒息的空氣污染。起初，地方政府通過大力補貼來平穩過渡到更乾淨但也更貴的天然氣取暖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But this winter, officials sharply cut or eliminated the subsidies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這個冬天，官員們大幅削減甚至取消了這些補貼。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPOzstCojJIDFROROgUdEacRXA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reports of villagers huddling under multiple blankets or secretly burning firewood for warmth — firewood is banned, too — had circulated widely on Chinese social media. They spurred calls, including in major state-run news outlets, to relax the coal ban or restore subsidies. But China’s gains in air quality have been a political priority for the government, and many of the reports were quickly censored.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國的社群媒體上，生活在農村地區的民眾裹著幾床被子取暖或偷偷燒柴取暖（柴火同樣被禁止）的報導廣泛流傳。這些報導引發了要求放寬煤炭禁令或恢復補貼的呼聲，甚至一些主要官方新聞媒體也加入其中。但空氣質量改善對中國政府來說是政治優先事項，因此許多相關報導很快就遭到刪除。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While villagers ration their heat, Beijing officials are celebrating a victory. Last week, the city announced it had recorded only one day of heavy pollution in 2025, a 98 percent drop compared with 2013. Officials held up the improvement as proof of the success of Beijing’s “blue sky defense war.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>就在村民精打細算使用暖氣的同時，北京的官員卻在慶祝勝利。上週，北京市宣布2025年全年僅錄得一天重度污染，較2013年下降98%。官員們將這一改善作為北京</span>「藍天保衛戰」取得成功的證明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was a top-down, authoritarian environmental policy of, we want to improve the air quality in Beijing. And often Hebei has to bear the cost,” said Cosimo Ries, an energy analyst at Trivium China, a consulting firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一項自上而下、帶有威權色彩的環境政策——我們要改善北京的空氣質量。而這往往是河北在承擔成本，」諮詢公司策緯中國的能源分析師科西莫·裡斯表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The expense of the government’s clean air campaign and its heavy-handed enforcement were a concern from the start, when officials descended upon villagers’ homes to confiscate their coal furnaces and fined or detained violators. Demand for gas overwhelmed supply, and some subsidies were slow to arrive. Hebei delayed its full transition from coal to 2020 as public anger grew.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這項清潔空氣行動的高昂成本及其強硬執行方式從一開始就引發了擔憂——當時官員們曾上門沒收村民的燃煤爐具，並對違規者處以罰款或拘留。天然氣需求遠超供應，一些補貼也遲遲不能到位。隨著公眾不滿情緒日益高漲，河北將全面淘汰煤炭的時間推遲至2020年。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="村裡的一個天然氣表。由於燃氣取暖費用高，一些居民即使在極度寒冷的天氣裡也不捨不得開暖氣。" data-src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-01-tcwb/14int-china-cold-01-tcwb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-01-tcwb/14int-china-cold-01-tcwb-master1050.jpg"/></div><figcaption><span>村裡的一個天然氣表。由於燃氣取暖費用高，一些居民即使在極度寒冷的天氣裡也不捨不得開暖氣。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other vulnerabilities became clear in 2023, as global energy shocks collided with financial pressure at home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到2023年，隨著全球能源衝擊與國內的財政壓力疊加，其他問題也日益凸顯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The soaring price of natural gas, driven in part by Russia’s war in Ukraine, led energy companies in Hebei to cut off residential customers in favor of higher-paying industrial users. To ease the shortages, the government loosened price controls on residential gas, allowing utilities to pass on costs to households, but that meant gas became even more expensive. At the same time, some local governments were already struggling to pay out subsidies, because they were deeply in debt and the economy was slowing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>天然氣價格大幅飆升，部分原因是俄羅斯對烏克蘭的戰爭，這促使河北的能源公司優先向付費更高的工業用戶供氣，切斷了居民用戶的供應。為緩解短缺，政府放鬆了居民用氣的價格管制，允許燃氣公司將成本轉嫁給家庭用戶，但這意味著用氣成本進一步攀升。與此同時，一些地方政府已因債務沉重、經濟放緩而難以繼續發放補貼。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beyond the rising costs, poorer villagers often seem to end up paying more than city residents to heat their homes. The price of gas per cubic meter in Hebei is generally 10 to 20 percent higher than in Beijing or Tianjin, according to Chinese media reports. And even when subsidies were dispersed, they could vary widely by each household’s employment status: In neighboring Shandong Province, for example, heating subsidies for retired government officials are as much as 13 times higher than for a low-income rural resident, according to Chinese media reports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了不斷上漲的成本之外，較貧困的村民們的取暖費<span>往往比城市居民更貴。根據中國媒體報導，河北的天然氣每立方米價格通常比北京或天津高出10%到20%。而且補貼額度的差距會很大，這取決於家庭成員的就業身份：例如中國媒體報導，在鄰近的山東省，退休政府官員的取暖補貼最高可達低收入農村居民的13倍。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="住在曲陽縣這個村莊裡的趙女士每月只有一百來塊的養老金，她說自從禁止燒煤後，就常常負擔不起開暖氣的費用。
+" data-src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-03-tcwb/14int-china-cold-03-tcwb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-03-tcwb/14int-china-cold-03-tcwb-master1050.jpg"/></div><figcaption><span>住在曲陽縣這個村莊裡的趙女士每月只有一百來塊的養老金，她說自從禁止燒煤後，就常常負擔不起開暖氣的費用。 </span><cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the village in Quyang, Dong Chengjiang, 49, said he paid between $850 and $1,000 to heat three of the five rooms in his home with gas, more than double what he used to pay to burn coal. In 2021, the government subsidized almost half the cost. But this year, he said, he had received only 480 yuan, or less than $70.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在曲陽縣的那個村莊，49歲的董成江（音）表示，他家五個房間中有三個使用天然氣供暖，一個冬天下來取暖開支在6000到7000塊人民幣，比以往燒煤高出一倍多。2021年政府補貼了將近一半費用，但他說今年只收到480元補貼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They didn’t give any explanation,” said Mr. Dong, who works odd jobs. “Now they give you 480, and if they don’t give you anything, what can you do?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「沒解釋，解釋什麼，」靠打零工維生的董先生說。「現在給你480，不給你了（你還能）怎麼著啊？」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJa6stCojJIDFXVYCAQdVmw7lw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Between rising heating costs and falling wages, he has had to cut back on new clothes for his two school-age children, he said. He acknowledged that the air quality had improved, but said he didn’t think the trade-off was worthwhile.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，在取暖費上漲和工資下降的雙重壓力下，不得不縮減兩個學齡孩子購置新衣的開支。他承認空氣質量確實改善了，但認為這樣的代價並不值得。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least Mr. Dong was still working and could scrape together money for the heating, however painfully. Another villager, who gave only her last name, Zhao, said she had a pension of a little more than $15 a month, as is common among many older rural residents. Ms. Zhao, 65, said she turned the heat on for only half an hour before bed each night.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至少董先生還有工作，儘管很艱難，仍能湊出取暖的錢。另一位只透露姓趙的村民說，她每月養老金僅100多元人民幣，這在中國農村老年群體中相當普遍。65歲的趙女士說，她每晚睡前只開半小時暖氣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some villages have quietly eased the rules. A few streets down from Ms. Zhao, a couple in their 80s said they had been granted permission to burn coal because of their age. Officials were conducting door-to-door inspections less frequently than they had in earlier years, villagers said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些村莊已經悄悄放鬆了規定。在趙女士家附近的幾條街外，一對八十多歲的夫婦說，由於年齡原因，他們被允許燒煤取暖。村民們還說，官員上門檢查也沒前幾年那麼頻繁了。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="年過八旬的董路普（音）夫婦是村裡少數幾戶獲准繼續燒煤取暖的人家之一。" data-src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-04-tcwb/14int-china-cold-04-tcwb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-04-tcwb/14int-china-cold-04-tcwb-master1050.jpg"/></div><figcaption><span>年過八旬的董路普（音）夫婦是村裡少數幾戶獲准繼續燒煤取暖的人家之一。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the long term, the answer is likely to lie less in natural gas and more in renewable energy. China is already the world’s leading producer of solar and wind power, and as electricity becomes cheaper, electric devices like heat pumps can replace gas boilers and coal furnaces, cutting emissions and, eventually, costs, said Deborah Seligsohn, a professor of Chinese environmental policy at Villanova University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>從長遠來看，解決方案可能不在於天然氣，而在於可再生能源。維拉諾瓦大學研究中國環境政策的教授沈岱波(Deborah Seligsohn)表示，中國已是全球最大的太陽能和風能生產國，隨著電力成本下降，熱泵等電器設備可逐步替代燃氣鍋爐和燃煤爐，既能減少排放，最終也能降低成本。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Hebei villagers’ plight was not proof that China’s green transition had to come at the expense of ordinary people, she said. Rather, “this is an issue with inconsistent policy: They had subsidies and they got rid of them,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，河北村民的困境並不意味著中國的綠色轉型一定要以犧牲普通民眾為代價。相反，「這反映出政策連貫性的問題：他們曾提供補貼，現在又取消了補貼。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But installing a heat pump requires a large upfront payment, one that many village households cannot afford. That, along with the money already spent on installing gas systems, may make already-cash-strapped local governments and residents hesitant to make another switch, Ms. Seligsohn acknowledged.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，安裝熱泵需要一筆很高的前期投入，許多農村家庭無力承擔。沈岱波也承認，由於這個原因，再加上已經花在安裝燃氣系統上的費用，可能會讓本就資金緊張的地方政府和居民對再次轉換取暖方式猶豫不決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the main street outside the village in Quyang, multiple stores advertised heat pumps. But an employee at one store, who gave only his surname, Wang, said few people were interested.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在曲陽縣那座村莊外的主街上，多家店鋪都在推銷熱泵。但其中一家僅透露姓王的店員表示，感興趣的人很少。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="村裡可以買到電熱泵，也能看到相關廣告，但由於價格過高，對大多數人家來說並不現實。" data-src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-06-ptlb/14int-china-cold-06-ptlb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/14/multimedia/14int-china-cold-06-ptlb/14int-china-cold-06-ptlb-master1050.jpg"/></div><figcaption><span>村裡可以買到電熱泵，也能看到相關廣告，但由於價格過高，對大多數人家來說並不現實。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Installation cost more than $2,800, he said, and the government did not offer any subsidies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說安裝費用要2萬元左右，而且政府未提供任何補貼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That was too expensive for many villagers, Mr. Wang said. After all, “many of them won’t even turn on their gas.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">王先生表示，對許多村民來說，這實在太貴了。畢竟，「現在好多（人）都不開，天然氣也不開。」</div></div></div></div></div><div class="big_ad" data-google-query-id="COXGstCojJIDFYRaCAQdecYgpg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260115/china-coal-ban-air-pollution-heating/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
