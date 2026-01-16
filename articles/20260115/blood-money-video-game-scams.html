@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《血薪記》：一款體驗電詐園區「豬仔」困境的遊戲 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">《血薪記》：一款體驗電詐園區「豬仔」困境的遊戲</h1>
+    <h2 class="en-headline">A New Video Game Traps Players in an Online Scam Center</h2>
+    <div class="meta-line">FRANCESCA REGALADO, PEI-LIN WU <span style="margin: 0 8px;">•</span> 2026-01-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="《血薪記：罪惡園區》宣傳片影片截圖。" height="840" src="https://static01.nyt.com/images/2026/01/14/multimedia/c15scam/c15scam-master1050.jpg" width="1050"/><figcaption><span>《血薪記：罪惡園區》宣傳片影片截圖。</span> <cite>Jade Flame, via Steam</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A woman you met online gives a sinister smirk and covers your mouth with a drug-laced cloth. When you open your eyes, you’re in a cage inside a high-walled compound, surrounded by gun-wielding men in sunglasses and leather jackets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你在網上結識的女人露出陰險的獰笑，隨即用一塊浸了藥物的布捂住你的嘴。當你再次睜開眼時，發現自己被關在一座高牆大院內的鐵籠裡，周圍是一群戴著墨鏡、身穿皮夾克、手持槍械的男人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then you’re taken to a large office with thousands of employees sitting in front of computers. A boss promises you money and freedom — if you can raise a certain amount by scamming unsuspecting victims.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接著，你被帶進一間寬敞的辦公室，數千員工正坐在電腦前忙碌。一個老闆向你承諾，只要你能通過詐騙那些毫無防備的受害者賺到一定數額的錢，就能得到報酬與自由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The scenes are from “Blood Money: Lethal Eden,” a new video game by a Chinese developer that puts players in the shoes of people forced to work as online scammers. The game’s release on Saturday prompted discussion in China, where fears about scams and human trafficking have pervaded social media and popular films, including a 2023 movie about a Chinese computer programmer who is lured to a scam compound with promises of high pay.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這些場景出自中國遊戲開發商製作的新作——《血薪記：罪惡園區》。這款遊戲讓玩家化身為被迫從事網路詐騙的受害者。遊戲於上週六上線後，在國內引發熱議。如今，詐騙與人口販賣的相關話題早已席捲中國的社群媒體與熱門電影，2023 年就曾上映一部電影，講述一名中國程序員被高薪工作誘騙至詐騙園區的故事。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The location of the fictional compound in “Blood Money” is not specified, but has many hallmarks of Chinese-run facilities in Myanmar. Characters speak Chinese and the trailer video features text in Burmese, Myanmar’s official language.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《血薪記》並未明確交代遊戲中虛構園區的具體位置，卻呈現出緬甸由中國人運營的詐騙基地的諸多特徵：遊戲角色說中文，預告片裡還出現了緬甸的官方語言緬文。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPL2w_PqjpIDFTi0jggdwCUpHw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People from around the world have been kidnapped and forced to work in scam compounds in Southeast Asia, the hub of an industry that the U.S. Treasury Department says has cheated Americans alone out of more than $16.6 billion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>來自世界各地的人被誘拐至東南亞的詐騙園區，被迫從事詐騙勾當。美國財政部的數據顯示，單是美國民眾就已被這個產業騙取超166億美元。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Several countries have been trying to crack down on the criminal gangs that run the compounds. Two men accused of running scam operations in Myanmar and Cambodia were recently extradited to China to face charges. The United States and the United Kingdom have imposed sanctions on people and companies with links to scam centers, and China and South Korea have sent planes to bring back rescued victims.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>多國正致力於打擊操控詐騙園區的犯罪團伙。近期，兩名被控在緬甸和柬埔寨運營詐騙窩點的男子被引渡回中國接受審判；美國與英國已對涉詐騙園區的相關人員及企業實施制裁；中國與韓國也已派遣包機，接回獲救的受害者。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The game is one of a growing handful about scam centers. In July, Qway Gamers, a Chinese developer, released a game called “The Masquerade,” in which players learn to perform scams. And Jiao Games, a developer based in Australia, plans to release a game called “Scam Center Simulator: Under Kingdom” later this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聚焦詐騙園區題材的遊戲正日漸增多，《血薪記》便是其中之一。去年7月，中國遊戲開發商可微遊戲推出了一款名為《偽裝》(The Masquerade)的遊戲，玩家在遊戲中需學習各類詐騙手法；澳洲遊戲工作室Jiao Games則計劃於今年晚些時候推出名叫《詐騙園區模擬器：地下王國》的遊戲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Blood Money” is part of the genre of full-motion video (F.M.V.) games, which offer players decisions as they move through a recorded narrative. Allison Yang, the founder of Reality Reload, a video game studio in Washington, D.C., said scam center games reflect a shift in the Chinese video game industry in the past two years, from fantasy to topics that players encounter in their culture and society. Chinese nationals are the largest group targeted by gangs as victims of scams and human trafficking, according to Interpol.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《血薪記》屬於全動態影像(FMV)遊戲，玩家在推進遊戲預錄劇情的過程中需要不斷做出抉擇。總部位於華盛頓的遊戲工作室Reality Reload的創始人艾莉森·楊（音）表示，詐騙園區題材遊戲的湧現反映出過去兩年中國遊戲行業的轉向——從奇幻題材逐漸變為聚焦玩家在現實文化與社會中會接觸到的議題。國際刑警組織的數據顯示，在詐騙與人口販賣的受害者中，中國公民是最大的受害群體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fraudsters working in scam compounds typically use social media and messaging apps to contact victims around the world. The victims — often people who are looking for a job, a relationship or a lucrative investment — are tricked into investing money in fake schemes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">詐騙園區內的詐騙分子通常會通過社群媒體和即時通訊軟體聯繫全球各地的目標人群。這些受害者往往是正在求職、渴望戀愛或尋求高回報投資的人，最終會被誘騙向各類虛假投資項目投入資金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the trailer for “Blood Money,” the protagonist is a scammer trapped by gangsters armed with guns and Tasers. Later, the player has to choose between protecting a woman being punished by the gangsters or staying silent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在《血薪記》的預告片中，主角是一名被持槍和電棍的匪徒控制的詐騙者。後續劇情裡，玩家需要做出抉擇：是挺身而出保護一名正遭匪徒懲罰的女子，還是選擇沉默不語。</div></div></div></div></div><div class="big_ad" data-google-query-id="COGAxPPqjpIDFaijjggd7Uk7fw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scenes in the game look similar to images of actual scam compounds, including an abandoned one that New York Times journalists recently visited in Myanmar. It had office blocks packed with computers and other electronic equipment used by scammers, plus Chinese restaurants and luxury villas for Chinese scam bosses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>遊戲中的場景與現實裡的詐騙園區高度相似，包括《紐約時報》記者近期在緬甸走訪的一座廢棄詐騙園區——那裡不僅有滿是電腦及其他詐騙電子設備的辦公大樓，還設有中式餐館，以及專供中國詐騙頭目居住的豪華別墅。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reviewers on the gaming platform Steam said the fictional compound in “Blood Money” has areas for scam operations, prostitution and torture. This is consistent with real compounds in Myanmar and Cambodia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">遊戲平台Steam上的評測者稱，《血薪記》虛構的詐騙園區內設有詐騙作業區、賣淫場所和酷刑室。這與緬甸、柬埔寨等地真實詐騙園區的情況完全吻合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The game was developed by Jade Flame, a studio based in the western Chinese province of Sichuan. The company declined an interview request.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款遊戲由中國四川省的遊戲工作室Jade Flame開發。該公司拒絕了採訪請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Victor Fu, who posts video game reviews on the Chinese social media platform Douyin, said that while “Blood Money” is topical, he didn’t think it would become a hit because few people would want to pay $8 for it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國社群媒體平台抖音發布遊戲評測的部落客維克多·傅（音）表示，儘管《血薪記》緊扣時下熱點，但他認為這款遊戲不會很火，畢竟沒多少人願意花八美元購買。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Their production quality is obviously not that high,” said Mr. Fu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它的製作規格肯定是沒有那麼高的，」維克多·傅評價。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Francesca Regalado是《紐約時報》記者，報導突發新聞。</p><p class="cn-p">Pei-Lin Wu是《紐約時報》記者/研究員，報導台灣和中國新聞。</p></div></div><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260115/blood-money-video-game-scams/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
