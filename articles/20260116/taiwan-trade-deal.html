@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣與美國達成貿易協議 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">台灣與美國達成貿易協議</h1>
+    <h2 class="en-headline">Taiwan Reaches Trade Deal with Trump, Pledges More U.S. Chip Factories</h2>
+    <div class="meta-line">MEAGHAN TOBIN, AMY CHANG CHIEN, XINYUN WU <span style="margin: 0 8px;">•</span> 2026-01-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="全球大多數先進半導體由台灣製造。" height="788" src="https://static01.nyt.com/images/2026/01/16/multimedia/16Biz-Taiwan-Trade-mhbq/16Biz-Taiwan-Trade-mhbq-master1050.jpg" width="1050"/><figcaption><span>全球大多數先進半導體由台灣製造。</span> <cite>Wen-Yee Lee/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States announced a trade agreement with Taiwan on Thursday, securing commitments to invest $250 billion in semiconductor and technology manufacturing in America in exchange for lowering tariffs on imports from the island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國週四宣布與台灣達成一項貿易協議，台灣承諾在美國半導體和技術製造業投資2500億美元，以換取降低該島出口美國商品的關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan’s government would provide an additional $250 billion in credit guarantees to support smaller companies in the industry’s complex chip supply chain to expand in the United States, the Commerce Department said in a statement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國商務部在一份聲明中表示，台灣政府將額外提供2500億美元的信用擔保，支持晶片供應鏈中較小型企業在美國擴張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After months of negotiations, the Trump administration said it would lower the U.S. tariff rate on goods from Taiwan to 15 percent from the current 20 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經過數月談判，川普政府表示將把對台灣商品的美國關稅稅率從當前的20%降低至15%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan’s negotiating team met with its American counterparts more than a dozen times since President Trump announced his first round of tariffs across most of the world in April. The negotiators, led by Vice Premier Cheng Li-chiun and the chief trade representative Yang Jen-ni, made six trips to Washington and held more sessions online.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自川普總統4月宣布對全球大多數地區實施首輪關稅以來，台灣談判團隊已與美方對等官員會面超過十幾次。由行政院副院長鄭麗君和首席貿易代表楊珍妮領導的談判代表團已六次前往華盛頓，並舉行多次線上會議。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKq30JGskZIDFf_t9QIdv0sWOw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan’s economy depends on exports, and the United States surpassed China last year to become its biggest buyer. Computer chips and electronics that contain them have long been the island’s main export. Taiwan is also a major source of steel products, especially metal fasteners such as screws and bolts, most of which go to the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣經濟依賴出口，去年美國超過中國成為其最大買家。電腦晶片及含有晶片的電子產品長期以來是該島的主要出口品。台灣也是鋼製品的重要來源地，特別是螺絲和螺栓等金屬緊固件，其中大部分銷往美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump has repeatedly pressed Taiwan to loosen its dominance in advanced semiconductors and to move production to the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統多次施壓台灣放鬆其在先進半導體領域的支配地位，並將生產轉移到美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are going to bring it all over so that we become self-sufficient in the capacity of building semiconductors,” said Howard Lutnick, the commerce secretary, in a television interview on Thursday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們將把一切都帶過來，讓我們在建造半導體能力方面實現自給自足，」商務部長霍華德·盧特尼克週四在電視採訪中表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States has agreed to assist Taiwanese companies in acquiring resources such as land, water, electricity, infrastructure, tax incentives and visa programs, Taiwan’s cabinet, the Executive Yuan, said in a statement on Friday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣的內閣機構行政院週五在一份聲明中表示，美國同意協助台灣企業在獲取土地、水、電、基礎設施、稅收優惠和簽證計劃等方面得到支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By value, only a small portion of Taiwan’s exports have been subject to the tariffs. These include plastic, textile and agricultural products. Washington would waive tariffs on generic pharmaceuticals and their ingredients, as well as aircraft components and some natural resources.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">按價值計算，台灣出口中只有一小部分受到這些關稅影響，包括塑料、紡織品和農產品。華盛頓將豁免普通藥品及其成分、飛機零部件以及某些自然資源的關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration had already exempted semiconductors and many electronics from those tariffs, saying those sectors would be subject to separate national security tariffs issued under a legal provision known as Section 232.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府此前已將半導體和許多電子產品排除在這些關稅之外，表示這些領域將受根據《貿易擴展法》第232條款實施的另項國家安全關稅管轄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, under the new agreement, the United States said it would allow Taiwanese companies that have built or are building semiconductor facilities to import a certain amount of chips, proportional to their U.S. production capacity, without paying the duty.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，根據新協議，美國表示將允許已在或正在美國建造半導體設施的台灣公司按其在美產能比例進口一定數量的晶片，而無需繳納關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan has said that, as the source of most of the world’s advanced chips, it has requested preferential treatment regardless of any tariffs the Trump administration imposes under Section 232.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣表示，作為全球大多數先進晶片的來源地，它已要求無論川普政府根據第232條款施加何種關稅，台灣都應獲得優惠待遇。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年3月，川普在白宮會見了台積電首席執行官魏哲家。" data-src="https://static01.nyt.com/images/2026/01/16/multimedia/16Biz-Taiwan-Trade-hptb/16Biz-Taiwan-Trade-hptb-master1050.jpg" src="https://static01.nyt.com/images/2026/01/16/multimedia/16Biz-Taiwan-Trade-hptb/16Biz-Taiwan-Trade-hptb-master1050.jpg"/></div><figcaption><span>去年3月，川普在白宮會見了台積電首席執行官魏哲家。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last March, Taiwan’s biggest chip maker, Taiwan Semiconductor Manufacturing Company, committed to investing $100 billion to expand its operations in Arizona. That amount will count toward the $250 billion, Mr. Lutnick said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年3月，台灣最大晶片製造商台積電承諾投資1000億美元，擴展其在亞利桑那州的業務。盧特尼克表示，該金額將計入2500億美元的總額。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">TSMC said it plans to continue building more factories, which are known as fabs, in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台積電錶示計劃在美國繼續建造更多稱為晶圓廠的工廠。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMTD0JGskZIDFWX09QIdJlIZxA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company recently bought a second piece of land in Arizona, C.C. Wei, the chief executive of TSMC, said during the company’s earnings call on Thursday. “That gives you a hint of what we plan to do, because we need it. We are going to expand many fabs out there.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台積電首席執行官魏哲家在週四的財報電話會議上表示，公司最近在亞利桑那州購置了第二塊地。「由此可以看到我們的計劃，因為我們需要這樣做。我們將在那裡擴建多個晶圓廠。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">TSMC’s commitment to spend $100 billion has stirred debate and misgivings in Taiwan, a democratically governed island where many people see the chip sector as a vital economic pillar and a shield against possible aggression by China, which claims it is part of its territory.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台積電承諾支出1000億美元已在台灣引發辯論和疑慮。在這個民主治理的島嶼，許多人視晶片產業為至關重要的經濟支柱，以及抵禦中國可能侵略的屏障——中國聲稱台灣為其領土一部分。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p><p class="cn-p"><span>Amy Chang Chien是《紐約時報》記者/研究員，常駐台北，報導台灣和中國新聞。</span></p><p class="cn-p">Xinyun Wu是《紐約時報》記者/研究員，常駐台北，報導科技、台灣和中國新聞。</p></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260116/taiwan-trade-deal/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

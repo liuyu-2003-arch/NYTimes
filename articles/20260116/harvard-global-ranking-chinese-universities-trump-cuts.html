@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國大學全球排名躍升 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國大學全球排名躍升</h1>
+    <h2 class="en-headline">Chinese Universities Surge in Global Rankings as U.S. Schools Slip</h2>
+    <div class="meta-line">MARK ARSENAULT <span style="margin: 0 8px;">•</span> 2026-01-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="哈佛在一些其他全球排名中仍然名列前茅，但校領導人警告稱，聯邦經費削減正威脅其科研能力。" height="700" src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-lwhg/00nat-harvard-global-lwhg-master1050.jpg" width="1050"/><figcaption><span>哈佛在一些其他全球排名中仍然名列前茅，但校領導人警告稱，聯邦經費削減正威脅其科研能力。</span> <cite>Sophie Park for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Until recently, Harvard was the most productive research university in the world, according to a global ranking that looks at academic publication.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據一項以學術論文發表數量為依據的全球排名，直到最近，哈佛一直是世界上科研成果最多的研究型大學。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That position may be teetering, the most recent evidence of a troubling trend for American academia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一地位如今可能正岌岌可危，這是美國學術界一個令人擔憂趨勢的最新證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harvard recently dropped to No. 3 on the ranking. The schools racing up the list are not Harvard’s American peers, but Chinese universities that have been steadily climbing in rankings that emphasize the volume and quality of research they produce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最新排名中，哈佛已跌至第三位。排名快速躍升的並非美國名校，而是來自中國的高校——在強調科研產出數量與質量的排名體系中，它們正穩步攀升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The reordering comes as the Trump administration has been slashing research funding to American schools that depend heavily on the federal government to pay for scientific endeavors. President Trump’s policies did not start the American universities’ relative decline, which began years ago, but they could accelerate it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">排名的變化發生在川普政府大幅削減美國高校的科研經費之際，而美國高校高度依賴聯邦政府的資金支持。美國大學的相對衰落並非始於川普的政策，這一趨勢早在多年前就已開始，但他的政策可能加速了這一過程。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKPz6I-skZIDFS3wGAIdcvMXIA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/education_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There is a big shift coming, a bit of a new world order in global dominance of higher education and research,” said Phil Baty, chief global affairs officer for Times Higher Education, a British organization unconnected to The New York Times that produces one of the better-known world rankings of universities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">泰晤士高等教育(Times Higher Education)的全球事務主管菲爾·巴蒂指出：「全球高等教育與研究主導地位正經歷重大轉變，新的世界秩序正在出現。」這家英國機構（與《紐約時報》無關聯）發布的大學世界排名廣為人知。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Educators and experts say the shift is a problem not just for American universities, but also for the nation as a whole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">教育界人士和專家表示，這種轉變不僅是美國高校的問題，更關乎國家整體競爭力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There is a risk of the trend continuing, and potential decline,” Mr. Baty said. “I use the word ‘decline’ very carefully. It’s not as if U.S. schools are getting demonstrably worse, it’s just the global competition: Other nations are making more rapid progress.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種趨勢有持續下去甚至走向衰落的風險，」巴蒂說。「我非常謹慎地使用『衰落』這個詞。並不是說美國的學校明顯變差了，而是全球競爭在加劇：其他國家進步得更快。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="哈佛在一些其他全球排名中仍然名列前茅，但校領導人警告稱，聯邦經費削減正威脅其科研能力。" data-src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-lwhg/00nat-harvard-global-lwhg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-lwhg/00nat-harvard-global-lwhg-master1050.jpg"/></div><figcaption><span>哈佛在一些其他全球排名中仍然名列前茅，但校領導人警告稱，聯邦經費削減正威脅其科研能力。</span> <cite>Sophie Park for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Look back to the early 2000s, and a global university ranking based on scientific output, such as published journal articles, would be very different. Seven American schools would be among the top 10, led by Harvard University at No. 1.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">回望21世紀初，基於科研成果數量（如期刊論文發表文章）的全球大學排名格局截然不同。當時前十名中美國高校佔據七席，哈佛大學高居榜首。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Only one Chinese school, Zhejiang University, would even make the top 25.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當時中國僅有一所大學——浙江大學——能躋身前25名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, Zhejiang is ranked first on that list, the Leiden Rankings, from the Centre for Science and Technology Studies at Leiden University in the Netherlands. Seven other Chinese schools are in the top 10.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>如今在荷蘭萊頓大學科技研究中心的萊頓大學排名中，浙江大學已躍居首位，另有七所中國高校進入前十。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harvard produces significantly more research now than it did two decades ago, but it has nonetheless fallen to third. And it is the only American university still near the top of the list. Harvard is still first in the Leiden rankings for highly-cited scientific publications.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈佛現在的科研成果比20年前多得多，但仍滑落至第三位，而且它是唯一躋身榜單前列的美國高校。哈佛在萊頓大學的科技文獻引用指標排名上依然高居全球首位。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPS66Y-skZIDFUHcGAIdpjsXww" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/education_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The issue at top American universities is not falling production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國頂尖大學面臨的問題並非科研數量的下降。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Six prominent American schools that would have been in the top 10 in the first decade of the 2000s — the University of Michigan, the University of California, Los Angeles, Johns Hopkins, the University of Washington-Seattle, the University of Pennsylvania, and Stanford University — are producing more research than they did two decades ago, according to the Leiden tallies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據萊頓大學排名的數據，六所在21世紀前10年曾位列全球前十的知名美國學府——密西根大學、加州大學洛杉磯分校、約翰斯·霍普金斯大學、華盛頓大學西雅圖分校、賓夕法尼亞大學和史丹佛大學——如今的科研成果數量都比20年前多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But production by the Chinese schools has risen far more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國高校的科研成果數量增長幅度卻要大得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to Mark Neijssel, director of services for the Centre for Science and Technology Studies, the Leiden rankings take into account papers and citations contained in the Web of Science, a database set of academic publications which is owned by Clarivate, a data and analytics company. Thousands of academic journals are represented in the databases, many of which are highly specialized, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊頓大學科技研究中心服務部主任馬克·奈傑塞爾指出，萊頓排名採用的論文及引文數據源自數據與分析公司科睿唯安公司旗下的科學引文索引數據庫。該數據庫收錄了數千種學術期刊，其中許多屬於高度專業化領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Global university rankings generally have not attracted much popular attention in the United States. Even so, some experienced academics are seeing the growth in research production from China that the rankings reflect, and are warning that America is falling behind.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球大學排名在美國向來未受大眾廣泛關注。即便如此，一些資深學者已注意到排名所反映的中國科研產出的快速增長，並警示美國正在落後。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rafael Reif, a former president of the Massachusetts Institute of Technology, said on a podcast last year that “the number of papers and the quality of the papers coming from China are outstanding” and are “dwarfing what we’re doing in the U.S.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>麻省理工學院前校長拉斐爾·賴夫去年在一檔播客節目中說，「中國發表的論文在數量和質量上都非常出色</span>，」並且「正在把美國甩在後面」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNe66Y-skZIDFbnhGAIdTmQKyw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/education_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Institutions in other countries around the world, by contrast, are watching the global rankings, seeing them as a measure both of academic prowess and of their progress in overtaking the United States. Zhejiang University displays its rankings prominently on its web page, and lists among the milestones in its history when it broke into the top 100 globally in 2017. Chinese state media has celebrated the ranking rise of the country’s universities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比之下，世界其他國家的高校密切關注全球排名，用它們來衡量學術實力以及趕超美國的進度。浙江大學在它的官網上醒目展示了自己在排名上取得的成果<span>，並將2017年進入全球前100名列為校史上的一個重要里程碑。中國的官方媒體也對本國大學排名的躍升進行了廣泛報導。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The center at Leiden has begun producing an alternative ranking that is based on a different academic database, called OpenAlex. Harvard is No. 1 in that ranking, but the trend is the same: 12 of the next 13 schools on the alternative list are Chinese.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊頓大學科技研究中心還開始發布基於另一學術數據庫OpenAlex的排名。哈佛在該榜單位列第一，但趨勢依然相似：緊隨其後的13所高校中，有12所來自中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is really building a lot of research capacity,” Mr. Neijssel said. At the same time, he said, Chinese researchers are putting more emphasis on publishing in English-language journals that are more widely read — and cited — around the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國正在大力加強科研能力建設，」奈傑塞爾表示。他同時指出，中國的研究人員越來越重視在受眾更廣、引用率更高的英文期刊上發表成果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Xi Jinping, in a speech in 2024, praised his country’s advances in fields such as quantum technology and space science. He cited a breakthrough by researchers at Tianjin Institute of Industrial Biotechnology, who developed a method to synthesize starch from carbon dioxide in the lab, which could possibly lead to industries making food from the air, without needing acres of plants dependent on land, irrigation and harvesting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國國家主席習近平在2024年的一次講話中稱讚了本國在量子技術、空間科學等領域取得的進展。他提到天津工業生物技術研究所研究人員的一項突破——他們在實驗室中實現了二氧化碳合成澱粉，這項技術未來可能催生用空氣製造食物的產業，</span>無需通過佔用大片土地、灌溉和收割得來的農作物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other ranking systems that are weighted toward scientific output reflect a similar shift toward Chinese institutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他側重科研成果的大學排名體系也有中國高校的排名不斷攀升的類似趨勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harvard is No. 1 globally in the University Ranking by Academic Performance, compiled by the Informatics Institute of Middle East Technical University in Ankara, Turkey. But Stanford University was the only other U.S. school in the top 10, which includes four Chinese universities. Another ranking, the Nature Index, placed Harvard first, followed by 10 Chinese schools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>位於土耳其安卡拉的中東科技大學信息學院編製的高校學術表現排名中，哈佛大學位列全球第一。但</span>除此之外<span>前十名中僅有史丹佛大學一所美國高校，中國大學則佔據四席。另一權威排名——自然指數大學排名同樣將哈佛列為首位，緊隨其後的十所高校均來自中國。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJvd6Y-skZIDFRHhGAId4Y45xQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/education_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harvard and other leading U.S. universities face a fresh set of stressors from the Trump administration’s cuts to science grants, as well as from travel bans and an anti-immigration crackdown that has swept up international students and academics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>哈佛和其他美國頂尖大學正面臨一系列新的壓力來源，包括川普政府削減科研經費，以及旅行禁令和反移民打壓，這些措施已波及國際學生和學者。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of international students arriving in the U.S. in August 2025 was 19 percent lower than the year before, a trend that could further hurt the prestige and rankings of American schools if the world’s best minds choose to study and work elsewhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2025年8月赴美留學生人數同比下降19%，若全球頂尖人才選擇前往其他國家學習工作，這種趨勢可能進一步損害美國高校的聲望與排名。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在一家英國機構今年的排名中，北京大學被列為全球第13位。" data-src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-03-ghkt/00nat-harvard-global-03-ghkt-master1050.jpg" src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-03-ghkt/00nat-harvard-global-03-ghkt-master1050.jpg"/></div><figcaption><span>在一家英國機構今年的排名中，北京大學被列為全球第13位。</span> <cite>Andrea Verdelli for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been pouring billions of dollars into its universities and aggressively working to make them attractive to foreign researchers. In the fall, China began offering a visa specifically for graduates of top universities in science and technology to travel to China to study or do business.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國持續向高校投入巨額資金，並積極吸引外國研究人員。去年秋季，中國開始為世界頂尖理工院校畢業生推出專項簽證，方便他們來華學習或開展商務活動。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China has a boatload of money in higher education that it didn’t have 20 years ago,” said Alex Usher, president of Higher Education Strategy Associates, a Toronto education consulting company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多倫多教育諮詢公司——高等教育戰略協會總裁亞歷克斯·烏舍爾指出：「在高等教育方面，中國擁有20年前所缺乏的雄厚資金。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has made the reasons for the country’s investments explicit, arguing that a nation’s global power depends on its scientific dominance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>習近平明確闡述了國家加大投入的原因，認為一個國家的全球實力取決於科技主導地位。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The scientific and technological revolution is intertwined with the game between superpowers,” he said in a speech in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「科技革命與大國博弈相互交織，」他在2024年的一次講話中說。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNT_6Y-skZIDFTFTCQkdTbsLPA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/education_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump’s administration has taken the opposite tack, aiming to cut billions of dollars in research grants for U.S. universities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>川普政府則採取了相反的做法，計劃削減美國高校數十億美元的科研經費。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump officials have argued that the cuts are meant to eliminate waste and reorient research away from themes of diversity and other topics that they see as too political.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府官員辯稱，削減經費旨在消除浪費，並將研究重心從多元化等他們認為過於政治化的議題上轉移。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration did not respond to a request for comment for this article.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府未回應本文的置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A White House spokeswoman, Liz Huston, has said in the past that “the best science can’t thrive in institutions that have abandoned merit, free inquiry, and the pursuit of truth.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">白宮發言人莉茲·休士頓曾表示：「在放棄了任人唯賢、自由探索和追求真理的機構裡，最優秀的科學是無法蓬勃發展的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">University leaders in the United States warned throughout 2025 that reductions in federal research grants could have devastating effects.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國大學校長們在2025年全年多次警告，聯邦科研經費的削減可能帶來災難性影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harvard established a web page to catalog the types of scientific and medical research that would be interrupted by grant cuts. The American Association of University Professors and several legal allies filed suit to contest some of the cuts. The group’s president, Todd Wolfson, warned that research cuts would “stunt the development of the next generation of scientists.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>哈佛大學專門設立網頁，列舉因經費削減可能中斷的各類科學與醫學研究。美國大學教授協會聯合多家法律盟友提起訴訟，對部分削減措施提出挑戰。該協會主席托德·沃爾夫森警告說，科研經費削減將「阻礙下一代科學家的成長」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A federal judge has ordered the federal government to resume funding for Harvard, after the Trump administration cut off billions of dollars in research funds in the spring. The administration has said it would curtail future grants to the school.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普政府於春季切斷了數十億美元科研資金後，一名聯邦法官已下令聯邦政府恢復對哈佛的資助。政府方面則表示，將縮減未來對該校的撥款。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Harvard spokesman declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈佛大學發言人拒絕置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The prestige and global standing of many other U.S. universities are also in jeopardy. Fewer and smaller federal grants means less research, and by extension, potentially fewer discoveries to be written up and published in academic articles and papers, which will affect how schools fare in future rankings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多其他美國高校的聲譽和全球地位同樣面臨風險。聯邦撥款的減少和縮水意味著研究活動萎縮，進而可能導致可發表成果的減少，進而直接影響高校在未來排名中的表現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Research universities make it part of their mission to pursue discoveries and develop new knowledge. Faculty members are often under pressure to produce results, summed up in the phrase “publish or perish.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究型大學將追求發現和發展新知識視為自身使命的一部分。教師往往承受著出成果的壓力，這種壓力常被概括為一句話：「不發表，就淘汰。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Schools that do not aspire to produce reams of academic research papers, such as many liberal arts colleges, would not figure on production-based rankings. Mr. Neijssel said the Leiden rankings “do not pretend to say anything” about the quality of teaching at a university.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些並不以大量產出學術論文為目標的高校——例如許多文理學院——不會出現在基於學術成果的排名中。奈傑塞爾強調，萊頓排名「無意評價」大學的教學質量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Top U.S. schools have fared much better in ranking systems whose criteria are broader than just academic output. Some give weight to factors such as a school’s reputation, finances, and how badly students want to enroll, as reflected in its application acceptance rate. Some even take into account the number of Nobel Prize winners on the faculty.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在那些評判標準不只局限於學術成果的排名體系中，美國頂尖大學的表現要好得多。一些排名會考慮學校的聲譽、財務狀況，以及學生的報考熱度——後者通常體現在申請錄取率上。有的排名甚至還會把教職員工中諾貝爾獎得主的人數納入考量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These broader rankings may be slower to change, experts say, though they still show signs of the erosion of American supremacy in higher education.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，這些衡量維度更廣的排名變化可能較為緩慢，但它們仍顯示出美國在高教領域的主導地位正在遭到削弱的跡象。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="清華大學過去十年在全球排名大幅上升。" data-src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-04-ghkt/00nat-harvard-global-04-ghkt-master1050.jpg" src="https://static01.nyt.com/images/2026/01/02/multimedia/00nat-harvard-global-04-ghkt/00nat-harvard-global-04-ghkt-master1050.jpg"/></div><figcaption><span>清華大學過去十年在全球排名大幅上升。</span> <cite>Wang Zhao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For 2026, and for the 10th year in a row, Times Higher Education in Britain ranked Oxford University the No. 1 university in the world. The rest of the organization’s top five included the same schools as last year: M.I.T., Princeton, the University of Cambridge, and then Harvard, tied with Stanford.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>英國泰晤士高等教育在2026年的排名中，連續第十年將牛津大學評為全球第一。該榜單的前五名其餘席位與去年相同：麻省理工、普林斯頓、劍橋，以及並列第五的哈佛與史丹佛。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American schools held seven of the top 10 spots in the 2026 ranking. But farther down the list, American universities are slipping. Sixty-two U.S. schools were ranked lower than last year, while only 19 rose.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2026年的排名中，美國高校佔據了前十名中的七席。但在榜單更靠後的位置，美國大學的名次正在下滑。有62所美國學校的排名較去年下降，僅19所排名上升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ten years ago, two prominent Beijing schools — Peking University and Tsinghua University — were ranked 42nd and 47th in Times Higher Education’s list. Now they are just below the top 10: Tsinghua was ranked 12th, and Peking 13th.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">十年前，北京的兩所著名學府——北京大學和清華大學——在泰晤士高等教育的榜單上分別位列第42和第47名。如今它們已逼近前十：清華大學位列第12名，北京大學位列第13名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Six schools in Hong Kong are now in the top 200; South Korea placed four in the top 100.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">香港現有六所高校躋身世界前200名；韓國有四所高校進入前100名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While some foreign schools have risen, some well-known American schools have slipped. Duke University, for instance, was ranked 20th in 2021, and now is ranked 28th. Over that same time span, Emory University dropped to 102nd from 85th. Ten years ago, Notre Dame ranked 108th; now it is No. 194.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一些外國高校排名上升的同時，一些知名的美國高校排名卻在下降。例如，杜克大學在2021年排名第20位，如今位列第28位。在同一時期，埃默裡大學從第85位下滑至第102位。10年前，聖母大學排名第108位，如今已跌至第194位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The pressures that could reduce Harvard’s research output, like federal grant reductions and cuts to the school’s Ph.D. programs, are unlikely to show up immediately in rankings, said Mr. Usher, the higher education consultant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>高等教育顧問烏舍爾指出，那些可能削弱哈佛大學科研成果的壓力因素——如聯邦經費的削減和學校博士項目的縮減——不太可能立刻反映在排名中。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you’re looking at how many articles end up in ‘Nature’ or ‘Science’ from that institution, that is based on research that started four or five years ago,” he said. “There is a pretty serious time lag. I wouldn’t expect that to have a big impact in the next few years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你看到一所高校在《自然》或《科學》雜誌上發表了多少論文，那些成果往往基於四五年前啟動的研究，」他說。「這裡面存在相當明顯的時間滯後。我不認為這會在未來幾年產生很大的影響。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While China is thriving in disciplines like chemistry and environmental sciences, the United States and Europe remain dominant in others, like general biology and medical sciences. And a study has suggested that Chinese researchers have been boosting their citation rankings by citing one another more often than western researchers tend to cite other westerners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>儘管中國在化學、環境科學等學科中表現強勁，但在其他領域，如普通生物學和醫學科學，美國和歐洲仍佔據主導地位。此外，一項研究指出，中國研究人員通過比西方研究者更頻繁地相互引用，提升了自身的引用排名。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Mark Arsenault為《紐約時報》報導高等教育新聞。</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/education/20260116/harvard-global-ranking-chinese-universities-trump-cuts/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
