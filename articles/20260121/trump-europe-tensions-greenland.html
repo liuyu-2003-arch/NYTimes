@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美歐緊張關係升級 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美歐緊張關係升級</h1>
+    <h2 class="en-headline">Trump Ratchets Up Tensions With Europe as He Rejects Diplomatic Overtures</h2>
+    <div class="meta-line">ZOLAN KANNO-YOUNGS <span style="margin: 0 8px;">•</span> 2026-01-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="當被問及願採取何種極端手段奪取格陵蘭島時，川普總統對記者表示：「你們會知道的。」" height="700" src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy-top-vhtl/20dc-prexy-top-vhtl-master1050.jpg" width="1050"/><figcaption><span>當被問及願採取何種極端手段奪取格陵蘭島時，川普總統對記者表示：「你們會知道的。」</span> <cite>Allison Robbert for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump on Tuesday escalated tensions with the United States’ longest allies, meeting diplomatic overtures with mocking online posts and threats of economic levies and territorial expansion, just hours before he was set to meet with European counterparts in the Swiss Alps.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，川普總統令美國與老牌盟友們之間的緊張關係再度升級，在瑞士阿爾卑斯山區與歐洲各國領導人會面的數小時前，他以嘲諷性的帖文回應對方的外交示好，還接連發出征收經濟關稅、推行領土擴張的威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump warned that he would impose a new round of tariffs against European nations unless they acquiesced to his demands that the United States take over Greenland. He invited President Vladimir V. Putin of Russia, who European leaders have sought to isolate to counter his invasion of Ukraine, to join his new “board of peace” to reconstruct Gaza. He shared a post on social media that claimed China and Russia were simply “boogeymen” and that the United Nations and NATO were “the real threat.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普警告，除非歐洲各國默許美國接管格陵蘭島的要求，否則他將對歐洲國家加徵新一輪關稅。他邀請俄羅斯總統普丁加入其為重建加薩新成立的「和平委員會」——歐洲領導人此前為反擊俄羅斯對烏克蘭的入侵，一直試圖孤立普丁。他還在社群媒體轉發一則帖文，貼文稱中俄不過是西方「假想的妖怪」，而聯合國和北約才是「真正的威脅」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president even posted the private text messages of European leaders trying to strike conciliatory notes, and shared a computer-generated image of himself planting a flag on Greenland. “GREENLAND, US TERRITORY, EST. 2026,” read a wooden placard in the image.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>總統甚至公布了歐洲各國領導人試圖表達和解之意的私人短訊，分享了一張電腦合成圖：圖中的他在格陵蘭島插上旗幟，一旁的木牌寫著「格陵蘭，美國領土，</span>確立於2026年」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And when asked how far he was willing to go to acquire Greenland, Mr. Trump told reporters at the White House: “You’ll find out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及他願採取何種極端手段奪取格陵蘭島時，川普在白宮對記者表示：「你們會知道的。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CKHFlon2nZIDFfzWSgAdQ_0AZA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The bellicose statements and threats, just days before Mr. Trump was set to meet European leaders at the World Economic Forum in Davos, Switzerland, amounted to an extraordinary provocation of some of the United States’ closest allies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">距離川普赴瑞士達佛斯出席世界經濟論壇、與歐洲領導人會面僅剩數日之際，此番好鬥的言論與威脅無異於對美國部分親密盟友發起了一次異乎尋常的挑釁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president’s aggressive posture has effectively transformed what traditionally has been a brainstorming session among leaders of the world’s wealthiest countries into a showdown between a president emboldened over his power on the global stage and European heads of state concerned that the trans-Atlantic diplomatic alignment may be on the brink.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>總統的強硬姿態已然將這場傳統上由全球富國領導人參與的頭腦風暴會議變成了一場對決：一方是在國際舞台上愈發恃權妄為的美國總統，另一方則是擔憂跨大西洋外交同盟瀕臨破裂的歐洲各國元首。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Europeans are — they’re perplexed,” said Ian Bremmer, the president and founder of Eurasia Group, a leading global political risk research and consulting firm. “They’re worried.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「歐洲人現在滿心困惑，」全球頂尖政治風險研究諮詢機構歐亞集團總裁兼創始人伊恩·布雷默說。「他們憂心忡忡。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Bremmer, who is attending the Davos conference, added: “The feeling of crisis that this could actually be — unless Trump is prepared to back down — that this could reflect the end of NATO.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正在達佛斯參會的布雷默還說：「人們有種危機感——除非川普準備讓步，否則這一切或許真的意味著北約的終結。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上週在格陵蘭努克市舉行的一場抗議川普的示威活動。" data-src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy-2-cfzk/20dc-prexy-2-cfzk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy-2-cfzk/20dc-prexy-2-cfzk-master1050.jpg"/></div><figcaption><span>上週在格陵蘭努克市舉行的一場抗議川普的示威活動。</span> <cite>Juliette Pavy for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has so far refused to say — or rule out — whether he would use military force to take control of Greenland. But even before he boarded Air Force One on Tuesday night to travel to Switzerland, his penchant for unpredictability loomed over Davos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至目前，川普始終拒絕表態，也沒有排除動用軍事力量掌控格陵蘭島的可能性<span>。而即便在週二晚間登上「空軍一號」前往瑞士前，他那難以預測的行事風格</span>就已經為此次達佛斯會議蒙上陰影。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the weekend, Mr. Trump linked his push for Greenland to not being awarded the Nobel Peace Prize, telling Norway’s prime minister in a text message that he no longer felt obliged to “think purely of Peace.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>上週末，川普還將自己執意奪取格陵蘭島的舉動與自己未獲諾貝爾和平獎掛鈎。他在給挪威首相的短訊中稱，自己不再覺得有義務「一心只想著和平」。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNvzlon2nZIDFYaFpAQd8ksFdA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I have done more for NATO than any other person since its founding, and now, NATO should do something for the United States,” Mr. Trump said in the message.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「自北約成立以來，我為其做出的貢獻遠超任何人，現在，北約也該為美國做點事了，」川普在短訊中寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And on Tuesday, Mr. Trump questioned whether NATO could be trusted to come to the aid of the United States, even though the alliance has only invoked Article 5 of its founding treaty, which holds that an attack on one ally is considered an attack on all, once — after the Sept. 11 attacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，川普甚至質疑北約是否值得信任，是否能夠援助美國——儘管該同盟成立條約中的第五條（對任一盟友的攻擊均視為對所有盟友的攻擊）僅被啟用過一次，就是在9·11恐襲之後。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s threats of tariffs to pressure European leaders to agree to a sale of Greenland has prompted the allies, including some that will be in attendance at Davos, to contemplate retaliating with economic penalties.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普以關稅相逼，要求歐洲領導人同意出售格陵蘭島，這一行為已促使包括部分達佛斯參會國在內的盟友考慮用經濟制裁反擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Treasury Secretary Scott Bessent told reporters in Davos on Monday that it would be “unwise” for the European leaders to do so.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">財政部長貝森特週一在達佛斯對記者表示，歐洲領導人若採取反制措施將是「不明智的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump said on Tuesday that he had “a lot of meetings scheduled on Greenland” and that he thought he would “work something out where NATO is going to be very happy and where we’re going to be very happy.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普週二稱，他已在達佛斯「安排了多場關於格陵蘭島的會談」，並認為自己「能達成讓北約非常滿意、也讓我們非常滿意的方案」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">World leaders in Davos appeared to acknowledge a new reality with the United States: that under Mr. Trump, they can no longer rely on a longtime ally. Ursula von der Leyen, the president of the European Commission, suggested Tuesday that the European Union would take steps to bolster its security in light of the crisis, and would look at “how to strengthen our security partnerships with partners such as the U.K., Canada, Norway, Iceland and others.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出席達佛斯論壇的各國領導人似乎都已接受與美國相關的全新現實：在川普治下，他們再也無法依靠這個長期盟友。歐盟委員會主席馮德萊恩週二表示，歐盟將針對當前危機採取措施強化自身安全，並將研究「如何深化與英國、加拿大、挪威、冰島等國的安全夥伴關係」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Mark Carney of Canada put it bluntly at the summit on Tuesday. “Let me be direct: We are in the midst of a rupture, not a transition,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加拿大總理卡尼週二在峰會上直言：「我直說吧：我們正身處一場決裂之中，而非簡單的轉型。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="加拿大總理卡尼與法國總統馬克宏週二在瑞士達佛斯會晤。" data-src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy3-kwmh/20dc-prexy3-kwmh-master1050.jpg" src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy3-kwmh/20dc-prexy3-kwmh-master1050.jpg"/></div><figcaption><span>加拿大總理卡尼與法國總統馬克宏週二在瑞士達佛斯會晤。</span> <cite>Ludovic Marin/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He added: “Great powers have begun using economic integration as weapons, tariffs as leverage, financial infrastructure as coercion.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還說：「各大國已開始將經濟一體化當作武器，將關稅當作籌碼，將金融基礎設施當作脅迫手段。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Emmanuel Macron of France described “a shift towards a world without rules where international law is trampled” and “imperial ambitions are resurfacing.” The United States, he said, had openly aimed to “weaken and subordinate Europe.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">法國總統馬克宏稱，世界正走向「一個規則蕩然無存、國際法遭踐踏的時代」，「帝國野心正重新抬頭。」他表示，美國已公然將「削弱並支配歐洲」作為目標。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIqSl4n2nZIDFaLvSgAdFyc5Jw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Macron said he would respond by pushing for “more sovereignty and more autonomy for the Europeans.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬克宏稱，他將推動「歐洲實現更高程度的主權與自主」來應對。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Throughout his political career, Mr. Trump has lashed out at longtime allies, imposed tariffs on trading partners and brushed aside the post-World War II global order. But emboldened by the U.S. military capture of President Nicolás Maduro of Venezuela, Mr. Trump now appears determined to go further and pursue a territorial expansion that could doom the nearly 80-year-old diplomatic alliance that has been the centerpiece of a united Western front.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其政治生涯中，川普曾抨擊老牌盟友、對貿易夥伴加徵關稅、無視二戰後建立的全球秩序。而在美國軍隊抓捕委內瑞拉總統馬杜羅後，川普愈發有恃無恐，如今更是決意更進一步，推行領土擴張——這一行為可能摧毀近80年來作為西方統一陣線核心的外交聯盟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump is trying to force a sale of Greenland even though the majority Indigenous territory has said that it is not for purchase. Its leader said last week that Greenlanders would rather stay part of the Danish kingdom, its former colonizer, than join the Americans. Mr. Trump has said that obtaining Greenland is a national security imperative, and top administration officials have expressed desire for the territory’s natural resources.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>川普正試圖強行促成格陵蘭島出售，儘管這個原住民占多數的地區已明確表示拒絕。格陵蘭島領導人上週稱，格陵蘭民眾寧願留在前殖民宗主國丹麥王國版圖內，也不願加入美國。川普則稱，奪取格陵蘭島是美國國家安全的迫切需求，美國政府高層官員也多次</span>表達對該地區豐富自然資源的興趣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When asked about Greenlanders not wanting to become part of the United States, Mr. Trump said: “When I speak to them, I’m sure they’ll be thrilled.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及格陵蘭民眾不願成為美國一部分時，川普表示：「等我和他們談談，我相信他們會很高興的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, NATO allies deployed military personnel to Greenland in a gesture of solidarity. The question now is what will follow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，北約盟友已向格陵蘭島派遣軍事人員，以示聲援。如今的問題是，後續還將發生什麼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There are people here who are openly talking about their expectation that the president will be sending military forces to Greenland,” said Michael Froman, a Davos attendee and the president of the Council on Foreign Relations, a U.S. think thank. “That is an option that people think is very much on the table.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有人公開表示預計總統將向格陵蘭島派遣軍隊，」智庫美國外交關係協會會長、達佛斯參會者麥可·弗羅曼說。「人們認為，這一選項已被擺上桌面。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週二，一艘丹麥海軍艦艇在格陵蘭努克海岸附近巡邏。" data-src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy-4-zqvk/20dc-prexy-4-zqvk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/20/multimedia/20dc-prexy-4-zqvk/20dc-prexy-4-zqvk-master1050.jpg"/></div><figcaption><span>週二，一艘丹麥海軍艦艇在格陵蘭努克海岸附近巡邏。</span> <cite>Sean Gallup/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some European leaders did not wait for Mr. Trump’s arrival to try to dissuade him from such an escalation. Hours before he boarded a flight to the summit, Mr. Trump posted a private text message from Mark Rutte, NATO’s secretary general, who sought to flatter the U.S. president, calling him “dear Donald” and telling him that he was “committed to finding a way forward on Greenland.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分歐洲領導人未等川普抵達，便試圖勸阻其進一步升級事態。在川普登機前往達佛斯的數小時前，他發布了北約秘書長呂特發來的私人短訊——呂特在短訊中極力討好川普，稱其為「親愛的唐納德」，並表示自己「致力於為格陵蘭島問題尋找解決方案」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Thank you to Mark Rutte, the Secretary General of NATO!” Mr. Trump posted in response.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「感謝北約秘書長馬克·呂特！」川普發帖回應。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLyal4n2nZIDFWqRpAQdx1gQrg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump was less gracious to Mr. Macron, using the opportunity to pressure France to join his “board of peace” for Gaza. Mr. Macron does not plan to join, according to a senior French official.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>而對馬克宏，川普態度冷淡，還藉機施壓法國，要求其加入自己為加薩成立的「和平委員會」。據法國一名高級官員透露，馬克宏無意加入。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked on Monday about France’s refusal, Mr. Trump threatened to impose a 200 percent tariff on French wine, one of the country’s best-known exports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一被問及法國的拒絕態度時，川普威脅將對法國葡萄酒加徵200%的關稅，葡萄酒是法國最知名的出口商品之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Online, Mr. Trump posted private messages from Mr. Macron, who called him “my friend” but told him, “I do not understand what you are doing on Greenland.” Mr. Macron offered to host Mr. Trump for a meeting with other world leaders in Paris after the summit in Davos, and then a dinner before he returns to Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普還在網上發布了馬克宏的私人短訊，後者在短訊中稱川普為「我的朋友」，卻表示「我無法理解你在格陵蘭島問題上的所作所為」。馬克宏還提議，在達佛斯峰會結束後，邀請川普赴巴黎與其他世界領導人會晤，而後在川普返回華盛頓前共進晚餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early Tuesday morning, Mr. Trump wrote on social media that he had agreed to meet with foreign leaders in Davos to discuss Greenland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二凌晨，川普在社群媒體發文稱，他已同意在達佛斯與各國領導人會面，商討格陵蘭島問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There can be no going back,” Mr. Trump said. “On that, everyone agrees!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這事沒有回頭路，」川普說。「這一點，所有人都認同！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It also appeared to be what some leaders in Davos had feared.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而這似乎也正是部分達佛斯領導人最擔心的局面。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Zolan Kanno-Youngs是時報白宮記者，報導川普總統及其政府。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260121/trump-europe-tensions-greenland/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
