@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>納粹、蘇聯和川普 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">納粹、蘇聯和川普</h1>
+    <h2 class="en-headline">Nazis, Soviets and Trump: America’s Fixation With Greenland</h2>
+    <div class="meta-line">MICHAEL CROWLEY <span style="margin: 0 8px;">•</span> 2026-01-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="1966年，格陵蘭島北部，一名當地人帶著他的狗拉雪橇，凝望著美國人建造的圖勒空軍基地。" height="735" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-01-zbgk/22dc-greenland-coldwar-01-zbgk-master1050.jpg" width="1050"/><figcaption><span>1966年，格陵蘭島北部，一名當地人帶著他的狗拉雪橇，凝望著美國人建造的圖勒空軍基地。</span> <cite>Scanpix, via Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The last Nazis on Greenland were captured in October 1944, when American soldiers raided a hidden German weather station on the island’s desolate west coast and took dozens of prisoners. Within a year, Germany would be defeated and World War II would be over.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">格陵蘭島上最後一批納粹分子於1944 年10月被抓獲——當時美軍突襲了該島荒涼西海岸一處隱秘的德國氣象站，俘獲數十名戰俘。不到一年後，德國戰敗，第二次世界大戰宣告結束。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But 80 years of both tension and cooperation between Denmark and the United States over Greenland was just beginning — culminating in President Trump’s current obsession with acquiring the Arctic island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但彼時，美國和丹麥圍繞格陵蘭島長達80年的對峙與合作才剛剛拉開序幕，最終演變為川普總統當前對這座北極島嶼的執著追求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the story begins with World War II, it was shaped by the Cold War that followed, in which the United States transformed barren Greenland into a major military asset, populating it with air bases, towering radar sites and even a never-completed underground bunker complex meant to house nuclear missiles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這段淵源雖始於二戰，卻在後續的冷戰中被徹底塑造：美國將荒無人煙的格陵蘭島打造成重要的軍事資產，在島上修建空軍基地、高聳的雷達站，甚至還有一座從未完工的地下掩體綜合體，原本計劃用於部署核導彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was all possible under an agreement with Denmark that granted the United States nearly unlimited military freedom on the island, one that remains in force today.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一切的實現皆基於美丹兩國達成的一項協議，賦予美國在格陵蘭島近乎不受限制的軍事行動自由，且至今依然有效。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMzKnK_5opIDFY_uKAUdJQEUUQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We did it before, we can do it again,” said Daniel Fried, a former senior State Department official who worked on Soviet issues in the 1980s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們當年能做到，如今依然可以，」丹尼爾·弗里德說，他曾是美國國務院高級官員，上世紀80年代負責處理對蘇相關事務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether Mr. Trump understands this history has been a mystery as European leaders try to convince him to drop his insistence on owning the island. Mr. Trump said on Wednesday that a “framework” for a deal had been reached, but the details remained murky.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲各國領導人正竭力勸說川普放棄奪島的執念，而川普是否了解這段歷史始終是個謎。他於週三稱，雙方已就相關協議達成「框架」，但具體細節仍含糊不清。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an era before military air power, before Mr. Trump was even born, American military planners gave Greenland little thought. But when Germany invaded and occupied Denmark in 1940, they realized that the island, then a Danish colony sparsely populated by mainly Inuit people, was vulnerable to Nazi control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在空軍時代到來之前，也就是川普還沒出生的時候，格陵蘭島在美國軍事規劃者眼中無足輕重。但1940年德國入侵併佔領丹麥後，他們意識到，這座當時由丹麥殖民、主要由因紐特人散居的島嶼極易落入納粹掌控。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1941年，一艘美國海軍巡邏艇在冰山間航行。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-02-zbgk/22dc-greenland-coldwar-02-zbgk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-02-zbgk/22dc-greenland-coldwar-02-zbgk-master1050.jpg"/></div><figcaption><span>1941年，一艘美國海軍巡邏艇在冰山間航行。</span> <cite>Bettmann/Getty Images</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="1943年，美軍襲擊格陵蘭海岸外一座島嶼上的德國電台和氣象基地後，檢查撤退的納粹遺棄的降落傘裝備。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-03-zbgk/22dc-greenland-coldwar-03-zbgk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-03-zbgk/22dc-greenland-coldwar-03-zbgk-master1050.jpg"/></div><figcaption><span>1943年，美軍襲擊格陵蘭海岸外一座島嶼上的德國電台和氣象基地後，檢查撤退的納粹遺棄的降落傘裝備。</span> <cite>Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With airfields perilously close to America’s east coast, important mineral reserves and an ideal location to track weather that shaped battle conditions in Europe, Greenland’s defense was considered essential to the United States. It was an idea that would persist for decades before fading briefly after the Cold War and returning with a vengeance in the Trump era.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">格陵蘭島的機場距美國東海岸近在咫尺，島上蘊藏著重要礦產資源，更是監測影響歐洲戰場天氣的理想地點，因此其防禦被視為美國的核心要務。這一理念延續數十年，冷戰結束後曾短暫淡化，卻在川普時代捲土重來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Denmark’s exiled king had welcomed the American force and approved a written agreement granting the broad military latitude on the island, as long as a threat existed, without giving up any Danish sovereignty. With Germany vanquished and the war over, however, his country was ready to bid the Americans farewell. “Danish public opinion was expecting a return to full control of Greenland,” explained a study of the matter by the Danish Institute of Public Affairs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">彼時流亡的丹麥國王對美軍的進駐表示歡迎，還批准了一份書面協議：只要威脅尚存，美國可在格陵蘭島擁有廣泛的軍事行動權，但丹麥不會放棄對該島的主權。然而，隨著德國戰敗，戰爭結束，丹麥已準備好讓美軍撤離。丹麥公共事務研究所的相關研究指出：「丹麥公眾輿論期待重新全面掌控格陵蘭島。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washington had other ideas. The advent of long-range bombers had created a new sense of vulnerability just as the Soviet Union was emerging as a new threat to the United States. Greenland happened to lie along the most direct flight path to the Eastern United States from Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但美國另有打算。遠程轟炸機的問世讓美國產生了新的安全危機感，此時蘇聯正逐漸成為美國的新威脅。格陵蘭島恰好位於俄羅斯飛往美國東海岸最直接的航線上。</div></div></div></div></div><div class="big_ad" data-google-query-id="COuQna_5opIDFZ0QigMdbBQI2A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Greenland’s 800,000 square miles make it the world’s largest island and stationary aircraft carrier,” Time magazine wrote in January 1947. It “would be invaluable, in either conventional or push-button war, as an advance radar outpost,” and a forward position for future rocket-launching sites.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1947年1月，《時代》週刊文章寫道：「格陵蘭島面積達80萬平方英里，是世界第一大島，一艘不移動的航空母艦。」無論是常規戰爭還是核戰爭，它都是「價值無可估量的遠程雷達前哨站」，也是未來火箭發射基地的前沿陣地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Americans had no intention of leaving.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國人根本無意撤離。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The bad news was delivered in December 1946 by the U.S. secretary of state, James F. Byrnes. During a meeting at the Waldorf Astoria hotel in New York, Mr. Byrnes explained to his Danish counterpart, Gustav Rasmussen, that Greenland had become “vital to the defense of the United States.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1946年12月，美國國務卿詹姆斯·伯恩斯將這個壞消息告知了丹麥。在紐約華爾道夫阿斯托里亞酒店的一次會面中，伯恩斯向丹麥外交大臣古斯塔夫·拉斯穆森表示，格陵蘭島已成為「美國國防的關鍵所在」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1946年，杜魯門總統的軍事和外交政策主腦在白宮合影，包括國務卿詹姆斯·伯恩（右二）。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-04-zbgk/22dc-greenland-coldwar-04-zbgk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-04-zbgk/22dc-greenland-coldwar-04-zbgk-master1050.jpg"/></div><figcaption><span>1946年，杜魯門總統的軍事和外交政策主腦在白宮合影，包括國務卿詹姆斯·伯恩（右二）。</span> <cite>Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the American military’s presence could be extended, Mr. Byrnes said, he had a better idea: Denmark should simply sell Greenland to America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伯恩斯稱，美軍的駐留期限本可延長，但他有一個更好的提議：丹麥乾脆將格陵蘭島賣給美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The idea “seemed to come as a shock” to Mr. Rasmussen, who accurately predicted that his government would reject the idea, according to another State Department memo. But unlike the current blowup, the matter was handled “quietly” by both sides, noted Heather Conley, a nonresident senior fellow at the American Enterprise Institute who specializes in the Arctic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國國務院的另一份備忘錄顯示，這一提議讓拉斯穆森「很震驚」，他準確預判到本國政府會拒絕這一要求。美國企業研究所非常駐高級研究員、北極問題專家希瑟·康利指出，與如今的這場風波不同，當時美丹雙方均對該問題採取了「低調」的方式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Truman administration did not push, partly for fear that Moscow would claim that the United States had stolen land from a European ally. As the Soviet threat grew more vivid in Europe, Denmark became more willing to let American troops stay in Greenland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">杜魯門政府並未執意施壓，部分原因是擔心莫斯科指責美國從歐洲盟友手中強佔土地。隨著蘇聯在歐洲的威脅日益凸顯，丹麥也愈發願意讓美軍繼續留駐格陵蘭島。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJa8na_5opIDFXcTigMdl58fSw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 1951, the United States and Denmark reached an agreement “uniting their efforts for collective defense” under the auspices of the newly formed North Atlantic Treaty Organization. While stressing Denmark’s continued sovereignty over the island, the agreement granted the United States broad freedom to “construct, install, maintain and operate facilities and equipment” and to “station and house personnel,” along with other rights related to military activity. That included deepening harbors and even maintaining postal facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1951年，在新成立的北大西洋公約組織的支持下，美丹兩國達成協議，宣布「聯合努力開展集體防禦行動」。該協議一方面強調丹麥對格陵蘭島的主權依舊，另一方面賦予美國廣泛權利，可在島上「修建、安裝、維護和運營各類設施與裝備」、「駐軍並安置人員」，以及行使與軍事活動相關的其他權利，其中甚至包括加深港口、運營郵政設施等。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agreement did not include an expiration date, and Denmark has never asserted one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份協議未設定期限，丹麥也從未主張過為其設定期限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the agreement’s few limitations was to delineate specific “defense areas” within which the United States could operate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">協議僅設置了為數不多的限制，其中一項是劃定美國可開展軍事行動的特定「防禦區域」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="圖勒空軍基地的建設。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-05-zbgk/22dc-greenland-coldwar-05-zbgk-master1050.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-05-zbgk/22dc-greenland-coldwar-05-zbgk-master1050.jpg"/></div><figcaption><span>圖勒空軍基地的建設。</span> <cite>Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With the deal in hand, and freshly alarmed by a Soviet-backed communist offensive in Korea, the U.S. military quickly went to work. In a secret crash project, military engineers working around the clock in 24-hour Arctic daylight built a major air base at Thule in northwest Greenland. Manned by thousands of American personnel, the base’s 10,000-foot runway would serve as a launching point for strategic bombers and spy planes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份協議敲定後，恰逢蘇聯支持的共產主義勢力在朝鮮發起進攻，美國再次陷入安全恐慌，美軍隨即迅速展開行動。1951年，在北極晝夜24小時日照的環境下，軍事工程師們開啟了一項緊急祕密工程，夜以繼日地在格陵蘭島西北部的圖勒地區修建了一座大型空軍基地。這座基地駐紮著數以千計的美軍人員，長約三公里的跑道成為戰略轟炸機和偵察機的起飛基地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than a dozen military bases and radar and weather monitoring stations eventually opened across the island. </div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最終，美軍在格陵蘭島各地建成了十餘座軍事基地，以及多個雷達和氣象監測站。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the peak of the United States’ military presence in Greenland during the Cold War, some 10,000 U.S. personnel were stationed on the island. But after the Soviet Union collapsed in 1991, the cost of a large footprint on an Arctic island made little sense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">冷戰時期，美軍在格陵蘭島的軍事存在達到頂峰，約有1萬名美軍人員駐紮於此。但1991年蘇聯解體後，在這片北極島嶼維持大規模軍事存在變得得不償失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most U.S. installations on Greenland were closed over the next decade, with U.S. activity consolidating at Thule, whose name was changed in 2023 to Pituffik in an acknowledgment of a former Inuit settlement there. It is now a U.S. Space Force base, staffed by about 150 people who manage early warning radar and satellite communications.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在隨後的十年裡，美軍關閉了在格陵蘭島的大部分設施，所有軍事活動整合至圖勒基地——為紀念當地一處昔日的因紐特人定居點，該基地於2023年更名為皮圖菲克基地。如今，這裡成為美國太空軍的基地，約有150名人員駐守，負責早期預警雷達和衛星通信系統的運轉。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="圖勒曾作為戰略轟炸機和偵察機的起飛基地。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-06-zbgk/22dc-greenland-coldwar-06-zbgk-jumbo.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-06-zbgk/22dc-greenland-coldwar-06-zbgk-jumbo.jpg"/></div><figcaption><span>圖勒曾作為戰略轟炸機和偵察機的起飛基地。</span> <cite>Lowell Georgia/The Denver Post, via Getty Images</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="1959年，駐紮在格陵蘭「世紀營」的士兵。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-07-zbgk/22dc-greenland-coldwar-07-zbgk-jumbo.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22dc-greenland-coldwar-07-zbgk/22dc-greenland-coldwar-07-zbgk-jumbo.jpg"/></div><figcaption><span>1959年，駐紮在格陵蘭「世紀營」的士兵。</span> <cite>Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump argues that Greenland is once again vital to American security, and many national security experts agree. They point to growing Arctic competition with Russia and China over natural resources and shipping lanes as melting ice reshapes the region. Mr. Trump also says that Greenland is crucial to the ambitious “Golden Dome” missile defense system he hopes to build in the coming years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普稱，格陵蘭島再次成為美國國家安全的核心所在，許多國家安全專家也對此表示認同。他們指出，隨著冰川融化重塑北極地區格局，美國與俄、中兩國在北極的資源和航道爭奪日趨激烈。川普還表示，格陵蘭島對其計劃在未來數年打造的宏大的「金穹」導彈防禦系統而言，具有至關重要的意義。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Michael Crowley是《紐約時報》報導美國國務院和外交政策的記者。他曾報導過近30個國家的新聞，並經常隨國務卿出訪。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260123/greenland-trump-cold-war/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
