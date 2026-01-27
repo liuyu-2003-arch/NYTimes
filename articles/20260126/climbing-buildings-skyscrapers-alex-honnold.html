@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>徒手攀爬台北101大樓，一場全球直播大冒險 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">徒手攀爬台北101大樓，一場全球直播大冒險</h1>
+    <h2 class="en-headline">What’s It Like to Climb a Skyscraper?</h2>
+    <div class="meta-line">JOHN YOON <span style="margin: 0 8px;">•</span> 2026-01-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="成功徒手攀登台北101大樓後，亞歷克斯·霍諾德在樓頂向眾人揮手致意。" height="700" src="https://static01.nyt.com/images/2026/02/23/multimedia/23xp-climbing-hwzk/23xp-climbing-hwzk-master1050.jpg" width="1050"/><figcaption><span>成功徒手攀登台北101大樓後，亞歷克斯·霍諾德在樓頂向眾人揮手致意。</span> <cite>I-Hwa Cheng/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alex Honnold, a rock climber who was the subject of the Oscar-winning documentary “Free Solo,” successfully climbed the 1,667-foot-tall skyscraper Taipei 101 in Taiwan on Sunday, without a rope.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週日，奧斯卡獲獎紀錄片《徒手攀岩》(Free Solo)的主角、攀岩運動員亞歷克斯·霍諾德在台灣徒手攀上了高508米的台北101大樓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scaling a building that tall is not like climbing a mountain. Those in the club of just a dozen or so known skyscraper climbers worldwide say the activity comes with unique physical and mental demands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">攀爬如此高度的建築與攀岩截然不同。全球僅有十幾位知名的摩天大樓攀爬者，他們表示這項運動對人的身心有著獨特的要求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is also a largely underground sport because it is usually illegal. Alain Robert, a Frenchman who has scaled some 200 buildings since the 1990s, mostly with his bare hands, said that he has been arrested more than 170 times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這也是一項基本處於地下狀態的運動，因為它在多數情況下都是違法的。法國人阿蘭·羅貝爾自上世紀90年代以來徒手攀爬了約200座建築，他透露自己因此被捕了170多次。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2011年，被稱為「法國蜘蛛人」的阿蘭·羅貝爾攀爬世界最高建築杜拜哈利法塔。" data-src="https://static01.nyt.com/images/2026/01/23/multimedia/23xp-climbing-top/23xp-climbing-top-master1050.jpg" src="https://static01.nyt.com/images/2026/01/23/multimedia/23xp-climbing-top/23xp-climbing-top-master1050.jpg"/></div><figcaption><span>2011年，被稱為「法國蜘蛛人」的阿蘭·羅貝爾攀爬世界最高建築杜拜哈利法塔。</span> <cite>Emmanuel Aguirre/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You feel like you’re literally in a movie,” Mr. Robert said, with “cops that are trying to catch the bad guy climbing the building.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅貝爾說，「你會感覺自己彷彿置身電影之中，警察在追捕那個攀爬大樓的壞蛋。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The obvious risks make it rare for someone to obtain permission to climb a tall building, as Mr. Honnold did. His climb on Sunday was broadcast live on Netflix.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項運動的風險顯而易見，因此極少有人能像霍諾德這樣，獲得攀爬高層建築的官方許可。他此次的攀爬行動由Netflix進行了全球直播。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIW8nJTAqpIDFSCFOgUd-jQbgQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’ve never been willing to get arrested,” the 40-year-old said in a podcast recorded before the climb.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這位40歲的運動員在攀爬前錄製的一檔播客中表示：「我從不願意因為攀爬而被捕。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike the serene natural landscape surrounding climbers on routes like El Capitan in Yosemite National Park, which Mr. Honnold scaled in 2017, skyscraper climbers must overcome urban noise, crowds and, occasionally, police officers determined to arrest them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2017年，霍諾德曾徒手攀上優勝美地國家公園的酋長岩，那裡有著靜謐的自然景觀；與此形成鮮明對比的是，摩天大樓攀爬者卻要直面城市的喧囂、人群的圍觀，有時還要躲避決意將他們逮捕的警察。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You feel like King Kong in the city,” said Titouan Leduc, 24, a French climber who scaled Warsaw’s Varso Tower, the tallest skyscraper in the European Union, last year. He was briefly arrested after that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">24歲的法國攀爬者蒂圖安·勒杜去年曾攀上歐盟最高建築華沙的瓦爾索塔，他說：「在城市裡攀爬時，你會覺得自己就像城市中的金剛。」事後他曾被短暫拘留。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="蒂圖安·勒杜去年攀登華沙的瓦爾索大廈時表示：「在城市裡攀爬的感覺就像是金剛。」" data-src="https://static01.nyt.com/images/2026/01/23/multimedia/23xp-climbing-leduc-lgjf/23xp-climbing-leduc-lgjf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/23/multimedia/23xp-climbing-leduc-lgjf/23xp-climbing-leduc-lgjf-master1050.jpg"/></div><figcaption><span>蒂圖安·勒杜去年攀登華沙的瓦爾索大廈時表示：「在城市裡攀爬的感覺就像是金剛。」</span> <cite>Wojtek Radwanski/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those who have climbed skyscrapers say their bodies face different demands compared with rock climbing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有過摩天大樓攀爬經歷的人表示，這項運動對身體的要求與攀岩截然不同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to Dan Goodwin, who in 1986 climbed the CN Tower in Toronto — then the tallest structure in the world — skyscraper climbing mainly comes down to repetitiveness versus variety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">丹·古德溫曾在1986年攀上當時世界最高建築——多倫多的加拿大國家電視塔，他表示，摩天大樓攀爬的核心特點在於動作的重複性，攀岩則講究動作的多樣性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a rock face, each move presents a new puzzle: climbers’ hands search for different holds — crimps, jugs, slopers — and they constantly adapt their bodies. But along the side of a building, climbers repeat the same few movements hundreds of times to pass over dozens of stories of windows, steel bars and concrete gaps.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在岩壁上攀爬時，每一個動作都是全新的挑戰：攀爬者要摸索不同的抓點，比如折點、大把手點、斜面點，身體也需要不斷做出調整。但在建築外立面攀爬時，為了翻越數十層的窗戶、鋼筋和混凝土縫隙，攀爬者需要數百次重複同樣的幾個動作。</div></div></div></div></div><div class="big_ad" data-google-query-id="COmsnJTAqpIDFa6ROgUdwUU5wA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You can do a pull-up and think it’s not all too bad, but try doing 20, 50, 100,” Mr. Goodwin said. “Doing the same kind of move over and over and over — it can really tax your muscles and fingers.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你做一個引體向上，可能覺得沒什麼，但試試做20個、50個、100個，」古德溫說。「一遍又一遍地重複同一個動作，會讓肌肉和手指承受巨大的負荷。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Goodwin, 70, said that by the time he finished climbing the CN Tower, his right hand was covered in blisters and left shoulder felt as though it were on fire.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">70歲的古德溫回憶，當年攀上加拿大國家電視塔後，他的右手滿是水泡，左肩更是疼得像著了火一樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I was terrified,” he said, recalling the day he reached the base of the tower’s observation deck, 1,100 feet above a crowd of onlookers and with no rope, harness or other safety equipment. “Every move had to be perfect.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我很害怕，」他回憶起抵達電視塔觀景台底部的那一刻，那裡距離地面約335米，下面擠滿了圍觀人群，他身上沒有繩索、安全帶，也沒有任何其他安全裝備。「每一個動作都必須做到完美。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Robert, 63, developed his own system for rating buildings based on how difficult they are to climb. A building’s grips mattered more than its height, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現年63歲的羅貝爾為建築攀爬制定了一套專屬的難度評級體系。他表示，建築的可抓握點比高度更關鍵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He gave the Brooklyn Bridge a difficulty rating of two out of 10 after climbing it in 1994. He gave the same rating to the Eiffel Tower, which he scaled with his bare hands in 1996. “It’s really like a ladder,” he said of the Paris landmark.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1994年攀上布魯克林大橋後，他將其難度評為10分制中的二分；1996年徒手攀上艾菲爾鐵塔後，他也給出了同樣的評分。談及這座巴黎地標，他說：「爬它其實就像爬梯子一樣。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was also the last person to climb Taipei 101, in 2004, then the tallest building in the world. He completed the climb just days after having surgery on his left elbow, in heavy rain and with a top rope, which he said the authorities had required.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2004年，他成為上一位攀登台北101大樓的人，當時這座大樓還是世界最高建築，他在左手肘部剛做完手術後不久，就在大雨中完成了攀爬，過程中使用了頂繩保護裝置，他稱這是當地有關部門的要求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Robert gave Taipei 101 a rating of six.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅貝爾將台北101大樓的難度評為六分。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="台北101大樓。" data-src="https://static01.nyt.com/images/2026/01/22/multimedia/22xp-climbing-02-tmjz/22xp-climbing-02-tmjz-master1050.jpg" src="https://static01.nyt.com/images/2026/01/22/multimedia/22xp-climbing-02-tmjz/22xp-climbing-02-tmjz-master1050.jpg"/></div><figcaption><span>台北101大樓。</span> <cite>Chiangying-Ying/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In contrast, the small gaps on the surface of the Sydney Opera House, which he climbed in 1997 and rated as a seven, allowed him to hold on only with his fingertips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比之下，他在1997年攀登的雪梨歌劇院表面僅有細小縫隙，只能用指尖抓握，為此他給該建築評了七分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 1999, Mr. Robert scaled what he said was one of the most difficult buildings he had ever climbed, rating it a nine: the Sears Tower, now called the Willis Tower, in Chicago. He gave the Burj Khalifa in the United Arab Emirates, the world’s tallest building, the same grade after climbing it in 2011.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1999年，羅貝爾攀上了他聲稱爬過的最難建築之一—— 芝加哥的西爾斯大廈（現名威利斯大廈），並將其難度評為九分；2011年攀上世界第一高樓阿聯酋哈利法塔後，他也給出了同樣的評分。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJW7nJTAqpIDFUabOgUdPsYagQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most difficult building he ever encountered? A relatively humble 44-story office building west of Paris in 1998. He said the only way up the Tour Framatome, now called the Tour Areva, is by jamming one’s fingers into a vertical groove between glass panels. Halfway through that climb, he said, the crack unexpectedly became so narrow that his fingers could barely fit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那他爬過的最難建築是哪一座？答案是他在1998年攀上的一座看似普通的44層寫字樓，位於巴黎西郊。這棟樓原名為法馬通大廈、現名阿海琺大廈，唯一的攀爬方式就是將手指塞進玻璃幕牆間的垂直縫隙。羅貝爾說，爬到一半時，縫隙突然變得異常狹窄，他的手指幾乎無法伸進去。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s like your entire life is hanging at the tip of your finger,” he said. He rated that difficulty a 10.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「那一刻，感覺你的整個性命都懸在指尖，」他說。他將這座建築的攀爬難度評為滿分10分。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週日，霍諾德攀爬大廈時，大廈內有人向外張望。" data-src="https://static01.nyt.com/images/2026/02/23/multimedia/23xp-climbing-fjqt/23xp-climbing-fjqt-master1050.jpg" src="https://static01.nyt.com/images/2026/02/23/multimedia/23xp-climbing-fjqt/23xp-climbing-fjqt-master1050.jpg"/></div><figcaption><span>週日，霍諾德攀爬大廈時，大廈內有人向外張望。</span> <cite>I-Hwa Cheng/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some climbers said they were concerned that Mr. Honnold’s climb, carried live on Netflix, would encourage reckless, untrained attempts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些攀爬者表示，霍諾德此次由網飛直播的攀爬行動可能會助長未經訓練的魯莽嘗試，這讓他們深感擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My message to kids: Don’t do it,” Mr. Goodwin said. “Unless you’re a world-class climber like Alex Honnold and Alain Robert, unless you have that ability, it’s a suicide mission.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我想對孩子們說：不要這麼做，」古德溫說。「除非你是像亞歷克斯·霍諾德和阿蘭·羅貝爾這樣的世界級攀爬者，除非你擁有同等的實力，否則這種嘗試無異於自殺。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For others, the danger keeps them going.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對另一些人而言，正是這份危險給他們帶來動力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The only way I felt alive was when I was risking my life,” Mr. Robert said, adding that he might try climbing another building in the coming weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「只有在拿性命冒險時，我才覺得自己真正活著，」羅貝爾說。他還透露，未來幾週可能會嘗試攀爬另一座建築。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Yan Zhuang對本文有報導貢獻。</p><p class="cn-p">John Yoon是時報駐首爾記者，報導突發新聞和熱門新聞。</p><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260126/climbing-buildings-skyscrapers-alex-honnold/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
