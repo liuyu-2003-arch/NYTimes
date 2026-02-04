@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消失的解放軍將領 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">消失的解放軍將領</h1>
+    <h2 class="en-headline">China’s Disappearing Generals</h2>
+    <div class="meta-line">AMY CHANG CHIEN, AGNES CHANG, 儲百亮 <span style="margin: 0 8px;">•</span> 2026-02-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="這些是2023年在中央軍事委員會任職、效力於習近平的高級將領。此後，除一人外，其他人都被習近平清除出局。習近平在過去三年中進行了非同尋常的大清洗，使得這個世界第二強大軍隊的高層出現了權力空白。" height="699" src="https://static01.nyt.com/images/2026/02/03/multimedia/c03china-military-purge-01/c03china-military-purge-master1050.png" width="1050"/><figcaption><span>這些是2023年在中央軍事委員會任職、效力於習近平的高級將領。此後，除一人外，其他人都被習近平清除出局。習近平在過去三年中進行了非同尋常的大清洗，使得這個世界第二強大軍隊的高層出現了權力空白。</span> <cite>The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s military leadership stood before the nation in March 2023, an image of unity behind Xi Jinping. After nearly a decade in power, Mr. Xi had installed the high command that he wanted: loyalists hand-picked to make the People’s Liberation Army a world-class force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2023年3月，中國軍隊領導層站在全國人民面前，展現出團結一致、擁護習近平的形象。在執政近十年後，習近平按照自己的意願組建了最高指揮層：一批他親自挑選、對其忠誠的將領，以將人民解放軍打造為世界一流軍隊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But not even Mr. Xi’s loyalists have been spared from his sweeping campaign to clean up the military — with purges that are ostensibly focused on corruption but are also about fealty to him. One by one, members of the Central Military Commission have been dismissed and put under investigation. The latest was Gen. Zhang Youxia, Mr. Xi’s top general.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，即便是習近平的親信也未能倖免於這場席捲軍隊的整肅行動——這場清洗名義上聚焦腐敗問題，實則也關乎對他個人的忠誠。中央軍委成員一個接一個被免職並接受調查。最近的一位是習近平的頭號將領張又俠上將。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has also removed dozens of other senior military officials in just under three years, a level of upheaval unmatched in modern Chinese history. Here is a picture of the likely extent of the purges across the military forces, based on a New York Times analysis of Chinese state media reports and official announcements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在不到三年的時間裡，習近平還解除了數十名其他高級軍官的職務，這種動盪程度在中國現代史上前所未有。根據《紐約時報》對中國官方媒體報導和官方公告的分析，下圖顯示了這場清洗運動在軍隊內部可能達到的規模。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/03/multimedia/c03china-military-purge-02/c03china-military-purge-02-master1050.png" src="https://static01.nyt.com/images/2026/02/03/multimedia/c03china-military-purge-02/c03china-military-purge-02-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China had at least 30 generals and admirals at the start of 2023 who ran specialized departments and theater commands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2023年初，中國至少有30名上將，分別掌管著各職能部門和戰區司令部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nearly all of them have been expelled or have disappeared during Xi Jinping’s sweeping purge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在習近平席捲全軍的清洗中，幾乎所有人不是被撤職，就是已經消失。</div></div></div></div></div><div class="big_ad" data-google-query-id="COC15_DPvpIDFXLclAkd43Ys-A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some cases, Mr. Xi appointed new generals as replacements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一些情況下，習近平任命了新的將領作為接替者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But many of those have also vanished from public view.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但其中許多人隨後也同樣從公眾視野中消失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our review identified only seven generals who appear to remain in active roles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們通過梳理髮現，目前似乎仍在現職崗位上的將領僅有七人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The purges are a demonstration of Mr. Xi’s extraordinary power, but have also created a leadership vacuum across the military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些清洗展示了習近平超乎尋常的權力，但也造成了整個軍隊領導層的真空。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fall of General Zhang and of another commander who was ousted with him, Gen. Liu Zhenli, has stripped the Central Military Commission of the leaders who prepare the forces for battle. While a slew of less senior officers are also involved in practical planning for major military actions, the abrupt loss of the top two “operational” commanders could for a while undercut Mr. Xi’s confidence in the readiness of the People’s Liberation Army.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">張又俠上將的倒台，以及與他一同被免職的另一名指揮官劉振立上將的落馬，使中央軍委失去了負責為作戰做準備的核心領導層。儘管還有一批級別較低的軍官參與重大軍事行動的實際籌劃，但兩名最高級別「作戰型」指揮官的突然出局，在一段時間內可能削弱習近平對人民解放軍戰備狀況的信心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The sole remaining general in the commission is Zhang Shengmin, who has overseen Mr. Xi’s military purges and now appears responsible for maintaining political discipline and loyalty. General Zhang spent much of his career as an antigraft and political discipline inspection officer in the Rocket Force, which controls China’s nuclear and conventional missile programs. Mr. Xi promoted him last year to a vice chairman of the Central Military Commission.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前軍委中唯一留任的將領是張升民，他一直負責習近平的軍隊清洗工作，目前似乎承擔著維護政治紀律和忠誠度的責任。張升民上將的職業生涯大部分時間都在火箭軍擔任反腐和政紀檢查官，該部隊掌管著中國的核導彈及常規導彈項目。去年，習近平將他提拔為中央軍委副主席。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The dismissals have also reached deep into nearly all the other wings of the armed forces. That includes the Rocket Force as well as the navy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">撤職行動還深入到了幾乎所有其他軍種，其中包括火箭軍以及海軍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The five theater commands — the regions that Mr. Xi created in 2016 to manage the armed forces — have also been eviscerated, including the Eastern Theater Command, which is responsible for operations around Taiwan. Late last year, Mr. Xi appointed a new commander for the Eastern Theater.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平在2016年設立、用於統籌管理武裝力量的五大戰區同樣遭到重創，其中包括負責台灣周邊軍事行動的東部戰區。去年年底，習近平任命了新的東部戰區司令員。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="軍隊指揮層多數職位空缺或由新人接任。
+註：圖表未涵蓋中國人民解放軍內的所有機構。凡被標註為「空缺」的職位均指相關將領已被正式免職或停職，且尚未宣布繼任者或臨時代理人。" data-src="https://static01.nyt.com/images/2026/02/03/multimedia/c03china-military-purge-03/c03china-military-purge-03-jumbo.png" src="https://static01.nyt.com/images/2026/02/03/multimedia/c03china-military-purge-03/c03china-military-purge-03-jumbo.png"/></div><figcaption><span>軍隊指揮層多數職位空缺或由新人接任。 註：圖表未涵蓋中國人民解放軍內的所有機構。凡被標註為「空缺」的職位均指相關將領已被正式免職或停職，且尚未宣布繼任者或臨時代理人。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since General Zhang’s downfall, the official newspaper of the Chinese military has urged officers and soldiers to support the decision and rally around Mr. Xi. It also acknowledged that the dismissals and disruption were causing “short-term hardships and pain.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自張又俠落馬以來，中國軍方的官方報紙敦促官兵支持這一決定，團結在習近平周圍。該報也承認，這些免職和動盪正在造成「短期的困難和陣痛」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, the paper said, an even stronger Chinese military would emerge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該報稱，中國軍隊最終將以更強大的姿態出現。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO3U5_DPvpIDFcjclAkd4_Enbg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First, though, Mr. Xi must find another clutch of trustworthy generals he can trust as the 72-year-old leader sets his sights on a fourth term as China’s Communist Party secretary-general from 2027, which he will almost certainly get.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，72歲的習近平首先必須再找到一批他可以信任的將領。這位領導人正把目光投向自2027年起的第四個中共中央總書記任期——他幾乎肯定會獲得這一任期。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">關於數據來源：我們通過查閱中國官方媒體發布的任命與免職公告，梳理了自2023年3月（中國共產黨在全國人民代表大會完成最近一次領導層換屆後）以來中國人民解放軍將領的職務狀態。同時，我們查閱了過去三年間的公開活動影像及中文報導（如中共中央委員會會議、將領晉陞儀式等），以確認哪些中國高級軍官已淡出公眾視野。若某將領連續缺席至少兩次高級別官方會議且未出現在官方媒體報導中，我們的分析會判定其已不出現在公眾視野。將領照片均來源於中國官方媒體及政府網站。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260203/china-xi-military-purge/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
