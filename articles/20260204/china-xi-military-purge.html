@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>權力鬥爭還是猜忌成性？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">權力鬥爭還是猜忌成性？</h1>
+    <h2 class="en-headline">Ruptures in China’s Leadership Could Be Due to Paranoia and Power Plays</h2>
+    <div class="meta-line">黃安偉, JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-02-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="習近平去年在北京天安門廣場閱兵式上。" height="700" src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi01-photo-cfgp/03dc-china-xi01-photo-cfgp-master1050.jpg" width="1050"/><figcaption><span>習近平去年在北京天安門廣場閱兵式上。</span> <cite>Greg Baker/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since taking the reins of the world’s most populous superpower nearly 14 years ago, Xi Jinping has ravaged the ranks of the Chinese Communist Party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自近14年前執掌這個世界上人口最多的超級大國以來，習近平在中國共產黨內部展開了大規模清洗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has taken down ruling officials, security chiefs and children of the party’s “red aristocracy.” But even by those standards, his latest purge was remarkable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他先後打倒了高層官員、安全部門負責人以及黨內「紅色貴族」的子女。但即便以這些標準衡量，他最近的清洗行動也堪稱驚人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese defense ministry’s announcement on Jan. 24 that the country’s top military leader, Gen. Zhang Youxia, and an associate, Gen. Liu Zhenli, were under investigation for “grave violations” startled officials and analysts in Washington. General Zhang is a venerated war veteran long believed to be loyal to Mr. Xi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國國防部1月24日宣布，最高軍事領導人張又俠上將及其同僚劉振立上將因「嚴重違紀」正接受調查，此消息令華盛頓官員和分析人士震驚。作為備受尊敬的戰爭老將，張又俠長期以來被認為對習近平忠心耿耿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. officials have been trying to sift through the murky waters of elite politics in Beijing to figure out why China’s leader took such a dramatic step. They say it is critical for the U.S. government to get a handle on Mr. Xi’s state of mind because his policies, like those of President Trump, affect everything from the global economy to the operations of one of the world’s most powerful militaries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員一直竭力梳理北京高層政治的複雜脈絡，弄清楚中國領導人採取如此激進舉措的動因。他們說，美國政府必須準確把握習近平的決策思維，因為和川普總統的政策一樣，習近平的政策影響範圍從全球經濟一直延伸到世界上最強大軍事力量之一的運作。</div></div></div></div></div><div class="big_ad" data-google-query-id="COPNn9CSwZIDFWzqrQAdhFM3Dg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But current and former U.S. officials say that no obvious reason has emerged behind Mr. Xi’s latest actions. The Chinese leader could be acting out of paranoia, defending himself against a real political challenge, or genuinely attempting to address high-level corruption in the People’s Liberation Army, they say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但現任及前任美國官員表示，習近平此番行動背後的明顯動因尚不明確。他們認為，這位中國領導人可能是出於猜忌疑懼，可能是為了防範真實的政治挑戰，或者是真心試圖解決解放軍高層腐敗問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. intelligence analysts have concluded in assessments in recent years that Mr. Xi has an extreme level of paranoia, the officials say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官員們說，美國情報分析人員在近年來的評估中得出結論，習近平存在極端程度的猜忌疑懼心理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since the start of his rule in 2012, Mr. Xi, now 72, has consolidated authority through purges, and by deploying so-called anti-corruption campaigns, becoming the most powerful Chinese leader in decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自2012年開始執政以來，通過清洗和部署所謂的反腐運動鞏固權力，現年72歲的習近平成為幾十年來權力最為集中的中國領導人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has now removed all but one of the six generals he appointed to the Central Military Commission in 2022. Mr. Xi is the chairman of the commission, which controls the People’s Liberation Army. The purges have left a leadership vacuum at the top of the world’s largest military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他已撤換2022年自己任命的六名中央軍委委員中的五人。作為軍委主席，他掌控著中國人民解放軍。清洗行動給這支世界規模最大軍隊的最高層留下了領導真空。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And of the 30 generals and admirals who ran theater commands or specialized operations at the start of 2023, almost all have been expelled or have disappeared, according to a New York Times analysis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而根據《紐約時報》的分析，2023年初掌管戰區司令部或職能部門的30名將軍和上將幾乎全部遭撤職或消失在公眾視野。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Marcel Dirsus, a German political scientist who wrote a book about the erosion of dictatorships, said that autocrats view people in their inner circles — rather than protesters or dissidents — as the greatest threats to their power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國政治學家馬塞爾·迪爾蘇斯曾寫過一本探討獨裁政權瓦解機制的書，他指出，獨裁者眼中最大的權力威脅並非來自抗議者或異見者，而是身邊的親信。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJSWoNCSwZIDFbPqrQAdtDEweQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“As an autocrat, you have to be paranoid. You’re constantly at risk,” he said. “Everyone around you is lying all the time. You never know who is authentically loyal and who is lying to you.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「作為專制者，你不得不偏執疑懼。你時刻處於危險之中，」他說。「你身邊的每個人都在撒謊。你永遠不知道誰是真正忠誠的，誰在欺騙你。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Purges of military commanders are common in such systems. “Being a general in an autocracy is a thankless job,” Mr. Dirsus said. “If you are seen as effective and your subordinates like you, you develop an alternative power center, and the autocrat feels threatened by you. But if you perform poorly, the autocrat also doesn’t like you.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這樣的體制中，清洗軍隊指揮官屢見不鮮。「在專制體制下當將軍是吃力不討好的差事，」迪爾蘇斯指出。「若你被視為能幹且深受部下愛戴，就會形成替代性權力中心，專制者會感到威脅。但若你表現不佳，專制者同樣不會喜歡你。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi02-photo-vwpj/03dc-china-xi02-photo-vwpj-master1050.jpg" src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi02-photo-vwpj/03dc-china-xi02-photo-vwpj-master1050.jpg"/></div><figcaption><span></span> <cite>Wang Zhao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">General Zhang is the former: a veteran of the 1979 China-Vietnam war who, while known for his loyalty to Mr. Xi, also commanded great respect from officers and troops beneath him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">張又俠屬於前者：這位1979年中越戰爭中的老兵以對習近平的忠誠著稱，在麾下官兵中也享有極高威望。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. assessments about Mr. Xi’s paranoia raise questions about whether he is being rational in his purges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國對習近平這種「偏執狂」心理的評估令人質疑其清洗行動是否理性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Paranoia is more of a feature of his leadership than a bug,” said John Culver, a former C.I.A. analyst on China who retired in 2020, before the most recent assessments. “He would not have lasted this long or this strong given the powerful elders and institutions he has politically eviscerated.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「偏執狂與其說是一種缺陷，不如說是他領導風格的特徵，」曾任中情局中國問題分析師的約翰·卡爾弗指出（他於2020年退休，早於最新評估報告問世）。「考慮到他在政治上摧毀了如此多強大的元老和體制，若非如此，他不可能走到今天，且根基如此穩固。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The C.I.A. compiles profiles of foreign leaders that include psychological portraits. Analysts have tried for many years to better understand Mr. Xi, a party “princeling” who was pegged in a 2007 party conclave as a likely leader of China. Within weeks of taking power in 2012, he began an anti-corruption campaign that shook up the entire party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中情局為外國領導人編製檔案時包含心理畫像。多年來，分析人士一直試圖更深入地理解習近平這位黨內的「太子黨」——2007年，黨內會議就認定他極可能成為中國領導人。2012年掌權數週後，他就開始了一場震動全黨的反腐運動。</div></div></div></div></div><div class="big_ad" data-google-query-id="COK-o9CSwZIDFaXArQAdY1Q01w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Wall Street Journal reported last week that some Chinese military officers were told that General Zhang was a spy for the U.S. government and had passed it nuclear secrets. Such an act would be considered among the most treasonous crimes by a Chinese official.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《華爾街日報》上週報導稱，一些中國軍官被告知張又俠是美國政府的間諜，並向美國政府傳遞了核機密。這種行為被認為是中國官員最嚴重的叛國罪行之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Current and former U.S. officials, however, said that they were unaware of General Zhang having been a U.S. intelligence asset or having handed over nuclear information. They also said they had not detected an internal campaign in Beijing to spread the word among officials that General Zhang was a spy for the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，現任和前任美國官員說，他們不知道張又俠曾是美國情報機構的間諜，也不知道張又俠曾向美國傳遞核信息。他們還說，沒有發現北京在內部傳播張又俠是美國間諜的消息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent years, Mr. Xi and China’s main intelligence agency, the Ministry of State Security, have carried out a campaign to warn the public of national security threats from spies for foreign powers. At the same time, the C.I.A. is on a drive to recruit agents and assets in China, and says the effort is showing signs of success.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，習近平和中國的主要情報機構國家安全部開展了一場運動，警告公眾警惕來自外國間諜的國家安全威脅。與此同時，美國中央情報局也在中國招募特工和情報資產，並表示這一努力已初見成效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Saturday, the Liberation Army Daily, the official newspaper of the military, hailed the punishment of General Zhang and General Liu as a “major achievement” in the anti-corruption struggle, and said that all officers and soldiers had to support the decision of the party’s Central Committee, with “Comrade Xi Jinping at its core in thought, politics and action.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週六，軍隊官方報紙《解放軍報》稱對張又俠和劉振立的懲處是反腐鬥爭的「重大成果」，並表示全體官兵必須支持黨中央的決定，「全軍官兵要堅決擁護黨中央決定，在思想上政治上行動上同以習近平同志為核心的黨中央保持高度一致」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Liu Pengyu, a Chinese embassy spokesman in Washington, said in a statement that the Central Committee had opened investigations into the two generals “on suspicion of serious violations of discipline and law,” which reflected a “zero-tolerance approach to combating corruption.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國駐華盛頓大使館發言人劉鵬宇發表聲明稱，中央委員會已對兩名將軍「涉嫌嚴重違紀違法」展開調查，這體現了中國在「打擊腐敗方面堅持全覆蓋、零容忍」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analysts say Mr. Xi’s long-running anti-corruption campaign is aimed at forcing the party’s 100 million members to become more disciplined — corruption has indeed been rampant throughout the ranks for decades — and at destroying political rivals and factions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士指出，習近平持續推進的反腐運動旨在迫使全黨1億黨員加強紀律約束——數十年間腐敗現象確實在黨內各級猖獗蔓延——同時旨在清除政治對手和派系勢力。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="多年來，分析人士一直試圖更深入地了解習近平，他稱為「太子黨」，早在2007年的黨內會議上就被視為可能的未來領導人。" data-src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi03a-photo-qwtf/03dc-china-xi03a-photo-qwtf-master1050.jpg" src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi03a-photo-qwtf/03dc-china-xi03a-photo-qwtf-master1050.jpg"/></div><figcaption><span>多年來，分析人士一直試圖更深入地了解習近平，他稱為「太子黨」，早在2007年的黨內會議上就被視為可能的未來領導人。</span> <cite>Pool photo by Jessica Lee</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A recent report by the Asia Society Policy Institute noted that less than 84 percent of the 376 members and alternates of the party’s Central Committee had attended a political conference last October, a record low — and a sign of the sweep of Mr. Xi’s purges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">亞洲協會政策研究院近期報告指出，去年10月召開的政治局會議上，376名中央委員及候補委員中出席率不足84%，創歷史新低——這也是習近平清洗行動規模之大的一個跡象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi’s targeting of top military commanders has drawn the most attention in recent years and has raised questions about the extent of corruption. The purges have also ignited debate among analysts about whether there are differences among Mr. Xi and his top generals over their approaches to the democratic island of Taiwan, which the Chinese leader has said must come under party rule, by force if necessary.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，習近平針對高級軍事指揮官的行動最引人關注，並引發了外界對腐敗程度的質疑。清洗行動還引發了分析人士的爭論：習近平和他的高級將領們在對待民主島嶼台灣的態度上是否存在分歧。這位中國領導人曾表示台灣必須置於黨的統治之下，必要時將動用武力。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIjNo9CSwZIDFU-7jggdygoXXA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In any case, the expulsions could have a deep impact on military planning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論如何，清洗行動可能會對軍事規劃產生深刻影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s possible that distrust between the party and its army could produce hesitation toward any significant operations, at least in the near term,” said Rush Doshi, a scholar at Georgetown University and the Council on Foreign Relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">喬治敦大學和外交關係委員會的學者杜如松(Rush Doshi)說：「至少在短期內，中國共產黨和軍隊之間的不信任有可能導致對重大行動的猶豫。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s military operations, especially around Taiwan, could be a topic of discussion at a Beijing summit between Mr. Trump and Mr. Xi planned for April.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的軍事行動——特別是圍繞台灣的行動——可能會成為川普與習近平計劃於4月在北京舉行的峰會的討論議題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s rapidly growing military and intelligence budgets have allowed ample room for corruption. Like in the United States, the People’s Liberation Army gives out lucrative contracts to Chinese firms across a range of industries. Corrupt officers can get paid to steer contracts to specific firms, easily doubling their salaries, U.S. officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國快速增長的軍事和情報預算為腐敗提供了充足空間。與美國類似，中國人民解放軍向各行各業的中國公司提供利潤豐厚的合同。美國官員稱，腐敗軍官通過將合同引導至特定企業牟利，可以輕鬆實現薪資翻倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because General Zhang was considered Mr. Xi’s most trusted commander by far, his purge has been likened by some scholars of China to Mao’s split in 1971 with Lin Biao, a top commander and party vice chairman. Mr. Lin died in a mysterious plane crash in Mongolia that year while fleeing to the Soviet Union.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於張又俠被視為習近平迄今最信任的指揮官，他被清洗被部分中國問題學者比作1971年毛澤東與中國最高軍事指揮官兼黨副主席林彪的決裂。林彪當年在逃往蘇聯途中，於蒙古遭遇神秘空難身亡。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1966年，中國領導人毛澤東（中）與林彪（右）在天安門廣場。" data-src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi04-photo-jzvm/03dc-china-xi04-photo-jzvm-master1050.jpg" src="https://static01.nyt.com/images/2026/02/03/multimedia/03dc-china-xi04-photo-jzvm/03dc-china-xi04-photo-jzvm-master1050.jpg"/></div><figcaption><span>1966年，中國領導人毛澤東（中）與林彪（右）在天安門廣場。</span> <cite>Keystone/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yun Sun, a China analyst at the Stimson Center in Washington, said the urgency of Mr. Xi’s actions could mean that he was trying to head off any potential challenge to his power ahead of the next party congress, in 2027.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓史汀生中心中國問題分析師孫韻表示，習近平採取行動的緊迫性可能意味著，他試圖在2027年下屆黨代會前消除任何潛在的權力挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the last party congress, in 2022, Mr. Xi took the remarkable step of extending his power for a third five-year term. That fueled anxiety among Chinese citizens, including some party officials, who thought he could become a Mao-like tyrant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2022年上屆黨代會上，習近平採取了延長掌權期限至第三個五年期這一極不尋常的舉措。這引發了包括部分黨內官員在內的中國民眾的憂慮，擔心他可能成為類似毛澤東的暴君。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI6spNCSwZIDFUyjjggdDj8pzw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi might have decided to go for a fourth term rather than anoint a successor at next year’s congress, Ms. Sun said, and General Zhang’s removal could be an attempt to head off a potentially influential critic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">孫韻說，習近平可能已決定連任第四個任期，而不是在明年的大會上任命繼任者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the general disagreed with Mr. Xi “on this most important political question,” she said, “that makes Zhang incredibly dangerous.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，如果張又俠「在這個最重要的政治問題上」與習近平意見相左，「這將使張又俠變得極其危險」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">黃安偉(Edward Wong)是《紐約時報》記者，報導全球事務、美國外交政策和國務院新聞。</p><div class="" data-poster=""></div><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題報導已有20餘年。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260204/china-xi-military-purge/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
