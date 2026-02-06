@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在上海，重新思考莎士比亞 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">在上海，重新思考莎士比亞</h1>
+    <h2 class="en-headline">Rethinking Shakespeare in Shanghai</h2>
+    <div class="meta-line">ANDREW HIGGINS <span style="margin: 0 8px;">•</span> 2026-02-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-promo-tvqz/00int-china-shakespeare-promo-tvqz-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Thomas Caron has performed as Hamlet, Macbeth and King Lear, but Othello, the fourth of Shakespeare’s great tragic heroes, was out of reach for the American actor without resorting to blackface — until he got to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">托馬斯·卡倫曾飾演過哈姆雷特、麥克白與李爾王，但對這位美國演員而言，莎士比亞四大悲劇英雄中的最後一位奧賽羅卻始終無法觸及，除非採用塗黑臉的辦法——直到他來到中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There was no way I was ever going to play Othello in the United States,” said Mr. Caron, 74. The actor is white and was unlikely, because of racial sensitivities, to play a character Shakespeare described as a “Moor,” early 17th-century English parlance for a dark-skinned foreigner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在美國，我絕無可能出演奧賽羅，」74歲的卡倫說。因種族敏感性考量，這位白人演員很難扮演莎士比亞筆下的「摩爾人」角色——這是17世紀初英語中對深色皮膚外國人的稱謂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The bilingual version of the play in which Mr. Caron recently performed in Shanghai reimagines the story’s racial dynamics: Othello, played by Mr. Caron in English, is a clueless American mercenary despised and ruined by a Chinese Iago, a Machiavellian villain consumed by jealousy and a hatred of foreigners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡倫近期在上海參演的這部雙語版《奧賽羅》，徹底重塑了原劇的種族關係：由卡倫用英語飾演的奧賽羅，是一名懵懂無知的美國僱傭兵，被一個精於權謀、滿懷嫉妒且憎恨外國人的中國版伊阿古鄙夷並毀滅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead of Venice and Cyprus, Shakespeare’s setting for “Othello,” the Shanghai version takes place on an island at the mouth of the Yangtze River, where an American has been hired to help fight the Taiping rebellion, a bloody revolt in the 19th century. Iago curses Othello not as a Moor but a “laowai,” a mildly pejorative but widely used Chinese term for Westerners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上海版將莎士比亞《奧賽羅》的場景從威尼斯和塞浦路斯移至長江口的一座島嶼——一名美國人受雇來到這裡，協助鎮壓19世紀那場血腥的太平天國起義。伊阿古咒罵奧賽羅時，不再稱其為「摩爾人」，而是用中文裡略帶貶義卻廣為流傳的「老外」指代西方人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I retell you again and again, I hate that laowai,” Iago says in Chinese.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我跟你說過多少遍了，我恨那個老外，」伊阿古用中文說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="近期上演的《奧賽羅》通過免費演出規避了中國對所有收費演出實施的嚴格審查程序。" data-src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-01-kmqg/00int-china-shakespeare-01-kmqg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-01-kmqg/00int-china-shakespeare-01-kmqg-master1050.jpg"/></div><figcaption><span>近期上演的《奧賽羅》通過免費演出規避了中國對所有收費演出實施的嚴格審查程序。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This recent low-budget production of “Othello” — which was staged inside a shopping mall — shows that while China under President Xi Jinping has become increasingly authoritarian, the state’s reach isn’t absolute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這部近期在一個商場內上演的低成本版《奧賽羅》表明，儘管習近平執政下的中國日益走向威權主義，但國家的掌控並非絕對。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Between dreary slabs of cultural concrete laid by Communist Party commissars, small private flowers can still grow between the cracks, from clubs offering space for amateur stand-up comedians to hole-in-the-wall music venues and small theaters. So long as they steer clear of myriad red lines set by the party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在共產黨的意識型態官員鋪就的單調文化水泥板之間，一些小型民間藝術之花仍能在縫隙中生長——從為業餘脫口秀演員提供場地的俱樂部，到不起眼的音樂演出場所與小劇場。只要它們避開黨設定的無數條紅線。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKng0-3Tw5IDFWSX7gEdJ14dig" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rockbund Art Museum, a private Shanghai museum, regularly hosts exhibits and events that while not overtly dissident still test boundaries, including a Shakespeare-themed musical that invited the audience to “rethink their lives and find their own value.” The production, based on a South Korean reworking of Shakespeare, mixed the protagonists from Hamlet and Romeo and Juliet, who rebel against their scripted roles to choose their own paths.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為一家私立博物館，上海外灘美術館定期舉辦各類展覽與活動。這些活動雖未公開表達異見，卻不斷試探著邊界，其中包括一部以莎士比亞為主題的音樂劇，邀請觀眾「重新審視人生，尋找自我價值」。這部作品改編自韓國對莎士比亞的再創作，融合了《哈姆雷特》與《羅密歐與朱麗葉》中的主角，他們反抗既定劇本，選擇了屬於自己的人生道路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rockbund is currently hosting an exhibition of contemporary art called “The Great Camouflage,” which touches on sensitive issues like street protests, dissent and the despair of angry young people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外灘美術館目前正舉辦一場名為「偉大的掩飾」的當代藝術展，觸及街頭抗議、異見表達以及憤怒青年的絕望等敏感議題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What will and will not be allowed by the party is hard to predict, Mr. Caron, the actor, said. He was surprised, for example, that he was permitted to stage “What Where,” a short play by Samuel Beckett that revolves around violent interrogations. “I thought this would never pass, but it did,” he recalled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在中國，哪些內容被允許、哪些不被允許，實在難以預測，」演員卡倫說。例如，例如他驚訝於當局竟准許上演塞繆爾·貝克特的短劇《何事何地》(What Where)，該劇圍繞暴力審訊展開。「我原以為這部劇肯定無法通過審查，沒想到竟然成功了，」他回憶道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shakespeare has generally been safe ground in China since the death of Mao Zedong in 1976. His plays, first performed in China in translation more than a century ago, were banned during the Cultural Revolution — a decade-long period of political frenzy unleashed by Mao in 1966 — but have been revived with gusto since the 1980s, despite their often subversive political probing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自1976年毛澤東逝世後，莎士比亞在中國總體上屬於安全地帶。他的戲劇在一個多世紀前首次以中文譯本在中國演出；但在1966年毛澤東發起的十年政治狂潮文化大革命期間，這些作品遭到禁演。但自上世紀80年代起便重新煥發活力，儘管其中常暗含顛覆性的政治探詢。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="卡倫為劇中另一位演員梁清宏戴上假鬍子。" data-src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-03-kmqg/00int-china-shakespeare-03-kmqg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-03-kmqg/00int-china-shakespeare-03-kmqg-master1050.jpg"/></div><figcaption><span>卡倫為劇中另一位演員梁清宏戴上假鬍子。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt=" 梁清宏在戲劇中飾演勃拉班修，即奧賽羅的岳父。" data-src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-04-kmqg/00int-china-shakespeare-04-kmqg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-04-kmqg/00int-china-shakespeare-04-kmqg-master1050.jpg"/></div><figcaption><span>梁清宏在戲劇中飾演勃拉班修，即奧賽羅的岳父。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nan Z. Da, a Chinese-born English professor at Johns Hopkins, argues in her recent book “The Chinese Tragedy of King Lear” that “the tragedy of Maoist and post-Maoist China and Shakespeare’s ‘King Lear’ are uncannily similar.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">約翰斯·霍普金斯大學華裔英語教授笪章難在其新作《李爾王的中國悲劇》中指出：「毛澤東時代與後毛澤東時代中國的悲劇，與莎士比亞的《李爾王》有著驚人的相似之處。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Ms. Da’s telling, the fate of Lear’s favorite daughter, Cordelia, who is cruelly punished for refusing to feed her father’s thirst for professions of love and obedience, mirrors that of Mao’s victims trapped in “a world of perverse love, gross flattery, silencing, schoolyard cruelty and desolate deaths.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在笪章難的解讀中，李爾王最疼愛的女兒考狄莉亞，因拒絕滿足父親對愛意表白與服從的渴望而遭到殘酷懲罰，她的命運恰恰映射了毛澤東時代受害者的遭遇——他們被困在一個充斥著「扭曲的愛、無恥的奉承、言論壓制、校園式的霸凌與孤獨死亡的世界」。</div></div></div></div></div><div class="big_ad" data-google-query-id="COz80-3Tw5IDFbg7RAgd0MAcww" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nobody in China is openly discussing such a comparison.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，無人敢公開探討這種對比。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wang Meng, 30, a talented newcomer to the stage who is also a teacher in Shanghai, insisted she was uninterested in politics and simply found “great personal satisfaction” playing the role of Iago’s wife Emilia. (The character is initially complicit in her husband’s mendacious machinations against Othello but later dies for the truth.) Emilia, Ms. Wang said, shows that a “woman can stand on her own” and “does not always have to obey men.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">30歲的王夢是上海舞台上嶄露頭角的新星，同時也是一名教師。她堅稱自己對政治毫無興趣，扮演伊阿古的妻子愛米利婭，純粹只是獲得了「巨大的個人滿足感」。（這個角色起初參與了丈夫針對奧賽羅的謊言陰謀，最終卻為真相殉身。）王夢說，愛米利婭的形象證明了「女性可以獨立自主」「不必永遠服從男性」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With questioning of the party snuffed out inside China, even highly educated theatergoers may not connect what Shakespeare has to say about tyranny to their lived reality — or at least they keep any such thoughts to themselves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國國內對黨的質疑被徹底壓制的環境下，即便是受過高等教育的戲劇觀眾，也可能不會將莎士比亞對暴政的批判與自身的生活現實聯繫起來——至少他們會將這類想法深埋心底。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ling Yanduo, 23, a chemistry student from the coastal province of Fujian who attended the Shanghai show, said she liked Shakespeare because “his stories never get dated.” But, when asked whether there were any parallels between these stories and China’s current situation, she said, “I see no connections.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">23歲的林彥多（音）來自沿海省份福建，是一名化學專業學生，她觀看了上海這場演出後表示，自己喜愛莎士比亞是因為「他的故事永遠不會過時」。但當被問及這些故事與中國現狀是否存在相似之處時，她回答：「我看不出任何關聯。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="左為飾演奧賽羅之妻苔絲狄蒙娜的寶玉，右為曹季烽，二人在後台對台詞。" data-src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-05-kmqg/00int-china-shakespeare-05-kmqg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-05-kmqg/00int-china-shakespeare-05-kmqg-master1050.jpg"/></div><figcaption><span>左為飾演奧賽羅之妻苔絲狄蒙娜的寶玉，右為曹季烽，二人在後台對台詞。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="王夢飾演伊阿古的妻子愛米利婭。" data-src="https://static01.nyt.com/images/2026/02/01/multimedia/00int-china-shakespeare-qghv/00int-china-shakespeare-qghv-master1050.jpg" src="https://static01.nyt.com/images/2026/02/01/multimedia/00int-china-shakespeare-qghv/00int-china-shakespeare-qghv-master1050.jpg"/></div><figcaption><span>王夢飾演伊阿古的妻子愛米利婭。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s safe space for Shakespeare has been kept open in part by the fact that Mr. Xi has declared himself a big fan. According to Prime Minister Keir Starmer of Britain, Mr. Xi spoke warmly during their meeting in Beijing last week about his love of Shakespeare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國之所以能為莎士比亞保留這片安全空間，部分原因在於習近平主席公開宣稱自己是忠實粉絲。據英國首相斯塔默透露，上週在北京會晤時，習近平熱情談及了他對莎士比亞的喜愛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The recent staging of Othello, put on by Shanghai Shakespeare, an amateur troupe formed by Mr. Caron and Chinese actors, avoided China’s elaborate state vetting procedures for all shows that charge admission by making the show free. None of the actors were paid and its performance space, a bare hall between a health club and clothing boutique, was donated free of charge by a high-end shopping mall. A teahouse donated a room for rehearsals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這部由卡倫與中國演員共同組建的業餘劇團「上海莎士比亞」近期上演的《奧賽羅》，通過免費演出的方式，避開了中國對所有收費演出的複雜審查流程。所有演員均無報酬，演出場地由一家高端購物中心無償提供，是位於健身俱樂部與服裝精品店之間的一處空曠大廳。一家茶館還免費提供了排練場地。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPOV1O3Tw5IDFVw6RAgdpL4dlw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, it was not all smooth sailing for the troupe. It briefly had problems when it printed fliers for “Othello” that showed a Chinese Desdemona, Othello’s wife, leaning on the shoulder of her foreign husband. This prompted angry warnings from a Shanghai culture impresario that spotlighting romance between a foreign man and Chinese woman was offensive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，該劇團並非一帆風順。他們為《奧賽羅》印製的宣傳單上，印有中國女演員飾演的苔絲狄蒙娜（奧賽羅之妻）依偎在外國丈夫肩頭的畫面，這引發了上海一位文化界人士的憤怒警告，稱突出外國男性與中國女性的戀情令人反感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s internet regulator blocked the troupe’s website, which featured the flyer and a quotation from Mr. Xi that “Chinese art will further develop only when we make foreign things serve China.” The troupe deleted the picture showing interracial romance from its site but kept Mr. Xi’s words, and the show went ahead. “We are not pushing any cause,” Mr. Caron said, “just telling stories.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國互聯網監管機構隨即屏蔽了劇團的網站，該網站上不僅有這張宣傳單，還引用了習近平的一句話：「只有堅持洋為中用、開拓創新，做到中西合璧、融會貫通，我國文藝才能更好發展繁榮起來。」劇團刪除了那張涉及跨種族戀情的圖片，保留了習近平的語錄，演出才得以繼續。「我們並非在推動任何主張，」卡倫說。「只是在講故事。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="「我們並非在推動任何主張，」卡倫說。「只是在講故事。」" data-src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-08-kmqg/00int-china-shakespeare-08-kmqg-master1050.jpg" src="https://static01.nyt.com/images/2026/01/30/multimedia/00int-china-shakespeare-08-kmqg/00int-china-shakespeare-08-kmqg-master1050.jpg"/></div><figcaption><span>「我們並非在推動任何主張，」卡倫說。「只是在講故事。」</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under rules issued by the China Association of Performing Arts, a government-affiliated body that both promotes and polices culture, artists are required to show “love for the party” and commit to serving “the people and socialism.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據中國演出行業協會（一個兼具文化推廣與監管職能的政府附屬機構）發布的規定，藝術家必須「熱愛黨」，並致力於為「人民與社會主義」服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The state-funded theater scene therefore leans heavily toward propaganda, featuring shows like “Eternal Wave,” a recent drama by the Shanghai Song and Dance Troupe about an underground Communist telegraph worker in the 1940s, and the “Battle of Shanghai,” an acrobatic spectacular that tells the story of a battle over a power plant during the Communist revolution.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，國家資助的戲劇舞台嚴重傾向於宣傳劇目，例如上海歌舞團近期推出的《永不消逝的電波》，講述20世紀40年代一名中共地下電報工作者的故事；以及雜技劇《戰上海》，再現共產黨革命時期圍繞發電廠的激戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The biggest problem with Chinese theater is propaganda plays, but ordinary people will never go to these,” said Sun Huizhu, a professor at the Shanghai Theatre Academy who has worked on several productions of Shakespeare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國戲劇最大的問題就是宣傳劇，但普通人根本不會去看，」上海戲劇學院教授孫惠柱說，他曾參與多部莎士比亞劇作的製作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But,” he added, “there are some very good things happening in private theaters.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不過，民間小劇場裡確實湧現出一些非常優秀的作品，」他補充道。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN2W1O3Tw5IDFcAwRAgd8Eowww" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shakespeare, he said, is a perennial favorite, though the playwright is better known to many Chinese for his story lines, which have been borrowed by traditional Chinese opera, than for his actual plays, whose language, even in translation, is “too complicated and very far away.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">孫惠柱表示，莎士比亞在中國一直廣受歡迎，儘管對許多中國人而言，他們更熟悉的是被中國傳統戲曲借鑒的莎劇故事情節，而非原著——即便是譯本，原著的語言也「過於複雜，與現實生活相距甚遠」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Birthday Celebration By Five Daughters,” an opera written in the 1980s and performed many times since, is set during the Ming dynasty and roughly follows the plot of “King Lear,” exploring greed and family intrigue around a needy patriarch.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">20世紀80年代創作的戲曲《五女拜壽》長盛不衰，它以明朝為背景，大致沿用了《李爾王》的情節，探討了一個渴望關愛的大家長身邊的貪婪與家族陰謀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cao Jifeng, 43, an amateur actor who has a day job with a foreign pet products company and played Iago in Shanghai, said Shakespeare’s plays were not about politics but universal human failings like jealousy. “No matter whether you are Chinese, European or American you have a common human nature,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">43歲的曹季烽白天在一家外國寵物用品公司工作，同時也是一名業餘演員，他在上海版《奧賽羅》中飾演伊阿古。他認為莎士比亞的劇作無關政治，探究的是嫉妒等人類共通的弱點。「無論中國人、歐洲人還是美國人，都有著共同的人性，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Gilles Sabrié</p><p class="cn-p">Andrew Higgins是《紐約時報》駐華沙的東歐和中歐分社社長，現臨時派駐上海。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260205/rethinking-shakespeare-in-shanghai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
