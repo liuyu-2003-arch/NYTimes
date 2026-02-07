@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無論你活得多健康，壽命天註定？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">無論你活得多健康，壽命天註定？</h1>
+    <h2 class="en-headline">Genes May Control Your Longevity, However Healthily You Live</h2>
+    <div class="meta-line">GINA KOLATA <span style="margin: 0 8px;">•</span> 2026-02-06</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="2016年，百歲姐妹米爾德麗德·麥基薩克（左）與艾格尼絲·巴克利參與了波士頓大學的長壽家庭研究項目，當時米爾德麗德100歲，艾格尼絲103歲。" height="1024" src="https://static01.nyt.com/images/2026/01/29/science/29HS-life-span/29HS-life-span-jumbo.jpg" width="683"/><figcaption><span>2016年，百歲姐妹米爾德麗德·麥基薩克（左）與艾格尼絲·巴克利參與了波士頓大學的長壽家庭研究項目，當時米爾德麗德100歲，艾格尼絲103歲。</span> <cite>Jason Grow</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Your potential life span is written in your genes, according to a new study. You can lengthen it a bit with a healthy lifestyle. But if your genetic potential is to live to be 80, for example, it is unlikely that anything you do will push your age at death up to 100.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一項最新研究指出，你的潛在壽命長度早已寫在基因裡。健康的生活方式確實可以在一定程度上延長壽命，但如果你的基因潛力註定你活到80歲，那麼無論你做什麼，都不太可能把去世年齡推遲到100歲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That, at least, is the conclusion of a paper published Thursday in Science.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至少，這是《科學》雜誌週四刊登的一篇論文得出的結論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Uri Alon of the Weizmann Institute of Science in Israel and other researchers drew the data for the study from three sets of data from pairs of Swedish twins, including one set of twins that was reared apart. To test how generalizable the results are, the group also examined data from a study of 2,092 siblings of 444 Americans who lived to be over 100. Their goal was to identify outside factors that can affect how long someone lives, like infections or accidents, separate from the intrinsic factor of genetics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以色列魏茨曼科學研究所的烏裡·阿隆與其他研究人員從三組瑞典雙胞胎數據（包括一組自幼分開撫養的雙胞胎）中提取了研究數據。為了驗證結果的普適性，研究團隊還分析了一項針對444名美國百歲老人的2092名兄弟姐妹的研究數據。他們的目標是識別除基因內在因素外可能影響壽命長短的外部因素，例如感染或意外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They report that aging is mostly hereditary, a conclusion that flies in the face of much conventional medical wisdom regarding dieting, exercising and healthy habits. These habits are important for the quality of a person’s life, but they run into another form of conventional wisdom: You can’t make someone into a centenarian, unless that person also has a genetic inheritance of longevity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員報告稱，衰老在很大程度上是遺傳決定的。這一結論與許多關於飲食、運動和健康習慣的傳統醫學觀念相悖。這些習慣對生活質量至關重要，但也和另一種傳統智慧發生了碰撞：除非擁有長壽的遺傳基因，否則你很難活到百歲。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO-Bs8uVxpIDFd4L7wIdqh8TAQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you are trying to gauge your own chances of getting to 100, I would say look at the longevity in your family,” said Dr. Thomas Perls, a geriatrician and the director of the New England Centenarian Study at Boston University. His study’s published data on U.S. centenarians were used in the new analysis, although he was not associated with the study.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">波士頓大學新英格蘭百歲老人研究項目主任、老年病學家托馬斯·珀爾斯博士表示：「如果你想評估自己活到100歲的可能性，我會建議你看看家族裡的長壽情況。」他所在的百歲老人研究項目發布的數據被用於這項新分析，不過他本人並未參與這項新研究。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This paper has a pretty powerful message,” said S. Jay Olshansky, an emeritus professor of epidemiology at the University of Illinois, Chicago, who was not involved in the study. “You don’t have as much control as you think.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">未參與這項研究的芝加哥伊利諾大學流行病學名譽教授S·傑伊·奧爾尚斯基表示：「這篇論文傳達了一個相當有力的信息——你對壽命的控制力並沒有你想像中那麼大。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some of us are driving a Mercedes and some are driving a Yugo,” he said, referring to the low cost, compact car from the former Yugoslavia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們中有些人開的是奔馳，有些人則開著Yugo，」他說。Yugo是前南斯拉夫生產的一款廉價經濟性轎車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The study’s conclusions — that genes are powerful drivers of how long people can live — is consistent with what is known about other species, said Daniela Bakula of the University of Copenhagen. Dr. Bakula, a co-author of an outside perspective published by Science alongside Dr. Alon’s paper, added that life spans of every other organism studied “have a strong genetic component.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哥本哈根大學的丹妮拉·巴庫拉表示，該研究的結論——基因在決定人類壽命長短方面起到了強大作用——與人們對其他物種的既有認識是一致的。巴庫拉博士是《科學》雜誌隨阿隆博士的論文同期發表的一篇外部評論文章的共同作者，她補充說，所有其他已被研究過的生物壽命「都具有很強的遺傳成分」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new paper used statistical and mathematical models to eliminate causes of death that did not seem to be associated with aging in the cohorts they studied.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這篇新論文使用了統計和數學模型，剔除了那些看起來與衰老無關的死亡原因，以便更準確地分析研究對象人群中的壽命決定因素。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That sort of analysis, Dr. Olshansky said, is difficult, and “exceptionally well done,” in the paper.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧爾尚斯基認為，這類分析難度極高，而論文完成得「異常出色」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLqss8uVxpIDFcA4RAgdeYcU8Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The researchers used mortality data on Swedish twins born between 1900 and 1935, a period that, despite world wars, the Great Depression and a flu pandemic, saw improvements in sanitation and medical care. It was, Dr. Alon said, “a natural experiment” — a number of extrinsic factors affecting mortality had gone down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員使用了1900年至1935年間出生的瑞典雙胞胎的死亡率數據。儘管經歷了世界大戰、經濟大蕭條和一次流感大流行，但這一時期衛生條件和醫療水平得到了改善。阿隆博士稱這構成了一次「自然實驗」——許多影響死亡率的外部因素都減少了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That led his group to study the effects of those factors. To test their results, they compared them with life span from another study, of Danish twins born between 1870 to 1900. In those years, there were many deaths at early ages from infectious diseases like diphtheria and cholera.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正是基於這一背景，研究團隊進一步考察了這些外在因素的影響。為了驗證結果，他們又將其與另一項研究的數據進行對比：該研究涉及1870年至1900年出生的丹麥雙胞胎。在那個年代，白喉、霍亂等傳染病導致了大量夭折的發生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Swedish studies included a few causes of death; cancer, cardiovascular disease and dementia. Dr. Alon and his colleagues found that cancer was least likely to be affected by genetics while dementia was the most likely.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項瑞典研究涵蓋了幾種主要死因：癌症、心血管疾病和失智症。阿隆博士及其同事發現，癌症受遺傳影響的可能性最小，而失智症受遺傳影響的可能性最大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately their analyses led to an estimate that genes account for more than 50 percent of the differences in life spans in a population, compared with the 25 percent or less that had been suggested in earlier research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">綜合分析後，他們估算認為，基因對人群壽命差異的影響超過50%，而此前研究給出的比例為25%或更低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The reason for the disparity compared with previous studies, Dr. Alon said, is that those studies included people who had died at younger ages, from causes like accidents or illnesses that were not related to their genes. Then, if genes played a minor role, it was assumed that lifestyle played a major one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿隆解釋說，出現這種差異的原因在於，以往的研究包含了因意外或與基因無關的疾病而在較年輕時就去世的人群。於是，在基因作用顯得較小的情況下，人們便推斷生活方式起著更大的作用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Alon does not dispute that lifestyle is important. He calculated that certain healthy or unhealthy habits can add or subtract 5 years or so from a life expectancy determined by the “luck of the draw” represented by genes. A person with a genetic predisposition to live to be 80 might die at 75 if they had no healthy habits. If they had every healthy habit they might live to be 85.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿隆並不否認生活方式的重要性。他的計算顯示，某些健康或不健康的習慣大約可以在由基因這一「抽籤運氣」所決定的預期壽命基礎上增加或減少大約5年壽命。如果完全缺乏健康習慣，一個在基因上傾向於活到80歲的人可能75歲就去世，如果幾乎具備所有健康習慣則可能活到85歲。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMW7s8uVxpIDFciP7gEdPi8vOw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or, as Dr. Olshansky put it, reaching a very old age “is not possible unless you’ve already won the genetic lottery for longevity at birth.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而正如奧爾尚斯基指出，想要活到非常高齡，「除非出生時就已經贏得了長壽的基因彩票，否則是不可能的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Bradley J. Willcox, director of geriatric research at the University of Hawaii, who directs the studies of aging at Kuakini Medical Center in Honolulu, called the paper “provocative.” But he said he was not entirely convinced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，夏威夷大學老年醫學研究主任、同時負責檀香山庫阿基尼醫療中心老齡研究項目的布拉德利·威爾科克斯稱這篇論文「引發思考」，但他表示自己並未被完全說服。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>“</strong>Drawing a clear, bright line between intrinsic and extrinsic causes of death is not possible,” he said. “Many deaths live in a gray zone where biology and environment collide.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「要在死亡的內在原因和外在原因之間劃出一條清晰、明確的界線是不可能的，」他說。「許多死亡都處于于生物學與環境相互作用的灰色地帶。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For example, he said, genes can shape how lethal an infection becomes. “If you change how you label those borderline cases,” he added, “you change the results.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他舉例說，基因會影響感染的致命程度。他還表示，「如果你改變對這些邊緣案例的歸類方式，結果也會隨之改變。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The strong effect of genes on life span does not mean that lifestyle can be ignored, Dr. Perls said, especially for those who do not have the genes of centenarians. Sticking to a good diet, not smoking, maintaining a normal weight and getting regular exercise can all make a notable difference in how long a person lives. He added that good habits could be of even more help than Dr. Alon suggested when he had said the difference between age of death with nothing but good habits compared with no good habits can be 10 years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">珀爾斯表示，基因對壽命的強大影響並不意味著可以忽視生活方式，尤其是對那些沒有百歲老人基因的人而言。堅持健康飲食、不吸煙、保持正常體重、規律鍛煉，都會對一個人的壽命產生顯著影響。他還說，良好習慣的幫助甚至可能比阿隆博士所估計的更大——後者表示，僅靠良好習慣與完全沒有良好習慣相比，死亡年齡的差距可達10年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Perls noted that observational studies from Harvard found that a woman who is 50 years old, with healthy habits, could live to be 93. If she had none of those habits — if she smoked, had an unhealthy diet, did not exercise, and drank more than very modestly — she would live to be 79. For a 50-year-old man, a healthy lifestyle could allow him to live to age 88 instead of 76.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">珀爾斯提到，哈佛大學的觀察性研究發現，一名50歲的女性如果保持健康習慣，可能活到93歲。如果她沒有健康習慣——如果她吸煙、飲食不健康、不鍛煉、過量飲酒——那麼可能會活到79歲。對於50歲的男性而言，健康的生活方式可能讓他活到88歲，否則就只能活到76歲。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJzVs8uVxpIDFW07RAgdrvQnjA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But, Dr. Perls said, when it comes to living to a very old age — well over 90, or even 100, or more — genes are important contributors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，珀爾斯也指出，當涉及極高齡的長壽——超過90歲，甚至100歲以上——基因就是重要的決定因素。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet even for people who have won the genetic lottery, Dr. Olshansky said, “it’s easy to shorten your life but very difficult to lengthen it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，即便是對於那些「贏得了基因彩票」的人，奧爾尚斯基也表示，「縮短壽命很容易，但要延長壽命卻非常困難。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Gina Kolata報導疾病和治療方法、治療方法的發現和測試，以及它們對人們的影響。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260206/longevity-lifespan-age-genes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
