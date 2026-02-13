@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我剛從中國回來，美國沒有贏 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">我剛從中國回來，美國沒有贏</h1>
+    <h2 class="en-headline">I Just Returned From China. We Are Not Winning.</h2>
+    <div class="meta-line">STEVEN RATTNER <span style="margin: 0 8px;">•</span> 2026-02-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1056" src="https://static01.nyt.com/images/2026/02/10/opinion/10rattner/10rattner-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Andrey Kasay</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A few weeks ago in New York, I was sitting at a dinner organized to discuss American trade when the conversation swiftly turned to China. Well-credentialed experts took opposite stances: Some supported President Trump’s muscular, aggressive positions, while others pushed for a less confrontational, more conventional approach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾週前，我在紐約參加了一場討論美國貿易問題的晚宴，話題很快轉向中國。幾位資深專家意見迥異：有人支持川普總統強硬、激進的政策立場，也有人主張採取較少對抗、更加傳統的策略。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I am no expert on trade, but I have made investments in China for years and had just returned from a weeklong visit. Eventually summoning my nerve, I suggested that neither approach would work. China is just too formidable as a rival — as well as a critical manufacturing powerhouse — to be reined in by diplomacy or an aggressive shift in policy. The only real solution is to get our house in order and beat China at its own game.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我並非貿易專家，但多年來一直在中國投資，且剛剛結束為期一週的訪華行程。最終我鼓起勇氣提出，這兩種路徑都難以奏效。中國既是強大的競爭對手，也是至關重要的製造業強國，無法通過外交手段或激進的政策轉變來約束它。唯一真正的解決之道是先把我們自己的事情理順，並在中國的領域戰勝它。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The need to do so is only growing, because the commotion of Mr. Trump’s first year back in office has set America back. In addition to manufacturing, China is threatening America’s pre-eminence in a range of fast-growing sectors, including artificial intelligence and pharmaceutical drug development. While he has tried to cut our spending on important government functions like basic research, China has made them national priorities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這樣做的必要性正在不斷增長，因為川普重返白宮的第一年所引發的動盪已讓美國陷入倒退。除製造業之外，中國還在一系列快速增長的行業中威脅著美國的領先地位，包括人工智慧和製藥研發。就在川普試圖削減我們在基礎研究等重要政府職能上的支出之際，中國卻將這些領域列為國家優先事項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s progress in A.I. has been stunning. While it still lags the United States in terms of cutting-edge semiconductor chips, China has an abundance of another key ingredient of A.I. success: power. It has more than twice as much generating capacity as we do, and some of its data centers pay half as much as ours for power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在人工智慧領域的進展令人震驚。雖然在尖端半導體晶片方面仍落後於美國，但中國擁有另一個推動人工智慧成功的關鍵要素——電力。它的發電能力是我們的兩倍多，一些數據中心的電力成本僅為美國的一半。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJqj5t2i1ZIDFc-r0QQdEm4ljQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That has helped it develop products like Manus, with exceptional speed. An A.I. agent with performance rivaling ChatGPT’s, it was sold to Meta for more than $2 billion shortly after my visit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這幫助中國以驚人的速度開發出諸如Manus這樣的產品。這是一款性能可與ChatGPT媲美的人工智慧代理工具，在我前往該公司參觀後不久，它便以超過20億美元的價格賣給了Meta。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Human capital is a key ingredient of China’s success. I met with innumerable young entrepreneurs whose energy and intelligence at least matched that of their Silicon Valley counterparts, including one billionaire who still sleeps in his office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人力資本是中國取得成功的一個關鍵因素。我會見了無數年輕企業家，他們的精力與智慧至少不遜於矽谷同行，其中一位億萬富翁現在仍睡在辦公室裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For all of Mr. Trump’s tariff bluster, we are not winning this trade war. The Asian goliath powers on as the world’s largest exporter, its trade surplus having notched a record $1.2 trillion last year. That overall increase suggests that many Chinese goods are simply passing through middleman countries before reaching U.S. shores. Tariffs or no, everybody needs Chinese goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然川普大打關稅牌，但我們未能在這場貿易戰中佔得上風。這個亞洲巨人依然穩坐全球出口頭把交椅，去年貿易順差更創下1.2萬億美元的紀錄。這一整體增長表明，許多中國商品只是通過中間國家轉運，最終仍然抵達美國港口。不管有沒有關稅，人人都離不開中國製造。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Consider cars. During my trip, I toured Xiaomi, a smartphone and electronics manufacturer that announced its entry into the electric vehicle industry just five years ago. In a sprawling facility almost devoid of humans, hulking mechanical creatures that look like robotic dinosaurs effortlessly nudged aluminum panels into place as cars moved down the line. In the lobby sat a yellow sports car that could easily be mistaken for a Porsche.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以汽車為例。此行我參觀了小米公司。這家以智慧型手機和電子產品起家的企業五年前才宣布進軍電動汽車行業。在一座幾乎看不到工人的巨型廠房裡，形似機械恐龍的龐然大物輕鬆地將鋁製車身部件精準嵌入流水線上的車體。而在大廳裡，停放著一輛足以被誤認為保時捷的黃色跑車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I visited a robotics company where what looked like plastic children’s toys scampered across the floor, demonstrating the firm’s progress toward building humanoids that could replace humans in certain tasks. (In 2024, China installed nearly nine times as many industrial robots as the United States.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我還走訪了一家機器人公司，那裡一些看似塑料兒童玩具的裝置在地面上靈活移動，展示該公司研發人形機器人替代特定人類工作的進展。（2024年，中國工業機器人的安裝數量幾乎是美國的九倍。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After a visit, Ford’s chief executive, Jim Farley, last summer pronounced China’s in-vehicle technology “far superior” to American models’ and described Chinese progress as “the most humbling thing I’ve ever seen.” Coincidentally — or not — Ford recently stopped production of its F-150 electric truck and took a huge $19.5 billion write-down on its electric vehicle efforts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年夏天，福特CEO吉姆·法利在訪問中國之後直言，中國車載技術「遠超」美國車型，稱中國的進步是「是我所見過的最為震撼的體驗」。無論巧合與否，福特最近停產F-150電動皮卡，並對其電動車業務計提了高達195億美元的巨額減值。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNbP5t2i1ZIDFe0iTwgddeccLg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then there’s drug development. Just a few years ago, China was still licensing many of its pharmaceuticals from companies overseas. Now it licenses more drugs to other countries than it licenses from them, and it has surpassed the United States in its number of clinical trials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">再說藥物研發。就在幾年前，中國還需向海外企業引進大量藥品專利。如今其對外技術授權已反超引進量，臨床試驗數量更是超越美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of course, China still faces challenges. The consequences of a still deflating property bubble continue to ripple. Partly as a result, consumers have yet to open their wallets. With slowing growth, youth unemployment surged to nearly 20 percent (and has backed off only slightly). Investment has fallen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，中國仍面臨挑戰。持續消退的房地產泡沫所帶來的影響仍在擴散。消費意願低迷便是連鎖反應之一。隨著經濟增長放緩，青年失業率一度攀升至接近20%（之後僅略有回落），投資也出現下滑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That adds up to the fact that there are two Chinese economies: a sluggish domestic economy and the colossus that dominates global manufacturing while making extraordinary progress in fast-growing, technology-oriented fields that have long been American led.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">凡此種種勾勒出一個事實：當下中國存在著兩個並行的經濟態勢：一個是增長乏力的國內經濟；另一個則是統治全球製造業的巨獸，它在長期由美國主導的快速成長、技術導向型領域內正取得非凡的進展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has achieved this success in part via its model of state-directed capitalism. When the government realized it was losing the A.I. race, it made clear that catching up was a national priority and backed that up with money, regulatory relief and the development of huge amounts of electricity-generating capacity. We can see the results.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國之所以能夠取得這種成就，一定程度上得益於其國家主導型資本主義模式。當政府意識到自己在人工智慧競賽中落後時，便明確將追趕列為國家優先事項，並通過資金支持、監管鬆綁以及大規模電力產能建設加以落實。成效有目共睹。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Competing against China will be difficult under the best of circumstances. Clearly we need to rethink our industrial policy — the way we can deploy our government resources to support strategically important industries, which is our version of state-directed capitalism. Unfortunately, the Trump administration’s incoherent policies are creating a truly bad set of circumstances.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即便在最理想條件下，與中國競爭也絕非易事。顯然，我們必須重新思考美國的產業政策——如何調動政府資源，扶持具有戰略意義的關鍵產業。這實際上就是美國版本的國家主導型資本主義。遺憾的是，川普政府政策反覆無常，正將我們置於極為不利的境地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For starters, we need to reverse the cuts that Mr. Trump has made to investments in science and other areas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先，我們需要扭轉川普在科學研究及其他領域削減投資的做法。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKj45t2i1ZIDFRS50QQd1_g3Qg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And while I’m plenty skeptical about the ability of a democratic government to pick winners, we no longer have the luxury of confining Washington to the sidelines. In particular, we should focus on industries of the future, many of them technology related, and tone down Mr. Trump’s emphasis on traditional metal-bending manufacturing. For example, thanks to the CHIPS and Science Act passed under President Joe Biden, huge semiconductor fabs are under construction in Arizona and elsewhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管我對民主政府挑選贏家企業的能力持相當懷疑態度，但我們已再無資本讓聯邦政府袖手旁觀。尤其是我們應聚焦未來產業——其中多數與技術相關——並降低川普對傳統金屬加工製造業的強調。例如，在拜登總統任內通過的《晶片與科學法案》推動下，亞利桑那州及其他地區正在建設大型半導體晶圓廠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Redirecting government goes beyond spending. We lack critical minerals not because they are rare but because securing permits for new mines and processing facilities is so difficult. We can surely find a way to develop our mining capabilities without compromising reasonable environmental standards.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府職能的重塑不止於財政支出。我們受制於關鍵礦物短缺，並非因為它們稀缺，而是新礦開採與加工設施審批程序太過繁複。我們完全可以在不犧牲合理環保標準的前提下，找到提升本土採礦能力的路徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What Mr. Trump should learn — as should everyone else — is that we are not going to beat China by imposing tariffs or by attempting to negotiate trade agreements that China would probably violate. (Importantly, sound industrial policy does not mean taking stakes in companies or demanding royalties, as the Trump administration has been doing.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論是川普還是其他人，都該認清一個事實：靠加徵關稅，或試圖達成中國很可能會違反的貿易協議，根本無法擊敗中國。（需要指出的是，合理的產業政策並不意味著像川普政府那樣入股企業或索取特許權使用費。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Outpacing China has to begin at home, by getting our own economic house in order, a challenge that also should motivate Mr. Trump to rethink a large range of his policies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要超越中國，必須從內部發力，從理順我們自己的經濟秩序開始——這同樣應促使川普反思其諸多政策。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-h77nca e1e7j8ap0" data-poster=""><div class="" data-poster=""><p class="cn-p">Steven Rattner是一名觀點撰稿人，曾在歐巴馬政府擔任財政部長顧問。歡迎在X和Facebook上關注他。 </p><div class="" data-poster=""><br/></div></div></div></div><div class="css-yomkvi" data-poster=""><div class="css-17cfcd4" data-poster=""></div><div class="css-10i3hc" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260212/china-ai-ev-trump/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
