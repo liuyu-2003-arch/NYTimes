@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIA招募中國軍方線人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">CIA招募中國軍方線人</h1>
+    <h2 class="en-headline">C.I.A. Video Appeals to Potential Spies in China’s Military</h2>
+    <div class="meta-line">JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-02-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="出席一場活動的解放軍，攝於去年12月。中國軍隊的腐敗問題阻礙了其推進現代化和提升作戰能力的努力。" height="700" src="https://static01.nyt.com/images/2026/02/12/multimedia/12dc-cia-china-zqlc/12dc-cia-china-zqlc-master1050.jpg" width="1050"/><figcaption><span>出席一場活動的解放軍，攝於去年12月。中國軍隊的腐敗問題阻礙了其推進現代化和提升作戰能力的努力。</span> <cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The C.I.A. issued a new video on Thursday aimed at recruiting spies within China’s military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中央情報局週四發布了一條新影片，意在從中國軍隊內部招募情報人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The video highlights allegations of corruption in the People’s Liberation Army that have contributed to the ouster of numerous generals and senior leaders on the Central Military Committee, the Communist Party body that controls China’s armed forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這條影片強調了人民解放軍內部的貪腐指控，這些腐敗問題已導致多名將領及中央軍委高層被撤職。中央軍委是中共控制中國武裝力量的機構。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, President Xi Jinping of China removed the country’s top military officer and another senior general. Chinese officials announcing an investigation into their conduct spoke of unspecified “grave violations of discipline and the law.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，中國國家主席習近平撤換了最高級別的軍官以及一名高級將領。中國官方在宣布對他們展開調查時，提及他們存在未具體說明的「嚴重違紀違法」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Current and former U.S. officials have debated what Mr. Xi’s motives might be for pushing out the generals. He could be acting out of paranoia, defending himself against a real political challenge, or genuinely trying to address high-level corruption in the People’s Liberation Army, they say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現任及前任美國官員一直在分析習近平清除將領的動機。他們認為，他可能是出於多疑，可能是為了抵禦真實的政治挑戰，抑或確實在努力整治解放軍高層的腐敗問題。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMK7uZLj15IDFTUTigMdUNsP3w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Corruption in China’s military has hampered its push to modernize and improve capabilities, and Mr. Xi has been on a yearlong campaign to root it out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國軍隊的腐敗問題阻礙了其推進現代化和提升作戰能力的努力，習近平為此開展了長達一年的整肅行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the rising allegations of corruption have given the United States new opportunities to recruit members of the People’s Liberation Army who are frustrated by superiors who use their positions to enrich themselves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，日益增多的腐敗指控也為美國提供了新的機會，去招募那些對上級利用職權中飽私囊感到不滿的解放軍人士。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States has been pushing to expand its recruitment of informants in China for several years. Last year, the Central Intelligence Agency unveiled its first two recruiting videos, and John Ratcliffe, the agency’s director, said the effort had begun paying dividends.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國多年來一直在推動擴大在華招募線人的行動。去年，中央情報局發布了首批兩支招募影片，局長約翰·拉特克利夫表示，這一努力已開始取得成效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Last year, C.I.A.’s Mandarin video campaign reached many Chinese citizens, and we know there are many more searching for a way to improve their lives and change their country for the better,” Mr. Ratcliffe said in a statement. “We’re going to continue offering Chinese government officials and citizens an opportunity to work toward a brighter future together.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「去年，中情局的普通話影片宣傳觸達了許多中國公民。我們知道，還有更多人正在尋找改善生活、讓國家變得更好的途徑，」拉特克利夫在聲明中表示。「我們將繼續為中國政府官員和公民提供一個共同邁向更美好未來的機會。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new video shows a fictional midlevel officer in China going into work and listening to a briefing as he narrates in Mandarin his complaints about corruption, reflecting the public’s frustration with the problem.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這段新影片展示了一名虛構的中國中層軍官走進辦公室，聆聽簡報。他用普通話進行旁白，表達對腐敗的不滿，反映了公眾對這一問題普遍的挫敗感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Each day that goes by, it becomes clearer the only thing our party leaders are interested in defending is their own pockets,” he says. “They built their careers on a foundation of lies. But those walls are slowly crumbling away, and we are left to clean up their mess.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「然而日復一日，真相越發顯而易見，領導們真正在保護的，只有他們自己的私利，」他說。「他們的權力建立在無數的謊言上。但現在，這些謊言壁壘逐漸坍塌，最後留下給我們的就是收拾殘局。」</div></div></div></div></div><div class="big_ad" data-google-query-id="COWfupLj15IDFZ0WigMdqs07kA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The video shifts to his home, showing the officer’s daughter and wife.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後畫面切換到他的家中，鏡頭出現軍官的女兒和妻子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I could not let their madness be a part of my daughter’s future,” he says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我不能讓這些狂人來塑造我女兒未來的世界，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The video concludes with the C.I.A.’s logo and the narrator’s suggesting that the best way to serve his country is to help the spy agency collect secrets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">影片最後以中情局的標誌收尾，旁白暗示，為國效力的最佳方式就是幫助該情報機構搜集祕密。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I was a soldier, I served to defend my countrymen, and the path I chose was how I served,” the narrator says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我是個戰士，我的職責是保衛人民，守護祖國。選擇這條道路，就是為家為國的戰鬥方式，」旁白念道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A C.I.A. official said the United States faced a generational challenge with China, and one of the most important intelligence targets. The official, who spoke on the condition of anonymity to describe the agency’s deliberative process, said that the videos were getting through and that the campaign was working despite China’s ban on YouTube and other Western platforms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名中情局官員表示，美國正面臨與中國的代際挑戰，而中國也是最重要的情報目標之一。這名官員因談及機構內部決策過程而要求匿名。他說，儘管中國封鎖了YouTube等西方平台，但這些影片仍能傳播，宣傳活動正在奏效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The C.I.A. has published instructions on its YouTube channel and elsewhere on how Chinese nationals can use the dark web or virtual private networks to contact the agency without the Beijing government finding out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中情局還在其YouTube頻道及其他管道發布了指引，給出中國公民可通過暗網或VPN與該機構取得聯繫、不被中國政府發現的說明。</div></div></div></div></div><div class="big_ad" data-google-query-id="COfCupLj15IDFVjuKAUdEaIFSQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s rapidly growing military and intelligence budgets have allowed ample room for corruption. The People’s Liberation Army gives out huge numbers of contracts to Chinese firms across a range of industries. Corrupt officers can easily double their official salary by steering contracts to specific firms, according to American officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國快速增長的軍費和情報預算為腐敗留下了充足的空間。中國人民解放軍向各行各業的中國企業發放大量合同。據美國官員稱，貪腐官員通過將合同導向特定公司，可以輕易地讓自己的官方薪資翻倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. officials believe that there is a large pool of Chinese officials frustrated by the corruption they see, and that those people might potentially be recruited by the C.I.A.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員認為，中國有一大批對所見腐敗現象感到不滿的官員，這些人可能成為中情局潛在的招募對象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While Mr. Ratcliffe, like his predecessor in the Biden administration, William Burns, has said the agency is making strides in strengthening its network in China, the agency has had to rebuild after years of problems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管拉特克利夫與拜登政府時期的前任局長威廉·伯恩斯一樣，都表示該機構在華情報網路取得了長足進步，但在遭遇數年挫折後，該機構不得不重建相關體系。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From the end of 2010 to 2012, China killed or imprisoned more than a dozen American sources. The covert system used by the C.I.A. to communicate with its assets was compromised by China and Iran. Some officials blamed a former C.I.A. officer who spied for China for the destruction of the network.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從2010年底到2012年間，中國處決或監禁了十多名美國線人。中情局用於跟情報資產聯絡的祕密通信系統遭到中國和伊朗的破解。一些官員將該情報網路的瓦解歸咎於一名為中國從事間諜活動的前中央情報局官員。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260213/cia-china-spies/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

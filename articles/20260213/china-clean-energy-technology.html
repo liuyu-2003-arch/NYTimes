@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生活在中國，「常讓我感覺生活在未來世界」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">生活在中國，「常讓我感覺生活在未來世界」</h1>
+    <h2 class="en-headline">Why Living in China Is Like ‘Living in the Future’</h2>
+    <div class="meta-line">DAVID GELLES <span style="margin: 0 8px;">•</span> 2026-02-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/02/12/multimedia/12cli-newsletter-china-01-btfj/12cli-newsletter-china-01-btfj-master1050.jpg" width="1050"/><figcaption><span></span> <cite>-/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a series of articles published last year, my colleagues and I charted the remarkable rise of clean energy in China, and the degree to which the United States is falling behind in the race to adopt low-carbon technologies like solar power and electric vehicles. Importantly, these products are often less expensive and provide greater convenience than fossil fuel technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，我和同事們發表了一系列文章，記錄了中國清潔能源的驚人崛起，以及美國在採用太陽能、電動汽車等低碳技術方面如何逐漸落後。值得注意的是，這些產品往往比化石燃料技術更便宜，也更便捷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We explored the extraordinary scale of Chinese solar farms, including one that covers some 162 square miles, and its construction of thousands of miles of ultrahigh-voltage transmission lines.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們探訪了規模驚人的中國太陽能發電場，其中一處佔地約4.2萬公頃；還報導了中國修建成千上萬公里特高壓輸電線路的工程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We examined how China was exporting cheap solar panels and electric vehicles around the globe, reshaping economies from South Africa to Brazil. And we looked at China’s rapid advances in emerging fields including fusion, self-driving cars and rare earths.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們分析了中國如何以廉價價格向全球出口太陽能板和電動車，重塑從南非到巴西等國的經濟格局。我們還關注了中國在聚變能、自動駕駛汽車以及稀土等新興領域的迅速進展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With each passing week, the headlines reinforce the central idea of this series.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著時間推移，頭條新聞都在印證這組報導的核心觀點。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNWJy5fj15IDFbyDywEdRZ4mqg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/climate_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, China has not slowed its global efforts. Canada last month agreed to lower tariffs on some Chinese vehicles, opening the door to popular electric cars from automakers like BYD. Chinese state media this week reported that researchers had developed a lithium battery that can retain its electrical charge in extreme cold.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國在全球的布局並未放緩。上個月，加拿大同意降低對部分中國汽車的關稅，為比亞迪等車企的熱門電動汽車敞開大門。本週，中國官方媒體還報導稱，研究人員已研發出一種在極寒條件下仍能保持電量的鋰電池。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Clean energy technologies, including solar and electric vehicles, were responsible for more than a third of China’s economic growth last year, generating some $2.1 trillion in economic activity, according to an analysis by Carbon Brief.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據Carbon Brief的一項分析，去年中國經濟增量中，超過三分之一來自太陽能、電動車等清潔能源技術，相關經濟活動規模約達2.1萬億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To get a sense of how fast things are moving, I called my colleague Keith Bradsher, who is based in Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了更直觀地了解中國的發展速度，我致電駐北京同事柏凱斯(Keith Bradsher)。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is way ahead of the rest of the world,” he told me. “Not just in installing a lot of renewable energy and new transportation technologies, but also in scoring research breakthroughs.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國遙遙領先於世界其他地區，」他告訴我。「不僅在於大規模部署可再生能源與新型交通技術方面，而且接連取得科研突破。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>The U.S. turns back the clock</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>美國在倒退</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The contrast between Beijing and Washington is stark.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京與華盛頓之間形成了鮮明對比。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJSVy5fj15IDFdiDywEd2o8hvg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/climate_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government has been a patient supporter of the country’s clean technologies for decades now — its policies governing rare earths, which are essential components in everything from electric cars to supersonic jets, date back some six decades. U.S. policy, by contrast, has been all over the place.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府數十年來始終耐心地扶持清潔技術——其對稀土產業的政策布局可追溯至約60年前，而從電動車到超音速飛機，稀土皆是關鍵命脈。反觀美國政策，則如一盤散沙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After four years during which the Biden administration worked to nurture the wind, solar, battery and electric vehicle industries, the Trump administration is now doing precisely the opposite.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登政府執政四年間著力培育風電、太陽能、電池及電動汽車產業，而川普政府如今卻正在做著截然相反的事情。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And just as China is accelerating its shift to clean energy, the Trump administration continues to find new ways to penalize renewables and promote fossil fuels like coal, oil and gas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在中國加速向清潔能源轉型之際，川普政府卻不斷尋找新的方式來打壓可再生能源，並推廣煤炭、石油和天然氣等化石燃料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just yesterday, the White House ordered the Pentagon to buy more electricity generated from coal, the dirtiest fossil fuel. (China remains the world’s largest user of coal, but is working to decrease its usage. Overall, Chinese carbon dioxide emissions have been flat or falling for 21 months now.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在昨天，白宮下令五角大廈購買更多由煤炭發電量——而煤炭是最髒的化石燃料。（中國仍然是全球最大的煤炭使用國，但正努力減少煤炭使用量。總體而言，中國的二氧化碳排放量已連續21個月持平或下降。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, the Energy department canceled $30 billion in loans for clean energy projects. And as Brad Plumer and Rebecca Elliott reported this month, the White House and its allies are delaying approvals for wind and solar projects on both federal land and private property, creating what one renewable energy group called a “blockade” that is stalling hundreds of developments nationwide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上月，能源部叫停了300億美元的清潔能源項目貸款。正如布拉德·普盧默與麗貝卡·埃利奧特本月的報導，白宮及其盟友正拖延聯邦土地及私人土地上風電、太陽能項目的審批，一家可再生能源組織稱此舉形同「封鎖」，導致全國數百個項目停滯不前。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. is really turning its back on a lot of 21st century energy and transportation technologies,” Bradsher told me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國確實正在背離許多21世紀的能源和交通技術，」柏凱斯對我說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMW-y5fj15IDFX-FywEd00QolA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/climate_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Couple all that with the Trump administration’s attacks on the offshore wind industry, its sweeping efforts to roll back environmental regulations, its expanded support for fossil fuels, and its cuts to scientific research, and a picture emerges of the world’s two biggest economies diverging on the central issue of how to power the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加之川普政府對海上風電產業的打壓、全方位削弱環境法規、加大對化石燃料的支持、削減科研投入——一幅畫面逐漸浮現：全球兩大經濟體在未來能源發展方向這一核心議題上正分道揚鑣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What’s more, Bradsher told me, the playing field is expanding with each passing month, as China’s policies have begun leading to a cycle of ever more innovation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，柏凱斯告訴我，隨著中國政策推動形成一輪又一輪創新循環，差距正逐月擴大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China has a vast research effort to develop new inventions from rare earths, even as the U.S. has almost abandoned basic chemistry.,” Bradsher said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國正投入龐大的科研力量，研發稀土新的應用；而美國幾乎已放棄基礎化學研究，」柏凱斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Shaping the world</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>塑造世界格局</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the United States doubles down on domestic fossil fuels, China continues to extend its influence around the globe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當美國加碼發展國內化石燃料之際，中國正持續擴大其全球影響力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, Chinese exports of electric vehicles hit a record $70 billion, and China’s carmakers saw sales in more than 150 countries and territories. And in the first half of 2025, Chinese exports of solar cells jumped sharply, even as exports of finished panels stagnated because of oversupply.“We’re shifting away from an oil-powered world to a much less expensive solar-powered world,” Bradsher said. “And every other country is buying more and more of their electricity in effect from China, because China has a near-monopoly on solar panels. And that’s all that anybody wants to buy now in much of the developing world, because it’s a cheaper way to get your electricity than anything else.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年中國電動汽車出口創下700億美元紀錄，車企的銷售版圖拓展至逾150個國家和地區。2025年上半年，儘管成品太陽能電池板因供過於求出口停滯，但中國太陽能電池出口量仍大幅增長。「我們正從石油驅動的世界轉向成本更低的太陽能世界，」柏凱斯表示。「實際上，其他國家正越來越多地從中國購買電力，因為中國在太陽能電池板領域近乎壟斷。現在，在大部分發展中國家，人們都想買太陽能電池板，因為這是比其他任何東西都便宜的發電方式。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CMLgy5fj15IDFRGJywEdoMsy3Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/climate_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I asked Bradsher, who has covered China for 24 years, what it was like living in a country where these technologies were commonplace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我問報導了中國24年的柏凱斯，生活在一個這些技術已經司空見慣的國度是什麼感覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China’s high-speed rail, and ultramodern subways and growing numbers of self-driving electric cars often make me feel like I’m living in the future,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國的高速鐵路、超現代化的地鐵和越來越多的自動駕駛電動車，常讓我感覺生活在未來世界，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文節譯自時報Climate Forward新聞電郵。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/climate/20260213/china-clean-energy-technology/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
