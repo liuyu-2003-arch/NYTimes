@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「還會有更多的動盪」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「還會有更多的動盪」</h1>
+    <h2 class="en-headline">Xi’s Purges of China’s Military Run Deep, New Study Shows</h2>
+    <div class="meta-line">儲百亮 <span style="margin: 0 8px;">•</span> 2026-02-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="時任中央軍委副主席的張又俠上將於2024年在中國青島舉行的西太平洋海軍論壇上揮手致意。" height="705" src="https://static01.nyt.com/images/2026/02/23/multimedia/00int-china-military-pklq/00int-china-military-pklq-master1050.jpg" width="1050"/><figcaption><span>時任中央軍委副主席的張又俠上將於2024年在中國青島舉行的西太平洋海軍論壇上揮手致意。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One was a general who had commanded Chinese forces arrayed against Taiwan. Another was an officer who had led the People’s Liberation Army’s training department and been praised for modernizing combat drills. A third had long served as the chief military aide to China’s leader, Xi Jinping.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位將軍曾指揮過針對台灣部署的軍隊。另一位將軍曾領導解放軍訓練部門，因推動作戰訓練現代化而備受讚譽。第三位將軍則長期擔任中國國家主席習近平的首席軍事助理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These men are among dozens of once-rising senior military officers who have been detained, dismissed or simply disappeared from view without explanation over the last four years. Their downfall, documented in a study released Tuesday, reveals the staggering extent of Mr. Xi’s campaign to shake up the People’s Liberation Army, which culminated last month in the removal of the topmost general, Zhang Youxia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去四年中，有數十名一度崛起的高級軍官在沒有任何解釋的情況下被拘留、解職，或乾脆從人們的視線中消失，<span>這三人就屬其列。週二發布的一份研究報告記錄了</span><span>他們的隕落軌跡，凸顯出習近平整頓解放軍的運動規模之巨，這場運動在上個月以最高將領張又俠被撤職而達到頂峰。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The purge has stripped the military of its most experienced commanders and raised doubts about its readiness to go to war, including over Taiwan, which Beijing claims as its territory, according to data compiled by researchers at the Center for Strategic and International Studies, or C.S.I.S., a research group in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>根據華盛頓智庫戰略與國際研究中心研究員彙編的數據，這場清洗行動使得軍隊失去了最富經驗的指揮官，引發外界對其戰爭準備能力的質疑，包括針對中國宣稱是其領土的台灣地區。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In the near term, given the significant vacancies, it would be incredibly difficult for China to launch large military campaigns against Taiwan,” Bonny Lin, the director of the China Power Project at the center, wrote in an assessment of the findings. “Even below that threshold, there is evidence that the purges have negatively impacted China’s exercises around Taiwan in 2025.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「短期內，鑒於存在大量空缺，中國發動大規模軍事行動攻台將極其困難，」<span>該中心中國力量項目主任林洋</span>(Bonny Lin)<span>在評估報告中指出</span>。「即便降低一些標準，也有證據表明，此次清洗已對2025年中國在台灣周邊的軍事演習都產生了負面影響。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CMyq47P59ZIDFV86rAAdtpgpkg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since 2022, around 100 officers in the military’s top two ranks — general or lieutenant general — have been dismissed or sidelined, the study estimated. The tally includes about 11 officers who were purged even after retirement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據該研究估計，自2022年以來，約有100名軍隊最高兩個級別（上將或中將）的軍官被解職或邊緣化。其中包括約11名軍官在退休後仍被清洗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those eliminated represented about half of the military’s senior leadership, spanning the top commanders as well as the leaders and deputy leaders of central departments and all of China’s five military theater regions, said M. Taylor Fravel, a professor and expert on the Chinese military at the Massachusetts Institute of Technology, who examined the data.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國麻省理工學院教授、中國軍事問題專家傅泰林(M. Taylor Fravel)研究了這些數據，他說，這些被清除的人員約佔軍隊高級領導層的一半，包括最高指揮官、中央部門和中國五大戰區的正副領導。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Replacing them will not be easy. The purges have shrunk the pool of candidates who would have the right combination of skills, experience and ironclad loyalty to Mr. Xi and the Communist Party. An officer must also usually have served three to five years in his or her current grade to be considered for promotion, Professor Fravel said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">取代他們並非易事。清洗行動已大幅縮減具備綜合素質的候選人儲備——這些人才需兼具專業能力、豐富經驗及對習近平和中共的絕對忠誠。傅泰林說，軍官通常需在現職軍銜任職三至五年方有晉陞資格。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Xi has purged all of these people and, obviously, it’s framed as their lack of loyalty to Xi and to the party,” he said in an interview. “But he also needs expertise to have the military he wants — loyalty as well as expertise — and how will he find those people? That’s going to be harder now.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「習近平已經清洗了所有這些人，表面理由是他們對習近平和黨缺乏忠誠，」他在接受採訪時說。「但他也需要專業人才來組建他理想中的軍隊——既要忠誠，也要專業能力——他要如何找到這些人呢？現在這將變得更加困難。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The removals began as a trickle, with a single senior officer disappearing in 2022. That grew to 14, dismissed or disappeared, in 2023, and 11 more in 2024. By last year the purge was a deluge: About 62 were removed, many in the latter half of the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">撤職一開始只是零星發生，2022年，僅有一名高級官員消失。2023年，被解職或失蹤的官員增至14人，2024年又增加了11人。到去年，這場清洗已如洪水般洶湧：約62人被撤職，其中多數發生在下半年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This year about 11 officers have been absent from meetings that they would usually be expected to attend, suggesting that at least some of them could also be in serious trouble. The downfall of General Zhang could set off yet more investigations into officers linked to him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年，約有11名軍官缺席了他們通常應出席的會議，這表明其中至少部分人可能也遇到了嚴重的麻煩。張又俠的倒台可能引發針對與他關聯軍官的更多調查。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPDN5LP59ZIDFd6fUwEdgxoT4Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You can think of the purge of Zhang Youxia as just completing the first phase, with more turbulence to come,” said Professor Fravel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">傅泰林指出：「可以認為張又俠的清洗僅是第一階段的收尾，接下來還會有更多的動盪。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of the dismissed or disappeared officers owed their rise to Mr. Xi himself; others were stars whose credentials marked them as the future of the high command.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分遭撤職或失蹤的將領曾受習近平提拔；還有一些是軍中明星人物，其資歷標誌著他們本應成為未來高層。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among them: Lt. Gen. Wang Peng, who had earned a reputation for modernizing troop training; Lt. Gen. Zhong Shaojun, who had served as Mr. Xi’s chief aide for managing the People’s Liberation Army; and Gen. Lin Xiangyang, the commander who would have been at the forefront of any Chinese attack on Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>其中包括以部隊訓練現代化著稱的王鵬中將；曾是習近平管理解放軍的首席助手的鐘紹軍中將；以及本應在中國對台軍事行動中擔任前線指揮官的林向陽上將。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While there are other officers who could fill the vacancies, the wave of removals could have a cascading effect through the ranks. As investigations expand, any promotions will likely be subjected to microscopic scrutiny. Of 52 key military leadership positions examined in the study, only around 11 are officially filled, said Dr. Lin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然還有其他官員可以填補空缺，但免職潮可能在各級軍官中引發連鎖反應。隨著調查範圍的擴大，任何晉陞都可能面臨極其嚴格的審查。林洋說，在本研究調查的52個重要軍事領導職位中，只有約11個是正式的補缺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Chinese military, “for every senior officer, there are tens, if not hundreds, of lower officers whose careers have been tied to the senior officer,” said John Culver, a former Central Intelligence Agency analyst who is now a nonresident senior fellow at the Brookings Institution. “I think this will ripple for at least two or three years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在中國軍隊中，「每一名高級軍官背後都牽動著數十名甚至數百名下級軍官的職業生涯，」前中央情報局分析師、現布魯金斯學會非常駐高級研究員約翰·卡爾弗說。「我認為影響至少會持續兩三年。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far, the tempo of China’s military modernization does not appear slowed by the purges, but the command bottlenecks may hinder some operations. The researchers at C.S.I.S. noted that China may have decreased, delayed and simplified some military exercises last year, including near Taiwan, because of the loss of skilled leaders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到目前為止，中國軍事現代化的步伐似乎並沒有因為大清洗而放緩，但指揮瓶頸可能會阻礙部分行動。戰略與國際研究中心研究人員指出，由於資深領導人的流失，中國去年可能減少、推遲和簡化了一些軍事演習，包括在台灣附近的演習。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNb747P59ZIDFd0irAAdu24ybg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi patched some holes in the military leadership late last year, when he promoted new commanders to the Eastern Theater Command, which oversees Taiwan, and the Central Theater Command, which helps protect Beijing. There is no sign yet of when he may install new commanders into the Central Military Commission, the apex body that controls the military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年末，習近平通過提拔新指揮官填補了東部戰區（負責台灣事務）和中部戰區（參與北京守備<span>）的部分領導層空缺。目前還沒有跡象表明他何時會為掌控軍隊的最高機構中央軍委任命新的指揮官。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">儲百亮(Chris Buckley)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260225/china-military-purges-xi/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
