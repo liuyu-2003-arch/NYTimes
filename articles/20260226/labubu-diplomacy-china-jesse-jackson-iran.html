@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>從Labubu到「成為中國人」：中國變酷了嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">從Labubu到「成為中國人」：中國變酷了嗎？</h1>
+    <h2 class="en-headline">Labubu Diplomacy</h2>
+    <div class="meta-line">KATRIN BENNHOLD <span style="margin: 0 8px;">•</span> 2026-02-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/02/18/multimedia/18int-theworld-china-cool-promo/18int-theworld-china-cool-promo-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Go Nakamura/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been good at a lot of things: manufacturing cheaply, catching up on A.I., dominating renewable energy, building hard power. What it’s been less good at is soft power. But that seems to be changing. Have you heard about Chinamaxxing? Read on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國有很多強項：低成本製造、在人工智慧領域迎頭趕上、稱霸可再生能源、打造硬實力。它一直不太擅長的是軟實力。但情況似乎正在改變。你聽說過「Chinamaxxing」嗎？接著往下看。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, my colleague Vivian Wang in Beijing writes about how China is suddenly winning hearts and minds. (Spoiler alert: It might not actually have that much to do with China itself.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今天，我在北京的同事王月眉(Vivan Wang)撰文講述中國為何突然開始贏得人心。（劇透：這或許其實和中國本身關係不大。）</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="TikTok截屏。" data-src="https://static01.nyt.com/images/2026/02/07/multimedia/18int-theworld-xp-beingchinese-top/xp-beingchinese-vidpromo-jumbo-v2.jpg" src="https://static01.nyt.com/images/2026/02/07/multimedia/18int-theworld-xp-beingchinese-top/xp-beingchinese-vidpromo-jumbo-v2.jpg"/></div><figcaption><span>TikTok截屏。</span> <cite>@sosadeee10; @auntie.boy; @jastsam1</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Cool China</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>酷中國</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By Vivian Wang</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作者：王月眉</div></div></div></div></div><div class="big_ad" data-google-query-id="CIaCosu7-JIDFRSGpgQdPL0R6Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="1" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_1" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://780f61a0ff3692899b2dfa0fab7a6ed7.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, my colleague Yan Zhuang wrote about a funny trend: young people on TikTok who are “becoming Chinese” by embracing stereotypically Chinese behaviors — drinking hot water, wearing slippers, eating congee.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，我的同事Yan Zhuang報導了一個有趣的潮流：TikTok上的年輕人通過刻板印象中的中國生活方式——喝熱水、穿拖鞋、喝粥——來「成為中國人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Becoming Chinese” (or “Chinamaxxing,” if that’s your preferred term) may just be a TikTok fad. But it fits into something I’ve noticed recently: To a growing number of people around the world, China seems to be getting cooler.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「成為中國人」（或是你更習慣說的「Chinamaxxing」）或許只是TikTok上的一陣風潮。但這契合了我最近注意到的一個現象：在全球各個角落，越來越多人眼中，中國似乎正變得越來越酷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Major American influencers, like the YouTuber IShowSpeed and the streamer Hasan Piker, have traveled to China, where they raved about its high-speed trains and LED light shows. The N.B.A. star Victor Wembanyama spent 10 days meditating at a Shaolin temple. A new Adidas jacket inspired by the historical Tang suit was a viral fashion hit. And of course, there was the Labubu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">影片部落客IShowSpeed和主播哈桑·派克等美國著名網紅都曾到訪中國，對中國的高鐵和LED燈光秀讚不絕口。NBA球星維克托·文班亞馬曾在少林寺冥想修行十天。一款以唐裝為靈感的新款愛迪達斯夾克成為爆款時尚單品。當然，還有Labubu。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the course of its decades-long ascent, China has been good (and is getting better) at many things: developing technology, dominating supply chains, building up military power. What it has not been great at is winning hearts and minds, especially in the West — until, seemingly, now. So what changed? It might not actually have that much to do with China itself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在數十年的崛起過程中，中國在很多領域都表現出色（且正變得更強）：發展技術、主導供應鏈、壯大軍事力量。它一直不擅長的是贏得人心，尤其是在西方——直到如今，情況似乎變了。那麼，究竟是什麼變了？答案或許其實和中國本身關係不大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Savvier outreach and glittering infrastructure</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>更精明的對外傳播與亮眼的基礎設施</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s struggles with soft power have usually boiled down to its authoritarian government, which has hurt the country’s image abroad in multiple ways. (Just last week, a Hong Kong court sentenced the pro-democracy media mogul Jimmy Lai to 20 years in prison.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國在軟實力上的困境通常可以歸結為它的威權政府，這在多個方面損害了國家的海外形象。（就在上週，香港一家法院判處民主派傳媒大亨黎智英20年監禁。）</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CKvXkcu7-JIDFXGvpgQdsGofAg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="2" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_2" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://780f61a0ff3692899b2dfa0fab7a6ed7.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Government censorship has also limited many outsiders from seeing the full range of Chinese creativity. Instead, the government has tried too hard to manufacture a state-sanctioned version of Chinese cool, with heavy-handed movies. (Remember the film “The Great Wall,” starring Matt Damon? Most people don’t.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府審查也讓許多外界人士難以了解中國創造力的全貌。相反，政府用力過猛，試圖通過手法生硬的電影，打造官方認可的「酷中國」。（還記得馬特·達蒙主演的電影《長城》嗎？大多數人早就忘了。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The authoritarianism hasn’t changed, but the government has gotten savvier in its outreach efforts — for example, making it easier for foreign tourists to visit China. Most casual tourists won’t encounter the more suffocating political controls here, and they get to interact with ordinary Chinese people, in all their diversity. Visitors often say they’re surprised by how normal everyday life seems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">威權體制並未改變，但政府的外宣手段變得更精明了——比如，簡化外國遊客來華手續。大多數普通遊客不會接觸到這裡令人窒息的政治管控，反而能與形形色色的普通中國人交流。訪客常驚嘆於這裡日常生活的平凡景象。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="一家中國公司推出的Labubu掀起全球熱潮。" data-src="https://static01.nyt.com/images/2026/02/18/multimedia/18int-theworld-china-cool-labubu-bgcp/18int-theworld-china-cool-labubu-bgcp-jumbo.jpg" src="https://static01.nyt.com/images/2026/02/18/multimedia/18int-theworld-china-cool-labubu-bgcp/18int-theworld-china-cool-labubu-bgcp-jumbo.jpg"/></div><figcaption><span>一家中國公司推出的Labubu掀起全球熱潮。</span> <cite>Go Nakamura/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the biggest reason for China’s sudden appeal may have little to do with China itself. Polls show that opinions of China in the West are still, on the whole, mostly negative. It’s just that America, to many people around the world, is looking bad, too. And according to scholars, if people are looking for an alternative to the United States, China may be the most obvious place to turn.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國突然走紅的最大原因或許和中國本身基本無關。民調顯示，總體而言，西方對中國的看法仍以負面居多。只不過，在全球許多人眼中，美國同樣形象不佳。學者認為，如果人們想要尋找美國之外的另一個選擇，中國可能是最顯而易見的去處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even aside from the most drastic actions by the Trump administration — its threats to take Greenland, its defense of killings by federal agents in Minneapolis — there’s a sense that the U.S. has failed to provide basic things, like functioning infrastructure. China’s gleaming trains look appealing in comparison.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即便拋開川普政府最極端的舉動——威脅吞併格陵蘭、為明尼阿波利斯聯邦特工的殺人行為辯護——外界也普遍感到，美國連基礎設施正常運轉這類基本的事都做不到。相比之下，中國嶄新的高鐵就顯得格外有吸引力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The political and cultural fracturing of America has “significantly weakened the appeal of the U.S.,” Ying Zhu, a film studies scholar who has studied Chinese soft power, told me. “The appeal of China at the moment is more of a reaction” to that than real enthusiasm for China itself, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究中國軟實力的電影研究學者朱影（音）告訴我，美國的政治與文化分裂「大幅削弱了美國的吸引力」。她說：「中國當下的吸引力更多是對這種局面的反應」，而不是對中國本身的真正熱忱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Can the vibe shift last?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>這種氛圍轉變能持續嗎？</b><b></b></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLOgg8u7-JIDFdKFpgQdj7QlRA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="3" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_3" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://780f61a0ff3692899b2dfa0fab7a6ed7.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, these shifting attitudes — regardless of what’s behind them — could have real implications for how other countries approach China. Many Western leaders have visited Beijing recently, promoting trade and cultural exchange, despite blowback from China hawks at home. If there was less domestic pressure, those types of visits could become easier and more frequent. And there would probably be less appetite for moves against China, as we saw in the opposition from many young Americans to the TikTok ban.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>儘管如此，無論背後原因是什麼，這種態度轉變都可能對其他國家的對華政策產生切實影響。儘管面臨國內對華鷹派的反對，許多西方領導人近期仍訪問北京，推動貿易與文化交流。如果國內壓力減小，此類訪問可能會變得更輕鬆、更頻繁。正如我們看到許多美國年輕人反對禁用TikTok那樣，針對中國的舉措也可能失去更多支持。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A recent survey by the Carnegie Endowment for International Peace found that most Americans, especially younger ones, were not very worried about what would happen if China surpassed the U.S. in global influence. That “casts doubt on whether the American public would be willing to bear significant costs to maintain a power position superior to China’s,” the authors wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡內基國際和平基金會近期一項調查發現，大多數美國人，尤其是年輕人並不太擔心中國在全球影響力上超越美國。報告作者寫道，這「讓人懷疑美國公眾是否願意付出巨大代價，以維持對中國的優勢地位」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An important question is whether this vibe shift can last. Zhu was skeptical. “Cultural trends come and go,” she said. “Fashion and fads are sensitive to the shifting geopolitical dynamic.” She noted that, despite viral trends and Labubus, China had yet to produce, say, a global hit movie.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個關鍵問題是，這種氛圍轉變能否持續。朱影對此表示懷疑。「文化潮流來去匆匆，」她說。「時尚和風潮對地緣政治局勢的變化十分敏感。」她指出，即便有網路爆款潮流和Labubu，中國至今仍未推出一部真正的全球賣座電影。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Parts of the Chinese government, too, seem worried that other countries’ soft power is still stronger. The Ministry of State Security last month published a warning, seemingly directed at Chinese influencers, about posts showing off glossy lives outside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國部分政府部門似乎也擔心自己的軟實力不如人。國家安全部上月發布一則警示，矛頭似乎指向國內網紅在網上炫耀國外光鮮生活的行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They one-sidedly showcase the glamorous aspects of foreign countries. Even worse, some have selectively ignored China’s development achievements,” the post said. “That provides an opportunity for the ‘soft aggression’ of Western ideology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「（他們）片面展示國外的光鮮側面，更有甚者對國內發展成就選擇性失明，」文章寫道。「為西方意識型態的『軟侵略』提供可乘之機。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文節譯自時報全球新聞電郵The World。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260226/labubu-diplomacy-china-jesse-jackson-iran/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

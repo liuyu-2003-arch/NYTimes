@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相比中國，美國的人工智慧「輸」在哪裡？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">相比中國，美國的人工智慧「輸」在哪裡？</h1>
+    <h2 class="en-headline">America Has an Edge Over China. Why Won’t We Use It?</h2>
+    <div class="meta-line">JONAS NAHM <span style="margin: 0 8px;">•</span> 2026-02-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="900" src="https://static01.nyt.com/images/2026/02/25/opinion/25Nahm/25Nahm-jumbo.jpg" width="900"/><figcaption><span></span> <cite>Illustration by The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tesla’s factory in Shanghai produces far more cars per worker than its plant in California. The gap reflects something unsettling about China’s broader edge in manufacturing: It has figured out how to organize production around large-scale deployment of automation, robotics and artificial intelligence. The United States has not.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>特斯拉上海工廠的人均汽車產量遠超其加利福尼亞州的工廠。這一差距反映出中國在製造業方面更廣泛優勢中令人不安的一點：中國已摸索出如何圍繞自動化、機器人和人工智慧的大規模部署來組織生產。而美國尚未做到這一點。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reindustrialization is one of the few economic goals that now commands bipartisan support. Successive administrations — first Joe Biden’s, now President Trump’s — have made rebuilding American manufacturing a priority. In Washington, the gap between American factories and global competitors is often explained as the product of unfair subsidies, distorted markets or other forms of cheating.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">再工業化如今是少數能夠獲得兩黨支持的經濟目標之一。從拜登開始到現在的川普，幾屆政府都把重建美國製造業作為優先事項。在華盛頓，人們往往把美國工廠與全球競爭對手之間的差距解釋為不公平補貼、市場扭曲或其他形式的作弊所導致的結果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those factors matter, as does the power of China’s political structure to command fast change from the top down. But the central challenge for the United States is not that China bends the rules. Around the world, modern manufacturing no longer resembles the mid-20th-century factory floor. Robotics, automation and A.I. now make it possible to produce more with fewer human workers, though those who remain are more skilled and better paid. Unlike China, America has failed to reckon with this reality and organize manufacturing in ways that turn its own technological strengths into comparable gains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些因素固然重要，但中國的政治體制自上而下迅速推動變革的能力同樣關鍵。而美國面臨的核心挑戰也並非中國破壞規則。放眼全球，現代製造業已不再像20世紀中葉的工廠車間。如今，機器人技術、自動化和人工智慧使得企業能夠用更少的勞動力生產更多的產品，而留下的工人技術更好、收入也更高。與中國不同，美國未能正視這一現實，也沒有建立起一種能夠把自身技術優勢轉化為同等生產率提升的製造體系。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washington talks about A.I. as if it lives in research labs, venture capital portfolios and data centers. China treats it as factory work. Today, A.I. is embedded into China’s efforts to accelerate automation — guiding machines, scheduling work and detecting problems in real time. China has built more than 30,000 smart factories. More than half of all new industrial robots installed worldwide in 2024 went into Chinese factories. Research from Weijian Shan, an investor and economist based in Hong Kong, has found that, from sectors ranging from steel to shipbuilding, these factories now produce more per worker than comparable U.S. plants.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>華盛頓在談論人工智慧時，彷彿它只存在於研究實驗室、風險投資項目和數據中心裡。中國則將人工智慧視為工廠裡實實在在的生產工具。如今，人工智慧已深度融入中國加速自動化的進程——用於引導機器運行、安排生產進度並實時發現問題。中國已建成3萬多家智能工廠。2024年全球新安裝的工業機器人中超過一半在中國的工廠裡。香港</span>投資人<span>和經濟學家單偉建的研究發現，從鋼鐵到造船等多個行業，這些工廠如今的人均產出已超過美國同類工廠。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNG4jtu7-JIDFQpzmQIdq54Fww" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The shift is visible on the shop floor. By last year, the Chinese electric vehicle company Zeekr had over 800 robots in its factory in Ningbo. The company even experimented with putting humanoid robots to work on its factory floor lifting boxes, assembling components and performing quality checks. Rather than following fixed instructions, the robots use cameras, sensors and A.I. to respond to conditions on the line, much like driver-assistance systems that adjust to traffic. That flexibility can allow them to handle variation, work safely alongside human workers and absorb routine changes that would otherwise force production to stop. These are the kind of efficiency gains that can eventually increase productivity per worker and help ease shortages of skilled labor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這種轉變在生產車間裡清晰可見。截至去年，中國的電動車企業極氪在寧波的工厂部署了超過800台機器人。該公司甚至嘗試使用人形機器人參與生產，比如搬運箱子、組裝零部件和執行質檢工作。這些機器人不再只是遵循固定指令，而是利用攝像頭、傳感器和人工智慧對生產線上的狀況做出響應，就像能根據路況做出調整的輔助駕駛系統一樣。這種靈活性使它們能夠處理變化，與人類工人安全協作，</span>並適應那些原本會導致生產中斷的常規變化<span>。此類效率提升最終將提高人均生產力，並有助於緩解熟練勞動力短缺問題。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These gains are not limited to experimental systems. At Midea, one of the world’s largest home appliance manufacturers, an A.I.-driven control system coordinates robots, sensors and machines at its Jingzhou plant. A company official said the system has reduced response times from hours to seconds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這些成果並非僅限於實驗性系統。在全球最大的家電製造商之一美的集團位於荊州的工廠裡，一個由人工智慧驅動的控制系統協調著機器人、傳感器和各類機器設備。公司的一位</span>管理者表示，該系統將響應時間從幾小時縮短到了幾秒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Productivity gains come from multiple forms of A.I. Software can analyze camera feeds so that defects can be removed from production. Scheduling algorithms can automatically balance production, inventory and logistics — Lenovo, for example, says it has used such systems to cut production scheduling times from hours to minutes. A.I. can also analyze streams of production data in real time and highlight small inefficiencies before they slow the entire line. The technology company Xiaomi says it used smart manufacturing and over 700 robots to produce a car every 76 seconds on average in its Beijing plant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>生產率提升來自多種形式的人工智慧。軟體可以分析攝像頭畫面，從而把有缺陷的產品從生產過程中剔除。調度算法能夠自動平衡生產、庫存和物流——例如，聯想集團表示，它利用此類系統把生產調度時間從數小時縮短到了幾分鐘。人工智慧還可以實時分析源源不斷的生產數據，在小問題拖慢整條生產線之前將其識別出來。科技公司小米表示，依靠智能製造和700多台機器人，</span>其北京工廠平均每76秒就能生產一輛汽車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For a decade, Beijing has pursued factory modernization as a national project, driven by all levels of the government, beyond flagship factories like Zeekr and deep into China’s manufacturing supply chains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>十年來，北京一直將工廠現代化作為國家工程來推進，各級政府參與其中，其範圍不僅限於極氪這樣的旗艦工廠，而是深入中國製造業的供應鏈之中。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Provinces fund local companies developing A.I and automation technologies. Government ministries coordinate standards so that suppliers and manufacturers can share data and solutions. The government promotes programs to train workers to use these technologies. Smaller manufacturers can plug into shared, government-supported digital networks that collect production data, coordinate schedules and monitor equipment, allowing them to adopt A.I. tools without building from scratch.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>各省為開發人工智慧和自動化技術的本地企業提供資金支持。國家部委協調技術標準的制定，以便供應商和製造商能夠共享數據和解決方案。政府還推動培訓項目，幫助工人掌握這些技術。規模較小的製造商可以接入由政府支持的共享數字網路，這些網路收集生產數據、協調生產調度並監控設備，使它們無需從零開始就能採用人工智慧工具。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the other side of the Pacific, U.S. policy on A.I. emphasizes frontier research in A.I. and large language model development. While America leads in these fields, this focus neglects other practical areas for using A.I. and automation, leaving American manufacturers struggling to use digital tools on the factory floor. Only 18 percent of manufacturers surveyed by the Manufacturing Leadership Council said they have formal A.I. strategies for their operations; two-thirds said they were struggling to scale A.I. test projects into production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>而在太平洋另一側，美國的人工智慧政策則強調前沿研究以及大語言模型的開發。雖然美國在這些領域處於領先地位，但這種側重忽略了對人工智慧和自動化的其他實際應用，導致美國製造商在工廠車間使用數位化工具時舉步維艱。製造業領導力委員會的一項調查顯示，只有18%的製造商表示他們為運營制定了正式的人工智慧戰略；三分之二的企業表示，他們難以把人工智慧試驗項目推廣到實際生產中。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CN7Bjtu7-JIDFTcepAYdXpcCUw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some American manufacturers are experimenting with similar tools. Auto manufacturers like Ford are experimenting with A.I.-enabled visual detection systems to identify defects on assembly lines. They also investing in systems that can detect equipment problems before they shut down production lines. Yet these efforts remain fragmented.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>一些美國製造商正在嘗試類似的工具。福特等車企正在試驗基於人工智慧的視覺檢測系統來識別裝配線上的缺陷。他們也在投資那些能在設備故障導致生產線停工前發現問題的系統。然而，這些努力仍然零散，不成體系。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The barriers are practical rather than technological, especially for small and midsize companies. In many factories, production data is incomplete or still recorded manually, making it impossible to use digital tools that rely on continuous information. Three-quarters of manufacturers surveyed struggle to connect older machines to systems that could help them run more efficiently. And eight in 10 report shortages of workers who can use A.I.-powered manufacturing tools. More than half say the upfront cost of A.I. projects is prohibitive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>障礙更多來自實操層面，而非技術本身，尤其是對中小企業而言。在許多工廠，生產數據不完整或者仍依靠人工記錄，使得依賴持續數據流的數位化工具難以投入應用。調查顯示，四分之三的製造商難以將舊設備連接到能夠提高效率的系統中；此外，八成企業表示缺乏能夠操作基於人工智慧的製造工具的工人。超過半數企業表示，人工智慧項目的初期投入成本過高，難以承受。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet the U.S. policy response to China’s rise in manufacturing targets trade flows rather than factory performance. A familiar mix of tariffs, trade investigations and restrictions on imported components and technologies looks tough but does little to close the productivity gap.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>然而，美國針對中國製造業崛起的政策回應主要瞄準的是貿易流動，而不是工廠本身的生產效率。關稅、貿易調查以及對進口零部件和技術的限制組成的慣用手段，看似強硬，但對縮小生產率差距幾乎沒有幫助。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These policies actually leave American manufacturers in a bind. When they attempt to automate, they often rely on imported robotics, sensors and machinery. Yet the Trump administration has opened a national security investigation into these robotics supply chains, potentially leading to tariffs that would raise the cost of such modernizing equipment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這些政策實際上讓美國製造商陷入了兩難境地。當他們嘗試進行自動化改造時，往往依賴進口的機器人、傳感器和機械設備。然而，川普政府已對這些機器人供應鏈啟動了國家安全調查，這可能導致加徵關稅，從而提高此類現代化設備的成本。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the goal is to bring manufacturing back from overseas, American policymakers should focus less on protection and more on helping manufacturers deploy digital tools. That means connecting legacy equipment to digital systems so they can generate usable data. It means modernizing older plants so equipment can integrate with sensors, software and analytics. It means investing in work force training so employees can use A.I. tools. And it means federal and state governments supporting shared digital infrastructure that allows small and midsize manufacturers to adopt advanced tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果目標是真正把製造業從海外帶回美國，那麼美國的決策者就應該少強調保護主義，多幫助製造商部署數位化工具。這意味著要把傳統設備接入數字系統，使其能夠產生可用的數據；要改造老舊工廠，讓設備能夠與傳感器、軟體和數據分析系統整合。這意味著要投資勞動力培訓，使員工能夠掌握人工智慧工具。這還意味著聯邦和州政府需要支持共享的數字基礎設施，使中小型製造商也能夠採用先進工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is what China is doing. And other advanced economies in Germany, Japan, South Korea and elsewhere are responding with similar strategies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這正是中國正在做的事情。而德國、日本、韓國等其他發達經濟體也正在以類似的戰略作出回應。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLXIjtu7-JIDFecLpAYd65wxhA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">America has emphasized invention and breakthroughs over deployment. But sometimes, technology needs to be treated as factory work — unsexy and perhaps boring, but essential for being competitive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國歷來重視發明和突破，而輕視技術的應用。但有時，技術需要被當作工廠裡的平常工作來對待——也許不光鮮，甚至有些枯燥，卻是保持競爭力所必不可少的。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jonas Nahm是約翰·霍普金斯大學副教授，在拜登政府時期擔任白宮經濟顧問委員會產業戰略高級經濟學家。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260226/china-america-manufacturing-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
