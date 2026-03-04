@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在美國監控下無所遁形的外國政要 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">在美國監控下無所遁形的外國政要</h1>
+    <h2 class="en-headline">As Maduro and Khamenei Learned, It’s Harder Than Ever for Leaders to Hide</h2>
+    <div class="meta-line">DAVID E. SANGER <span style="margin: 0 8px;">•</span> 2026-03-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="馬杜羅於今年1月被美軍抓獲，此前美國情報部門成功鎖定其藏身於卡拉卡斯某軍事基地內的公寓。" height="700" src="https://static01.nyt.com/images/2026/03/02/multimedia/02dc-assess-jmtc/02dc-assess-jmtc-master1050.jpg" width="1050"/><figcaption><span>馬杜羅於今年1月被美軍抓獲，此前美國情報部門成功鎖定其藏身於卡拉卡斯某軍事基地內的公寓。</span> <cite>Vincent Alban/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Nicolás Maduro and his wife walked into their apartment deep in a Caracas military base on an early January morning, they had no way of knowing that their every movement was being tracked by American intelligence. Or that the apartment, including the safe room, had been replicated in Kentucky by a Delta team that did dozens of practice runs figuring out how to immobilize the guards and breach the doors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1月初的一個清晨，當尼古拉斯·馬杜羅與妻子走進卡拉卡斯一處軍事基地深處的公寓時，他們全然不知，自己的一舉一動都在美國情報部門的監控之下。他們也無從知曉，這套公寓——包括安全屋——已被美國三角洲部隊在肯塔基州復刻，該部隊進行了數十次演練，只為摸清如何制服守衛、破門而入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ayatollah Ali Khamenei apparently ignored the evidence that the C.I.A. was tracking him and his top leaders, too, an operation that President Trump exposed in a social media post eight months ago. When the United States and Israel discovered that he and his national security team would be gathering Saturday morning, they advanced the timeline for their attack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈梅內伊顯然也無視了中情局正在監控他與高層官員的證據，川普總統早在8個月前就通過社群媒體曝光了這一行動。當美國和以色列的情報部門獲悉哈梅內伊與國家安全團隊將於週六上午會面時，便提前了襲擊計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Maduro is now in the federal detention center in Brooklyn. Ayatollah Khamenei’s state funeral is being planned for the coming days. And the rest of the world’s leaders are left to mull the combination of exquisite American surveillance capabilities and a president who seems to take delight in using that information to capture or kill his perceived enemies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，馬杜羅被關押在布魯克林聯邦拘留中心；哈梅內伊的國葬正在籌備中。世界各國領導人不得不重新審視：美國精密的情報監控能力，以及一位樂於利用這些信息來抓捕或殺死其眼中之敵的總統，二者結合會帶來什麼樣的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American intelligence agencies have long wiretapped, geolocated and monitored senior leaders, back to the earliest days of the Cold War. Fifteen years ago, WikiLeaks revelations included documents that gave glimpses of how the United States attempted to track China’s leaders and its nuclear weapons. Germany’s former chancellor, Angela Merkel, was outraged to discover that her personal cellphone was tapped by the country’s closest ally, and complained to President Barack Obama that it reminded her of growing up in East Germany.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自從冷戰初期，美國情報機構就長期對外國高層進行竊聽、定位與監控。15年前，維基解密披露的文件曾讓外界窺見美國如何追蹤中國領導人與核武器。德國前總理梅克爾得知自己的私人手機被最親密的盟友竊聽時勃然大怒，並向歐巴馬總統抱怨，稱這讓她想起了在東德長大的經歷。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN2LttSEhZMDFcHNdQkdYDMaWA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, merely tapping into a foreign leader’s conversations seems like a quaint remnant of post-Cold War spycraft.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，單純竊聽外國領導人的通話似乎已是後冷戰時代間諜手段的古舊遺迹。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, the real-time ability to locate a leader is the holy grail. And the surge in the number of electronic sensors deployed on street corners and doorbell cameras and toll highways, combined with artificial intelligence techniques to quickly parse truly vital information from billions of data points those sensors generate, has transformed the art form of surveilling V.I.P. whereabouts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當下，實時鎖定領導人位置才是情報界的聖杯。遍布街角、門鈴攝像頭與收費公路的電子傳感器數量激增，再加上人工智慧技術能從這些傳感器產生的數十億數據點中快速篩選關鍵信息，這已徹底重塑了監控政要行蹤的手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has allowed intelligence agencies to track motorcades. (In Washington, presidential and vice-presidential movements are usually still announced by blaring motorcycles and familiar helicopter flight patterns, but cabinet members and the C.I.A. director move more discreetly.) Around the world, spy agencies have learned how to monitor the opening and closing of electronic doors at leadership compounds, and to locate the cellphones of bodyguards and family members who may travel with a foreign leader but are usually a lot sloppier about encrypting their messages and using burner phones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這讓情報機構得以追蹤車隊動向。（在華盛頓，總統與副總統的出行仍然常以轟鳴的摩托車開道和熟悉的直升機飛行來宣告，但內閣成員與中情局局長的行動則隱秘得多。）全球各地的情報部門已掌握如何監控領導人官邸電子門的開關，以及定位保鏢與家屬的手機——這些人常隨外國領導人出行，卻往往在信息加密與使用一次性手機方面要馬虎得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If we had had this capability with a high degree of certainty to get Saddam Hussein through a precision strike, we wouldn’t have had the Iraq war,” said Glenn Gerstell, the general counsel of the National Security Agency from 2015 through 2020, a period that included part of Mr. Trump’s first term. “The only way to get him was to have boots on the ground. But now, with heightened capabilities, we can target individual leaders.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「若當年我們擁有如此高確定性的精準打擊能力，能定位薩達姆·侯賽因，就不會爆發伊拉克戰爭了，」2015至2020年（涵蓋川普首個任期部分時段）擔任美國國家安全局總法律顧問的格倫·格斯特爾表示。「當年只能靠地面部隊抓捕他。但如今，憑藉升級的能力，我們可以精準鎖定特定領導人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(In fact, American forces tried to take out Mr. Hussein in the opening hours of the war. But he had left the home they targeted a few hours earlier.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（事實上，美軍曾在戰爭爆發頭幾個小時試圖除掉薩達姆，但他在目標住所遭襲前數小時離開。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Mr. Trump has shown, this targeting ability opens new options for presidents seeking to change the attitude of foreign regimes — or change their leadership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正如川普所展現的，這種精準打擊能力，為試圖改變外國政權態度甚至更迭其領導人的美國總統，提供了全新的選項。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPrVttSEhZMDFUoXigMducApAA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s decision to snatch Mr. Maduro from his bed, but keep the rest of the Venezuelan leadership in place, is an experiment in remote-control occupation. After the Delta team landed by helicopter that early January night, killed Mr. Maduro’s Cuban and Venezuelan guards, and seized him seconds before he could lock himself in that safe room, Mr. Trump blessed the installation of Vice President Delcy Rodríguez as acting president.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普決定從床上抓走馬杜羅卻保留委內瑞拉其他領導層是一場遠程遙控佔領的試驗。1月初的深夜，三角洲部隊乘直升機著陸，擊斃馬杜羅的古巴與委內瑞拉守衛，在他即將閉鎖安全屋的瞬間將其抓獲。隨後，川普批准副總統德爾西·羅德里格斯就任代總統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She will stay there, he has said, as long as she follows Washington’s instructions. And clearly he is enamored of the early results. In a brief conversation with The New York Times on Sunday, on the second day of the American and Israeli attack on Iran, he cited the Venezuela experience as a model for what he was trying to accomplish in Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普稱，只要她聽從華盛頓指令，就能繼續留任。顯然，他對初步成果頗為滿意。週日，在美以襲擊伊朗的第二天，他接受《紐約時報》簡短採訪時，將委內瑞拉的經驗稱為伊朗行動的範本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What we did in Venezuela, I think, is the perfect, the perfect scenario,” Mr. Trump insisted. “Everybody’s kept their job except for two people.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們在委內瑞拉的做法，我認為是完美、完美的範例，」川普堅稱。「除了兩個人，所有人都保住了工作。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Iran case, Mr. Trump had flagged for Ayatollah Khamenei that the United States was watching his every movement — a revelation that, had it appeared first in the media, might well have triggered a Justice Department leak investigation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在伊朗問題上，川普早已向哈梅內伊明示，美國正監控他的一舉一動——這一爆料若先由媒體披露，很可能會引發司法部針對洩密的調查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We now have complete and total control of the skies over Iran,” he posted on Truth Social in June 2025, as he cut short his participation in a summit and flew back to Washington to talk about how the United States would participate in the attacks Israel had begun on the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年6月，川普在Truth Social平台發文：「我們已完全掌控伊朗領空。」當時，他縮短了參加一場峰會的行程，飛回華盛頓討論美國如何參與以色列已發起的對伊襲擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then he added: “We know exactly where the so-called ‘Supreme Leader’ is hiding. He is an easy target, but is safe there — We are not going to take him out (kill!), at least not for now.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還寫道：「我們精確掌握所謂『最高領袖』的藏身之處。他是個容易打擊的目標，但他目前還安全——我們不會清除（殺掉）他，目前暫時不會。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CMazttSEhZMDFU0figMds10MWQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For good measure, Mr. Trump added an all-caps demand for “UNCONDITIONAL SURRENDER!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為強化威懾，川普還用全大寫字母要求：「無條件投降！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is impossible to know whether Ayatollah Khamenei was following Mr. Trump’s posts, but he certainly did not seem impressed by the warning. On Saturday, even with an American naval force deployed around Iran and fighter jets visible on satellite images massing on American and Israeli bases, Ayatollah Khamenei was in his official residence. So were national security leaders. And while the United States did not launch the missile that killed him, it was the C.I.A.’s warning, backed by indicators from other U.S. intelligence agencies, that killed him in one of the first Israeli strikes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無人知曉哈梅內伊是否關注川普的發文，但他顯然對此警告不以為然。週六，即便美國海軍艦隊部署在伊朗周邊、衛星圖像顯示美以基地戰機集結，哈梅內伊仍在官邸，國家安全高層也齊聚於此。儘管擊斃他的導彈並非美軍發射，但正是中情局的預警（輔以美國其他情報機構的佐證），讓他在以色列的首輪襲擊中身亡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not clear how far the United States can push this new power — or whether it would risk using this targeting capability in the case of the leader of a country that had nuclear weapons available to retaliate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚美國能將這一新能力運用到何種程度，也不清楚當目標國擁有核武器可實施報復時，美國是否會冒險動用這種定點清除能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Notably, Mr. Trump is not messing with China’s Xi Jinping, or Russia’s Vladimir V. Putin or even North Korea’s Kim Jong-un, who has an arsenal of 60 or more nuclear weapons. “I’m not sure you can extrapolate this capability into a universal ability to track every leader everywhere,” said Paul Kolbe, who served as the C.I.A.’s station chief in Moscow early in Mr. Putin’s rule. “But this is why Putin is so paranoid about his location,” and moves frequently among his many houses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">值得注意的是，川普並沒有去招惹中國國家主席習近平、俄羅斯總統普丁，甚至擁有60餘枚核武器的朝鮮最高領導人金正恩。「我不確定能否將這種能力推廣為全球追蹤所有領導人的通用手段，」普丁執政初期曾任中情局莫斯科站站長的保羅·科爾比表示。「但這正是普丁對其行蹤如此敏感的原因」——他頻繁在多處住所間轉移。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you are the leader of an adversary nation, you should be pretty worried,” Mr. Kolbe said. “But if you are Putin or Xi, not so much, because of the stakes at play. The lesson that keeps getting taught is that if you don’t have nukes, you are far more vulnerable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你是敵對國家領導人，理應高度警惕，」科爾比說。「但普丁或習近平則不必過度擔憂，因為風險代價極高。反覆印證的教訓是：沒有核武器，你就會脆弱得多。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Iranians do not have nuclear weapons, which might make them hesitate before naming a new supreme leader, who would move to the top of the target list. Nonetheless Majid Takht-Ravanchi, the Iranian deputy foreign minister, said on CNN on Monday morning that the government remains in place and Ayatollah Khamenei’s replacement would soon be announced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗沒有核武器，這或許會讓它在提名新的最高領袖時有所猶豫——新領袖將立即成為頭號打擊目標。儘管如此，伊朗副外長馬吉德·塔赫特-拉萬奇週一上午在CNN表示，伊朗政府運轉正常，哈梅內伊的繼任者將很快公布。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO36ttSEhZMDFerodQkd9NEXQA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We have a president,” he said. “We have head of judiciary. We had the head of parliament. The supreme leader was assassinated — was murdered by Israeli and American aggression.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們有總統，有司法首腦，我們曾有議會領袖，」他說。「最高領袖遭暗殺——是被美以侵略勢力謀殺的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, he said, “the new leader is going to be elected. So everybody — everything is in order.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，「新領袖將通過選舉產生，」他還說。「所以一切——一切都井然有序。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">David E. Sanger報導川普政府和一系列國家安全問題。他在時報任職超過40年，著有四本關於美國國家安全挑戰的書。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260303/maduro-khamenei-trump-surveillance/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
