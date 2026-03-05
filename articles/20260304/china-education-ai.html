@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國家長如何利用人工智慧「雞娃」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國家長如何利用人工智慧「雞娃」</h1>
+    <h2 class="en-headline">China’s Parents Are Outsourcing the Homework Grind to A.I.</h2>
+    <div class="meta-line">王月眉, JIAWEI WANG <span style="margin: 0 8px;">•</span> 2026-03-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/02/16/vid-china-ai-55431-cover/vid-china-ai-55431-cover-master1050.jpg" width="1050"/><figcaption><span></span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Across China, where education is famously cutthroat, parents are turning to artificial intelligence to gain a competitive edge. Some are making interactive learning games or using chatbots to grade their children’s homework. Others are using A.I.-powered gadgets to get past a language barrier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國各地，教育競爭之激烈眾所周知，家長們正紛紛轉向人工智慧，希望獲取競爭優勢。一些家長製作互動學習遊戲，或用聊天機器人批改孩子的作業。還有一些家長藉助由人工智慧驅動的小工具來跨越語言障礙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010740771" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010740771" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their eagerness to experiment is one example of how Chinese users are embracing A.I. for learning, even as many in the United States worry that it feeds students misinformation or erodes critical thinking. This cultural rift is backed by data: A 2025 global survey led by the services firm KPMG found that more than 90 percent of Chinese said they felt optimistic about the technology, compared to just over 50 percent in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們熱衷於嘗試新技術，這體現了中國用戶在學習領域對人工智慧的積極接納；儘管許多美國人擔心它會給學生灌輸錯誤信息，或削弱審辯性思維。這種文化差異也有數據為證：2025年畢馬威諮詢主導的一項全球調查發現，超過90%的中國受訪者表示對這項技術感到樂觀，而在美國，這一比例僅略高於50%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The enthusiasm in China has fueled a sprawling, often unchecked, marketplace for educational technology that is worth more than $43 billion by some estimates, and where gimmicks and exaggerated marketing are common. Yet for some families, the tools are providing genuine relief. Three parents shared videos of their routines, showing how A.I., while imperfect, has made parenting and teaching their children a little easier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的這股熱情催生了一個龐大且往往缺乏監管的教育科技市場，據一些估計，該市場規模已超過430億美元，在這裡，噱頭和誇大宣傳亦隨處可見。然而對一些家庭來說，這些工具確實帶來了實實在在的幫助。三位家長分享了他們的日常影片，展示了人工智慧雖然不完美，但讓育兒和教學變得稍微輕鬆了一些。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNHst_7Gh5MDFdQZPgMdG50W8A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A.I. Translation Mask</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>智能翻譯口罩</b><b></b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010740918" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010740918" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As a mother of two with a full-time public relations job, Zheng Wenqi, 42, had little time to practice English herself, let alone teach her children. She knew her 9-year-old son needed more conversational experience but didn’t know where to turn.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">42歲的鄭文琪（音）有一份全職的公關工作，還是兩個孩子的母親，她幾乎沒有時間練習自己的英語，更不用說教孩子了。她知道九歲的兒子需要更多的會話經驗，但不知從何入手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There just wasn’t an opportunity for him to start talking,” said Ms. Zheng, who lives in northern China’s Heilongjiang Province.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「就沒有這個契機讓他開口，」住在中國北部黑龍江省的鄭女士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then she saw a livestream promoting a gadget she could wear to make her conversant in English.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後來，她在網上的直播中看到一種可穿戴設備，這種設備能讓她流利地說英語。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has two parts: a mask that covers her mouth, and a speaker that hangs around her neck. Ms. Zheng speaks Chinese into the mask, which also muffles her voice. Then, a translation comes out of the speaker. She began wearing it around the house, for 30 to 60 minutes a day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該設備由兩部分組成：一個遮住嘴巴的口罩，以及一個掛在脖子上的揚聲器。鄭女士對著能消音的口罩說中文，然後揚聲器裡就會傳出翻譯的英文。她開始在家裡戴它，每天30到60分鐘。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704551" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704551" width="480"></iframe></div></div></div></div></div></div><div class="big_ad" data-google-query-id="CP-4uv7Gh5MDFYbpGAIdi_808A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The roughly $375 device, called Native Language Star, draws on speech and language models developed by several Chinese technology firms, according to the company, based in Shenzhen, that makes the device.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款名為母語星球的設備售價約人民幣2500元。製造商是一家位於深圳的企業，據其宣稱，該產品利用了中國幾家科技公司開發的語音和語言模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Zheng said the translations were sometimes stiff. But she said that after about a month, her son was speaking more confidently and initiating conversations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鄭女士表示，翻譯有時會比較生硬。但她說，大約一個月後，兒子說英語變得自信了，並會主動發起對話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704555" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704555" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Zheng also uses the device with her 5-year-old daughter, who had never learned English before. The child can now describe daily tasks, like getting dressed and putting her shoes on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鄭女士還會與五歲的女兒一起使用該設備，女兒之前從未學過英語。現在，她已經能描述穿衣、穿鞋等日常活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We say, ‘Now is English time, let’s all speak in English,’ and I’ll put that thing on,” Ms. Zheng said. “And then they just say whatever they know.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們會說：『我們說，現在是英語時間啊，我們大家都說英語，然後我帶我掛著那個東西說，」鄭女士說，「然後他倆就是自己會啥說啥。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704558" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704558" width="480"></iframe></div></div></div></div></div></div><div class="big_ad" data-google-query-id="CNPLuv7Gh5MDFTXdGAIdIfUHFw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A Chatbot With ‘Eyes’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>長了「眼睛」的聊天機器人</b><b></b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Li Linyun, a stay-at-home mother, used to fight with her 10-year-old daughter, Weixiao, over her studies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全職母親李琳雲（音）以前常常因為學習問題和10歲的女兒微笑（音）發生爭執。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now Ms. Li has delegated supervision of Weixiao’s schoolwork to an A.I. chatbot.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，李女士已經把監督微笑做功課的任務交給了一款人工智慧聊天機器人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s a 24-hour online teacher, and it’s knowledgeable and extremely patient,” said Ms. Li, who lives in Hunan Province, in central China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它就是一個24小時在線的一個老師， 而且知識淵博，還非常具有耐心，」住在華中省份湖南的李女士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704563" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704563" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Li uses Doubao, China’s most popular A.I. chatbot, which was created by ByteDance, the parent company of TikTok. It has a camera function, which parents refer to as Doubao’s “eyes.” People can use it to learn more about their surroundings, for instance by asking Doubao to identify plants or give more details about museum artifacts. (ChatGPT has a similar function for paying users; Doubao’s is free.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李女士使用的是中國最受歡迎的人工智慧聊天機器人豆包，由TikTok的母公司字節跳動開發。它具有攝像頭功能，家長們稱之為豆包的「眼睛」。人們可以用它來了解周圍的環境，例如讓豆包識別植物，或介紹博物館文物的更多信息。（ChatGPT為付費用戶提供類似功能；豆包則是免費的。）</div></div></div></div></div><div class="big_ad" data-google-query-id="CNDFuv7Gh5MDFW0MtAMdXSo7MQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After more experimentation, Ms. Li learned that Doubao could explain grammar rules better than she ever could.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經過多番嘗試，李女士發現豆包對語法規則的解釋比她自己清楚得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704662" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010704662" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Weixiao said she liked that she could ask Doubao to repeat explanations as many times as she needed, while her teachers moved on quickly. “It explains in more detail, so I can understand,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微笑說，她喜歡可以隨時讓豆包反覆解釋，而她的老師通常很快就繼續講新的內容了。「我覺得它講的更詳細，讓我能聽懂，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Li also began asking Doubao to grade completed homework assignments by uploading a photo to the app.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李女士還開始讓豆包給已經做完的作業評分，只需給作業拍照然後上傳到應用中。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/23/video/china-ai-homework/china-ai-homework-jumbo.jpg" src="https://static01.nyt.com/images/2026/02/23/video/china-ai-homework/china-ai-homework-jumbo.jpg"/></div><figcaption><span></span> <cite>Li Linyun</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The chatbot identifies wrong answers and corrects them, Ms. Li said, though it sometimes makes mistakes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李女士說，這個聊天機器人可以找出錯誤答案並進行糾正，儘管有時也會出錯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The camera can also monitor Weixiao’s posture. But Ms. Li said she rarely used that feature, because her daughter didn’t like the feeling of being watched.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">攝像頭還可以監測微笑的坐姿。但李女士說，她很少使用這個功能，因為女兒不喜歡被監視的感覺。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIfauv7Gh5MDFa85tAMdDJsZSQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010693930" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010693930" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Li said she wasn’t worried about feeding so much footage of Weixiao to the chatbot. In the social media age, “we don’t have a lot of privacy anyway,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李女士表示，她並不擔心向聊天機器人提供這麼多關於女兒的影像。在社群媒體時代，「我覺得我們也沒有很多隱私，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And the benefits were more than worthwhile. She no longer had to spend hundreds of dollars a month on English tutoring, and Weixiao’s grades had improved. “It makes educational resources more equitable for ordinary people,” Ms. Li said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且由此帶來的好處是值得的。她無需每月再花費幾千塊請英語家教，微笑的成績也提高了。「可以讓我們普通人的這個教育資源能夠更加公平一些，」李女士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her relationship with Weixiao had improved, too, she said. “To ease tensions in a parent-child relationship, you can’t spend too much time on homework,” she said. “Just encouraging her is enough.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她還表示，自己和女兒的關係也改善了。「然後也就是親子關係，其實如果想要緩解的話，真的是不能在作業上花太多時間，」她說，「給她鼓勵就行了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Creating Learning Games</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>製作學習遊戲</b><b></b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yin Xingyu, 37, uses A.I. chatbots like DeepSeek in her job as a marketer in Shenzhen. She started to wonder whether the tool could also help her 6-year-old daughter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">37歲的殷星昱在深圳從事市場營銷工作，在工作中會使用DeepSeek這樣的人工智慧聊天機器人。她開始思考這個工具是否也能幫到她六歲的女兒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Yin didn’t know how to code, so she turned to what’s known as “vibecoding” instead: using A.I. models to build software by describing what you want in plain language. She worked with DeepSeek to build an interactive English word game for her daughter. The chatbot wrote the code for her.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">殷星昱不會編程，於是轉而使用一種被稱為「氛圍編程」的方法：用自然語言描述需求，讓人工智慧模型幫助構建軟體。她與DeepSeek一起為女兒開發了一個互動式英語單詞遊戲。代碼是由聊天機器人為她寫的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010716630" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010716630" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She is now sharing the prompts on social media so other parents can input them into their own chatbots and replicate her games.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她在社群媒體上分享了這些提示詞，以便其他家長可以將其輸入自己的聊天機器人，複製她的遊戲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Yin has also experimented with other models. She used Google’s A.I. image generator, Nano Banana Pro, to create comic strips that used her daughter’s Chinese vocabulary words, starring her favorite characters from movies like “Zootopia” and “Frozen.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">殷星昱還嘗試了其他模型。她使用谷歌的人工智慧圖像生成工具Nano Banana Pro，用女兒能理解的中文詞創作連環畫，主角是她女兒最喜歡的《瘋狂動物城》和《冰雪奇緣》等電影中的角色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010716616" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010716616" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Yin said she didn’t think that her daughter would become dependent on A.I., because she designed the games to prioritize active thinking over passive stimulation. She plans to encourage her daughter to use the tools even more as she gets older; for example, by using chatbots to brainstorm ideas for essays.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">殷星昱說，她並不擔心女兒會對人工智慧產生依賴，因為她設計這些遊戲時更強調主動思考，而不是被動的刺激。隨著女兒長大，她甚至計劃鼓勵她更多地使用這些工具，比如利用聊天機器人為作文構思點子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Most likely that’s how the future will be, and I want her to get used to it from a young age,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我覺得大概率這個未來是這樣子的，你要去習慣，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>‘A.I. Self-Study Rooms’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>「AI自習室」</b><b></b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not every effort to use A.I. for education has been successful. Some companies have rolled out products that critics say are more hype than substance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">並不是所有利用人工智慧進行教育的嘗試都取得了成功。一些公司推出的產品，被批評者認為噱頭大於實質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So-called “A.I. self-study rooms,” for example, are advertised as physical spaces where students can learn from A.I.-powered tablets that tailor learning plans to individual needs. Fees range from a few dollars an hour to hundreds of dollars a month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如所謂的「AI自習室」，被宣傳為一種實體學習空間，學生可以在那裡使用由人工智慧驅動的平板電腦學習，這些設備會根據個人需求制定學習計劃。收費從每小時幾十元到每月上千元不等。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A state media report from 2024 about the trend showed a classroom in Zhejiang Province lined with cubicles, where students sat quietly in front of tablets that assessed their completion of assignments for accuracy and speed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，有官媒報導了浙江的一個AI自習室，裡面排列著隔間，學生們安靜地坐在平板電腦前，平板電腦會根據學生完成作業的準確率和速度進行評估。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010715091" width="480"></iframe></div></div></div><div class="col-lg-6"><div class="article-paragraph"><div class="" data-poster=""><iframe allowfullscreen="true" frameborder="0" height="321" scrolling="0" src="https://www.nytimes.com/video/players/offsite/index.html?videoId=100000010715091" width="480"></iframe></div></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But some parents and former employees have complained that the “A.I.” is merely a marketing facade for prerecorded lessons or other less advanced technology, and that the tablets are just basic, off-the-shelf devices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但一些家長和前員工抱怨說，所謂的「人工智慧」其實只是營銷外衣，背後不過是預先錄製的課程或其他較為落後的技術，而那些平板電腦也只是普通的現成設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">State media outlets have also accused the operators of some of the centers of trying to circumvent a 2021 ban on for-profit tutoring that was meant to shield children from having too much homework and families from spending too heavily. Many tutoring services have continued to operate underground. (The study centers have said that A.I. is doing the teaching, not tutors, so the ban does not apply.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官方媒體還指責，一些自習室的經營者試圖繞過中國2021年出台的營利性教輔禁令。該禁令旨在減少孩子的作業負擔，並避免家庭在補課上花費過多。但許多教輔服務仍在地下運營。（這些自習室則表示，教學由人工智慧完成，而不是由輔導老師，因此禁令不適用。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the study rooms have already shut down, according to media reports. The New York Times twice tried to visit one in Beijing, only to find it locked and empty, with posters purporting to show reviews from satisfied parents still on the walls.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據媒體報導，許多這樣的自習室已經關閉。《紐約時報》曾兩次嘗試探訪北京的一家AI自習室，卻發現大門緊鎖、空無一人，牆上的海報展示著家長的好評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">May Zeng, 24, worked at a study room in Jiangxi Province for two months last year, where she was in charge of making sure that students didn’t slack off. She thought that parents didn’t care as much about A.I. as they did about having somewhere to put their children.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">24歲的曾梅（音）去年在江西一家自習室工作了兩個月，她的職責是確保學生不會偷懶。她認為，家長其實並不那麼在意人工智慧，而更在意是否有一個地方可以把孩子送過去。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, A.I. was getting used — by Ms. Zeng herself. As part of her duties, she had to write feedback on each student’s progress.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，人工智慧還是被用上了——只是使用的人是曾梅自己。作為工作的一部分，她需要為每個學生寫學習進展反饋。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When I found I really had nothing to say, I’d just throw it to the A.I.,” she said. “In this A.I. self-study room, I was the one using the most A.I.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我發現自己有時候詞窮之後我就會給扔給它，」她說，「所以覺得在這個AI自習室，其實我用AI是用的最多的」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Siyi Zhao自北京對本文有研究貢獻。</p><p class="cn-p">王月眉(Vivian Wang)是《紐約時報》駐華記者，常駐北京，撰寫關於中國的崛起及雄心如何塑造普通人日常生活的報導。</p><p class="cn-p">Jiawei Wang是《紐約時報》影片記者，常駐首爾。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260304/china-education-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
