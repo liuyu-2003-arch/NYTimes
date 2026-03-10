@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>婁燁，在電影創作和審查制度之間 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">婁燁，在電影創作和審查制度之間</h1>
+    <h2 class="en-headline">Making a Movie and Surviving China’s Censors</h2>
+    <div class="meta-line">NICOLAS RAPOLD <span style="margin: 0 8px;">•</span> 2019-08-29</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="鞏俐戴著墨鏡，在婁燁導演的《蘭心大劇院》中扮演一位女演員。" height="702" src="https://static01.nyt.com/images/2019/08/28/movies/28sp-louye-inyt1/merlin_159522231_3fe1c609-5712-4e5b-adca-c6ef8adb852e-master1050.jpg" width="1050"/><figcaption><span>鞏俐戴著墨鏡，在婁燁導演的《蘭心大劇院》中扮演一位女演員。</span> <cite>Ying Films</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>Sign up</i><i> for NYT Chinese-language Morning Briefing.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><i>[《紐約時報》推出每日中文簡報，為你介紹時報當日的重點英文報導，並推薦部分已被譯成中文的精選內容。新讀者請</i><i>點擊此處訂閱</i><i>，或發送郵件至cn.letters@nytimes.com加入訂閱。]</i></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lou Ye, the Chinese director, has had his share of run-ins with his country’s film censors over his successful and esteemed career.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在他成功而卓越的職業生涯中，中國導演婁燁在中國電影審查機構那裡也遇到過不少麻煩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was the two-year ban on making films after showing “Suzhou River” at the International Film Festival Rotterdam, the five-year ban after making “Summer Palace” and, most recently, a protracted approval process for “The Shadow Play,” which was shown in February at the Berlin Film Festival. It is almost news when Mr. Lou does not receive increased official attention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他在鹿特丹國際電影節上放映《蘇州河》後被禁拍電影兩年，在《頤和園》後被禁五年，前不久在2月的柏林電影節上放映的《風中有朵雨做的雲》也經歷了漫長的審批過程。</span>官方對婁燁的關注沒有繼續增加，這本身幾乎就是一條新聞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An exception to this track record is “Saturday Fiction,” Mr. Lou’s new film set in wartime Shanghai in December 1941 and centered on a Shanghai actress embroiled in intrigue. Next week, it will have its world premiere at the Venice International Film Festival.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">婁燁的新片《蘭心大劇院》是個例外，它以1941年12月的戰時上海為背景，講述一位捲入陰謀的上海女演員的故事。下週，它將在威尼斯國際電影節上全球首映。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’ve been through the censorship process many times, and as a filmmaker it’s never entirely clear to me why censors react the way they do. I don’t quite know,” Mr. Lou said in a phone interview from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我經歷過很多審查，作為電影人，我從來都不清楚審查機構為什麼會有那樣的反應，」婁燁從中國接受電話採訪時說。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="在婁燁的早期作品發布後，中國曾兩次禁止他在一段時間內拍攝電影。" data-src="https://static01.nyt.com/images/2019/08/28/movies/28sp-louye-inyt2/merlin_150530910_29679e34-367b-4db4-86b7-7b008a214880-jumbo.jpg" src="https://static01.nyt.com/images/2019/08/28/movies/28sp-louye-inyt2/merlin_150530910_29679e34-367b-4db4-86b7-7b008a214880-jumbo.jpg"/></div><figcaption><span>在婁燁的早期作品發布後，中國曾兩次禁止他在一段時間內拍攝電影。</span> <cite>Adam Berry/EPA, via Shutterstock</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Saturday Fiction” is one of 66 new features in the Official Selection for the<strong> </strong>Venice festival’s 76th edition, which runs from Wednesday to Sept. 7. Mr. Lou’s movie will screen alongside works by Hirokazu Kore-eda (“The Truth,” the festival’s opening-night selection), Olivier Assayas (“Wasp Network”), James Gray (“Ad Astra”), Noah Baumbach (“Marriage Story”), Roman Polanski (“J’Accuse”), Roy Andersson (“About Endlessness”), Pablo Larrain (“Ema”) and Steven Soderbergh (“The Laundromat”).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《蘭心大劇院》是第76屆威尼斯電影節正式競賽單元的66部新長片之一，本屆電影節將於本週三至9月7日舉行。婁燁的電影將與是枝裕和(Hirokazu Kore-eda)的《真相》（The Truth，本屆電影節的開幕電影）、奧利維爾·阿薩亞斯(Olivier Assayas)的《黃蜂網路》(Wasp Network)、詹姆斯·格雷(James Gray)的《星際探索》(Ad Astra)、諾亞·鮑姆巴什(Noah Baumbach)的《婚姻故事》(Marriage Story)、羅曼·波蘭斯基(Roman Polanski)的《我控訴》(J’Accuse)、羅伊·安德森(Roy Andersson)的《關於無盡》(About Endlessness)、帕布羅·拉雷恩(Pablo Larrain)的《厄瑪》(Ema)和史蒂芬·索德伯格(Steven Soderbergh)的《洗錢事務所》(The Laundromat)一起上映。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The festival is widely regarded as a prestige showcase that raises the curtain on the fall season and the vying for ink and little gold men. The lineup this year includes the hotly anticipated “Joker” from Todd Phillips, the election drama “The Perfect Candidate” from the Saudi Arabian filmmaker Haifaa al-Mansour and the Imelda Marcos documentary “The Kingmaker” from Lauren Greenfield.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">威尼斯電影節被普遍認為是一個有威望的舞台，標誌著秋季的開始，為爭奪媒體曝光和小金人的大戰拉開序幕。今年的入圍影片包括備受期待的托德·菲利普斯(Todd Phillips)的《小丑》(Joker)、沙烏地阿拉伯電影導演海法亞·曼蘇爾(Haifaa al-Mansour)關於選舉的《完美候選人》(The Perfect Candidate)以及勞倫·格林菲爾德(Lauren Greenfield)關於伊梅爾達·馬科斯(Imelda Marcos)的紀錄片《國王締造者》(The Kingmaker)。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLbI0qiPlJMDFYUVdgYdnxgs0A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Saturday Fiction” is not a fall release, but it features Gong Li as a famous actress involved in a theatrical production and espionage. Mr. Lou has been called “contemporary Chinese cinema’s greatest director of actors” by the critic Shelley Kraicer, and the new film’s setting on the eve of Pearl Harbor promises to match the high drama of Mr. Lou’s other historical films.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《蘭心大劇院》並非秋季檔影片，但鞏俐在片中出演了一名參與一場戲劇製作和間諜活動的著名演員。婁燁被影評人謝莉·克拉克(Shelley Kraicer)稱為「當代中國電影最偉大的導演」，新片的背景設定在珍珠港事件前夕，將與婁燁其他歷史題材影片的高度戲劇性相媲美。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Summer Palace” was set in Tiananmen Square in 1989, and “Purple Butterfly” in Manchuria and Shanghai during the Japanese occupation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>《頤和園》以1989年的天安門廣場為背景，《紫蝴蝶》以日本佔領時期的滿洲和上海為背景。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Global events aside, Mr. Lou found a special appeal in the new film’s familiar theatrical milieu. His parents worked backstage in theater, and he fondly remembers the Lyceum Theater in Shanghai that features in the film.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">撇開全球事件不談，婁燁對這部新片中熟悉的劇場環境情有獨鍾。他的父母都曾在劇院的後台工作，他很懷念電影中出現的上海蘭心大劇院。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I am a product of the theatrical world,” he said. “So it was a very special experience being able to go back to Shanghai” — from Beijing, where he lives — “after a long time and shoot this movie in that neighborhood.” (The film’s title in China is “Lyceum Theater.”)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我是戲劇世界的產物，」他說。「所以過了很久之後還能」——從他目前居住的北京——「回到上海，在那一帶拍攝這部電影，是一種非常特殊的經歷。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The complex plot takes place over six intense days and is a mix of period drama, romantic melodrama and spy story. Like Mr. Lou’s previous work, the film follows the passions of its characters. The story was adapted from the novel “Death in Shanghai” by Hong Ying into a screenplay by Mr. Lou’s collaborator Ma Yingli, who is also a producer and director of documentaries, including a behind-the-scenes look at “The Shadow Play.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">影片複雜的故事情節發生在六天的緊湊時間裡，集歷史劇、浪漫情節劇和間諜故事於一體。和婁燁之前的作品一樣，這部電影也跟隨著角色的激情前行。故事改編自虹影的小說《上海之死》，由婁燁的合作夥伴馬英力擔任編劇。馬英力也是紀錄片製片人和導演，作品包括關於《風中有朵雨做的雲》幕後故事的紀錄片。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="馬英力與婁燁合作完成這個項目，她說，她想「講述一個關於小事情如何真正影響歷史的故事」。" data-src="https://static01.nyt.com/images/2019/08/28/movies/28sp-louye-inyt3/merlin_150530682_37e7a934-3386-4688-ac0a-67d77377661e-master1050.jpg" src="https://static01.nyt.com/images/2019/08/28/movies/28sp-louye-inyt3/merlin_150530682_37e7a934-3386-4688-ac0a-67d77377661e-master1050.jpg"/></div><figcaption><span>馬英力與婁燁合作完成這個項目，她說，她想「講述一個關於小事情如何真正影響歷史的故事」。</span> <cite>Adam Berry/EPA, via Shutterstock</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Ma, who studied filmmaking in Berlin before the wall fell, saw wartime Shanghai as a prime space to explore storytelling and structure. She said she believed the depiction of double lives like that of the lead character could resonate for many viewers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在柏林牆倒塌之前，馬英力曾在柏林學習電影製作，她認為戰時上海是探索敘事和結構的極佳場所。她說，她相信像主角那樣的雙重生活描寫會引起很多觀眾的共鳴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I want to tell a story about how little things can really affect history in general and how we all have a role in life to play when it comes to things around us,” Ms. Ma said in a phone interview. “It is a good analogy for people who have lives on and offstage, with different identities and choices.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我想講一個故事，講一件小事會如何真正影響歷史，講一講在涉及身邊的事情時，我們在生活中都扮演了某種角色，」馬英力在接受電話採訪時說。「對於生活在舞台內外、有著不同身份和選擇的人來說，這是一個很好的比喻。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CPyY06iPlJMDFVwJdgYdH_MUOQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In treacherous plot, Gong Li’s character juggles an ex-husband, an adoptive father and the temptation of escaping the war with her lover. (The international cast includes Pascal Greggory, Joe Odagiri and Mark Chao.) For Mr. Ma, the fraught moment in history unexpectedly recalled her time as a student in Germany, though the connection did not come to mind while writing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在包含著背叛的<span>劇情中，鞏俐飾演的角色在前夫、養父和與情人逃離戰爭的誘惑之間掙扎。</span>（國際演員陣容包括帕斯卡·格雷戈裡[Pascal Greggory]、喬·奧達基裡[Joe Odagiri]和趙又廷。）對馬英力來說，那個令人憂慮的歷史時刻意外地讓她想起自己在德國讀書的時光，不過在創作劇本的時候，她並沒有想到這種聯繫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When I was in East Berlin during the 1980s, the wall was still there,” she said. “I was surrounded. There wasn’t any freedom around me.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「1980年代我在西柏林時，柏林牆還在，」她說。「我被包圍著，周圍沒有任何自由。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite the story’s setting, the movie had a smooth process of approval by the Chinese censors. Mr. Lou and Ms. Ma attributed this to the historical nature of the film, which was shot in black and white.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管故事有著這樣的背景，電影還是順利通過了中國審查機構的審查。婁燁和馬英力認為，這是因為該片的歷史性，它是一部黑白片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In terms of the subject matter, the themes and the ideas I’m trying to deal with in this new film, I feel there are similarities with ‘The Shadow Play ’” Mr. Lou said. “They’re both movies that deal with reality versus illusion, what’s real versus what’s fake. Perhaps the distance in terms of time and space makes this movie more palatable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在題材、主題和我在這部新片中處理的想法方面，我覺得它和《風中有朵雨做的雲》有相似的地方，」婁燁說。「它們都是關於現實與幻覺 、真實與虛假的電影。也許時間和空間上的距離讓這部電影更容易接受。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The approval process for Chinese releases can be unpredictable. The time frame can vary, Ms. Ma said. It begins with a screenplay review, which typically takes 20 days or less. But once the film is shot and a final cut is ready to present, it might take significantly more time. For “Saturday Fiction,” approval did not take long, to Mr. Lou’s pleasant surprise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國影片的審批過程可能無法預測。馬英力說，不同影片的審批時間可能大不相同。這個過程從劇本審查開始，通常需要20天或更少的時間。但是等到電影拍攝完成，並呈交了最終版本之後，審查可能需要多得多的時間。令婁燁驚喜的是，《蘭心大劇院》沒過多久就獲得了批准。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the possibility of unforeseen delays or cancellation can make a festival programmer a little nervous. That is an understandable concern after the high-profile withdrawal of Zhang Yimou’s latest film “One Second” at the same Berlin festival where Mr. Lou’s “The Shadow Play” appeared.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，影片上映可能出現無法預料的延遲或取消，這種情況會讓電影節的組織者感到有點緊張。就在婁燁的《風中有朵雨做的雲》上映的柏林電影節上，張藝謀的新片《一秒鐘》退出引起熱議，發生這種事之後，組織者的擔憂是可以理解的。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO2m06iPlJMDFYcTdgYdrAM5TA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Knowing that the situation in China is so complicated, we were a little bit worried,” Alberto Barbera, director of the Venice festival, said by phone. Mr. Barbera had seen the film in an early form in April, and by June was assured that it would be free to screen abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們知道中國的情況很複雜，所以有點擔心，」威尼斯電影節總監阿爾貝托·巴貝拉(Alberto Barbera)在接受電話採訪時說。今年4月，巴貝拉已經初步看過這部影片，到6月，他得到保證，該片可以在海外上映。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The approval means that the drama of “Saturday Fiction” should be limited to what is on the screen. But if Mr. Lou’s previous experiences with the approval process have affected his filmmaking, he is not showing it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的批准意味著《蘭心大劇院》的上映不會節外生枝。但是，就算婁燁之前遭受審批的經歷影響了他的電影創作，至少他並沒有表現出來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When I am in the creative process, when I am focusing on creating the film, I am only focusing on that, I don’t think about the censors at all,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當我在創作過程中，當我專注於創作電影時，我只專注於這件事，我根本不考慮審查，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With two films in the spotlight in one year, Mr. Lou and Ms. Ma appear to have found a way to continue working at a high level. The proof lies in the premiere of “Saturday Fiction,” next week on the Lido.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">婁燁和馬英力在一年內拍攝了兩部電影，他們似乎找到了保持高水平工作的方法。證據就在《蘭心大劇院》下週在麗都島的首映式上。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/culture/20190829/venice-film-festival-lou-ye-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
