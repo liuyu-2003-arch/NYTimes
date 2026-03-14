@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>烏克蘭成功製造「去中國化」的無人機 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">烏克蘭成功製造「去中國化」的無人機</h1>
+    <h2 class="en-headline">Ukraine Reaches a Milestone: Making ‘China-Free’ Drones</h2>
+    <div class="meta-line">MARIA VARENIKOVA <span style="margin: 0 8px;">•</span> 2026-03-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2024年，頓涅茨克地區的烏克蘭無人機操作員。一名烏克蘭指揮官稱，俄軍傷亡現在大部分是由無人機造成的。" height="701" src="https://static01.nyt.com/images/2026/03/11/multimedia/11int-ukraine-china-free-03-mftg/11int-ukraine-china-free-03-mftg-master1050.jpg" width="1050"/><figcaption><span>2024年，頓涅茨克地區的烏克蘭無人機操作員。一名烏克蘭指揮官稱，俄軍傷亡現在大部分是由無人機造成的。</span> <cite>Nicole Tung for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Down a stairway and behind an unmarked door, dozens of men toil in a vast basement workshop in Ukraine. Wearing headlamps, they lean over circuit boards as wisps of smoke rise from soldering irons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沿著樓梯往下，在一扇沒有任何標記的門後面，幾十名男子正在烏克蘭一個巨大的地下車間裡忙碌著。他們戴著頭燈，俯身在電路板上工作，電烙鐵升起縷縷煙霧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A year ago, most Ukrainian defense companies could not produce these boards, which are key ingredients in small exploding drones. But this advance, among others, has helped the country reach a milestone: It can now make drones with no components imported from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一年前，大多數烏克蘭國防企業還無法生產這些電路板，而它們正是小型自殺式無人機的關鍵部件。但這一進展以及其他突破幫助烏克蘭達成了一個里程碑：如今它可以製造完全不依賴中國進口零部件的無人機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine is prioritizing self-sufficiency in the production of drones as they increasingly dominate the battlefield. They now account for more than 90 percent of Russian casualties, according to Maj. Robert Brovdi, commander of Ukraine’s Unmanned Systems Forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著無人機在戰場上日益佔據主導地位，烏克蘭正把重點放在無人機生產的自給自足上。烏克蘭無人系統部隊指揮官羅伯特·布羅夫迪少校表示，俄軍傷亡現在有九成以上是由無人機造成的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Drones are also playing a major role in the U.S.-Israeli war against Iran. The Iranian military has attacked countries in the region with hundreds of its Shahed drones, and the United States has used its own version of the Shahed for the first time in combat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無人機在美以對伊朗的戰爭中也發揮著重要作用。伊朗軍方動用數百架沙赫德無人機對其他中東國家發起襲擊，而美國也首次在實戰中使用了自己的沙赫德版本。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNrR1NaXnpMDFXjU_QUdfbMv0A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine will not be mass-producing drones with no Chinese components anytime soon, because it’s still much cheaper to use them. Given China’s dominance of global manufacturing, it is hard to define any drone as truly “China-free.” Many components made outside China still contain Chinese parts or raw materials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，烏克蘭短期內還不會大規模生產完全不含中國零部件的無人機，因為使用這些零部件仍然便宜得多。鑒於中國在全球製造業的主導地位，不含中國元素的無人機很難做到。許多在中國境外製造的零部件仍然含有中國的零件或原材料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Ukrainian officials believe it is important to make drones with as few components from China as possible, and to be able to continue making drones if Chinese supplies should be cut off.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但烏克蘭官員認為，製造盡可能少用中國組件的無人機，並且在中國供應可能被切斷的情況下能夠繼續製造無人機，這一點很重要。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine is one of many nations that have been working to reduce their reliance on Chinese supply chains. The United States has limited the use of Chinese products in military hardware and other critical systems over security concerns. In addition, global shocks in recent years have shown the vulnerabilities that come with making China the single source of any product.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭只是眾多試圖減少對中國供應鏈依賴的國家之一。出於安全考慮，美國已經限制在軍用硬件和其他關鍵系統中使用中國產品。此外，近年來的全球衝擊也表明，如果把中國作為某種產品的單一來源，將帶來巨大的脆弱性。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="烏克蘭士兵走過扎波羅熱地區一架俄羅斯第一人稱視角無人機的殘骸，攝於去年。" data-src="https://static01.nyt.com/images/2026/03/11/multimedia/11int-ukraine-china-free-02-mftg/11int-ukraine-china-free-02-mftg-master1050.jpg" src="https://static01.nyt.com/images/2026/03/11/multimedia/11int-ukraine-china-free-02-mftg/11int-ukraine-china-free-02-mftg-master1050.jpg"/></div><figcaption><span>烏克蘭士兵走過扎波羅熱地區一架俄羅斯第一人稱視角無人機的殘骸，攝於去年。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Given the risks of sourcing components from China, which is unfriendly to us, the main task is to produce them in Ukraine,” Major Brovdi said in an interview. “The strength of the Ukrainian manufacturer lies in the fact that import substitution has already taken place.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「考慮到從中國採購零部件的風險——而中國對我們並不友好——主要任務就是在烏克蘭本土生產這些部件，」布羅夫迪少校在採訪中說。「烏克蘭製造商的優勢在於，進口替代已經實現。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two companies in Ukraine that have built “China-free” drones were picked to compete for contracts in a Pentagon “drone dominance program” under which the United States plans to buy thousands of low-cost attack drones. One of the companies, Ukrainian Defense Drones Tech Corporation, where the men were soldering circuit boards in the basement workshop, was among 11 in all selected last week for possible American drone orders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭兩家製造「無中國零部件」無人機的企業被選中參與五角大廈「無人機主導計劃」的合同競爭。根據這一計劃，美國打算採購數千架低成本攻擊無人機。其中一家是烏克蘭國防無人機科技公司，也就是那些男子在地下車間焊接電路板的公司。該公司是上週最終入選可能獲得美國無人機訂單的11家企業之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine Defense Drones makes most of its own components, and European suppliers fill most of the gaps.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭國防無人機公司自行生產大部分零部件，其餘則由歐洲的供應商填補。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKr41NaXnpMDFbbm_QUdv4Ubug" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That reflects a sea change over the course of the war. In the first year after the Russian invasion in February 2022, nearly all of Ukraine’s drones came from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這反映出了俄烏戰爭期間的一個巨大變化。在2022年2月俄羅斯入侵後的第一年，烏克蘭幾乎所有的無人機都來自中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As demand surged, Beijing imposed export restrictions in 2023 and expanded them in 2024. While China is officially neutral in the war, experts say that Beijing has given its partner Russia preferential access to components that can still be exported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著需求激增，北京於2023年實施了出口限制，並於2024年擴大了限制範圍。雖然中國在戰爭中官方保持中立，但專家表示，北京讓其夥伴俄羅斯在獲取仍可出口的組件方面享有優先待遇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the rules tightened, Ukraine resorted to middlemen to buy some parts, and Ukrainian companies began to view the Chinese market as increasingly unreliable. Kyiv turned its focus to building its own drones, and eventually to doing so with fewer Chinese components.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國出口管制的收緊，烏克蘭不得不通過中間商購買一些零件，而烏克蘭公司也開始認為中國市場越來越不可靠。基輔將重心轉向自行生產無人機，並逐漸減少對中國零部件的依賴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By 2024, the vast majority of drones that Ukraine sent to the front were assembled domestically — but still almost entirely with Chinese components. A year later, however, the share of parts from China in Ukraine’s drones had fallen to about 38 percent, according to the Ukrainian Council of Defense Industry and the Snake Island Institute, a think tank in Kyiv.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到2024年，烏克蘭送往前線的絕大多數無人機都是國內組裝的——但幾乎所有零部件仍來自中國。不過一年之後，根據烏克蘭國防工業委員會和基輔智庫蛇島研究所的數據，烏克蘭無人機中來自中國的零部件比例已降至約38%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine still buys cheaper Chinese components because the Ukrainian military needs huge numbers of drones and has a limited budget to buy them. Drone missions fail at very high rates, another reason that Ukraine tries to keep costs down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭仍然購買價格更便宜的中國零部件，因為烏克蘭軍方的無人機需求量巨大，而預算又有限。無人機任務失敗率也非常高，這也是烏克蘭努力壓低成本的原因之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to a Ukrainian official who asked for anonymity to discuss sensitive procurement issues, Ukrainian and Russian companies often buy parts from the same factories in China. Chinese bosses, the official said, keep a precise schedule at production sites so that Ukrainian and Russian buyers do not cross paths.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名烏克蘭官員表示，烏克蘭和俄羅斯的公司往往從中國同一家工廠採購零部件。由於涉及敏感採購問題，這名官員要求匿名。他說，中國的工廠老闆會精確安排生產時間表，以避免烏克蘭和俄羅斯的買家在工廠相遇。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPSZ1daXnpMDFdDA_QUdIxUEoA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Col. Pavlo Palisa, the deputy head of Ukraine’s presidential office and a military adviser to President Volodymyr Zelensky, said that Kyiv was scaling up domestic weapons production in part to strengthen its hand in peace negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭總統辦公室副主任、總統澤連斯基的軍事顧問帕夫洛·帕利薩上校表示，基輔正在擴大國內武器生產，部分是為了在和平談判中增強自己的籌碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If we import, that means dependency, and any dependency means a weaker position,” he said in an interview.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果我們依賴進口，就意味著依賴別人，而任何依賴都會讓我們處於更弱的地位，」他在採訪中說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Expanding the sources of components, Colonel Palisa said, would make China less likely to impose further export restrictions, knowing that they would have a limited effect. “When there are alternatives, they don’t act up as much,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">帕利薩上校表示，擴大零部件來源也會促使中國不願進一步實施出口限制，因為知道那樣的效果有限。「當存在替代方案時，他們就不會那麼輕易採取限制措施，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukrainian Defense Drones, under the brand name F-Drones, produces exploding first-person-view quadcopter drones that have been used more than any other drone to destroy Russian heavy equipment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭國防無人機公司以F-Drones品牌生產第一人稱視角四軸旋翼攻擊無人機，這種無人機在摧毀俄羅斯重型裝備方面的使用率超過任何其他類型的無人機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The country was saved by $500 drones,” said Hnat Buyakin, the company’s founder, referring to the beginning of the war in 2022, when Ukraine was at a heavy disadvantage to Russia in personnel and ammunition. Soldiers improvised, modifying cheap Chinese drones in makeshift workshops along the front line to drop handmade bombs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「拯救這個國家的是價值500美元的無人機，」該公司創始人赫納特·布亞金說，他指的是2022年戰爭初期，當時烏克蘭在人員和彈藥方面遠遠落後於俄羅斯。士兵們臨時想辦法，在前線附近的簡陋作坊裡改裝廉價的中國無人機，用來投擲自製炸彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukrainian Defense Drones began making drones in 2023. Initially, all of its components were Chinese. Within a year, however, it had localized production of carbon fiber frames and antennas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭國防無人機公司在2023年開始製造無人機。最初所有零部件都來自中國。然而一年之內，它就實現了碳纖維機架和天線的本土生產。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，在哈爾科夫地區，烏克蘭士兵在掩體裡製造無人機。" data-src="https://static01.nyt.com/images/2026/03/11/multimedia/11int-ukraine-china-free-01-mftg/11int-ukraine-china-free-01-mftg-master1050.jpg" src="https://static01.nyt.com/images/2026/03/11/multimedia/11int-ukraine-china-free-01-mftg/11int-ukraine-china-free-01-mftg-master1050.jpg"/></div><figcaption><span>去年，在哈爾科夫地區，烏克蘭士兵在掩體裡製造無人機。</span> <cite>David Guttenfelder/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is precision work. “These antennas are a separate kind of magic — a millimeter deviation in the wire and it doesn’t work properly,” Mr. Buyakin said. The company now produces up to 15,000 antennas a day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一項精密工作。「這些天線是另一種意義上的魔法——導線只要偏差一毫米，就無法正常工作，」布亞金說。公司現在每天最多可以生產1.5萬根天線。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By 2025, Ukrainian Defense Drones had expanded to produce flight controllers, speed regulators, radio modems and video transmission systems. Essentially, all its components were made in Ukraine except for the cameras.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到2025年，烏克蘭國防無人機公司的產品擴展到飛控系統、速度調節器、無線電調製解調器和影片傳輸系統。基本上，除了攝像頭外，所有部件都在烏克蘭製造。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIG31daXnpMDFTzA_QUdte0j1g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company has since gained technology for cameras, too, which it hopes to produce in Europe. For now, it buys cameras from another Ukrainian company that imports parts from Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司此後也獲得了攝像頭技術，並希望在歐洲生產。目前，它從另一家從歐洲進口零部件的烏克蘭公司採購攝像頭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Buyakin described the limits to “China-free” production. While his company makes carbon frames for drones, for example, the carbon itself is imported, usually from China, because that is cheaper.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布亞金也談到了「無中國零部件」生產的局限性。例如，他的公司雖然生產無人機的碳纖維機架，但碳纖維材料本身通常仍需要進口，往往來自中國，因為那樣更便宜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Batteries that power drones are also still largely produced in China, which dominates supply chains for battery materials like lithium and rare-earth metals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為無人機供電的電池目前也大多在中國生產，因為中國在鋰和稀土金屬等電池材料供應鏈中佔據主導地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine has lithium deposits, but they are undeveloped. Investing in them has been a goal of a Ukrainian agreement with the United States on mineral development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭擁有鋰礦藏，但尚未開發。投資這些資源一直是烏克蘭與美國達成的礦產開發協議的目標之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine’s goals do not end at producing drones without Chinese components. Designs in Ukraine are updated monthly based on battlefield performance, a contrast with the slow pace of traditional weapons production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭的目標不僅僅是生產不含中國零部件的無人機。烏克蘭的無人機設計會根據戰場表現進行每月更新，這與傳統武器生產緩慢的節奏形成鮮明對比。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his company’s move toward China-free manufacturing, Mr. Buyakin said, “We deliberately chose the most difficult path because Ukraine is now fighting for its place in a technological war, and we are gaining this experience with our own blood.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">談到公司「去中國化」的轉型努力時，布亞金說：「我們故意選擇了一條最困難的道路，因為烏克蘭正在一場技術戰爭中爭奪立足之地，而我們正在用鮮血換取這份經驗。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Nataliia Novosolova對本文有報導貢獻。</p><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Maria Varenikova報導烏克蘭及該國與俄羅斯的戰爭。</p></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260312/ukraine-drones-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

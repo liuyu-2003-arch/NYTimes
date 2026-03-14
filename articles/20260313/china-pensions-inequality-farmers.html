@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「對農民有點太虧了」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「對農民有點太虧了」</h1>
+    <h2 class="en-headline">At China’s Big Political Meeting, a Rare Debate About Inequality</h2>
+    <div class="meta-line">王月眉 <span style="margin: 0 8px;">•</span> 2026-03-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國政府表示，將把農村居民的基礎養老金最低標準每月提高20元，使總額達到每月163元。" height="700" src="https://static01.nyt.com/images/2026/03/12/multimedia/12int-china-pensions-01-zkpv/12int-china-pensions-01-zkpv-master1050.jpg" width="1050"/><figcaption><span>中國政府表示，將把農村居民的基礎養老金最低標準每月提高20元，使總額達到每月163元。</span> <cite>Andrea Verdelli for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the Chinese government gathered this month for its biggest political meeting of the year, it laid out big ambitions. It will keep boosting military spending. It will work to dominate artificial intelligence. It will reinforce its manufacturing prowess.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月為年度最大的政治會議聚集在一起時，中國政府勾勒出了宏大的雄心。它將繼續增加軍費開支。它將努力主導人工智慧領域。它將強化其製造業實力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But when it comes to some of the country’s most vulnerable citizens, the plan is decidedly less lofty. The government said it would increase the minimum basic pension for rural residents by 20 yuan a month, or less than $3, to a grand total of about $24 a month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在涉及該國一些最脆弱的公民時，計劃顯然沒那麼遠大。政府表示，將把農村居民的基礎養老金最低標準每月提高20元，使總額達到每月163元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The promised increase is so meager that it has prompted widespread calls for more — even from representatives to China’s rubber-stamp legislature who usually spend their annual meeting praising Beijing’s plans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一承諾的增幅是如此微薄，以至於引發了要求增加的廣泛呼聲——甚至包括中國的橡皮圖章立法機構的代表們，他們通常在這場年度會議上都在讚美北京的計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is just too unfair to farmers,” Guo Fenglian, a representative and village leader who was once praised by Mao as a model worker, told a Chinese reporter at the weeklong legislative meeting in Beijing that ended Thursday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「對農民有點太虧了，」全國人大代表、曾被毛澤東讚譽為勞動模範的村幹部郭鳳蓮在週四結束的為期一週的北京立法會議上告訴一名中國記者。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Guo described seeing farmers in their 80s or 90s still working in the fields, sometimes with canes or stooped backs. “They’re already very old and don’t have the physical ability to work anymore. But the cost of living is high,” she said, according to the Workers’ Daily, a Communist Party publication.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>郭女士描述了她看到八九十歲的農民仍在田間勞作，有時拄著拐杖或弓著背。「他們已經很老了，已經失去了體力勞動的能動性。但是生活的成本也很高，」據共產黨刊物《工人日報》報導，她這樣說道。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="郭鳳蓮，攝於2018年。" data-src="https://static01.nyt.com/images/2026/03/12/multimedia/12int-china-pensions-02-zkpv/12int-china-pensions-02-zkpv-jumbo.jpg" src="https://static01.nyt.com/images/2026/03/12/multimedia/12int-china-pensions-02-zkpv/12int-china-pensions-02-zkpv-jumbo.jpg"/></div><figcaption><span>郭鳳蓮，攝於2018年。</span> <cite>Liu Jinhai/Imago, via Alamy</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For many Chinese farmers, the payments are far from enough to live on. The average older rural resident spends about $80 a month on routine expenses, according to a government report published in 2024. About 180 million people receive the rural pension, a cohort that is set to grow as China’s population ages rapidly. (The pension also covers urban residents without salaried work, but the vast majority of recipients are farmers.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>對於許多中國農民來說，這筆支出遠不足以維持生活。根據2024年發布的一份政府報告，農村老年人平均每月在常規支出上花費</span>約560元。約有1.8億人領取農村養老金，隨著中國人口迅速老齡化，這一群體還將繼續增長。（該養老金也覆蓋沒有受薪工作的城鎮居民，但絕大多數領取者是農民。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The paltriness of the pension is one of the clearest examples of the vast inequalities in China’s economy, and the deep-rooted challenges that are often overshadowed by its much-touted progress in high-tech fields. While the country leads the world in sectors like robotics or electric vehicles, many of the workers who powered China’s economic rise, such as farmers and workers in low-end manufacturing, are suffering from stagnating wages and cutthroat competition.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>養老金的微薄是中國經濟巨大不平等的明證之一，也是一個根深蒂固的挑戰，而這些挑戰往往被其在高科技領域備受讚譽的進步所掩蓋。雖然在機器人或電動汽車等行業領先世界，但許多助力中國經濟崛起的勞動者，如農民和低端製造業工人，正深受工資停滯和殘酷競爭之苦。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CMW6t86XnpMDFSPA_QUdf2I0ZQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite its socialist billing, China has a threadbare social safety net; the country’s top leader, Xi Jinping, has warned against the dangers of “welfarism.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span> 儘管標榜社會主義，中國的社會安全網卻很薄弱；該國最高領導人習近平曾警告過「福利主義」的危險。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rural residents have also long had far fewer benefits than their urban counterparts. While the average actual payout for rural pensioners is about 246 yuan, or $36, a month, retirees in cities receive on average almost 16 times more, or about $560 a month, according to the government’s 2025 Labor Statistical Yearbook. Retired officials get even more, on average $940 a month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而長期以來，農村居民享有的福利也遠少於城鎮居民。根據政府的2025年《中國勞動統計年鑒》，農村養老金的實際發放額為246元，但城市退休人員平均領取的金額幾乎是其16倍，即每月3825元。退休官員得到的更多，平均每月6446元</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Zhou Shihong, a lawyer who is a member of a government advisory body, suggested the government work to close the disparity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為政府諮詢機構成員的律師周世虹建議政府努力消除這種差距。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If it relates to government funding or state subsidies, social security should be provided equally to everybody,” he told Chinese media, adding that the government should strive to raise the rural pension to $145 a month by 2030.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「凡是涉及到國家出資或者國家財政補貼，對每個人的社會保障應該是人人均等的，」他告訴中國媒體，並補充說，政府應努力在2030年前將農村養老金提高到1000元。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Indeed, the delegates’ calls for higher pensions were striking largely for their modesty. Some called for a rise to 500 yuan, or $70, a month. That increase, for farmers over 70, would cost less than 1 percent of the country’s budget for general public expenditures, one lawmaker pointed out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實上，代表們提高養老金的呼籲之所以引人注目，很大程度上是因為這是個十分克制的訴求。一些人呼籲將金額提高到每月500元。一位立法者指出，對於70歲以上的農民來說，這一增幅所耗費的成本不到該國一般公共預算支出的1%。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週一，在北京參加全國人民代表大會的代表們。" data-src="https://static01.nyt.com/images/2026/03/12/multimedia/12int-china-pensions-vfbh/12int-china-pensions-vfbh-master1050.jpg" src="https://static01.nyt.com/images/2026/03/12/multimedia/12int-china-pensions-vfbh/12int-china-pensions-vfbh-master1050.jpg"/></div><figcaption><span>週一，在北京參加全國人民代表大會的代表們。</span> <cite>Andy Wong/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the discussion online has been supportive of calls for more money for rural pensioners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網路上的許多討論都支持為農村養老金領取者提供更多資金的呼籲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But some delegates have sounded notes of caution. The president of a major Chinese electronic appliance company said that even a seemingly small increase would add up quickly. Major state media outlets have largely been silent on the outcry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span> 但一些代表發出了謹慎的聲音。一家中國大型家電公司的總裁表示，即使是看似很小的增幅也會迅速累積。主要的官方媒體對這些抗議聲大多保持沉默。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CIfRt86XnpMDFavA_QUdP_ASaA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s finance minister, in an unrelated news conference last week, acknowledged the importance of ensuring people’s livelihoods but also said that the country’s revenue was “under pressure” and called for reducing expenditures. A slow-moving housing market crash has hurt local government revenues, which rely heavily on land sales.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國財政部長在上週的一次無關的新聞發布會上承認了確保民生的重要性，但也表示該國的財政收入「承壓」，並要求減少開支。房地產市場的緩慢崩盤損害了地方政府的收入，而後者嚴重依賴土地出售。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Proponents of higher pensions said that with more money, residents would be willing to spend more, which in turn would help the government meet a major goal of increasing domestic demand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span> 提高養老金的支持者表示，有了更多的錢，居民將願意花更多的錢，這反過來將有助於政府實現增加國內需求的主要目標。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For many, though, the main argument was more moral than pragmatic. China’s farmers had helped build the country, they said, when Mao-era policies required them to sell their crops for artificially low prices, turn their land over to the state and pay agricultural taxes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，對許多人來說，主要的論據與其說是務實的，不如說是道德上的。他們說，中國的農民曾幫助建設了這個國家，當時毛澤東時代的政策要求他們以人為壓低的價格出售農作物，將土地交給國家並繳納農業稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They acknowledged that urban residents pay more into the pension system than rural residents do, but said the system did not account for the farmers’ historic contributions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們承認，城鎮居民向養老系統繳納的費用比農村居民多，但他們表示，該系統沒有考慮到農民的歷史貢獻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These contributions cannot be measured by simple payment records,” a commentary in China Business Network, a Shanghai-based media outlet, said. “Increasing farmers’ pensions is not about providing them with welfare, but rather about paying back a debt.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span> 「這些貢獻不能通過簡單的繳費記錄來衡量，」上海媒體《第一財經》的一篇評論稱。「給農民漲養老金不是給農民發福利，而是在還賬。」</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><div class="" data-poster=""><span><p class="cn-p">王月眉(Vivian Wang)是《紐約時報》駐華記者，常駐北京，撰寫關於中國的崛起及雄心如何塑造普通人日常生活的報導。</p><div class="" data-poster=""></div></span></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260313/china-pensions-inequality-farmers/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
