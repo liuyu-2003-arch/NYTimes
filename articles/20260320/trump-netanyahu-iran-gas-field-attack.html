@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美以戰爭策略現分歧 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美以戰爭策略現分歧</h1>
+    <h2 class="en-headline">Trump’s Complaint About Israeli Strike on Gas Field Exposes Divergent Strategies</h2>
+    <div class="meta-line">DAVID E. SANGER <span style="margin: 0 8px;">•</span> 2026-03-20</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="川普總統一直在試圖保護伊朗的石油和天然氣基礎設施，以免該國對整個波斯灣地區的能源設施實施報復。" height="1024" src="https://static01.nyt.com/images/2026/03/19/multimedia/19DC-PREXY-tzkl/19DC-PREXY-tzkl-jumbo.jpg" width="683"/><figcaption><span>川普總統一直在試圖保護伊朗的石油和天然氣基礎設施，以免該國對整個波斯灣地區的能源設施實施報復。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump said on Thursday that he had complained to Prime Minister Benjamin Netanyahu of Israel about the bombing of one of Iran’s largest offshore gas fields, exposing the two allies’ sharply different strategies as they try to disarm Iran, and in the case of Israel, trigger “state collapse.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統週四表示，他已就以色列轟炸伊朗最大海上天然氣田之一向以色列總理本雅明·納坦尼雅胡表達不滿，這暴露了兩個盟國在試圖解除伊朗武裝——以及以色列希望引發的「國家崩潰」——方面的策略存在鮮明分歧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked about the Israeli strike, which sent oil markets reeling, Mr. Trump said, “I told him don’t do that,” and he suggested that Mr. Netanyahu “won’t do that” again in the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在被問及導致油市劇烈震盪的以色列打擊行動時，川普說：「我告訴他別這麼做」，並表示納坦尼雅胡今後不會「再這麼做了」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re independent, we get along great,” said Mr. Trump, who spoke to reporters as he welcomed Japan’s prime minister, Sanae Takaichi, in the Oval Office. He insisted that the U.S. and Israeli approaches were “coordinated.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們是獨立的，我們相處得很好，」川普在橢圓形辦公室迎接日本首相高市早苗時對記者說。他堅稱美國和以色列的策略是「協調一致的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three Israeli officials briefed on the strike on the gas field said that the United States was informed before the attack. But Mr. Trump, in a Truth Social posting, suggested he knew nothing about it, and said the United States did not participate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>三名了解此次天然氣田打擊行動的以色列官員表示，美國在襲擊前知情。但川普在Truth Social上發帖</span>表示自己對此一無所知，並稱美國並未參與。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP7r-_3jr5MDFZDF_QUdRpYe-A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a war that is about to complete its third week with no end in sight, the attack and the furious counterstrikes on the energy facilities of Persian Gulf states revealed that the two allies were clearly not coordinated in their approach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場即將進入第三週的戰爭尚無結束跡象。此次襲擊以及對波斯灣國家能源設施的激烈反擊表明，兩位盟友在策略上顯然並未協調一致。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">European officials, speaking on the condition of anonymity, said that the military operations over the past few days were more evidence of Israel’s belief that if it can dismantle Iran’s main sources of revenue and decapitate its political, military and intelligence leadership, the country will devolve into what the Israelis call “state collapse.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲官員在匿名條件下表示，過去幾天的軍事行動進一步證明，以色列相信如果能摧毀伊朗的主要收入來源，並定點清除其政治、軍事和情報領導層，該國將陷入以色列人所謂的「國家崩潰」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European view is that the result will be the opposite: Iran’s forces will escalate, using its surviving drones and missiles to destroy the vulnerable infrastructure of its neighbors, in what will become an existential battle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲的觀點則相反：伊朗軍隊將升級行動，利用所剩的無人機和導彈摧毀鄰國脆弱的基礎設施，這將演變為一場生死存亡之戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Israel has been targeting the Iranian leadership, and with the attack on the South Pars gas field — a vast natural gas field in the Gulf run jointly by Iran and Qatar — it was striking directly at Iran’s ability to generate revenue. The Iranians responded with a missile attack on Qatar’s Ras Laffan Industrial City, significantly damaging one of the Gulf state’s most critical energy hubs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以色列一直在針對伊朗領導層，而對伊朗和卡達共同運營的大型海灣天然氣田南帕爾斯天然氣田的襲擊直接打擊了伊朗的創收能力。伊朗則以導彈襲擊卡達拉斯拉凡工業城作為回應，重創了該海灣國家最重要的能源樞紐之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump clearly worries that such attacks and counterattacks will result in even greater surges in the price of oil and gas, and make shippers even more fearful of transiting the Strait of Hormuz. So he has been trying to preserve Iran’s oil and gas infrastructure and keep the country from retaliating at energy facilities throughout the Gulf. With every piece of evidence that the war is escalating, the price of oil increases, and Mr. Trump’s aides are scrambling to contain the economic ripple effects, starting with oil prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普顯然擔心此類襲擊與反擊將導致油氣價格進一步飆升，並使船運公司更加畏懼通過霍爾木茲海峽。他一直在努力保護伊朗的油氣基礎設施，並防止該國對整個海灣的能源設施進行報復。每一個戰爭升級的跡象都帶來油價的進一步上漲，川普的助手們正忙於遏制經濟連鎖反應，首當其衝的就是油價。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Treasury Secretary Scott Bessent said that to calm the markets, the United States was thinking about releasing more from the Strategic Oil Reserve, which the administration had failed to refill to capacity in the run-up to the war. But more strikingly, he has discussed suspending sanctions on Iranian oil already at sea — in an effort to free up roughly 140 million barrels — as another way to tamp down prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">財政部長史考特·貝森特表示，為安撫市場，美國正在考慮釋放更多戰略石油儲備——本屆政府在戰前未能將儲備補滿。但更引人注目的是，他談到了暫停對已在海上的伊朗石油的制裁——旨在釋放約1.4億桶石油——作為另一種壓低價格的手段。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJyc_P3jr5MDFfHcuAgd1Q0Y8w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That would, of course, bring more revenue to Iran, but Mr. Bessent insisted that “we will be using the Iranian barrels against the Iranians to keep the price down for the next 10 or 14 days, as we continue this campaign.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這當然會為伊朗帶來更多收入，但貝森特堅稱：「我們將用這些伊朗石油來對抗伊朗人，在接下來的10到14天內壓低價格，同時繼續戰鬥。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At every moment, Mr. Trump and Mr. Bessent are trying to signal to the markets that they have everything under control, even amid evidence that their effort to contain Iran’s retaliation — and the markets’ response — is failing. Mr. Trump tried to characterize his conversations with Mr. Netanyahu as a modest difference of opinion. “On occasion, he’ll do something,” Mr. Trump told reporters on Thursday, “and if I don’t like it, and so we’re not doing that anymore.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在每一刻，川普和貝森特都在試圖向市場發出信號：一切盡在掌控，即使證據顯示他們遏制伊朗報復——以及市場反應——的努力正在失敗。川普試圖將他與納坦尼雅胡的對話描述為溫和的分歧。「偶爾，他會做些事，」川普週四對記者說，「如果我不喜歡，我們就不會再這麼做了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In their public explanations of the status of the war, Defense Secretary Pete Hegseth and Gen. Dan Caine, the chairman of the Joint Chiefs of Staff, contended anew on Thursday that the United States was hitting all of its targets. Mr. Hegseth stressed the attacks on Iran’s defense industrial sites, so that it cannot replace missiles, launchers and drones destroyed in what has been an aerial hide-and-seek operation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週四對戰爭現狀的公開解釋中，國防部長彼特·海格塞斯和參謀長聯席會議主席丹·凱恩將軍再次堅稱，美國正在打擊所有目標。海格塞斯強調了對伊朗國防工業基地的襲擊，這樣一來，通過一場空中捉迷藏式行動摧毀的導彈、發射器和無人機將不會得到補充。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They spoke about dropping 5,000-pound bombs earlier this week at a suspected missile storage site near the Strait of Hormuz, part of an effort to keep Iran from being able to harass shipping through the 21-mile-wide stretch that has become a bottleneck for oil and gas exports. The weapon it used was the new GBU-72/B, a bunker-busting bomb that appeared to be directed at cruise-missile storage sites along the strait.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們談到本週早些時候在霍爾木茲海峽附近一處疑似導彈儲存點投下5000磅炸彈，以求扼制伊朗對這條33公里寬的航運線路進行的襲擾，該海峽已成為油氣出口的瓶頸。行動使用的武器是新型GBU-72/B鑽地炸彈，目標似乎是海峽沿線的巡航導彈儲存點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“To date we’ve struck over 7,000 targets across Iran and its military infrastructure,” Mr. Hegseth insisted, saying that Thursday would be “the largest strike package yet,” repeating his vow of “death and destruction from above.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「迄今為止，我們已打擊伊朗及其軍事基礎設施超過7000個目標，」海格塞斯堅稱，並表示週四將是「迄今為止最大規模的打擊包」，重申其「從空中帶來死亡與毀滅」的誓言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the speed of the Iranian retaliation for the South Pars attack was evidence that the United States had not gained what military strategists call “escalation dominance,” the ability to keep an adversary from further escalating its response. And Mr. Hegseth repeated that he would provide no “definitive time frame” for declaring that it had achieved its objectives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但伊朗對南帕爾斯襲擊的快速報復表明，美國尚未獲得軍事策略師所謂的「升級主導權」——即阻止對手進一步升級回應的能力。海格塞斯重申，他不會就目標的達成給出一個「明確的時限」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKjf_P3jr5MDFRHF_QUdbxA4Ug" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Mr. Hegseth’s telling, the entire war is playing out according to plan. But evidence to the contrary abounds. The rush to find allies to patrol the strait — which so far has resulted in no takers — and the scramble to contain increases in energy prices suggests that the administration continues to be surprised at Iran’s ability to strike back. Its skillful asymmetric attacks are designed to drive prices up and stock markets down in the United States — metrics that get Mr. Trump’s attention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在海格塞斯的敘述中，整場戰爭正按計劃進行。但反證比比皆是。匆忙尋找願意進行海峽巡邏的盟友——迄今無人響應——以及遏制能源價格上漲的努力表明，政府仍對伊朗的反擊能力感到意外。其巧妙的不對稱攻擊旨在推高美國油價、壓低股市——這些是會吸引川普的注意的指標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washington’s fear now is that the Gulf countries, which have shown considerable restraint in not responding to Iranian missile and drone attacks, will begin retaliating. On Wednesday, shortly after the Israeli attack on South Pars, part of the world’s largest offshore gas fields, two waves of incoming ballistic missiles were intercepted over Riyadh, the capital of Saudi Arabia, according to the Saudi Defense Ministry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>華盛頓現在擔心，海灣國家——它們迄今對伊朗導彈和無人機襲擊表現出相當的剋制——將開始反擊。週三，在以色列襲擊南帕爾斯</span>——屬於世界上最大的海上天然氣田——後不久，據沙烏地阿拉伯國防部稱，利雅得上空攔截了兩波來襲彈道導彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The kingdom’s foreign minister, Prince Faisal bin Farhan, warned that his government reserved the right “to take military actions if deemed necessary.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該國外交大臣費薩爾·本·法爾漢親王警告稱，政府保留「在必要時採取軍事行動」的權利。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We will not shy away from protecting our country and our economic resources,” he said at a news conference early Thursday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們會毫不猶豫地保衛我們的國家和我們的經濟資源，」他在週四早間的新聞發布會上說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He would not say how long Saudi patience with attacks would stay in place. “Do they have a day, two, a week?” the prince asked. “I’m not going to telegraph that.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他不願說明沙烏地阿拉伯對襲擊的耐心還能持續多久。「還有一天、兩天，還是一週？」親王問道。「我不會提前透露。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He added that “what little trust” there was between the kingdom and Iran had “completely been shattered.” The countries re-established diplomatic relations in 2023.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他補充說，王國與伊朗之間「本就所剩無幾的信任」已「完全破滅」。兩國於2023年恢復外交關係。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Vivian Nereim自沙烏地阿拉伯利雅得對本文有報導貢獻。</p><p class="cn-p"><span>David E. Sanger報導川普政府和一系列國家安全問題。他在時報任職超過40年，著有四本關於美國國家安全挑戰的書。</span></p><p class="cn-p">翻譯：經雷</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260320/trump-netanyahu-iran-gas-field-attack/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
