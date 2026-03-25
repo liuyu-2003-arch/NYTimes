@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>36小時玩轉上海 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">36小時玩轉上海</h1>
+    <h2 class="en-headline">36 Hours in Shanghai: Things to Do and See</h2>
+    <div class="meta-line">ERIN VIVID RILEY <span style="margin: 0 8px;">•</span> 2026-03-24</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="591" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-TONED-vcmg/19trav-hours-shanghai-TONED-vcmg-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s second-largest city continues to transform rapidly. Beyond luxury megastores and virtual-reality experiences, Shanghai is repurposing what’s left of its unique architectural heritage into cultural and dining destinations, creating a new dynamism. A major transition to electric vehicles has helped quiet the streets, while expanded high-speed rail and metro services have made the city more accessible. Daily life in Shanghai runs almost entirely through apps — for bookings, payments and transport — which offer incredible convenience, but come with a learning curve for travelers. What is easier, however: A new 10-day visa-free transit option for visitors from dozens of countries, including the United States, is one way China is laying out the welcome mat after its border closures during the pandemic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國第二大城市上海正持續飛速蛻變。除了奢品旗艦店與虛擬現實體驗，這座城市正將留存的獨特建築遺產改造為文化與餐飲地標，煥發出全新活力。電動汽車的大規模普及讓街道更安靜，不斷擴容的高鐵與地鐵網路也讓這座城市的出行更為便捷。在上海，預約、支付、出行等日常生活幾乎全靠各類應用軟體<span>完成，這帶來了極致便利，卻也讓遊客需要一定時間適應。不過，有一項便利門檻極低：疫情封關後，中國正以多項舉措向世界張開懷抱，其中就包括針對美國等數十國公民推出的全新10天過境免簽政策。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Itinerary</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>行程安排</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Friday</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>週五</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3 p.m. <b>Go on an art walk</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>15:00 藝術漫步</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Bund, Shanghai’s waterfront of neo-Gothic and Baroque- and Renaissance-style buildings along Huangpu River, once housed global titans of industry. Today, it is a contemporary art destination. Start at the Hive Center for Contemporary Art (free) for large-scale works by established Chinese artists, such as the abstract painter and sculptor Wang Wenting. Opened in 2023 in a former bank building, the gallery’s monumental stained-glass skylight alone is worth the visit. At Rockbund Art Museum, two blocks east, rotating exhibitions — such as one inspired by the work of the French theorist Suzanne Césaire (through April 26) — highlight experimental multimedia works (free). Since opening in 2024, Space 185 at Bund Art Center, a half-mile south, has put on shows pairing contemporary Chinese heavyweights such as the painters Zhao Gang and Yu Hong with global names like Anish Kapoor (free).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>外灘是上海沿黃浦江鋪展的濱水地帶，林立著新哥特、巴洛克與文藝復興風格的歷史建築，曾是全球工商業巨頭的聚集地，如今已成為當代藝術地標。第一站前往蜂巢當代藝術中心（免費），這裡展出了中國知名藝術家的大型作品，比如抽象畫家、雕塑家王文婷。該藝術中心2023年在一棟百年銀行舊址內開業，單是館內恢弘的彩色玻璃天窗就值得一訪。向東兩個街區，就是上海外灘美術館，館內常設輪換展覽（免費），比如正在展出的、</span>受法國理論家蘇珊·塞澤爾作品啟發的多媒體實驗藝術展（展期至4月26日）。向南不到一公里，<span>外灘藝術中心的185空間於2024年開放，曾舉辦趙剛、喻紅等中國當代藝術領軍人物與安尼施·卡普爾等國際藝術大師的聯展（免費）。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="外灘藝術中心185空間" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-hqfz/19trav-hours-shanghai-hqfz-master1050-v3.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-hqfz/19trav-hours-shanghai-hqfz-master1050-v3.jpg"/></div><figcaption><span>外灘藝術中心185空間</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">6 p.m. <b>Shop for snacks</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>18:00 零食採購</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Take a six-minute Didi ride or walk just under a mile west along the neon-lit, pedestrian-only Nanjing Road, the city’s version of Times Square. Among the many mega marts is Shanghai First Food Mall, a snack and street-food emporium. On the first floor, pick up palmier-like caramelized butterfly cookies (from 40 renminbi for a box) and cream cakes from Kaisiling (from 12 renminbi for a slice), items so beloved Shanghai’s government designated them a part of the city’s non-material cultural heritage. The second floor has food vendors and a grocery, while the third floor is a medley of many of Shanghai’s popular fast-casual joints.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">打滴滴六分鐘，或沿霓虹璀璨的南京路步行街向西步行1.5公里左右——這條路堪稱上海版時報廣場。在鱗次櫛比的大型商場中，藏著上海第一食品商店，這是一座零食與街頭小吃的寶庫。一樓可以買到凱司令的焦糖蝴蝶酥（40元/盒起）與奶油蛋糕（12元/塊起），這些經典點心已被上海市政府列入非物質文化遺產名錄；二樓是各類食品商戶與生鮮超市；三樓則匯聚了上海多家熱門輕食快餐品牌。</div></div></div></div></div><div class="big_ad" data-google-query-id="CID71-vsuZMDFfw5RAgdqIYXTA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/travel_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">7 p.m. <b>Eat crab noodles</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>19:00 </b><b>吃</b><b>蟹</b><span><b>黃面</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The brackish waters of the Yangtze River Delta, where the city sits, host the pride of Shanghainese cuisine: hairy crab. Although peak harvest is in fall, some menus feature the specialty year-round. The restaurant Cejerdary, on the Bund, treats it with a special reverence, underlined by an austere dining room centered around a miniature karst landscape of bonsai. The restaurant serves crab from Yangcheng Lake, the region’s premier source. One order of stew contains the meat and roe of a dozen fist-size crabs and can be ordered over noodles or rice (from 280 renminbi). A generous splash of black vinegar helps cut through the dish’s sweet richness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上海地處長江三角洲，鹹淡水交匯的水域孕育了本幫菜的驕傲——大閘蟹。儘管金秋才是大閘蟹的豐收旺季，但不少餐廳全年都供應這道招牌美味。外灘的蟹家大院以極致的匠心對待這種食材：餐廳裝修簡約沉靜，用餐區以微縮喀斯特盆景為核心景觀，主打陽澄湖核心產區的大閘蟹。一份蟹黃撈麵/撈飯，用足足十幾隻拳頭大的螃蟹的蟹肉與蟹黃熬制而成（280元起），淋上一勺香醋，可以和菜品的鮮甜醇厚形成對比。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="蟹家大院" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-wgtl/19trav-hours-shanghai-wgtl-master1050.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-wgtl/19trav-hours-shanghai-wgtl-master1050.jpg"/></div><figcaption><span>蟹家大院</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">9 p.m. <b>Enter a time warp</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>21:00 穿越舊時光</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It can be difficult to find authentic time capsules in ever-futuristic Shanghai, which has preserved relatively little of its structural heritage. That is why the Jazz Bar at the Fairmont Peace Hotel, one of the city’s oldest music venues, is so special. Since 1980, a five-piece band with rotating members (the youngest is now 70) performs from 7 to 11 p.m. every night. A singer joins in during each hour-long set for a few oldies by past stars like Teresa Teng and Zhou Xuan (418 renminbi minimum per person; drinks from 118 renminbi, snacks from 88 renminbi).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在永遠向著未來狂奔的上海，能留存下來的原汁原味「時光膠囊」寥寥無幾，這也讓費爾蒙和平飯店的爵士酒吧愈發珍貴——它是上海歷史最悠久的音樂</span>場館之一。一支由輪換成員組成的五人爵士樂隊自1980年起在這裡常駐演出，最年輕的成員也已70歲高齡。樂隊每晚19:00-23:00演出，每小時的演出單元中，都會有歌手登台，演繹鄧麗君、周璇等傳奇歌星的經典老歌。（人均最低消費418元，飲品118元起，小食88元起）</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="費爾蒙和平飯店爵士酒吧" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-gfvl/19trav-hours-shanghai-gfvl-master1050-v3.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-gfvl/19trav-hours-shanghai-gfvl-master1050-v3.jpg"/></div><figcaption><span>費爾蒙和平飯店爵士酒吧</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">10 p.m. <b>Take in two vistas</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>22:00 雙景盡收眼底</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shanghai functionally has two skylines: the historic Bund on the city's western Puxi side, and the sleek Pudong skyline east of the Huangpu River. To see it all in a single panorama, head to the hotel Regent Shanghai on the Bund, which opened in 2023, where the river bends just north of the main promenade. Book ahead and enjoy a bourbon cocktail (from 138 renminbi) at its terrace restaurant, Condé, while basking in Pudong’s neon glow and Puxi’s soft radiance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上海有兩條標誌性天際線：浦西外灘的百年歷史建築群與黃浦江東岸浦東現代的摩天樓群。想要一眼將兩幅盛景盡收眼底，一定要去2023年開業的海鷗麗晶酒店<span>，它坐落於外灘主步道北側的江灣處。提前預訂座位，在酒店的露台餐廳Condé點一杯波本雞尾酒（138元起），一邊沐浴著浦東的霓虹璀璨，一邊感受浦西歷史建築的溫潤燈火。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="Condé" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-tfwc/19trav-hours-shanghai-tfwc-master1050-v3.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-tfwc/19trav-hours-shanghai-tfwc-master1050-v3.jpg"/></div><figcaption><span>Condé</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="復興公園INS夜生活綜合體內的八家場館之一——KZ。" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-ljbp/19trav-hours-shanghai-ljbp-master1050-v2.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-ljbp/19trav-hours-shanghai-ljbp-master1050-v2.jpg"/></div><figcaption><span>復興公園INS夜生活綜合體內的八家場館之一——KZ。</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Saturday</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>週六</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">10 a.m. <b>Go on a dumpling crawl</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>10:00 </b><b>包點</b><b>巡禮</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A single block of West Jianguo Road is a dumpling-lover’s paradise. Start at Man Man Tang Bao, where Mr. Li Dailiang and his son make to order extra delicate xiao long bao, steamed dumplings stuffed with a gelatinous pork broth that melts once it is cooked (from 20 renminbi for eight). Nearby, the circa-1885 Fuchun Xiao Long Bao does an excellent sheng jian man tou: a larger, doughier version of the soup dumplings that are pan-fried (from 18 renminbi for four). Choose between two types of wonton soup at Denglong Wonton: pork with bamboo shoots and watercress-like shepherd’s purse (25 renminbi) or pork with shrimp (32 renminbi). Although a light broth is traditional, here it is rich. You can even order an extra scoop of lard — aptly called le kou fu, or happy blessing (5 renminbi).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">建國西路的一個街區是包點愛好者的天堂。第一站前往曼曼湯包，李代良父子現點現做，小籠包皮薄如紙，內餡是遇熱即化的皮凍豬肉湯汁，一口爆汁（20元/八個）；不遠處是始創於1885年的富春小籠館，生煎包堪稱一絕，比湯包個頭更大、麵皮更暄軟，底部煎得金黃酥脆（18元/四個）；還有燈籠餛飩，有兩款經典餛飩可選：薺菜竹筍丁鮮肉餛飩（25元）、蝦仁鮮肉餛飩（32元）。不同於傳統的清淡湯底，這裡的湯底醇厚濃郁，還可以額外加一勺豬油，店家給它取了個貼切的名字「樂口福」，寓意口腹之樂（五元/勺）。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="曼曼湯包" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-bgfk/19trav-hours-shanghai-bgfk-master1050.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-bgfk/19trav-hours-shanghai-bgfk-master1050.jpg"/></div><figcaption><span>曼曼湯包</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">12 p.m. <b>Hit the shops</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>12:00 街區逛買</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Julu Road, browse loose-structured clothing featuring motifs inspired by the Tang Dynasty at Label Del. and the latest from China’s up-and-coming fashion designers at Labelhood House. On Wuyuan Road, a half-mile southwest, shop for beautiful small objects like gingko leaf-shaped copper tea sieves at the Gathering. Across the street is the Former Residence of Zhang Leping, one of China’s first comic artists and the creator of the children’s cartoon character Sanmao (“Three Hairs"), which is now a free museum. About a mile south, Yongkang Road is dotted with old-school shops like Gu Qing Ji Nam Pak Goods, which has sold pantry items like sauces, elixirs and cured meats following family recipes since 1925. Find sweet treats like tofu-based ice cream and pudding at Beiye Tofu (from 28 renminbi) and durian cakes at Yelo Bow (from 49 renminbi for a slice).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巨鹿路<span>上，Label Del有</span>以唐代紋樣為靈感的寬鬆服飾，在蕾虎<span>(Labelhood House</span>)有中國新銳設計師的最新作品；向西南800米到五原路，在集雅Gathering挑選銀杏葉銅茶濾等精緻文創小物，街對面是張樂平——中國最早的漫畫家之一、經典兒童形象「三毛」的創作者——<span>的故居，如今已成為免費博物館；向南約</span>1500米到永康路，路邊有許多老派商鋪，比如始創於1925年的古青記山貨行，至今仍在售賣按祖傳配方製作的醬料、膏方、腊味等食材；還有北葉豆腐的豆腐冰淇淋、豆腐布丁（28元起），Yelo Bow的榴槤蛋糕（49元/片起）等甜品小店。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJC52OvsuZMDFTqX7gEdiKYfag" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/travel_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3 p.m. <b>Experience traditional Chinese medicine</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>15:00 體驗傳統中醫</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Kang You Si Ji is a popular wellness clinic using traditional Chinese medicine with locations across the city. Head to its Jing’an branch for a full-body Tuina massage, a 2,000-year-old technique that acts on the body’s energy, or qi (from 250 renminbi for an hour). The practitioner will start by asking about your sleep, digestion and stress levels (it may help to prepare a brief written overview in Chinese), before observing your posture and locating muscle tension. Then a series of rhythmic movements will follow your body’s meridian pathways, which are thought to carry qi throughout the body. Add on an ear cleaning for 168 renminbi, a service that involves dislodging earwax with a tuning fork.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">康友四季是上海人氣頗高的中醫養生館，在全市有多家分店。前往靜安分店，體驗全身推拿——這項擁有2000年歷史的理療技法，作用於人體的氣血經絡（一小時250元起）。理療師會先詢問你的睡眠、消化與壓力狀況（建議提前準備一份簡短的中文書面說明），再觀察體態、定位肌肉緊張部位，隨後循著人體經絡，用一系列富有節奏的手法完成推拿。還可以加168元體驗采耳，理療師會用音叉配合專業工具清理耳垢。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="康友四季" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-zjmt/19trav-hours-shanghai-zjmt-master1050.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-zjmt/19trav-hours-shanghai-zjmt-master1050.jpg"/></div><figcaption><span>康友四季</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5 p.m. <b>Enjoy tea and art in a Wong Kar-wai film</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>17:00 在王家衛的電影裡品茶賞藝</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fans of the 2000 film “In the Mood for Love” now have a way to step into its creator’s lush aesthetic at Mi Shang Prada Rong Zhai, a new dining and arts space from Prada that was designed with the Hong Kong director Wong Kar-wai. Have tea on the garden terrace of the restored circa-1918 mansion or in an Art Deco room where almost every surface is mirrored, gilded, or clad in velvet or lacquered wood. Order the tea ritual to try five types (228 renminbi), including China’s coveted pu’er variety. On the upper floors, check out biannual art exhibits, including an upcoming show about finding meaning in data done in collaboration with the Dutch architect Rem Koolhaas’s studio AMO/OMA.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2000年電影《花樣年華》的影迷終於有機會來到迷上Prada榮宅，親身走進導演王家衛打造的濃郁美學世界——這一全新餐飲及藝術空間由Prada打造、由香港導演王家衛參與設計。在這座約建於1918年的修復古宅中，你可以在花園露台或滿是鏡面、鎏金、絲絨與漆木的裝飾藝術風包間裡品茶。點一套茶道套餐（228元），可以品鑒包括在中國備受追捧的普洱在內的五款茶品。樓上還可參觀一年兩期的藝術展覽，包括即將開展的、與荷蘭建築師雷姆·庫哈斯的AMO/OMA工作室合作的展覽，它將探討如何在數據中尋找意義。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">7 p.m. <b>Savor classic Shanghainese cuisine</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>19:00 品味經典本幫菜</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For some 1930s nostalgia and excellent Shanghainese fare, head to Ren He Guan’s Zhaojiabang Road location. The atmosphere would be kitsch if it wasn’t so transporting, with mint-green walls plastered with vintage art and booths dimly lit by stained-glass lights. From 6 p.m. to 7 p.m. most nights, a singer croons folk songs on a small, neon-lit stage designed to look like the one at the Paramount, a historic night club nearby that reopened in 2017 after decades of neglect. Order classic savory-sweet dishes like zui xia, prawns poached in broth and steeped in preserved plum wine, served cold (53 renminbi); guo shao he man, braised river eels with thinly sliced bamboo shoots and peppers (99 renminbi), and hong shao rou, pork belly braised in soy sauce, Shaoxing wine and sugar (from 27 renminbi).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">想要沉浸式感受上世紀30年代的懷舊風情，同時吃到地道本幫菜，一定要去人和館肇嘉浜路店。薄荷綠的牆面上貼滿復古畫作，彩色玻璃燈給卡座投下溫柔的光影，若非氛圍足夠動人，這般布置很容易顯得俗套。多數夜晚的18:00-19:00，都會有歌手在霓虹燈裝點的小舞台上吟唱民謠歌曲，舞台設計模仿附近百樂門的舞台——這座傳奇夜總會在荒廢數十年後，於2017年重新開業。必點經典本幫甜咸口菜品，包括醉蝦，高湯汆熟的大蝦浸在青梅酒中，冷食上桌（53元）；鍋燒河鰻：河鰻配嫩筍片、青椒燜燒入味（99元）；還有紅燒肉：五花肉用醬油、紹興酒與冰糖慢燉制（27元起）。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="人和館" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-qbzw/19trav-hours-shanghai-qbzw-master1050-v3.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-qbzw/19trav-hours-shanghai-qbzw-master1050-v3.jpg"/></div><figcaption><span>人和館</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">9 p.m. <b>Discover the alternative after-hours</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>21:00 探索小眾夜生活</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent years, the area around Fuxing Park, namely Nanchang Road and Fuxing Road, has turned into a lowkey alternative to the techno and bottle-service clubs that long characterized Shanghai’s nightlife. Opened last year, Bar Leone is a Hong Kong import that serves classic cocktails (from 128 renminbi) with small twists, like a velvety whiskey sour shaken with olive oil, in a space styled after an Italian aperitivo bar. Across the park, join the craze for Japanese-style listening bars at Root Down. A few blocks away, Paal’s cocktails (from 98 renminbi), like its gin fizz made silky with clarified yogurt, are inspired by the late fashion designer Virgil Abloh’s so-called “three-percent rule” of innovation via a tiny tweak. And for those who want bottle service, the nightlife complex INS, in Fuxing Park, has eight venues dedicated to various music genres, from Chinese hip-hop to Studio 54-era disco (entry from 168 renminbi).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近幾年，復興公園周邊——南昌路、復興路一帶——已逐漸成為長久以來定義上海夜生活的techno電音和瓶裝酒服務夜店之外，上海夜生活的低調新選擇。去年開業的Bar Leone來自香港，在義大利餐前酒酒吧風格的空間內主打帶小巧思的經典雞尾酒（128元起），比如用橄欖油搖制、口感綿密的威士忌酸；公園對面的Root Down是當下正火的日式聆音酒吧；幾個街區外的Paal提供雞尾酒（98元起），比如用澄清酸奶打造絲滑口感的金酒，靈感來自已故時尚設計師維吉爾·阿布洛提出的「3%創新法則」——用微小的改動實現創新。如果你想要享受開酒服務，復興公園內的夜店綜合體INS新樂園有八個不同場地，覆蓋中文嘻哈、Studio 54年代迪斯科等多種音樂風格（門票168元起）。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="INS新樂園內的Oasis Club" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-tkfz/19trav-hours-shanghai-tkfz-master1050.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-tkfz/19trav-hours-shanghai-tkfz-master1050.jpg"/></div><figcaption><span>INS新樂園內的Oasis Club</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="遊客在豫園附近的一座寺廟裡供奉香火。" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-kchb/19trav-hours-shanghai-kchb-master1050.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-kchb/19trav-hours-shanghai-kchb-master1050.jpg"/></div><figcaption><span>遊客在豫園附近的一座寺廟裡供奉香火。</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Sunday</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>週日</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">9 a.m. <b>Stroll through the dynasties</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>09:00 漫步江南園林</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the crowds descend, head to the 16th-century Yu Garden at opening time to experience a classic example of jiangnan design, which emphasizes harmony between architecture and nature (from 30 renminbi). Outside the garden entrance, a central bridge with nine turns — designed to confuse evil spirits — leads to the 18th-century Huxinting Teahouse, which reopened in the fall after a two-year restoration. Peek at the first-floor displays to learn about the teahouse but be warned that the upstairs tea room has a minimum spend of 388 renminbi. Enjoy a brunch of Shanghainese xiaochi, or small plates, at Lu Bo Lang. Most of the menu consists of slightly sweeter versions of Cantonese dim sum staples. Try the Shanghai delicacy mei mao su, a deep-fried crescent-shaped pastry filled with shredded pork and vegetables (36 renminbi, three pieces).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在遊客蜂擁而至之前，不妨在開園時前往建於16世紀的豫園，感受這座經典江南園林建築與自然相融共生的精髓（門票30元起）。園林入口外是專為困住邪靈設計的九曲橋，橋的盡頭是始建於18世紀的湖心亭茶樓——這座茶樓歷經兩年修復於去年秋天重新開放。可以在一樓看看關於茶樓歷史的展覽，需注意二樓茶座設有388元的最低消費。隨後可去綠波廊品嘗上海本幫小吃早午餐。這裡的菜品大多是粵式點心的微甜版本，可以試試上海經典名點眉毛酥——油炸的月牙形酥點，內餡是豬肉與蔬菜（36元三個）。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="豫園" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-kvbq/19trav-hours-shanghai-kvbq-master1050-v4.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-kvbq/19trav-hours-shanghai-kvbq-master1050-v4.jpg"/></div><figcaption><span>豫園</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">11 a.m. <b>Find a match</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>11:00 相親</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Every Saturday and Sunday, well-meaning parents have gathered at People’s Park in Huangpu District to advertise their children for prospective matches at the Marriage Market. Enter from the People’s Square metro station through Gate 5 and you’ll soon arrive at hundreds of signs listing candidates’ age, height, occupation, income, and even assets (photos are notably absent). It’s a fascinating snapshot of the values of working-class Shanghai. Pick up a tang hu lu, a candied fruit stick, from a street vendor and people-watch under gingko trees. Or reach out to Free Tours China and customize a locally guided excursion that includes the Marriage Market (from 1,000 renminbi).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每個週六和週日，黃浦區人民公園黃浦區人民公園裡都會聚集許多熱心的父母，在相親角為子女張貼徵婚啟事。從人民廣場地鐵站五號口進入公園，很快就能看到數百張徵婚啟事，上面寫著應徵者的年齡、身高、職業、收入，甚至資產（唯獨沒有照片）。這幅景象生動地展現了上海普通工薪階層的婚戀價值觀。你可以在路邊小攤買一串糖葫蘆，在銀杏樹下靜靜觀察人來人往；也可以聯繫「Free Tours China」，定製包含相親角在內的本地導覽行程（1000元起）。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="人民公園內的相親角" data-src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-wqbz/19trav-hours-shanghai-wqbz-master1050-v3.jpg" src="https://static01.nyt.com/images/2026/03/19/multimedia/19trav-hours-shanghai-wqbz/19trav-hours-shanghai-wqbz-master1050-v3.jpg"/></div><figcaption><span>人民公園內的相親角</span> <cite>Raul Ariano for The New York Times</cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Raul Ariano</p><p class="cn-p">翻譯：經雷、晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/travel/20260324/things-to-do-shanghai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
