@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>酪梨有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">酪梨有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Avocados?</h2>
+    <div class="meta-line">CAROLINE HOPKINS <span style="margin: 0 8px;">•</span> 2026-03-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2024/06/11/multimedia/05HOW-HEALTHY-AVOCADO4-lkqm/05HOW-HEALTHY-AVOCADO4-lkqm-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Bobbi Lin for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ripe, creamy avocados are great on toast, salads and burgers, or just sprinkled with salt. Plus, they’re healthy — but how healthy?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">軟熟的酪梨口感綿密，非常適合搭配吐司、沙拉和漢堡，或者簡單撒點鹽直接食用。而且它們對健康有益——但究竟有多健康呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Avocados are no regular fruits,” said Dr. Frank Hu, a professor of nutrition and epidemiology at the Harvard T.H. Chan School of Public Health. “They’re nutrient dense with very little carbohydrates and high amounts of healthy fats and fiber.” And they make plant-based meals more filling.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「酪梨可不是普通水果，」哈佛大學陳曾熙公共衛生學院營養與流行病學教授胡丙長博士說，「它們營養密度高，碳水化合物含量很低，同時富含健康脂肪和膳食纖維。」此外，它們還能讓植物性飲食更具飽腹感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some of their healthiest attributes, plus a selection of recipes from New York Times Cooking to inspire you to eat them more often.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是酪梨的一些主要益處，以及《紐約時報》美食欄目精選的幾道食譜，或許能激發你多吃酪梨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Avocados can help keep your cholesterol in check.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>酪梨有助於平衡膽固醇。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CLrdheKvvJMDFR5ZCAQdpt0n1Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Avocados’ better-known benefits stem from their heart-healthy fats, said Elizabeth Klingbeil, a registered dietitian and assistant professor at the University of Texas at Austin. Most of the fats in avocados are monounsaturated, which differ from the saturated fats abundant in meats and dairy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">註冊營養師、得克薩斯大學奧斯汀分校助理教授伊麗莎白·克林貝爾表示，酪梨最廣為人知的益處來自其對心臟有益的脂肪。酪梨中的脂肪大多是單不飽和脂肪，與肉類和乳製品中富含的飽和脂肪不同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Saturated fats can gunk up your blood vessels and increase your heart disease risk,” Dr. Klingbeil said. If left unchecked, this gunk, called LDL or “bad” cholesterol, can lead to heart attacks or strokes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「飽和脂肪酸會使血管堵塞，增加患心臟病的風險，」克林貝爾博士說。如果任其發展，這種被稱為低密度脂蛋白（即「壞膽固醇」）的物質可能導致心臟病發作或中風。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While saturated fats increase LDL cholesterol, unsaturated fats can lower it. For this reason, avocados can help manage blood cholesterol levels, especially when you eat them in place of foods like meat, cheese and butter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">飽和脂肪會增加低密度脂蛋白膽固醇，不飽和脂肪則能降低它。因此，酪梨有助於控制血液中的膽固醇水平，尤其是在你用它替代肉類、奶酪和黃油等食物的時候。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They may lower your heart disease risk.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們或許還能降低患心臟病的風險。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a study that followed more than 110,000 adults over 30 years, Dr. Hu and his colleagues showed that people who ate at least two servings of avocado per week had a 21 percent lower risk of coronary heart disease.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一項追蹤超過11萬名成年人長達30年的研究中，胡博士及其同事發現，每週至少食用兩份酪梨梨的人患冠狀動脈疾病的風險降低了21%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The researchers used statistics to account for other factors that could have affected people’s heart health. Still, Dr. Hu said, it’s impossible to say if avocados directly reduced the risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員通過統計方法排除了其他可能影響心臟健康的因素。不過，胡博士表示，仍無法斷定酪梨是否直接降低了這一風險。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/06/05/multimedia/05HOW-HEALTHY-AVOCADO3-jbgw/05HOW-HEALTHY-AVOCADO3-jbgw-master1050.jpg" src="https://static01.nyt.com/images/2024/06/05/multimedia/05HOW-HEALTHY-AVOCADO3-jbgw/05HOW-HEALTHY-AVOCADO3-jbgw-master1050.jpg"/></div><figcaption><span></span> <cite>Bobbi Lin for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Zeroing in on one food as the cause of health outcomes is challenging, explained Dr. Martin Kohlmeier, a professor at the University of North Carolina Nutrition Research Institute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北卡羅萊納大學營養研究所教授馬丁·科爾邁爾博士解釋說，要把某種健康結果歸因於單一食物是非常困難的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because avocados make great substitutions for less healthy foods, studies showing their benefits might in part reflect the benefits of cutting back on other stuff — like using avocado instead of mayonnaise on a sandwich, or adding more avocado, and less beef, to a burrito.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於酪梨往往用來替代較不健康的食物，相關研究中顯示的益處，部分也可能來自於減少其他食物的攝入——比如用酪梨代替三明治裡的蛋黃醬，或是在墨西哥卷餅中多加酪梨、少放牛肉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPighuKvvJMDFduFOgUdZ1I9lQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Many reported effects are replacement effects, not necessarily avocado effects,” Dr. Kohlmeier said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「許多觀察到的效果其實是替代效應，而不一定是酪梨本身的作用，」科爾邁爾博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Hu added that people who eat avocados might be more likely to have a healthy diet in general.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡博士補充說，食用酪梨的人整體飲食習慣可能本就更為健康。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They can support your gut microbiome.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>酪梨還有益於腸道微生物群。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Avocados are high in fiber, Dr. Klingbeil said, which can help you maintain a healthy weight and promote a healthy gut.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">克林貝爾博士表示，酪梨富含膳食纖維，這有助於維持健康體重，並促進腸道健康。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When gut bacteria digest fiber, they release small molecules called postbiotics that affect our overall health, said Dr. Zhaoping Li, a professor of medicine and chief of the division of clinical nutrition at the University of California, Los Angeles. Healthy bacteria can also signal to our brain when we’re full, Dr. Klingbeil said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學洛杉磯分校醫學教授、臨床營養科主任李兆萍博士表示，當腸道細菌消化纖維時，會釋放出被稱為後生元的小分子，這些分子會影響我們的整體健康。健康的腸道細菌還能在我們飽腹時向大腦發出信號，克林貝爾博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Hu said avocados can help you meet your daily fiber goals, which is important since studies show most people don’t eat enough fiber.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡博士說，酪梨可以幫助人們獲取每日所需的膳食纖維攝入量，這一點很重要，因為研究顯示，大多數人的纖維攝入量都不足。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPXBhuKvvJMDFUJlCAQdJQ8Chw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People should aim for at least 21 to 38 grams of fiber daily, depending on their age and sex. A whole avocado clocks in around 10 grams.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據年齡和性別的不同，我們每天應攝入至少21至38克膳食纖維。而一顆酪梨的纖維含量約為10克。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re rich in micronutrients.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>酪梨富含多種微量營養素。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The vitamin E in avocados may support healthy skin, Dr. Klingbeil said. According to Dr. Kohlmeier, the lutein in avocados may help keep your vision sharp.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">克林貝爾博士表示，酪梨中的維生素E有助於維持皮膚健康。科爾邁爾博士則指出，其中的葉黃素可能有助於保持視力的清晰度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And while bananas tend to get all the credit for potassium, avocados contain even more of the important mineral. Potassium helps your body reduce high blood pressure, Dr. Hu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而說到鉀元素，人們通常會想到香蕉，但酪梨所含的這種重要礦物質其實更高。胡博士說鉀有助於降低高血壓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Here’s how to enjoy them.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>那麼，應該如何食用酪梨呢？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">No single food makes your diet healthy or unhealthy. The real benefit comes from eating avocados as part of a diverse, balanced diet filled with fruits, vegetables, whole grains and healthy protein.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒有任何一種單一食物能決定飲食的健康與否。真正的益處來自於將酪梨納入多樣且均衡的飲食結構中，比如搭配水果、蔬菜、全穀物和優質蛋白一起食用。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMDdhuKvvJMDFZ2UOgUd5IwKZg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These recipes from NYT Cooking will help you do just that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》美食欄目提供的這些食譜，將幫助你做到這一點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recipe: Avocado Soup With Chile Oil</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：辣椒油酪梨湯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As delicious cold as it is room temperature, this silky soup gets a hit of heat from chile oil and crunch from toasted pepitas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這道絲滑的湯品無論冷食還是室溫享用都同樣美味，辣椒油帶來一絲辛辣，烤南瓜籽則帶來香脆口感。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2021/08/17/dining/05How-healthy-avocado-soup/merlin_193269120_f3d40097-68a3-4195-8313-6451e356027b-master1050.jpg" src="https://static01.nyt.com/images/2021/08/17/dining/05How-healthy-avocado-soup/merlin_193269120_f3d40097-68a3-4195-8313-6451e356027b-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recipe: Smashed Cucumber, Avocado and Shrimp Salad</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：拍黃瓜酪梨蝦仁沙拉</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The creaminess of avocado balances the tangy rice vinegar and soy dressing in this sesame-flecked shrimp salad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道點綴著芝麻的蝦仁沙拉中，鱷梨的綿密口感平衡了酸爽的米醋和醬油調味汁。 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2023/08/07/multimedia/05HOW-HEALTHY-AVOCADO-SALAD/09apperex-shrimp-tvwk-master1050.jpg" src="https://static01.nyt.com/images/2023/08/07/multimedia/05HOW-HEALTHY-AVOCADO-SALAD/09apperex-shrimp-tvwk-master1050.jpg"/></div><figcaption><span></span> <cite>Johnny Miller for The New York Times. Food Stylist: Rebecca Jurkevich.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recipe: Salt and Vinegar Kale Chips With Fried Chickpeas and Avocado</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：鹽醋羽衣甘藍脆片配炸鷹嘴豆與鱷梨</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silky against the crackle of kale chips, avocado brings richness to this vegetarian brunch dish that tastes just as good at dinner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在羽衣甘藍脆片的酥脆口感襯托下，酪梨的順滑為這道素食早午餐菜肴增添了濃郁風味，作為晚餐也同樣美味。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/06/05/multimedia/05HOW-HEALTHY-AVOCADO-Salt-and-Vinegar-kale-chips-hfpg/-05HOW-HEALTHY-AVOCADO-Salt-and-Vinegar-kale-chips-hfpg-master1050.jpg" src="https://static01.nyt.com/images/2024/06/05/multimedia/05HOW-HEALTHY-AVOCADO-Salt-and-Vinegar-kale-chips-hfpg/-05HOW-HEALTHY-AVOCADO-Salt-and-Vinegar-kale-chips-hfpg-master1050.jpg"/></div><figcaption><span></span> <cite>Julia Gartland for The New York Times. Food Stylist: Samantha Seneviratne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recipe: Quinoa Salad With Chicken, Almonds and Avocado</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：雞肉杏仁酪梨藜麥沙拉</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this easy make-ahead lunch, tiny quinoa cling to the avocado, mellow against the mustard vinaigrette.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道方便提前準備的午餐中，細小的藜麥附著在鱷梨上，與芥末油醋汁形成柔和的口感對比。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2018/08/17/dining/05HOW-HEALTHY-AVOCADO-quinoa-salad-chicken-copy/quinoa-salad-chicken-master1050.jpg" src="https://static01.nyt.com/images/2018/08/17/dining/05HOW-HEALTHY-AVOCADO-quinoa-salad-chicken-copy/quinoa-salad-chicken-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recipe: Garlic Chicken With Guasacaca Sauce</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：蒜香雞肉配瓜薩卡卡醬</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Spicy guasacaca sauce — a blend of cilantro, parsley, jalapeño and avocado — makes garlicky roasted chicken (and just about any other meat, seafood or vegetable) utterly delicious.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">辛辣的瓜薩卡卡醬（由香菜、歐芹、墨西哥辣椒和酪梨調製而成）令蒜香烤雞（以及幾乎任何肉類、海鮮或蔬菜）都變得美味無比。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2021/05/02/dining/05HOW-HEALTHY-AVOCADO-guasacaca-chicken/merlin_186703200_7f0ab6ca-5dc3-4fa4-82f3-1e1e42559ea4-master1050.jpg" src="https://static01.nyt.com/images/2021/05/02/dining/05HOW-HEALTHY-AVOCADO-guasacaca-chicken/merlin_186703200_7f0ab6ca-5dc3-4fa4-82f3-1e1e42559ea4-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2024年6月5日。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260325/avocados-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
