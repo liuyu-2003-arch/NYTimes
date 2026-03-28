@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國如此富有，為何美國人卻如此痛苦 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國如此富有，為何美國人卻如此痛苦</h1>
+    <h2 class="en-headline">How Can America Be So Miserable When It’s So Rich?</h2>
+    <div class="meta-line">DAVID FRENCH <span style="margin: 0 8px;">•</span> 2026-03-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/03/26/opinion/26french/26french-master1050.jpg" width="1050"/><figcaption><span></span> <cite>George Douglas</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The American economy is the envy of the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國經濟舉世稱羨。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Actual Americans, however, are not happy about their economy, and they’ve been unhappy about it for a long time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但現實中的<span>美國人卻對他們的經濟並不滿意，而且這種不滿已經持續了很長一段時間。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both of those statements are true, and until recently, frankly, they stumped me. How could it possibly be rational to feel such prolonged pessimism in the face of such extraordinary economic growth?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩種說法都沒錯。坦白說，直到最近，這都讓我感到困惑。面對如此非凡的經濟增長，為何會產生如此持久的悲觀情緒，這怎麼可能是理性的？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the last quarter-century, G.D.P. growth in the United States has far outpaced growth in Europe and Japan, two of our primary economic competitors (outside of India and China), to such an extent that many of Europe’s most powerful nations have economies only as prosperous as those of our poorest states. British and French living standards, as measured by disposable income, for example, are more comparable to that of Mississippi, still the poorest state, than to America’s as a whole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去25年間，美國的GDP增長遠超（除印度和中國外的<span>）主要經濟競爭對手歐洲和日本，</span>差距大到歐洲許多最強大國家的經濟繁榮程度僅相當於美國最貧困的州。例如，以可支配收入衡量，相比美國整體水平，<span>英國和法國的生活水平更接近仍然是美國最貧困州的密西西比州。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CIfUkZKywZMDFX8RigMdly4dhg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We hear about a shrinking middle class, but it’s shrinking because the ranks of the rich and the upper middle class are growing. According to an analysis by the economists Scott Winship and Stephen Rose, the core middle class (defined as households with incomes from 250 percent to under 500 percent of the poverty line) shrank from 35.5 percent of families in 1979 to 30.8 percent in 2024. That may not look like much at first glance, but that’s a 13 percent decline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>我們常聽說中產階級在萎縮，但這種萎縮是因為富裕階層和中上階層在擴大。根據經濟學家史考特·溫希普和斯蒂芬·羅斯的分析，核心中產階級（定義為家庭收入在貧困線</span>的250%至500%之間）佔全國家庭的比例從1979年的35.5%下降到2024年的30.8%。乍一看變化不大，但這是13%的降幅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not because Americans are getting poorer. They’re getting richer — much richer. The percentage of Americans who were poor or near-poor (less than 150 percent of the poverty line) plunged from 29.7 percent to 18.7 percent over the same time period. The percentage of lower-middle-class families (150 percent to under 250 percent of the poverty line) shrank as well — from 24.1 percent to 15.8 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這並非因為美國人變窮了。他們變富了——遠比之前更富有。在此期間，處於貧困或接近貧困（低於貧困線150%）的美國人口比例從29.7%驟降至18.7%。中下階層家庭（貧困線150%至250%之間）的比例也從24.1%下降到15.8%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During the same period, the share of upper-middle-class and rich Americans exploded. In 1979, 10.4 percent of families were upper middle class, with incomes from 500 percent to under 1,500 percent of the poverty line. By 2024, the percentage had almost tripled, to 31.1 percent, and the percentage of the rich (incomes of 1,500 percent of the poverty line and higher) went from a microscopic 0.3 percent to 3.7 percent, a more than tenfold increase.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同期，美國中上階層和富裕階層的比例急劇膨脹。1979年，有10.4%的家庭屬於中上階層，其收入在貧困線500%至1500%之間。到2024年，這一比例幾乎翻了三倍，達到31.1%，而富裕階層（收入在貧困線1500%及以上）的比例則從微不足道的0.3%增長到3.7%，增長了十倍以上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To give you a sense for what those numbers mean, the income thresholds that divide the five classes for a family of three, for example, were $40,000, $67,000, $133,000 and $400,000 in 2024 dollars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了讓你理解這些數字的含義，以三口之家為例，劃分五個階層的收入門檻在2024年的美元價值下分別是4萬美元、6.7萬美元、13.3萬美元和40萬美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result is that immense numbers of Americans live lives that would look extraordinarily prosperous compared with previous generations. For all their justified complaints about housing affordability, Americans on average live in larger and more luxurious homes than Americans in generations past.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結果是，與前幾代人相比，很大一部分美國人過著看起來異常富足的生活。儘管對住房可負擔性有正當的抱怨，但平均而言，美國人住的房子比前幾代美國人更大、更豪華。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Previous luxuries — things like central air, big-screen televisions, home computers and multiple cars — are now common staples of American life across most, although of course not all, of our social classes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去的奢侈品——如中央空調、大螢幕電視、家用電腦和多輛汽車——如今已成為美國大多數（當然不是全部）社會階層生活的標配。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMjwkZKywZMDFTnAKAUd2Ywgow" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">America is still the land of opportunity. We can still generate enormous amounts of wealth for tens of millions of people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國仍然是機遇之地。我們仍然能為數千萬人創造巨大的財富。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>I used to be</strong> the annoying person who’d respond to subjective economic malaise by spewing objective economic statistics — all with the goal of arguing that pessimism might be real, but that it’s irrational. After all, aren’t most people satisfied with their own economic conditions, even if they’re concerned about the economy writ large?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>我過去</b>曾是那個煩人的人，面對主觀</span>認為<span>的經濟萎靡，我會拋出客觀的經濟統計數據——所有這些都是為了論證，悲觀情緒或許是真實的，但卻是不理性的。畢竟，難道不是大多數人都滿意自己的經濟狀況嗎，即使他們擔心整體的經濟大局？</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Also, isn’t most of this partisan anyway? Economic optimism and pessimism flip depending on who’s in office, with Republicans instantly more optimistic when Republicans win the White House, and Democrats behaving the exact same way when their party controls it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>此外，這不也大多是黨派之見嗎？經濟樂觀與悲觀情緒會根據誰執政而翻轉，共和黨在贏得白宮時立刻變得更樂觀，而民主黨在自己的政黨主政時也表現出完全一樣的行為。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A closely divided country will never express broad-based economic optimism.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個分裂為兩個均勢陣營的國家永遠不會表達廣泛的經濟樂觀情緒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But then I read a piece that completely changed my perspective, and once my perspective changed, I saw a reality that I couldn’t unsee — we are miserable in part <i>because</i> we are wealthy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但後來我讀到一篇徹底改變我觀點的文章，一旦我的觀點改變，我就看到了一個無法忽視的現實——我們之所以痛苦，部分原因正是因為我們富有。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The piece, which appeared in the Times Opinion section last August, was by Daniel Currell, a management consultant, and it was about the economics of Disney World. It described a park once accessible to most Americans that has become extraordinarily expensive, charging fees that would crush the budgets of countless millions of American families.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這篇去年8月發表在《紐約時報》觀點版的文章由管理顧問丹尼爾·柯瑞爾撰寫，內容是關於迪士尼世界的經濟學。文章描述了一個曾經對大多數美國人開放的公園如今變得極其昂貴，其收費足以壓垮無數美國家庭的預算。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CMWMkpKywZMDFWfodQkdjx8c6g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it’s not just the base-line cost of attendance that has exploded. Disney offers various extra benefits (at extra cost) that create a multitiered experience. Think of the park as creating something like the boarding groups for airline flights. Life is just better if you’re in Group 1.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但暴漲的不僅僅是入園的基本費用。迪士尼還提供各種額外付費的特別福利，創造了一種多層次的體驗。不妨把這個公園想像成航班的登機組。如果你在第一組，會舒服許多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one sense, the Disney story is understandable and lamentable, but it’s hardly alarming. Only a small fraction of Americans will go to Disney World in any given year, and if there are many more rich Americans, then it only makes economic sense to create benefits that cater to their tastes (and empty their wallets).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從某種意義上說，迪士尼的故事雖然可以理解且令人遺憾，但並不算觸目驚心。在任何特定年份，只有一小部分美國人會去迪士尼世界，而且如果富裕的美國人大幅增加，那麼從經濟角度出發，迎合他們的品味（並掏空他們的錢包）來創造特別福利就順理成章了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it’s not just Disney. The examples are all around us. This month, The Wall Street Journal published a fascinating article about the explosive costs of youth sports. The average family’s annual spending on baseball, for example, increased to $1,113 from $660 between 2019 and 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但不僅僅是迪士尼。這樣的例子在我們身邊比比皆是。本月，《華爾街日報》發表了一篇非常有意思的文章，講述了青少年體育運動的爆炸性成本。例如，2019年至2024年間，美國家庭在棒球上的平均年支出從660美元增加到1113美元。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s partly because the nature of youth sports has changed. When I was young, we all owned a bat, a glove and a few balls. We signed up for Little League at a community table set up outside the entrance of the closest Walmart, and we joined teams with names like Tom’s Oil Change Tigers and Wayne’s Video Wildcats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這部分是因為青少年體育的性質已經改變。在我小時候，我們都有球棒、手套和幾個球。我們在最近的沃爾瑪超市入口外設立的社區報名桌報名參加小聯盟，加入那些名為「湯姆換油店老虎隊」或「韋恩錄像店野貓隊」的球隊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And now? Travel sports have taken over, and travel sports are expensive. As The Journal reported, “Teenagers on travel teams are rolling into weekend tournaments wearing a few thousand dollars of apparel, equipment and swag.” Forget the local teams sponsored by local businesses. Now you often find yourself traveling regionally or maybe even nationally for teams called Alliance A or Alliance B, representing different branches of your chosen travel sports company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在呢？旅行體育已經佔據主導，而旅行體育很昂貴。正如《華爾街日報》報導的：「隨隊外出比賽的青少年穿著價值幾千美元的服裝、裝備和贈品湧入週末錦標賽。」忘記那些由本地企業贊助的本地隊伍吧。現在，你常常發現自己要輾轉於本地區甚至全美各地，為名為「A聯盟」或「B聯盟」的隊伍打比賽，這些隊伍代表著你選擇的旅行體育公司的不同分支。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you’re a sports fan, forget about going to see your favorite pro team unless you’ve got a lot of extra cash on hand. As my colleague at The Athletic Henry Bushnell reported in December:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果你是個體育迷，除非手頭有大量閑錢，否則就別想去現場看<span>職業隊比賽了。正如我的同事亨利·布希內爾去年12月在The Athletic上報導的那樣：</span></div></div></div></div></div><div class="big_ad" data-google-query-id="COa7kpKywZMDFRXodQkd5pUt1Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>The price of attending an N.F.L. or M.L.B. game rose, on average, by around 300 percent from 1991 to 2023, according to the Fan Cost Index. The average N.F.L. ticket now costs more than $300.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據「球迷成本指數」，從1991年到2023年，觀看一場職業橄欖球大聯盟(NFL)或職業棒球大聯盟(MLB)比賽的平均價格上漲了約300%。現在，一場NFL比賽的平均票價超過300美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>The <i>cheapest</i> ticket to an average N.F.L. game is around $169, per an Athletic analysis earlier this season — more than every single standard English Premier League ticket except those in the most expensive tier for the most appealing games at Arsenal.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>根據The Athletic本賽季早些時候的一項分析，一場普通NFL比賽的最便宜門票約為169美元——這超過了英超聯賽除兵工廠俱樂部最受關注比賽最高票價之外的所有標準門票價格。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And what about flying? To purchase a plane ticket is to open a restaurant menu. You’ve got choice after choice of seating tiers. It’s not just First Class and Coach — boarded back to front — any longer. Nope. We’ve got First Class, Main Cabin Extra, Main and Basic Economy. We’ve got ConciergeKey boarding, preboarding and nine other boarding groups.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那坐飛機呢？購買機票就像打開餐廳菜單。你面臨著一個又一個的座位等級選擇。不再是只有頭等艙和經濟艙——以從後向前的順序登機。不，我們現在有頭等艙、舒適經濟艙、經濟艙和基礎經濟艙。我們有貴賓鑰匙登機、預登機和另外九個登機組。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result can be endlessly frustrating. We’re constantly reminded that America is a multitiered society in which a high income buys you a very visible degree of prosperity, and a decent income gives you nothing special at all. There are so many high-income Americans that the entire economy is warping to accommodate the minority at the expense of the majority.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結果可能是無盡的煩擾。我們不斷被提醒，美國是一個多層次的社會，高收入能為你帶來極其明顯的富裕享受，而一份體面的收入則什麼特殊待遇也帶不來。高收入的美國人如此之多，以至於整個經濟都在扭曲，犧牲多數人的利益以滿足少數人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In other words, we have a Group 1 economy for a Group 9 nation, and it’s no wonder that so many Americans feel economically disadvantaged and insecure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">換句話說，我們擁有的是一個為「第一組」設計的經濟，但身處的是一個「第九組」的國家，難怪這麼多美國人在經濟上感到不利和不安全。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>There is a</strong> statistic that backs up this perception. In February of last year, The Wall Street Journal reported that the top 10 percent of earners — households earning about $250,000 or more — now account for 49.7 percent of all spending. That’s a staggering percentage — a percentage that can tilt an entire economy toward the top.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>有一個</b>統計數據支持這種看法。去年2月，《華爾街日報》報導稱，收入最高的10%群體（家庭年收入約25萬美元或以上）現在佔據了總消費的49.7%。這是一個驚人的比例——一個能讓整個經濟向頂層傾斜的比例。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNfmkpKywZMDFanJKAUdys8K3A" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_5__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Extend the analysis to the top 40 percent of earners and that percentage grows to more than 75 percent of all spending. That means that the poorest 60 percent of Americans account for less than a quarter of all spending. Put all this together, and it means that individually rational economic choices are driving the entire economy to cater to the wealthy. And if the top 10 percent are far and away the dominant spenders, that will mean that even members of the upper middle class will strain to feel secure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將分析範圍擴大到收入最高的40%人群，這個比例上升到總消費的75%以上。這意味著，最貧窮的60%美國人只佔了總消費的不到四分之一。把這些匯總起來，就意味著個體的理性經濟選擇正在推動整個經濟迎合富裕階層。而且，如果收入最高的10%群體是占絕對主導地位的消費者，那將意味著即使是中上階層的人也會感到維持體面生活的壓力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you’re a car manufacturer, do you want to build low-margin entry-level cars? Or do you reap much greater rewards by selling the high-margin S.U.V.? If you’re a developer, luxury housing is typically much more profitable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>如果你是汽車製造商，你會想生產低利潤的入門級汽車嗎？還是通過銷售高利潤的SUV來獲得大得多的回報？如果你是開發商，豪華住宅通常利潤要高得多。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yes, used cars can still be very nice cars, and there is evidence that building more high-end housing can lower prices by increasing overall supply, but middle-class America is used-car America. The shiny new thing? That’s for someone else.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>是的，二手車仍然可以是很不錯的車，而有證據表明，通過增加整體供應，建造更多高端住宅可以降低房價，但中產階級的美國是二手車的美國。那閃閃發光的新</span>玩意？那是給別人準備的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result can be a constant sense that you’re a second-class citizen. You check into hotels eyeing the shorter Gold check-in line. You ride in the rental shuttle past the Preferred kiosk, where the frequent travelers just grab their keys and go.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結果可能就是，你不斷感覺自己是個二等公民。你在酒店前台登記時，會瞄著那條更短的黃金會員隊列。你乘坐租車公司班車經過貴賓服務亭，那裡的常旅客拿了鑰匙就可以走。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or, much more consequentially, you move to a new city and find that the wait to get established with a new doctor can stretch for months — unless you are able to pay the high monthly fee for concierge medicine. Then you can be seen right away, perhaps with a bonus offer of Botox for the middle-aged patient.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">或者，更嚴重的是，你搬到一個新城市，發現要看新醫生可能需要等上好幾個月——除非你能支付高昂的月費享受「特約醫療」。那樣你就能馬上得到診治，也許中年患者還能獲得肉毒桿菌的優惠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And what if you live in a city that the top 10 percent love? Well, then even being upper middle class doesn’t feel affluent at all. Six-figure salaries purchase shoe-box apartments, and everything from groceries to gas costs an absurd amount. Soon enough, you’re googling the real estate prices in Chattanooga or Des Moines — surely it’s cheaper there — whether or not you intend to ever leave.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果你住在一個高收入10%群體鍾愛的城市呢？那麼，即使是中上階層也根本感覺不到富裕。六位數的薪水只能買得起「鞋盒」公寓，從食品雜貨到汽油，一切都貴得離譜。很快，你就會在谷歌上搜索查塔努加或得梅因的房價——心想那裡肯定更便宜——無論你是否真的打算離開。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this context, “affordability” doesn’t just refer to the cost of a specific good (or even necessarily the rate of inflation at any given time) but rather to the price of entry into what should feel like a normal American life — one that includes baseball games with the kids, a doctor on call, a home you like, and, at the very least, a basic sense that you haven’t been left behind.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在此背景下，「可負擔性」不僅僅指特定商品的價格（甚至不一定指特定時期的通膨率），更是指獲得那種本應感覺是正常美國生活所需支付的成本——這種生活包括與孩子一起看棒球賽、有隨時可以看的醫生、一個你喜歡的家，以及至少一種還沒有被時代拋棄的整體感覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Wealth always</strong> tempts us to be discontent. We’re cursed with that insatiable desire for more. We’re prone to envy. There is a reason we talk about keeping up with the Joneses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>財富總是</b>誘惑我們永不滿足。我們被那永不饜足的慾望所詛咒。我們容易嫉妒。這就是為什麼我們會談論「與鄰居攀比」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But what if the Joneses inadvertently also make it hard to keep up? What if their sheer economic power changes our communities so much that we’re priced out of our doctors, our homes, our sports and many, many other things we need or want?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但如果「鄰居」在無意中也讓攀比變得困難呢？如果他們強大的經濟實力改變了我們的社區，使我們無力支付醫療、住房、體育以及許多其他我們需求或想要的東西呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this story, maybe the problem isn’t oligarchy. Elon Musk’s billions don’t tangibly change my life. But all the doctors, lawyers, engineers and accountants in my city do. They’ve bought the houses in the gated community. Their kids are playing travel ball. Because of all their money, the next restaurant is more likely to be a farm-to-table bistro than a Waffle House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這個故事裡，問題也許不在於寡頭統治。伊隆·馬斯克的億萬財富並沒有對我的生活造成直觀的改變。但我所在城市的所有醫生、律師、工程師和會計師有。他們買下了封閉式社區的房子。他們的孩子在打旅行體育比賽。因為他們手中的錢，新開的餐館更可能是「從農場到餐桌」的小館，而不是華夫餅屋。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">No one is the clear villain in this story, and that’s one thing that makes the problem difficult to solve. We can’t target and defeat a specific set of bad actors who are immiserating America. Everyone is acting in rational self-interest. Why not be a lawyer or an engineer if you can? Why make less money selling food to kindergarten teachers when you can charge architects more? Why not pay for concierge services if they make your life easier? Why not be a concierge physician if the pay and lifestyle are better?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這個故事裡，沒有誰是明確的壞人，這也正是問題難以解決的原因之一。我們無法找出並擊潰一群特定的、正在使美國陷入困境的「壞人」。每個人都在按照理性的自利行事。如果可以，為什麼不做律師或工程師呢？既然能向建築師收取更高費用，為什麼要向幼稚園老師賣食品賺更少的錢？如果貴賓服務能讓你的生活更輕鬆，為什麼不買呢？如果「特約醫療」醫生待遇和生活方式更好，為什麼不做呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s these choices, made millions of times by millions of Americans, that are both spurring our growth and — perversely enough — increasing our misery. We can’t have what we can’t afford, and we can’t have what we used to afford, and that combination can make even a middle-class American who may be well-off by historical standards feel very poor indeed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正是這些被數百萬美國人重複了數百萬次的選擇，既刺激了我們的經濟增長，也——荒謬地——加劇了我們的痛苦。我們買不起我們得不到的，我們也買不起我們過去能負擔的，這種組合甚至可以讓一個按歷史標準可能已相當富裕的美國中產階級感到自己確實很窮。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">David French是觀點版面專欄作家，撰寫有關法律、文化、宗教和武裝衝突的文章。他曾參加過伊拉克自由行動，也是一名憲法訴訟律師。他的最新著作是《分裂必敗：美國的分裂威脅以及如何重建我們的國家》(Divided We Fall: America’s Secession Threat and How to Restore Our Nation)。歡迎在Threads上關注他 (@davidfrenchjag)。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260327/economy-attitudes-republicans-democrats/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
