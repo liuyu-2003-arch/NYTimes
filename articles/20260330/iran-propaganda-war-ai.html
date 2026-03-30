@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伊朗對美以展開信息戰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">伊朗對美以展開信息戰</h1>
+    <h2 class="en-headline">In an Asymmetrical War, Iran Seeks an Edge With Its Information War</h2>
+    <div class="meta-line">STEVEN LEE MYERS, TIFFANY HSU, STUART A. THOMPSON <span style="margin: 0 8px;">•</span> 2026-03-30</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="德黑蘭瓦利亞斯爾廣場的一塊廣告牌，攝於本月。" height="700" src="https://static01.nyt.com/images/2026/03/26/multimedia/00Biz-IranPropaganda-1-vghq/00Biz-IranPropaganda-1-vghq-master1050.jpg" width="1050"/><figcaption><span>德黑蘭瓦利亞斯爾廣場的一塊廣告牌，攝於本月。</span> <cite>Arash Khamooshi for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The videos and posts relentlessly mock President Trump or vilify him as a bloodthirsty leader who strikes civilian targets indiscriminately. They make up content about attacks on American and Israeli targets, including one on Wednesday that featured a fabricated video of a missile striking Liberty Island in New York Harbor. They regularly mention Jeffrey Epstein.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些影片和帖子不斷地嘲諷川普總統，或者將他醜化為一個不加區分地打擊平民目標的嗜血領導人。他們偽造關於美國和以色列目標遭受攻擊的內容，其中週三的一段虛假影片顯示，一枚導彈擊中了紐約港的自由島。此外，這些帖子還經常提及傑弗里·愛潑斯坦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran is waging what researchers have described as a sophisticated information war, aided by Russia and China, that is spreading content designed to exploit worldwide opposition to the U.S.-Israeli military campaign and deflect from the country’s considerable losses on the battlefield.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員表示，伊朗正在俄羅斯和中國的協助下發動一場複雜的信息戰爭，通過傳播相關內容，既借勢全球對美以軍事行動的反對情緒，又試圖掩蓋自己在戰場上的重大損失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nearly a month into the war, Iran’s state media outlets and covert operatives are producing a steady torrent of propaganda, overstated narratives and outright disinformation. They are often wielding generative A.I. tools to create increasingly realistic-looking images and videos, according to human rights organizations and research groups studying foreign influence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">開戰近一個月以來，伊朗的官媒和祕密行動人員正在持續輸出大量宣傳煽動、誇大敘事和徹頭徹尾的虛假信息。根據研究外國影響力的人權組織和研究機構的說法，他們往往利用生成式人工智慧工具來來製作看起來越來越逼真的圖像和影片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the false content has been debunked, but not before reaching millions of people on X, Bluesky, Facebook, Instagram, TikTok and other social media platforms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些虛假內容中的大部分已經被揭穿，但往往在此之前，它們就已經在X、Bluesky、Facebook、Instagram、TikTok等社群媒體平台上傳播，觸達數百萬人。</div></div></div></div></div><div class="big_ad" data-google-query-id="CL_95vW3xpMDFcAwRAgdiNsH3w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The information war, the researchers say, has given Iran’s beleaguered leadership a weapon almost as potent as its ability to disrupt the world’s energy economy by throttling shipments of oil through the Strait of Hormuz. While the impact of the information war can be difficult to measure, experts said it appeared to have stoked popular anger and unease about the conflict in the United States and beyond.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員表示，這場信息戰為伊朗深陷困境的領導層提供了武器，其威力幾乎等同於通過封鎖霍爾木茲海峽石油運輸來破壞世界能源經濟。雖然信息戰的影響難以量化，但專家表示，它似乎已經在美國乃至更廣範圍內激起了公眾對這場衝突的憤怒和不安。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They’re winning the propaganda war,” Darren L. Linvill, a director of Clemson University’s Media Forensics Hub, said of the Iranians. “They were prepared for it more than the administration, because they’d been preparing for this entire conflict for 50 years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">克萊姆森大學媒體取證中心主任達倫·林維爾談到伊朗時表示：「他們在宣傳戰中佔了上風。他們比美國政府準備得更充分，因為為了這場衝突，他們已經準備了50年。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With the internet largely shut down inside Iran, the intended audience appears to be people outside the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於伊朗國內的互聯網基本處於切斷狀態，這些內容的目標受眾顯然是境外人群。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the posts appear to come from accounts controlled by humans, rather than automated bots. Researchers at Clemson identified a furtive network of at least 62 accounts on X, Instagram and Bluesky that spread pro-Iranian content.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多帖子似乎來自由真人控制的帳戶，而非自動化機器人。克萊姆森大學的研究人員在X、Instagram和Bluesky上識別出一個至少由62個帳戶組成的隱秘網路，專門傳播親伊朗的內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The accounts, controlled by the Islamic Revolutionary Guards Corps, set up accounts purporting to be Spanish-speaking users in Texas, California, Venezuela and Chile and English speakers in England, Scotland and Ireland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些帳戶由伊斯蘭革命衛隊控制，偽裝成來自得州、加州、委內瑞拉和智利的西班牙語用戶，以及來自英格蘭、蘇格蘭和愛爾蘭的英語用戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some cases, the content they shared had been lifted verbatim from posts published by real people, including prominent Western influencers like Jackson Hinkle and Mario Nawfal, who each have millions of followers on X and are known for incendiary commentary on foreign affairs and conservative issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一些情況下，它們發布的內容直接照搬了真實用戶的帖子，包括一些知名的西方網紅，如傑克遜·辛克爾和馬利奧·納法爾——兩人都在X平台上擁有數百萬粉絲，並以在外交事務和保守派議題上的煽動性評論而聞名。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKLK5_W3xpMDFTg4RAgd2TIpUA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another campaign focused on a March 18 interview by Tucker Carlson with Joe Kent, the former director of the National Counterterrorism Center who resigned in protest of the war, according to a report by Honest Reporting, a nonprofit advocacy group that critiques news reports it deems critical of Israel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據非營利倡議組織「誠實報導」（該機構專門批評其認為對以色列持批評立場的新聞報導）的一份報告，另一場宣傳活動聚焦於3月18日塔克·卡爾森對前國家反恐中心主任喬·肯特的採訪。肯特因反對這場戰爭而辭職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First, RT, the Russian television channel, posted a clip of the interview in which Mr. Kent portrayed the attack as unjustified aggression. From there, dozens of accounts spread the same clip almost simultaneously.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先，今日俄羅斯電視台發布了該採訪的一段剪輯片段，肯特在裡面將這次襲擊描述為毫無正當理由的侵略。隨後，數十個帳戶幾乎同時轉發了這段影片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This was not simply organic virality,” the group said. It added, “Actors with varying ideological positions aligned almost immediately around a single, highly specific message: that Israel had manipulated the United States into war.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該組織表示：「這絕非簡單的自然火起來。」它還進一步指出：「意識型態立場不同的各類主體幾乎在第一時間圍繞一個高度具體的單一信息形成一致：即以色列操縱美國走向了戰爭。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran has also seized on Mr. Trump’s erratic statements and taken advantage of the weakening of American government and corporate guardrails that once sought to counter false or misleading information.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗還利用了川普反覆無常的言論，並抓住美國政府和企業層面原本用於遏制虛假或誤導性信息的防護機制有所削弱之機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One video fabricated with A.I. and posted on Instagram by SSN TV, an Iranian state network, ridiculed Mr. Trump’s inability to persuade American allies to provide military help to keep the Strait of Hormuz open to oil tankers. The video includes fakes of President Vladimir V. Putin of Russia and Kim Jong-un of North Korea laughing while listening to a rap song.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一段由人工智慧生成、由伊朗國家媒體SSN TV在Instagram上發布的影片嘲諷川普總統無力說服美國盟友提供軍事支持、以確保油輪正常穿行霍爾木茲海峽。影片中還出現了一個偽造的畫面：俄羅斯總統普丁和朝鮮領導人金正恩聽著一首說唱歌曲縱情大笑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Trump’s inability to do alliance management or coalition building before this war sort of started the fire, and Iran’s disinformation campaigns are just pouring gasoline on that,” said Jonathan Ruhe, an analyst at the Jewish Institute for National Security of America, an advocacy organization based in Washington that supports strong ties between the United States and Israel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於華盛頓、主張加強美以關係的倡議組織美國國家安全猶太研究所的分析師喬納森·魯赫表示：「川普在戰前未能進行有效的聯盟協調或構建聯合陣線，在某種程度上點燃了這場火，而伊朗的虛假信息行動則是在火上澆油。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CNnA5_W3xpMDFXw3RAgdp14Jfw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The American military has sought to debunk false claims, including another this week that falsely said Iran had downed an F/A-18 fighter jet. Social media platforms have also moved to take down some obviously fabricated videos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美軍已試圖拆穿這些虛假指控，包括本週早些時候另一則宣稱伊朗擊落了一架F/A-18戰鬥機的假消息。社群媒體平台也行動起來，刪除了一些明顯偽造的影片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even so, more continue to circulate, including content that Mr. Trump and other American government accounts have posted using A.I.-generated content and misleading narratives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即便如此，更多的虛假內容仍在傳播，甚至包括川普及其他美國政府帳號發布、利用人工智能生成內容以及具有誤導性的敘述製作的帖子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia and China, which have close relations with Iran and share a disdain for the unchecked use of American military power, have in turn sharply criticized Mr. Trump’s decision to attack. They amplified Iran’s propaganda and produced their own, according to the researchers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與伊朗關係密切、同樣反感美國不受約束地動用軍事力量的俄羅斯和中國，也對川普發動攻擊的決定提出了嚴厲批評。據研究人員稱，中俄放大伊朗的宣傳內容，同時也製作了自己的宣傳內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although neither country has openly provided direct military support to Iran, influence operations in both countries have worked at times in a seemingly coordinated fashion, according to Graphika, a company that analyzes content online.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管兩國都未公開向伊朗提供直接軍事支持，但據分析網路內容的Graphika公司稱，兩國的信息影響行動在某些時候呈現出似乎相互協調的態勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Its researchers have documented numerous instances in recent weeks when Russian and Chinese state media or known covert influence operations amplified narratives that Iran has pushed — and vice versa. They have highlighted Iran’s ability to block the Strait of Hormuz and claims that the war was started to distract from the release of files related to Mr. Epstein and his crimes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司的研究人員記錄了近幾週的諸多案例，顯示俄羅斯和中國的官媒或已知的祕密影響力行動都在放大伊朗所推動的敘事，反之亦然。其中包括強調伊朗有能力封鎖霍爾木茲海峽，以及宣稱這場戰爭是為了轉移公眾對與愛潑斯坦及其罪行相關文件公布的關注。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran’s strategies have been extensively cataloged by social media watchdogs since the war began. Researchers at Graphika described a “travel chain of narratives” that spread from node to node: Iranian state TV airs a misleading broadcast, which is picked up by online influencers who then create A.I.-generated media that Chinese- and Russian-linked bot armies help give wide circulation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自戰爭開始以來，多個社群媒體監管機構已對伊朗的相關策略進行了系統梳理。Graphika的研究人員描述了一種在節點間傳播的「敘事傳播鏈」：首先，伊朗國家電視台播出一段具有誤導性的內容，隨後被網紅接力傳播，他們進一步製作人工智慧生成的媒體內容，最後由與中俄相關的機器人水軍協助進行大規模傳播。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJaB6PW3xpMDFcgqRAgd2KEU4A" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The effort, the company said in a note to clients, “likely aims to normalize support for escalation, shifts blame onto external actors and bolsters the perception of Iran as a victim, justifying defensive or retaliatory stances.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司在一份致客戶的簡報中表示，這一行動「可能旨在將支持衝突升級的行為合理化，將責任轉嫁給外部行為體，並強化伊朗作為受害者的形象，從而為其防禦或報復性立場提供依據。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cyabra, a social media monitoring company, found that Iran had activated hordes of phony social media accounts to push a message of Iranian dominance on the battlefield, earning 145 million views in the first two weeks of the war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">社群媒體監測公司Cyabra發現，伊朗動用了大量虛假社群媒體帳號傳播其在戰場上佔據主導地位的信息，並在戰爭的最初兩週內獲得了1.45億次瀏覽。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">TikTok accounted for 72 percent of those views. Accounts on TikTok with tens of thousands of followers shared A.I.-generated fakes, including dozens of videos of fake attacks on Israel. The company did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中72%的瀏覽量來自TikTok。該平台上一些擁有數萬粉絲的帳號分享了由人工智慧生成的虛假內容，其中包括數十段偽造的以色列遭襲影片。TikTok未回應置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cyabra also found evidence that the efforts were the result of “clear coordination” and a “structured campaign” by Iran, citing as evidence the use of recurrent content and hashtags, alongside rapid bursts of posts that appeared online over short periods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Cyabra還發現有證據表明，這些努力是伊朗「明確協調」和「有組織運動」的結果，其依據包括反覆使用的內容與標籤，以及在短時間內集中爆髮式發布的帖子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These tactics allowed the network to rapidly flood the information environment and dominate online discussions during key moments of the conflict,” the company wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司寫道：「這些策略使該網路能夠在衝突的關鍵時刻迅速淹沒信息環境，並主導線上討論。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Steven Lee Myers自舊金山報導關於錯誤信息和虛假信息的新聞。自1989年加入《紐約時報》以來，他曾自世界各地報導新聞，包括莫斯科、巴格達、北京和首爾。</p><p class="cn-p">Tiffany Hsu報導錯誤信息、虛假信息及其起源、動向和後果。她從事新聞行業已有20多年。</p><p class="cn-p">Stuart A. Thompson撰寫有關虛假和誤導性信息如何在網上傳播，以及如何影響世界各地的人們的文章。他主要關注錯誤信息、虛假信息和其他誤導性內容。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260330/iran-propaganda-war-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
