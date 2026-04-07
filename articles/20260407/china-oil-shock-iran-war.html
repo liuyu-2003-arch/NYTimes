@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>能源衝擊中北京展現韌性 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">能源衝擊中北京展現韌性</h1>
+    <h2 class="en-headline">This Is Not China’s War, but Beijing Started Preparing for It Years Ago</h2>
+    <div class="meta-line">艾莎, MURPHY ZHAO <span style="margin: 0 8px;">•</span> 2026-04-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上個月，上海一家中石化工廠的儲油罐及相關設施。" height="700" src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-01-gmqz/06Biz-China-Resilience-01-gmqz-master1050.jpg" width="1050"/><figcaption><span>上個月，上海一家中石化工廠的儲油罐及相關設施。</span> <cite>Go Nakamura/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The energy shock caused by the war in the Middle East caught China, the world’s top buyer of oil, by surprise. But Beijing has been preparing for a crisis like this for years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中東戰爭引發的能源衝擊讓全球最大的石油買家中國措手不及。但北京多年來一直在為這樣一場危機做準備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has stockpiled increasingly large amounts of oil. It has pursued renewable sources of energy like solar, wind and hydropower so aggressively that its demand for refined oil, diesel and gasoline is falling. And it has harnessed technology to reduce its reliance on the foreign-sourced raw materials that go into the massive output of its factories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國不斷增加石油儲備。它大力發展太陽能、風能和水電等可再生能源，以至於對精鍊油、柴油和汽油的需求正在下降。它還利用技術減少對進口原材料的依賴，這些原材料是其工廠大規模生產所必需的。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s ruling Communist Party has long viewed its industries as the foundation of its national security strategy. It has sharpened — and expanded — that approach since President Trump’s first term. China has doubled down on policies to build up local industries, in turn strengthening its global dominance over resources and supply chains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國共產黨長期以來將工業視為國家安全戰略的基礎。自川普總統第一任期以來，這一理念得到加強和擴展。中國愈發推崇發展本土工業的政策，進而增強其在資源和供應鏈上的全球主導地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You have seen more top-down industrial policy, more guidance from the central government to develop certain strategic sectors that China believes they need to strengthen in order not to be controlled by a Western power,” said Heiwai Tang, director of the Asia Global Institute at the University of Hong Kong.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們已經看到更多自上而下的產業政策，中央政府提供更多指導，來發展中國認為需要加強的某些戰略部門，以免被西方大國控制，」香港大學亞洲環球研究所所長鄧希煒說。</div></div></div></div></div><div class="big_ad" data-google-query-id="COej77XG2pMDFUkNrAAd6CgnsQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Energy was the linchpin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">能源是關鍵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A decade ago, China was the world’s biggest market for internal combustion engine cars. Today, it is the top market for electric vehicles. China used to be the largest buyer of foreign-sourced petrochemicals, the raw materials derived from oil that are used to make plastic, metal, rubber components and other crucial ingredients in the goods its factories churn out. Now it uses mostly domestic coal to make certain chemicals, like methanol and synthetic ammonia. Government planning and investment were crucial to those advances.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">十年前，中國是全球最大的內燃機汽車市場。如今，它已成為電動汽車的最大市場。中國曾經是外國石化產品的最大買家，也就是從石油中提取的用於製造塑料、金屬、橡膠部件及其他工廠關鍵原料的原材料。現在，它主要使用國內煤炭來生產某些化學品，如甲醇和合成氨。政府規劃和投資對這些進步至關重要。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2023年，中國濰坊的一座燃煤發電廠。" data-src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-03-gmqz/06Biz-China-Resilience-03-gmqz-master1050.jpg" src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-03-gmqz/06Biz-China-Resilience-03-gmqz-master1050.jpg"/></div><figcaption><span>2023年，中國濰坊的一座燃煤發電廠。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the Strait of Hormuz, the passageway for virtually all of the oil that flows to Asia, remains largely shut off, China has so far proved more resilient than much of the rest of the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾乎所有流向亞洲的石油的必經之地霍爾木茲海峽目前基本處於關閉狀態，而中國迄今為止已證明其比世界其他許多地區更有韌性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China can now power many of its cars and trains with electricity, greatly reducing its reliance on oil. China has also honed the use of coal — and not oil — to produce its own petrochemicals. This technology, developed by Germany and used to sustain its economy during World War II, gives Beijing an alternative to oil to make the raw materials its factories need.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國現在可以用電力驅動許多汽車和火車，大大減少了對石油的依賴。中國還完善了用煤炭（而非石油）生產本土石化產品的技術。這種最初由德國開發，並在二戰期間用於維持其經濟的技術，成為石油的替代方案，為北京提供其工廠所需的原材料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vietnam and the Philippines, facing severe shortages of oil and other energy sources, appealed to China for help last month. “China stands ready to strengthen coordination and collaboration with Southeast Asian countries and jointly address energy security issues,” a spokesman for China’s foreign ministry said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，面臨嚴重石油和其他能源短缺的越南和菲律賓向中國求助。「中方願同東南亞國家加強協調配合，共同應對能源安全問題，」中國外交部發言人表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has long been fixated on addressing its reliance on foreign sources of energy and materials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京長期以來一直專注於解決對外國能源和原材料的依賴問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the turn of the century, officials worried about another narrow passageway through which oil traveled to China: the Strait of Malacca, which separates Indonesia and Malaysia from Singapore. In 2004, China created an emergency petroleum stockpile to address those concerns. In recent months, it has been expeditiously adding to its stockpile.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本世紀初，另一條將石油運往中國的狹窄通道——將印度尼西亞、馬來西亞與新加坡分隔開的馬六甲海峽——引起了官員們的擔憂。2004年，中國建立了緊急石油儲備以應對這些擔憂。最近幾個月，<span>這一儲備得到了迅速擴大</span>。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As China was becoming a factory powerhouse for the world in the late 1990s, it needed foreign chemical companies like DuPont, Shell and BASF to set up plants to supply the chemicals its factories needed. In recent years, Chinese companies have come to dominate much of the world’s chemical supplies. Three-quarters of the world’s polyester and nylon, for example, are made in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上世紀90年代末，正在成為世界工廠的中國需要杜邦、殼牌和巴斯夫等外國化工公司在中國設廠，以供應工廠所需的化學品。近年來，中國公司已主導了全球大部分化工供應。例如，全球四分之三的聚酯和尼龍是在中國生產的。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年在中國青海省，將陽光直接轉化為電能的光伏太陽能板。" data-src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-02-gmqz/06Biz-China-Resilience-02-gmqz-master1050.jpg" src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-02-gmqz/06Biz-China-Resilience-02-gmqz-master1050.jpg"/></div><figcaption><span>去年在中國青海省，將陽光直接轉化為電能的光伏太陽能板。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is still the world’s largest buyer of oil and gas, and three-quarters of its oil is imported. While Beijing does not disclose the size of its reserves, its crude oil imports increased 4.4 percent in 2025 over the previous year, while its consumption grew 3.6 percent, according to the Chinese government. But after billions of dollars in direct subsidies to electric vehicle makers and hundreds of billions invested in renewable sources of energy, China’s efforts have paid off. Demand for refined oil, gasoline and diesel has fallen two years in a row, prompting experts to forecast that China’s oil and gas consumption has peaked.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國仍是全球最大的石油和天然氣買家，其四分之三的石油依賴進口。雖然北京不披露儲備規模，但根據中國政府數據，2025年其原油進口較上年增長4.4%，而消耗<span>增長3.6%。但在向電動汽車製造商提供數十億美元直接補貼並在可再生能源上投入數千億美元之後，中國的努力已見成效。對精鍊油、汽油和柴油的需求已連續兩年下降，專家預測中國的油氣消費已達峰值。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, China’s oil consumption is growing in the petrochemicals industry as it further secures its supply chains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國石化工業的石油消費仍在增長，以進一步鞏固其供應鏈。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKbu77XG2pMDFSo-rAAdl7klqQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s industry boomed as the government invested heavily, provided cheap loans and encouraged universities to cater to chemical engineering, said Joerg Wuttke, who served as the chief representative in China for BASF, the German chemical company, for 27 years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">任德國化工公司巴斯夫駐華首席代表27年的伍德克(Joerg Wuttke)表示，這些努力得益於政府大量投資，提供廉價貸款，並鼓勵大學培養化工人才，從而推動了中國工業的繁榮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These efforts accelerated under Xi Jinping, China’s top leader, and during Mr. Trump’s first presidency.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些努力在習近平領導下以及川普第一任期期間加速推進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everything that Trump does triggers even more self-reliance from Beijing,” said Mr. Wuttke, who is now a partner at DGA-Albright Stonebridge Group, a consultancy firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「川普所做的任何事都會促使北京更加自力更生，」現為諮詢公司奧爾布賴特石橋集團合伙人的伍德克說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During his first term, Mr. Trump confronted China on economic and business issues, setting off a trade war and a technology showdown.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普在第一任期內就經濟和商業問題與中國對抗，引發了<span>一場貿易戰</span><span>和技術</span>較量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s confrontational approach to China set off alarms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的對抗性策略為中國敲響了警鐘。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國一直在大力開發風能及其他可再生能源。" data-src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-04-gmqz/06Biz-China-Resilience-04-gmqz-master1050.jpg" src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-04-gmqz/06Biz-China-Resilience-04-gmqz-master1050.jpg"/></div><figcaption><span>中國一直在大力開發風能及其他可再生能源。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese leaders began to send out signals. In 2019, Li Keqiang, the premier at the time, called for China to use coal to make both electricity and chemicals as part of an effort to reduce its dependence on seaborne oil. It was a deviation from China’s focus on eliminating coal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領導人開始發出信號。2019年，時任總理李克強呼籲中國用煤炭發電和生產化學品，以減少對海運石油的依賴。這偏離了中國此前淘汰煤炭的關注。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By late 2020, as the pandemic raged, causing major disruptions to shipping and global trade, and tensions with the United States reached new heights, China put out an official road map, attributed to Mr. Xi, for how to get through the period of turbulence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到2020年底，隨著疫情肆虐導致航運和全球貿易嚴重中斷，以及與美國的緊張關係達到新高，中國發布了一份據稱由習近平主導的官方路線圖，指導如何度過動盪時期。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJKA8LXG2pMDFZ0_rAAdcbUA9A" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Published in Qiushi, the Communist Party’s leading theoretical journal, the text was a call to arms for Chinese industries to hunker down. They were told to develop technologies faster than competitors overseas to achieve self-reliance and insulate China from supply chain disruptions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這篇文章發表在中共主要理論刊物《求是》上，號召中國工業「卧薪嘗膽」。文章要求業界比海外競爭對手更快地發展技術，以實現自力更生，並使中國免受供應鏈中斷的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Trump 1.0 was a very clear rupture that changed China’s geopolitical calculus, and it reactivated old fears,” said Lauri Myllyvirta, a co-founder of the Center for Research on Energy and Clean Air, an independent research organization, who has tracked China’s growing use of coal to make petrochemicals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「川普1.0是一場非常明確的決裂，改變了中國的地緣政治計算，並重新激活了舊有的憂慮，」獨立研究機構能源與清潔空氣研究中心聯合創始人柳力(Lauri Myllyvirta)說，他對中國石化生產中的煤炭使用增加進行了追蹤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Xi himself had spoken about supply chain resiliency,” Mr. Myllyvirta said. “All of this just enabled a petrochemicals boom to gain steam.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「習近平曾親自談及供應鏈韌性，」柳力說。「所有這些都為石化產業的繁榮提供了助力。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The signals from the top allowed the industry to expand and build plants to use coal instead of oil to make petrochemicals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">來自高層的信號讓該行業得以擴張，並建設工廠，用煤炭而非石油生產石化產品。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，中國某農村庭院裡的煤炭。" data-src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-05-gmqz/06Biz-China-Resilience-05-gmqz-master1050.jpg" src="https://static01.nyt.com/images/2026/04/06/multimedia/06Biz-China-Resilience-05-gmqz/06Biz-China-Resilience-05-gmqz-master1050.jpg"/></div><figcaption><span>去年，中國某農村庭院裡的煤炭。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2020, China used 155 million tons of standard coal equivalent to make chemicals. By 2024, it was using 276 million tons. By 2025, that figure increased another 15 percent, eclipsing the total coal consumption in the United States of 230 million tons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2020年，中國用1.55億噸標準煤當量生產化學品。到2024年，這一數字增至2.76億噸。到2025年，又增加了15%，超過了美國全年2.3億噸的煤炭消費總量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials have said using coal is a temporary bridge to being more reliant on renewables, and they have also invested in technology that uses electricity to make petrochemicals. But using coal as an alternative to oil for now is paying off as shortages of oil and gas have sent prices surging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員表示，使用煤炭是轉向更多依賴可再生能源的過渡，他們還投資了用電生產石化產品的技術。但目前，用煤炭作為石油的替代品正在發揮作用，因為石油和天然氣的短缺導致價格飆升。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIOV8rXG2pMDFaYApAYdAtMJ7g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Take nitrogen fertilizer. China produces a third of the global supply, and 80 percent of it is made with coal instead of oil. Since the war in the Middle East began, international prices for urea, the main chemical in fertilizer, have surged by over<strong> </strong>40 percent, while China’s domestically produced equivalent has stayed at less than half of the global rate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以氮肥為例。全球三分之一的供應來自中國，其中80%是用煤炭而非石油製成的。自中東戰爭爆發以來，肥料中的主要化學品尿素的<span>國際價格上漲超過40%，而中國國內生產的同類產品價格仍不到全球價格的一半。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even before the American and Israeli militaries started exchanging combat fire with Iran, threatening one of the world’s most important regions for resources that power countries, China had a dominant position, said Johanna Krebs, an analyst at the Mercator Institute of Chinese Studies, a German think tank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國智庫墨卡托中國研究所分析師約翰娜·克雷布斯說，甚至在美國和以色列軍隊開始與伊朗交火，威脅全球最重要的資源產區之前，中國就已經佔據主導地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Chinese,” she said, “most likely will see this as encouragement on the path to self-sufficiency.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國人大概率會把這件事看作是一種激勵，」她說，「推動他們繼續在自給自足的道路上走下去。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">艾莎(Alexandra Stevenson)是《紐約時報》上海分社社長，報導中國經濟和社會新聞。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260407/china-oil-shock-iran-war/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
