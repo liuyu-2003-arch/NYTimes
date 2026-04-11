@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國無所不能神話破滅？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國無所不能神話破滅？</h1>
+    <h2 class="en-headline">A Cease-Fire for Now in Iran, but a Blow to American Credibility</h2>
+    <div class="meta-line">STEVEN ERLANGER <span style="margin: 0 8px;">•</span> 2026-04-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週三，在為期兩週的停火協議宣布後，伊朗示威者在德黑蘭焚燒美國國旗。" height="700" src="https://static01.nyt.com/images/2026/04/09/multimedia/09int-iran-suez-assess-0001-kfjm/09int-iran-suez-assess-0001-kfjm-master1050.jpg" width="1050"/><figcaption><span>週三，在為期兩週的停火協議宣布後，伊朗示威者在德黑蘭焚燒美國國旗。</span> <cite>Arash Khamooshi for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Historical analogies are never exact. But with the tenuous cease-fire deal in the U.S.-Israeli war against Iran, some are asking whether this is a “Suez” moment for the United States, marking the waning of American power and credibility in the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歷史類比從來都不是完全準確的。但隨著美以對伊戰爭達成脆弱的停火協議，有人開始質疑：這是否標誌著美國面臨「蘇伊士時刻」，預示著美國全球實力與公信力的正式衰退？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Suez crisis took place in October 1956, when Britain, France and Israel attacked Egypt to force open the Suez Canal. President Dwight D. Eisenhower, with an election days away, ordered them to stop. Prime Minister Anthony Eden of Britain resigned. President Gamal Abdel Nasser of Egypt became a hero of anti-colonialism.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘇伊士危機發生在1956年10月，當時英國、法國與以色列聯合進攻埃及，試圖強行重開蘇伊士運河。當時距離大選僅剩數日，美國總統艾森豪威爾下令三國立即停火。英國首相安東尼·艾登隨後辭職，埃及總統賈邁勒·阿卜杜勒·納賽爾則成為了反殖民主義的英雄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Suez became shorthand for the moment that Britain, exhausted from World War II, gave way as a global power to the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘇伊士從此成為一個代名詞，象徵著二戰後元氣大傷的英國將全球主導地位讓給美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are differences from that time. The Suez Canal is man-made and wholly in Egyptian territory, unlike the international waterway of the Strait of Hormuz. There is no other global power capable of replacing America in the region, let alone ordering President Trump around.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今的情況與當時有所不同。與作為國際水道的霍爾木茲海峽不同，蘇伊士運河是人工開鑿的，且完全位於埃及領土內。如今也沒有任何其他全球大國有能力在該地區取代美國，更遑論對川普總統發號施令。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIqOxqzN5JMDFZSZywEdofQEhg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the two-week cease-fire leaves the Islamic Republic in place and still in command of the future of the Strait of Hormuz, with Iran’s nuclear stockpile and ballistic missile program unresolved. After Mr. Trump’s declaration of victory, however hollow, it is difficult to imagine a resumption of full-scale war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這份為期兩週的停火協議讓伊朗伊斯蘭共和國政權得以存續，且依然掌控著霍爾木茲海峽的未來，伊朗的核儲備與彈道導彈計劃問題也仍未解決。儘管川普的勝利宣言空洞無物，但很難想像全面戰爭會再度爆發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the rest of the world, the war “is starting to look like a military defeat, more serious than Iraq or Afghanistan,” said Bruno Maçães, former secretary of state for European affairs for Portugal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">葡萄牙前歐洲事務國務秘書布魯諾·馬薩埃斯表示，對世界其他國家而言，這場戰爭「已經開始顯現出軍事失敗的跡象，其嚴重性甚至超過伊拉克戰爭和阿富汗戰爭」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The myth of America as all-powerful is important,” he added, “and it’s the basic requirement of a global hegemon to keep the oil flowing, to open up the strait and keep it open. This belief in an all-powerful America that can solve anything is disappearing.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國無所不能的神話至關重要，」他還說。「保障石油流通、打通海峽並維持海峽暢通是全球霸主的基本職責。而這種相信美國能解決一切問題的信念正在消失。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Keeping sea lanes open for American goods and global trade is one of the few permanent interests the United States has in the Middle East, as well as in Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">保障美國商品與全球貿易的航道暢通是美國在中東乃至亞洲為數不多的永久利益之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war in Iran shut down the strait. Now, the Iranian military is still in control of the passageway and is likely to demand large tolls. “The strategic rationale for the American military presence in the region has taken a huge hit,” said Stephen Wertheim, a senior fellow at the Carnegie Endowment in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場對伊戰爭導致了海峽關閉。如今，伊朗軍方依然掌控著這條航道，且很可能會收取高額通行費。「美國在該地區軍事存在的戰略合理性已經遭受了重創，」華盛頓卡內基國際和平基金會高級研究員斯蒂芬·韋特海姆說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Suez analogy works, Mr. Wertheim said, in that the war in Iran demonstrated “in a single incident the danger of American misgovernance and poor judgment.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">韋特海姆認為，蘇伊士的類比之所以成立，是因為這場對伊戰爭「通過單一事件」，集中揭示了「美國治理失能與決策失誤所造成的巨大風險」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1956年11月，埃及為封鎖蘇伊士運河而擊沉的一艘船。" data-src="https://static01.nyt.com/images/2026/04/09/world/09int-iran-suez-assess-historical/09int-iran-suez-assess-historical-master1050.jpg" src="https://static01.nyt.com/images/2026/04/09/world/09int-iran-suez-assess-historical/09int-iran-suez-assess-historical-master1050.jpg"/></div><figcaption><span>1956年11月，埃及為封鎖蘇伊士運河而擊沉的一艘船。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war itself and its uncertain outcome, he said, “just accelerates an existing worry shared by countries around the world about what America’s declining quality of governance means for what they can expect from the United States.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，這場戰爭本身及其不確定的結局「只會加劇全球各國早已存在的擔憂：美國治理能力持續下滑會讓各國對美國還能抱有哪些期待呢」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">America’s allies may be unhappy, perplexed and even angry about Trump administration policies, but many of them, especially those in the Persian Gulf and Asia suffering the impact of energy shortages and restrictions, have few other options for security partners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的盟友或許對川普政府的政策感到不滿、困惑甚至憤怒，但其中許多國家——尤其是飽受能源短缺與限制衝擊的波斯灣和亞洲國家——幾乎沒有其他安全夥伴可選。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKjYxqzN5JMDFU6MywEdgS4W4g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the war and cease-fire deal have diminished American influence and will affect how the allies of the United States view its reliability, said Charles A. Kupchan, a political scientist and director of European studies at the Council on Foreign Relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但外交關係委員會政治學家、歐洲研究主任查爾斯·庫普錢表示，這場戰爭與停火協議已經削弱了美國的影響力，並將改變盟友對美國可靠性的看法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war against Iran was not begun in consultation with allies. And it came after a series of events that have confounded them. Mr. Trump’s tariff wars were an unpleasant shock, but his threat to take Greenland by force if necessary from Denmark, a European and NATO ally, is seen as an inflection point about American predation, unreliability and contempt for traditional friends.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場對伊戰爭是在未與盟友商議的情況下發起的。而在此之前，一系列事件早已讓盟友們錯愕不已。川普的關稅戰已經令人不快，但他威脅必要時將從歐洲盟友及北約盟友丹麥手中武力奪取格陵蘭島更被視為一個轉折點，凸顯出美國的掠奪性、不可靠性以及對傳統盟友的蔑視。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Iran war and its economic impact are piling on and reinforce this sense that the U.S. right now has become unpredictable and undependable,” Mr. Kupchan said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對伊戰爭及其經濟影響雪上加霜，進一步強化了這樣一種認知：如今的美國已經變得不可預測、不可信賴，」庫普錢說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">International relations and alliances work on trust. But as Francis Fukuyama of Stanford University wrote on Tuesday, “There has never been a time when the United States was more distrusted, by both traditional friends and by rivals, as at the present.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國際關係與聯盟的基石是信任。但正如史丹佛大學的弗朗西斯·福山週二所寫：「美國從未像現在這樣，同時遭到傳統盟友與對手的普遍不信任。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A successful dealmaker, he said, needs to generate a minimal amount of trust that he will uphold his end of the bargain. “But reciprocity is a virtue that Trump has never understood or practiced,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，一個成功的交易者至少需要讓對方相信自己會信守承諾。「但互惠原則是川普從未理解也從未踐行過的美德。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war had challenged Washington’s argument that its global primacy was vital to the safety of international trade and the world order. This has been the main justification for the many American bases around the world, and especially in the Middle East.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場戰爭動搖了華盛頓長期以來的論調，即美國的全球主導地位對國際貿易安全與世界秩序至關重要。這也是美國在全球各地、尤其是在中東設立眾多軍事基地的主要理由。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK_4xqzN5JMDFcOuywEdvVsbEA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the war has shown the United States instead acting as a force of disorder and disruption.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這場戰爭表明，美國反而成為了製造混亂與動盪的力量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“By engaging in a war of choice in a critical region for global trade and utterly ignoring the probable consequences for the economies of its closest allies, the Trump administration has destroyed the legitimacy of American power,” asserted Anatol Lieven of the Quincy Institute for Responsible Statecraft.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在一個對全球貿易至關重要的地區發動一場自己選擇的戰爭，且完全無視其最親密盟友的經濟可能遭受的後果，川普政府已經徹底摧毀了美國霸權的合法性，」昆西負責任治國研究所的阿納托爾·利文斷言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The impact of a diminished United States is strongest in Europe, which has relied on NATO and the American security guarantee implicit in membership, including the U.S. nuclear umbrella. But Europeans drew a distinction between faith in America and faith in Mr. Trump. The former remains because it is vital for European security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國實力衰退的影響在歐洲最為顯著。歐洲長期依賴北約以及成員國身份所隱含的美國安全保障——包括美國的核保護傘。但歐洲人已經將對美國的信任與對川普個人的信任區分開來。前者依然存在，因為它對歐洲安全至關重要。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, Mr. Trump’s policies are inevitably producing a response that will outlast him. The rest of the world is trying to organize itself and derisk from an America that treats its allies as enemies and its traditional enemies, like Russia and China, as friends.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，川普的政策不可避免地催生了一種應對方式，其影響將超出他的任期——世界各國正在嘗試重新調整自身，以規避來自美國的風險——一個將盟友視為敵人、卻將俄羅斯和中國等傳統對手視為朋友的美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked if American hegemony has been diminished, the foreign minister of Poland, Radoslaw Sikorski, said, “We hope not, but we fear it might be.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及美國霸權是否已經削弱時，波蘭外長拉多斯瓦夫·西科爾斯基表示：「我們希望不會，但我們擔心事實正是如此。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週一，川普總統在白宮舉行的新聞發布會上。" data-src="https://static01.nyt.com/images/2026/04/09/multimedia/09int-iran-suez-assess-03-ghct/09int-iran-suez-assess-03-ghct-master1050.jpg" src="https://static01.nyt.com/images/2026/04/09/multimedia/09int-iran-suez-assess-03-ghct/09int-iran-suez-assess-03-ghct-master1050.jpg"/></div><figcaption><span>週一，川普總統在白宮舉行的新聞發布會上。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">NATO has taken a hit from Mr. Trump’s overall policies. He continually calls it “a paper tiger,” despite successfully pushing its members to spend considerably more money on the military. During the war in Iran, he lashed out at the Europeans for not acting to open the strait even though the more powerful U.S. Navy was unable to do so.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的整體政策已經讓北約遭受衝擊。儘管他成功推動北約成員國大幅增加軍費開支，卻仍不斷稱北約是「紙老虎」。對伊戰爭期間，他猛烈抨擊歐洲各國未能採取行動打通海峽，即便實力更強的美國海軍自己也做不到這一點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Allied resistance to his desires rankles him the most. “It all began with, you want to know the truth, Greenland,” Mr. Trump told reporters on Monday. “They don’t want to give it to us, and I said, ‘Bye-bye.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最讓他耿耿於懷的是盟友對他意願的抵制。「說真的，一切都始於格陵蘭島，」川普週一告訴記者。「他們不肯給我們，那我就說，『再見吧。』」</div></div></div></div></div><div class="big_ad" data-google-query-id="COyox6zN5JMDFYexywEdlkET4g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The cumulative impact on NATO is significant, said Rajan Menon, professor emeritus of political science at City University of New York. In the long run, China looks to be the bigger winner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約城市大學政治學榮譽教授拉詹·梅農表示，這些事件對北約的累積影響十分顯著。從長遠來看，中國似乎是更大的贏家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“While we look crazed and talk about bombing a country back to the stone age, China looks like a peacemaker and agent of stability,” he said. All the while, Beijing got a chance to watch how the U.S. Navy operates.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當我們好像發瘋一樣，揚言要把一個國家炸回石器時代時，中國卻扮演著和平締造者與穩定維護者的角色，」他說。與此同時，北京還獲得了觀察美國海軍作戰方式的機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is looking on with a great deal of glee, and when Trump goes there” for a summit meeting now scheduled for mid-May, “he will be much diminished.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國正幸災樂禍地看著這一切，而當川普前往，」參加5月中旬在中國舉行的峰會時，「他的底氣將會大減。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, which gets so much of its oil through the Strait of Hormuz, pushed Iran to agree to the cease-fire, and it is expected to participate in keeping the strait open and guaranteeing safe passage for others.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國絕大部分石油都需經霍爾木茲海峽運輸，因此它推動伊朗達成了停火協議。預計中國還將參與維護海峽暢通，保障各國船隻的安全通行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much depends on how the war ends, cautioned Mr. Kupchan of the Council on Foreign Relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外交關係委員會的庫普錢提醒道，很多事情很大程度上取決於這場戰爭的收尾方式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the cease-fire leads to a deal that imposes significant constraints on Iran’s nuclear program and its ability to cause trouble, he said, that would be much better in the longer run than a frozen conflict or one that “just burns on month after month,” with all the accompanying impact on the energy market and American allies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，如果停火最終能促成一項協議，對伊朗核計劃及其製造麻煩的能力施加實質性限制，那麼從長遠來看，這遠比衝突陷入凍結狀態、或是「曠日持久地燃燒下去」要好得多——後者將持續衝擊能源市場，並損害美國盟友的利益。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Steven Erlanger是時報歐洲首席外交記者，常駐柏林。他曾在120多個國家進行報導，包括泰國、法國、以色列、德國和前蘇聯等。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260410/iran-war-suez/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
