@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重回世界大戰時代 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">重回世界大戰時代</h1>
+    <h2 class="en-headline">A New Era of World War Has Arrived</h2>
+    <div class="meta-line">PAUL POAST <span style="margin: 0 8px;">•</span> 2026-04-14</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1051" src="https://static01.nyt.com/images/2026/04/12/opinion/08poast/08poast-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Vincent Longhi</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By the time the war in Iran began on Feb. 28, the world was already fighting. The past two years brought more war — both within and between countries — than in any years since the end of World War II. A new normal of rising conflict had arrived.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當伊朗戰爭於2月28日爆發時，世界早已硝煙四起。無論是國家內部還是國與國之間，過去兩年間的戰爭數量都已超過第二次世界大戰結束以來的任何時期。衝突升級的新常態已然降臨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, as the war in Ukraine drags on and the American and Israeli war against Iran is paused under a fragile cease-fire, we are watching another unwelcome phenomenon return to the global stage: the world war. Two large conflicts on different continents have become theaters for strategic competition between major powers. Each war’s dynamics have had a direct impact on the other’s, and both have dragged ancillary states into the fray. And while the combined scale and intensity of the conflicts falls far short of the two devastating world wars fought last century, they have arisen from the same dangerous reflex: competing nations fully embracing military force as the first and primary means of exerting power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，烏克蘭戰事久拖不決，美國與以色列對伊朗的戰爭在脆弱的停火協議下暫時停歇。我們正目睹另一種不願見到的現象重返世界舞台：世界大戰。兩場發生在不同大陸的重大衝突已成為大國戰略博弈的角力場。每場戰爭的局勢變化都直接影響著另一場，兩者都已將眾多相關國家捲入其中。儘管這些衝突的規模和強度總和遠不及上世紀那兩場毀滅性的世界大戰，但它們都源自同一種危險的思維定式：競爭中的各國完全將軍事力量視為行使權力的首要且主要手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia and the United States went to war for different reasons. President Vladimir Putin of Russia sought to expand his territorial reach and regain land that — in his mind — belongs in the Russian sphere. The stated objectives for the United States in going to war against Iran varied, but President Trump has consistently said that Iran can’t be allowed to acquire a nuclear weapon. (Israel, America’s partner in the war, shares that objective, but has political aims of its own, a reality that could scuttle the cease-fire altogether.) Still, both Mr. Putin and Mr. Trump believed success would be easy and that their goal justified virtually any level of violence — even if it broke the bounds of international law.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">俄羅斯和美國開戰的理由各不相同。俄羅斯總統普丁試圖擴展領土控制範圍，並奪回在他看來本應屬於俄羅斯勢力範圍的土地。美國對伊朗開戰的公開目標則有多個版本，但川普總統始終堅稱絕不能允許伊朗獲得核武器。（作為美國在這場戰爭中的盟友，以色列也持此目標，但另有其自身政治目的，這一現實可能導致停火協議徹底破裂。）儘管如此，普丁和川普都曾相信勝利唾手可得，並認為其目標足以使任何程度的暴力行為——哪怕逾越國際法邊界——正當化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a few short weeks, the conflicts in Ukraine and Iran became expressions of the great power competition underway. In both theaters, Russia and the United States have backed each other’s adversaries. The United States continues to provide arms, intelligence and planning to Ukraine in its fight against Russia, and Russia was reported to be doing the same for Iran by providing targeting information and mapping on U.S. military positions and sending drones to Tehran. While the United States and Russia aren’t directly firing on each other, the powers have essentially loaded and pointed the guns being fired by others.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>短短數週內，烏克蘭與伊朗的戰事便演變成大國競爭的具象表現。在這兩處戰場，俄美兩國互相支持對方的敵手。美國持續為烏克蘭抗擊俄羅斯提供武器、情報和戰略規劃，而有報導稱俄羅斯亦通過提供打擊目標信息與地圖、向德黑蘭輸送無人機等方式對伊朗予以同等支持。儘管美俄並未直接交火，但這兩個大國實質上</span>已經在幫人裝填彈藥、校準炮口。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLuPvuXW7pMDFXF3mQId6ccrTQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Each war has affected the other. The shock to global oil prices induced by Iran’s closure of the Strait of Hormuz has become a financial windfall for Russia, both in higher prices for its own oil and through the easing of sanctions on that oil by a Trump administration desperate to lower global prices. As attention and resources are diverted to Iran, Russia has launched a spring offensive aimed at consolidating and expanding its territorial gains in Ukraine. Ukraine, meanwhile, has offered the expertise in drone defense it has acquired in its fight against Russia to the United States and the Arab nations being targeted by Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩場戰爭彼此影響。伊朗封鎖霍爾木茲海峽引發的全球油價震盪成為俄羅斯的意外之財——既推高了本國原油價格，又讓急於平抑油價的川普政府放鬆了對俄油的<span>制裁。隨著全球注意力與資源轉向伊朗，俄羅斯發動春季攻勢，意圖鞏固並擴大</span>控制範圍。與此同時，烏克蘭將其在抗俄戰爭中積累的無人機防禦經驗分享給正遭伊朗襲擊的美國及阿拉伯國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both conflicts have pulled in other countries. In Ukraine, Russia’s war effort has long been enabled by the economic and technical support of China, the direct manpower contributions of North Korea and drones from Iran. European allies have played an increasingly important role in helping arm Ukraine, even taking the lead in that effort over the past year. And while NATO countries have not answered Mr. Trump’s call to help keep the Strait of Hormuz open, last month NATO-run missile defense systems shot down Iranian missiles directed toward Turkey. Iranian missiles aimed at several Gulf states have dragged those nations into the fight, while Israel has attacked Hezbollah in Lebanon, and the Iranian-backed Houthis in Yemen have launched missiles at Israel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩場衝突均已將其他國家捲入。在烏克蘭戰場，俄羅斯的軍事行動長期依賴中國的經濟與技術支援、朝鮮的直接人力輸出及伊朗的無人機支援。歐洲盟友在武裝烏克蘭方面作用日益關鍵，過去一年甚至成為主導。儘管北約國家未響應川普關於協助維持霍爾木茲海峽暢通的呼籲，但上月北約部署的導彈防禦系統擊落了射向土耳其的伊朗導彈。伊朗針對數個海灣國家的導彈襲擊將這些國家拖入戰局，以色列則襲擊了黎巴嫩真主黨，而伊朗支持的葉門胡塞武裝亦向以色列發射導彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The First and Second World Wars involved millions of soldiers from great powers directly fighting one another, resulting in millions of deaths. But not all world wars will look like those two cataclysmic conflicts. Indeed, those events were not even the first or second world wars. The Seven Years’ War of the mid-18th century and the Napoleonic wars of the early 19th century were also global fights, comprising separate wars occurring on different continents involving major powers that were either directly fighting or coordinating between the conflicts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第一次與第二次世界大戰曾導致大國數百萬士兵直接廝殺，造成數千萬人死亡。但並非所有世界大戰都會呈現出那般毀滅性的形態。事實上，那兩場戰爭甚至並非最早的「世界大戰」。18世紀中期的七年戰爭與19世紀初的拿破崙戰爭同樣具有全球性，它們由發生在不同大陸的多場獨立戰爭構成，主要大國或直接參戰，或在各戰場間協同行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Seven Years’ War of 1756 to 1763 is instructive for understanding the meaning of world war as it’s playing out today. The war was primarily fought in Europe, with Britain and Prussia on one side and France and Austria on the other. With Britain and France in possession of global empires, the battles extended across multiple continents. This, too, was a time when countries were embracing the use of military force to assert their national power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>1756至1763年的七年戰爭對理解當今世界戰爭形態具有啟示意義。該戰爭主戰場在歐洲，一方</span>為英國與普魯士，另一方為法國與奧地利。由於英法擁有全球性殖民帝國，戰火遂蔓延至多個大洲。那同樣是一個各國紛紛訴諸武力以彰顯國威的時代。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some argue that the Cold War was a world war. It is certainly true that the notion that the Cold War was cold is a misnomer: It was a period of intense conflict touching many parts of the globe. But Cold War conflicts lacked the interconnectedness and simultaneity on display in Europe and the Middle East. And, importantly, the superpowers during this time exercised caution about using military force that constrained their actions, in no small part because of the nuclear arsenals they were amassing. Today, both Mr. Putin and Mr. Trump display a more cavalier approach to using the military to achieve their goals — and a greater indifference to the consequences, both economic and social.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>有人認為冷戰亦是一場世界大戰。</span>冷戰之「冷」的確具有誤導性：那是一個戰火波及全球多地的激烈對抗時期。但冷戰時期的衝突缺乏當前歐洲與中東戰事所呈現的聯動性與同時性。更重要的是，當時的美蘇超級大國對使用武力持審慎態度，這制約了其行動——這在很大程度上緣於雙方不斷積聚的核武庫。而今，普丁與川普在運用軍事手段達成目標時顯得更為輕率，對經濟與社會後果也更為漠然。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why is it important to see the wars in Iran and Ukraine as part of a global event, rather than two conflicts unfolding in parallel?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為何將伊朗與烏克蘭的戰爭視作全球性事件的一部分至關重要，而非將其看作兩場並行發展的衝突？</div></div></div></div></div><div class="big_ad" data-google-query-id="CK3CvuXW7pMDFVgcrAAd8SsEfg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Looking at how the wars are connected shows the necessity for our leaders to think globally in an emerging multipolar world where powers vie for control of regions or spheres of influence. A conflict in one region almost certainly will spill over into another. Resources allocated to one fight may mean fewer resources for another, undermining efforts to deter a threat or assist an ally in need. Failing to recognize the global span of security issues is exactly how states can stumble from a limited war of choice into a world war they did not intend.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洞悉兩場戰爭的關聯性揭示了在一個新興多極世界中各國領導人必須具備全球思維的必要性——各大國正在爭奪地區或勢力範圍的主導權。一地的衝突幾乎必然波及另一地。投入一場戰爭的資源往往意味著另一場戰爭所能獲得的資源減少，從而削弱威懾或援助盟友的能力。若不能認清安全問題的全球性牽連，國家便可能從一場主動投入的有限戰爭跌入一場非其本意的世界大戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year was 80 years since the end of the Second World War. That conflict’s devastation remains unmatched, and we should hope that remains the case. Even if we never endure another global conflict of that scale, we are nevertheless once again witnessing a return to an era of a world war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年是第二次世界大戰結束80週年。那場戰爭的破壞力至今仍未被超越，我們理應祈願那樣的悲劇永不重演。即便不再經歷那種規模的全球衝突，我們無疑還是在見證一個「世界大戰時代」的回歸。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Paul Poast是芝加哥大學政治學副教授，也是芝加哥全球事務委員會的高級非常駐研究員。</p><p class="cn-p">翻譯：經雷</p><p class="cn-p">點擊差查看本文英文版。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260414/iran-ukraine-world-war/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
