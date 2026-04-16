@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我考察了中國人工智慧，美國無法贏得這場競賽 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">我考察了中國人工智慧，美國無法贏得這場競賽</h1>
+    <h2 class="en-headline">I Went to China to See Its Progress on A.I. We Can’t Beat It.</h2>
+    <div class="meta-line">SEBASTIAN MALLABY <span style="margin: 0 8px;">•</span> 2026-04-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/04/13/opinion/13mallaby/13mallaby-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Igor Bastidas</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2022, the Biden administration tried to arrest China’s development of artificial intelligence by denying it cutting-edge semiconductors. President Trump has relaxed that policy a bit without a clear plan to replace it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年，拜登政府試圖通過切斷先進半導體供應來遏制中國的人工智慧發展。川普總統則在沒有明確替代方案的情況下，稍微放鬆了這一政策。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the chip export controls have failed. China’s tech sector is too sophisticated to be stopped from building powerful A.I. In pursuing an impossible objective, the United States is missing an opportunity to try for one that sounds fanciful but which, after a recent reporting trip to China, I believe is more realistic: America should negotiate with China a global pact on A.I. safety, which would impose universal limits on a technology that can do much good — but, in the wrong hands, would do much harm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但晶片出口管制已經失敗了。中國的科技行業自成體系，無法阻止其構建強大的人工智慧系統。在追求一個不可能實現的目標時，美國錯失了嘗試爭取的機會：雖然聽起來有些理想化，但在最近一次中國採訪之行後，我認為它更為現實：美國應與中國就人工智慧安全問題達成一項全球性協議，對這項能夠帶來巨大好處——但若落入壞人之手將造成巨大危害的技術施加普遍限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The premise of the export restrictions was that the United States would be able to successfully block China’s access to powerful A.I. chips. The premium chip sets used in A.I. data centers are the size of skateboards and can’t be smuggled in a simple suitcase, and it’s hard to put them to use without hands-on support from the chipmakers’ engineering teams. But Chinese developers circumvented controls by training their A.I. models on chips located in other countries. A Chinese model builder needs only to rent capacity on an A.I. data center in one of China’s Southeast Asian neighbors. Concealing the model’s Chinese origin is straightforward.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出口限制的前提是，美國能夠成功阻止中國獲得強大的人工智慧晶片。用於人工智能數據中心的高端晶片組件體積如滑板般大小，不可能用手提箱輕易走私，而且在沒有晶片製造商工程團隊現場支持的情況下，也很難投入使用。但中國的開發人員通過位於其他國家的晶片上訓練人工智慧模型來規避管制。中國的模型開發者只需在某個東南亞鄰國的人工智慧數據中心租用算力即可。而且掩蓋模型的中國來源並不難。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Partly thanks to this loophole, China has rolled out a series of excellent A.I. models. China’s ability to skirt U.S. controls will not change, even if the Senate follows the House in passing a bill to restrict China’s access to outside data centers. China is learning how to do without cutting-edge chips by stacking less powerful chips together. Its model builders also take full advantage of a process known as distillation. Every time a U.S. lab produces a cutting-edge model, Chinese rivals quickly reverse-engineer its capabilities and build a copycat version. The follower has the advantage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分得益於這一漏洞，中國已經推出了一系列出色的人工智慧模型。即便參議院跟進眾議院，通過一項限制中國使用境外數據中心的法案，中國規避美國管控的能力也不會改變。中國正在學會通過將較弱的晶片疊加使用來替代先進晶片，其模型開發者還充分利用一種被稱為「蒸餾」的過程。每當美國實驗室推出先進的模型，中國競爭者就會迅速對其能力進行逆向工程，並構建出模仿版本。後來者反而具備優勢。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI351tKZ8ZMDFRyFOgUdVlgQbg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American A.I. scientists used to say that competitors’ being able to follow fast would not matter. An “intelligence explosion” was approaching, the argument went. A.I. systems would soon become capable enough to write upgrades into their own code: A.I. would create better A.I.; better A.I. would create even better A.I.; recursive self-improvement would drive performance skyward. The nation that reached this so-called singularity first would be the winner of the A.I. race, even if the fast follower were just a few months behind the leader. Three and a half years after the Biden administration’s chip controls, A.I. is generating code to upgrade itself. The promised feedback loop has started.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的人工智慧科學家過去常說，競爭對手能夠快速跟進並不重要。他們認為，一場「智能爆炸」正在逼近。人工智慧系統將很快變得足夠強大，能夠自己寫代碼來升級自己：人工智慧將創造更好的人工智慧；而更好的人工智慧又將創造更更好的人工智慧；遞歸式的自我改進將使性能迅速飆升。率先達到所謂「奇點」的國家，即便領先優勢只有幾個月，也將贏得人工智慧競賽。在拜登政府實施晶片管制三年半後，人工智慧已經開始生成用於自我升級的代碼。人們所預言的那個「反饋循環」已經啟動了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the accelerating power of the leading models won’t determine who wins the A.I. race. It’s A.I. deployment that will matter. To transform economies and armies, A.I. must be embedded in business processes and weapons systems. The raw power of the cutting-edge models must be turned into applications.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但領先模型能力的加速提升並不會決定誰贏得人工智慧競賽。真正重要的是人工智慧的落地應用。要改變經濟和軍隊，人工智慧必須嵌入到業務流程和武器系統中。最先進模型的原始算力必須轉化為實際應用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The upshot is that China and the United States are roughly level in the A.I. contest. Top Chinese models may be a few months behind American ones, and the relative position on military applications is difficult to ascertain as so much is classified. But on industrial applications, China seems to be leading. U.S.-sanctioned companies such as Huawei and Hikvision are rolling out A.I. systems that perform maintenance checks on high-speed trains, manage mining operations and scan water samples to assess pollution. At Huawei’s campus near Shenzhen, I recently took a ride in an autonomous car. A device in the passenger seat massaged my back, and the steering was immaculate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結論是，中國和美國在人工智慧競爭中大致處於同一水平。中國頂尖模型可能落後美國幾個月，而在軍事應用方面，由於大量信息屬於機密，雙方的相對位置難以判斷。但在工業應用方面，中國似乎領先。像華為和海康威視這樣受到美國制裁的公司，正在推出用於高鐵維護檢測、礦山運營管理以及水樣污染檢測的人工智慧系統。在深圳附近的華為園區，我最近還體驗了一次自動駕駛汽車：副駕駛座上的設備會為我按摩背部，轉向操作無可挑剔。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fans of chip controls continue to insist that even a modest slowing of China’s A.I. advance is worth pursuing. If China is a formidable adversary, imagine how much more formidable it might be if the chip controls were lifted. But the controls are failing to deliver the prize of a China with limited A.I., so it is worth considering their cost. My China trip persuaded me that the cost is too high.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">晶片管制的支持者仍堅持認為，即便只是稍微減緩中國人工智慧的發展，也值得去做。如果中國已經是一個強大的對手，那麼可以想像，一旦取消晶片管制，它會變得多麼可怕。但這些管制並沒有實現限制中國人工智慧發展的目標，因此有必要重新評估其代價。這次中國之行讓我相信，這一代價過於高昂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Biden administration made a strategic choice to prioritize the slowing of China rather than addressing other worries. The alternative would have been to say to China: You are a tech superpower. We are a tech superpower. Let’s work together to make sure A.I. doesn’t fall into the hands of rogue states and terrorists. The goal would have been an A.I. equivalent of the 1968 Nuclear Nonproliferation Treaty, a regime that would require all countries using A.I. to sign up for safeguards on it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登政府做出了一個戰略選擇：其優先考量是減緩中國的發展，而非著手應對其他方面的擔憂。而當時本可以採取的另一種策略是對中國說：你是一個科技超級大國，我們也是一個科技超級大國。讓我們合作，確保人工智慧不會落入流氓國家和恐怖分子之手。目標應當是達成一項類似於1968年《核不擴散條約》的人工智慧協議，建立起一套制度，要求所有使用人工智慧的國家都必須遵守相關安全保障。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Biden team did not think China would collaborate on something like that. But over a dozen conversations with A.I. leaders in Beijing, Shanghai, Shenzhen and Hangzhou made it clear to me that China’s elite does care about A.I. safety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登團隊認為，中國不會在這方面合作。但我在北京、上海、深圳和杭州與人工智慧領袖進行的十多次交談清楚地表明，中國的精英階層確實關心人工智慧安全問題。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMjS19KZ8ZMDFW9HCAQdvlco1g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt none; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I visited a prominent tech company that builds and distributes an A.I. foundation model. For now, that model is open source, meaning that users can download and modify it at will. If a user prompts the A.I. to conduct cyberattacks, there’s nothing anyone can do to stop that person. But the chief executive of this tech company made a striking admission: As A.I. becomes more powerful, it would be crazy to continue making it open source, he said. You wouldn’t open-source a nuclear weapon, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我訪問了一家開發並發布人工智慧基礎模型的知名科技公司。目前，該模型是開源的，這意味著用戶可以自由下載和修改。如果有人要求該人工智慧發起網路攻擊，幾乎沒有辦法阻止。但這家公司的首席執行官坦率承認：隨著人工智慧變得越來越強大，繼續保持開源將是瘋狂的。他補充說，你不會把核武器開源。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During my trip, the controversy surrounding the advanced model OpenClaw illustrated the rising concern for A.I. safety. Throngs of ordinary Chinese downloaded the digital assistant, eager to experiment with a capable A.I. agent. The enthusiasm apparently confirmed that China loves innovation more than it fears it. But researchers and industry leaders told me that they were appalled. OpenClaw makes your computer “naked,” an eminent business school professor told me. Soon after he said that, China’s leaders firmly discouraged the use of OpenClaw on government systems and warned citizens that the agent might wreak havoc with their data.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在我此次訪問期間，先進模型OpenClaw引發的爭議凸顯了人們對人工智慧安全日益增長的擔憂。大量普通中國用戶下載了這一數字助手，渴望嘗試這一強大的智能體。這種熱情似乎印證了中國對創新的熱愛超過了對風險的擔憂。但研究人員和行業領袖告訴我，他們對此感到震驚。一位知名商學院教授表示，OpenClaw會讓你的電腦「裸奔」。他發表這一看法後不久，中國的領導人便明確反對在政府系統中使用OpenClaw，並警告公眾該智能體可能對他們數據造成巨大破壞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For now, China’s instinct to race for powerful A.I. overwhelms any caution. This is a rational response to a U.S. administration that is equally determined to put speed ahead of safety. But if a U.S. leader went to China and offered to scrap chip controls in exchange for collaboration on A.I. nonproliferation, there would be at least some chance of the proposal succeeding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，中國競逐強大人工智慧的本能壓倒了所有的謹慎。這是對同樣決心將速度置於安全之上的美國政府的理性回應。但是，如果一位美國領導人前往中國，提出取消晶片控制以換取在人工智慧防擴散方面的合作，這一提議至少存在一定成功的可能性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This presumes that U.S.-Chinese dialogue is even possible. But the West should not succumb to self-fulfilling fatalism. At times during the Cold War, the United States pursued its interests by switching from confrontation to détente: the Nuclear Nonproliferation Treaty came just six years after the Cuban missile crisis. Now is a good time to recall that history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一設想的前提是美中對話仍然可能。但西方不應陷入消極的自我預言。在冷戰期間，美國有時會通過從對抗轉向緩和來推進自身利益：《核不擴散條約》正是在古巴導彈危機發生僅六年後達成的。現在正是回顧這段歷史的好時機。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Sebastian Mallaby是美國外交關係委員會的高級研究員，著有《The Infinity Machine: Demis Hassabis, DeepMind, and the Quest for Superintelligence》。他還是美國外交關係委員會的播客節目「The Spillover」的聯合主持人。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260415/china-ai-america-chipmakers/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
