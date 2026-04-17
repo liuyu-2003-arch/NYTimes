@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國一季度GDP同比增長5% - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國一季度GDP同比增長5%</h1>
+    <h2 class="en-headline">China’s Economy Leans on Infrastructure as Consumers Pull Back</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-04-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="本週在中國南方舉辦的一場進出口貿易展覽會。​" height="700" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-02-qlzw/16Biz-China-GDP-02-qlzw-master1050.jpg" width="1050"/><figcaption><span>本週在中國南方舉辦的一場進出口貿易展覽會。​</span> <cite>Jade Gao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Strong investments in rail lines and other infrastructure offset weak consumer spending and a shrinking trade surplus as the Chinese economy continued to grow in the first three months of the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鐵路和其他基礎設施的強勁投資抵消了疲弱的消費支出和貿易順差縮小帶來的影響，中國經濟在今年前三個月繼續保持增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s National Bureau of Statistics announced on Thursday that the country’s gross domestic product grew 1.3 percent from the last three months of 2025. If that pace continues through the year, the Chinese economy will expand at an annual rate of about 5.3 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國國家統計局週四公布，今年第一季度國內生產總值環比增長1.3%。如果這一增速全年保持，中國經濟年度增長率將達到約5.3%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In comparison with the same period last year, China’s gross domestic product was 5 percent larger in the first quarter. The figures came in slightly above economists’ forecasts for 4.8 percent growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與去年同期相比，今年第一季度中國GDP增長5%，略高於經濟學家此前預測的4.8%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One reason this year’s growth looked stronger was that the statistical agency said Thursday that the economy was weaker in the first half of last year than previously reported. That made this year’s results look better by comparison.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年增長數據顯得較強的一個原因是，統計局週四表示，去年上半年經濟表現比之前公布的更弱，這使得今年數據對比之下顯得更好。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNTB6cza85MDFeRNCAQd2PcC9A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A long, steep slide in apartment prices has eroded China’s household savings, prompting many people to cut spending. Retail sales rose just 2.4 percent in the first quarter from a year earlier, and only 1.7 percent in March, considerably weaker than what most economists had expected. Car sales fell 17 percent in the quarter after the government scaled back subsidies that had driven a boom last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期大幅下跌的房價侵蝕了中國家庭的儲蓄，導致許多人減少支出。第一季度社會消費品零售總額同比增長僅2.4%，3月份僅增長1.7%，遠低於多數經濟學家的預期。由於政府縮減了去年推動汽車銷售火爆的補貼，汽車銷量第一季度下降17%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That sluggishness contrasts sharply with an 8.9 percent increase in infrastructure construction investments in the first quarter from a year ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種低迷與基礎設施建設投資形成鮮明對比，後者在第一季度同比增長8.9%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The service sector has been struggling. Restaurants have closed across the country, and those still open echo with empty tables. Xiao Nan Guo, a nationwide chain offering Shanghainese cuisine at premium prices, exemplifies the downturn. After peaking at 139 outlets in 2015, it quietly shuttered most of its remaining locations in early February.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">服務業處境艱難。全國各地多家餐廳關閉，仍營業的餐廳也常常空桌寥寥。高端上海菜全國連鎖品牌「小南國」就是這一低迷的典型。該品牌曾在2015年達到139家門店的峰值，今年2月初已悄然關閉了大部分剩餘門店。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="伊朗戰爭導致的原材料成本上漲似乎正對中國經濟發展構成壓力。" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-01-qlzw/16Biz-China-GDP-01-qlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-01-qlzw/16Biz-China-GDP-01-qlzw-master1050.jpg"/></div><figcaption><span>伊朗戰爭導致的原材料成本上漲似乎正對中國經濟發展構成壓力。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exports have propped up the Chinese economy through much of its housing slump since 2021. But this time they failed to offset broader weakness after a big surge in China’s largest category of imports, computer chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自2021年房地產低迷以來，出口在很大程度上支撐了中國經濟。但這一次，在中國最大進口品類——計算機晶片大幅激增之後，出口未能抵消更廣泛的經濟疲弱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Weak demand at home has pushed Chinese companies to seek growth abroad. Exports grew during the first three months of this year at their fastest quarterly clip in more than four years, led by electric car exports, up 78 percent, and a 50 percent rise in shipments of lithium batteries. Louis Kuijs, chief economist for Asia and the Pacific at S&amp;P Global Ratings, said overseas sales were keeping factories busy across China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國內需求疲軟促使中國企業轉向海外尋求增長。今年前三個月，出口增速創下四年多以來最快的季度增速，其中電動汽車出口增長78%，鋰電池出貨量增長50%。標普全球評級亞洲及太平洋首席經濟學家高路易(Louis Kuijs)表示，海外銷售讓中國各地的工廠保持忙碌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It has been robust exports that have been a key driver of industrial production and G.D.P.,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「強勁的出口一直是工業生產和GDP增長的關鍵驅動力，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is unclear if export strength will last. Tariffs and rising raw material costs from the war in Iran appeared to weigh on the Chinese economy in March. Chinese officials are expected to press for relief from U.S. tariffs at a summit next month in Beijing between President Trump and Xi Jinping, China’s top leader.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚出口強勁勢頭能否持續。關稅和伊朗戰爭導致的原材料成本上升，似乎在3月份對中國經濟造成了拖累。預計中國官員將在下個月於北京舉行的川普與習近平峰會期間要求美國減輕關稅。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="由於塑料成本上升擠壓製造商利潤，中國的玩具和鞋類出口已出現下滑。​" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-04-qlzw/16Biz-China-GDP-04-qlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-04-qlzw/16Biz-China-GDP-04-qlzw-master1050.jpg"/></div><figcaption><span>由於塑料成本上升擠壓製造商利潤，中國的玩具和鞋類出口已出現下滑。​</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China remains better positioned than other major economies to weather disruptions to oil and gas supplies from the war in Iran because of its large stockpiles of fossil fuels and dominant position in renewable energy. But China’s March trade data showed some unexpected shifts that sharply narrowed the country’s trade surplus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>由於擁有大量化石燃料儲備，並在可再生能源領域佔據主導地位，中國比其他主要經濟體更有能力應對伊朗戰爭導致的石油和天然氣供應中斷。但中國3月份的貿易數據出現了一些意外變化，導致貿易順差大幅收窄。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s exports of toys and footwear, once strong categories, fell as higher plastic costs from the war in the Middle East squeezed manufacturers. Chemical companies have continued raising prices, suggesting further pressure in the months ahead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國曾經強勢的玩具和鞋類出口出現下降，因為中東戰爭推高了塑料成本，擠壓了製造商利潤。化工企業繼續提高產品價格，表明未來幾個月壓力將進一步加大。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIzV6cza85MDFQiROgUdq7Q0pQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exports of rare-earth metals also plummeted in March. Beijing severely restricted shipments to Japan, amid a dispute over relations with Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3月份稀土金屬出口也大幅下滑。此前北京因在台灣問題上引起的爭端，嚴厲限制了對日本的稀土出貨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most notable change has been a surge in semiconductor imports, as China rapidly builds data centers for artificial intelligence. Computer chip purchases jumped in January and February and hit a record high in March, up 54 percent from a year earlier in U.S. dollar terms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最顯著的變化是半導體進口激增，這是因為中國正在快速建設人工智慧數據中心。今年1月和2月晶片採購量大幅增加，3月份更是創下紀錄，按美元計算同比增長54%。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國南京一處堆場內的硫磺。過去幾年，出口一直支撐著中國經濟。​" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-05-qlzw/16Biz-China-GDP-05-qlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-05-qlzw/16Biz-China-GDP-05-qlzw-master1050.jpg"/></div><figcaption><span>中國南京一處堆場內的硫磺。過去幾年，出口一直支撐著中國經濟。​</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A weak renminbi, China’s currency, has made computer chip imports more expensive, adding to the drag on the economy. Beijing has kept its currency weak to boost exports, making Chinese goods more competitive abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人民幣疲軟使得計算機晶片進口成本更高，進一步拖累經濟。北京刻意保持人民幣偏弱，以提振出口，增強中國商品在海外的競爭力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But that same currency weakness raises import costs. The increasing semiconductor costs also reflect heightened global demand for the computer chips needed to power A.I. While the renminbi has strengthened slightly over the past year, it remains far weaker than what economists consider its true market value.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但同樣的貨幣疲軟也推高了進口成本。半導體成本上升還反映出全球對人工智慧所需晶片的需求高漲。雖然人民幣過去一年略有升值，但仍遠低於經濟學家認為的真實市場價值。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="本月，中國鹽城一個寧德時代電池工廠建設工程正在進行場地準備。​" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-03-qlzw/16Biz-China-GDP-03-qlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-03-qlzw/16Biz-China-GDP-03-qlzw-master1050.jpg"/></div><figcaption><span>本月，中國鹽城一個寧德時代電池工廠建設工程正在進行場地準備。​</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Export sectors that rely heavily on steel are thriving in China these days. Domestic steel is cheap because of chronic oversupply and reluctance to close state-owned steel mills. With other countries’ tariffs limiting direct exports of steel, manufacturers are channeling the glut into finished goods like cars and ships, which face fewer trade barriers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，高度依賴鋼鐵的出口行業在中國表現良好。由於長期產能過剩以及不願關閉國有鋼廠，國內鋼鐵價格低廉。在其他國家關稅限制鋼鐵直接出口的情況下，製造商將過剩鋼鐵轉化為汽車、船舶等成品出口，這些產品面臨的貿易壁壘較少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Li Rongchun, who owns a small business in Yancheng supplying acetylene and oxygen to nearby shipyards, said he had more orders than he could handle. “Right now, shipyards are building a lot of oil tankers and container ships, and many foreign clients are coming,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在鹽城經營一家小企業、為附近船廠供應乙炔和氧氣的李榮春表示，他的訂單多到忙不過來。「現在船廠造油輪、集裝箱船特別多，還有很多外國客戶來找我們江蘇的船廠合作，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLrH6sza85MDFXegOgUdeFcBvg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in another nearby town, the picture is far more bleak. A resident who gave only his family name, Shao, said that property prices at complexes in his neighborhood had dropped by more than half over the past year and that even steep discounts were not enticing buyers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在附近另一個小鎮，情況則要慘淡得多。一位只願透露姓邵的居民表示，他所在小區的房價在過去一年下跌超過一半，即使大幅打折也吸引不到買家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There are just too many empty apartments — even at very low prices, no one wants to buy them,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「空房子太多了，但根本沒人要，就算賣得很便宜了也根本沒人要，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Residential construction has slowed sharply over the past four years, but apartment sales have declined even faster, leaving a growing glut of unsold homes and making buyers wary of committing their savings to a purchase.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去四年，住宅建設大幅放緩，但公寓銷售下滑得更快，導致未售出住房庫存不斷增加，也讓買家對拿出積蓄購房更加謹慎。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="造船業等高度依賴鋼鐵的出口行業，在中國正蓬勃發展，部分原因在於國內鋼鐵價格低廉。" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-06-qlzw/16Biz-China-GDP-06-qlzw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/16/multimedia/16Biz-China-GDP-06-qlzw/16Biz-China-GDP-06-qlzw-master1050.jpg"/></div><figcaption><span>造船業等高度依賴鋼鐵的出口行業，在中國正蓬勃發展，部分原因在於國內鋼鐵價格低廉。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Kuijs said prices were likely to keep falling this year before bottoming out next year. But with residential construction already down so much, there isn’t much room for building activity to fall further. Any stabilization would ease a major drag on growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">高路易表示，房價今年很可能繼續下跌，明年才有望觸底。由於住宅建設活動已經大幅減少，進一步下降的空間已經不大。任何企穩跡象都將緩解經濟增長的一大拖累。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That drag will remain this year,” Mr. Kuijs said, “but it probably won’t be as intense as it was in previous years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「今年這一拖累仍將存在，」高路易說，「但可能不會像前幾年那麼嚴重了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Ruoxin Zhang對本文有研究貢獻。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260416/china-economy-growth/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
