@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>揭開比特幣最大謎團：誰是中本聰？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">揭開比特幣最大謎團：誰是中本聰？</h1>
+    <h2 class="en-headline">Bitcoin’s Greatest Mystery</h2>
+    <div class="meta-line">KATRIN BENNHOLD <span style="margin: 0 8px;">•</span> 2026-04-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/04/17/multimedia/17int-theworld-asia-nl-back-mjvz/17int-theworld-asia-nl-back-mjvz-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Amir Hamja for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">My mum, a privacy-minded German in her 80s, hates using her credit card. She still carries around wads of cash to pay for everything: a coffee, her weekly supermarket shopping — even a plane ticket to visit me in Wales.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我母親是一位80多歲、極度注重隱私的德國人。她痛恨使用信用卡，至今出門仍揣著厚厚一沓現金，什麼都用現金支付：咖啡、每週的超市採購，就連來威爾斯看我的機票也不例外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She would get along with Satoshi Nakamoto, the legendary inventor of Bitcoin who operates under a pseudonym and created the first cryptocurrency — a form of electronic cash that leaves no digital trace for banks and governments to follow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她肯定能跟中本聰合得來，這位比特幣的傳奇發明者一直以化名示人，他創造了世界上第一種加密貨幣——一種不會留下任何數字痕跡、銀行和政府都無法追蹤的電子現金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nakamoto is a godlike figure in the crypto community. But who is he really? Countless people have tried to unmask him. My colleague John Carreyrou, an investigative reporter who uncovered the Theranos scandal, thinks he figured it out. I spoke to him about his investigation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中本聰在加密貨幣圈裡是神一般的存在。但他究竟是誰？無數人試圖揭開他的面紗。我的同事約翰·卡雷魯——曾經揭露塞拉諾斯醜聞的調查記者——認為他已經找到了答案。我和他聊了聊他的這次調查。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/16/multimedia/17int-theworld-asia-nl-cryto/17int-theworld-asia-nl-cryto-jumbo.gif" src="https://static01.nyt.com/images/2026/04/16/multimedia/17int-theworld-asia-nl-cryto/17int-theworld-asia-nl-cryto-jumbo.gif"/></div><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Unmasking Bitcoin’s creator</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>揭開比特幣創造者的真面目</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>So John, I want to talk about </strong><strong>your fascinating Bitcoin investigation</strong><strong>. But before we start, can you just give me the 101 version of the Bitcoin origin story?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>約翰，我想和你聊聊</b><b>你這次引人入勝的比特幣調查</b><b>。不過開始之前，能不能先給我講講比特幣起源的入門知識？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CPz98YGb9pMDFQmLfwQdkmITkA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="1" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/world_1" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://c1049b97f5ab106b287819818274ba31.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bitcoin was a revolution in the world of finance. It was the first cryptocurrency and it has given rise to many others. And it was first laid out in a paper that appeared out of nowhere in an obscure corner of the internet in 2008.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">比特幣是金融界的一場革命。它是第一種加密貨幣，也催生了此後無數的加密貨幣。2008年，一篇論文突然出現在互聯網一個不起眼的角落，比特幣的構想就此首次公之於眾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The author, who identified himself as Satoshi Nakamoto, described his idea of a decentralized electronic currency that people can use to send one another money from all over the world with no fees, no banks and no government overseeing it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">論文作者自稱中本聰，他提出了一種去中心化電子貨幣的理念，人們可以利用它在全球範圍內互相轉賬，無需手續費，無需經過銀行，也不受任何政府監管。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>OK, let’s talk about Satoshi Nakamoto. How did people become so obsessed with him?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>好的，那我們來說說中本聰。為什麼人們會對他這麼著迷？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People began suspecting pretty quickly that this was a pseudonym. And as the interest in Bitcoin grew — several hundred million people use it today — so did the interest in solving this mystery of his identity. I’ve personally been captivated by this mystery for a dozen years and I spent a year and a half on my story.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們很快就懷疑這是個化名。而隨著比特幣的熱度不斷攀升——如今已有數億人在使用它，人們也越來越想揭開他的身份之謎。我個人被這個謎團吸引已經有十幾年了，為了寫這篇報導，我花了一年半的時間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Why?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I think it’s in the public’s interest to know who created this technology that has upended our financial landscape. It’s being used for good — like giving people in countries with unstable currencies a reliable store of value — but it’s also used for many bad purposes because there is no oversight: Criminals use it for money laundering. Iran is using it to circumvent sanctions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我認為，了解這項顛覆了我們金融格局的技術由誰創造是符合公眾利益的。它有好的一面——比如能讓生活在貨幣不穩定國家的人們擁有一種可靠的價值儲存手段。但是由於缺乏監管，它也被用於大量不良目的：犯罪分子用它洗錢，伊朗用它規避制裁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Is that why he didn’t want his identity known?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>這就是他不想暴露身份的原因嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Well, there’s something very subversive about crypto. Currencies historically are controlled by governments. Bitcoin is under no one’s control. And so one likely reason Satoshi used a pseudonym was because he feared legal retaliation from the U.S. and other governments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">嗯，加密貨幣本身就帶有極強的顛覆性。歷史上，貨幣一直由政府掌控，而比特幣不受任何人控制。因此，中本聰使用化名，一個很可能的原因就是害怕遭到美國及其他政府的法律報復。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I think Satoshi also didn’t want people to treat Bitcoin as just another company with a product and a C.E.O. He wants Bitcoin to feel like a discovery, like digital gold — a digital commodity that was discovered and is mined from the ground of the internet. Not having a named founder with a human face helps with that story.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，我覺得中本聰也不希望人們把比特幣僅僅當作一家擁有產品和首席執行官的普通公司。他希望比特幣被看作一項發現，就像數字黃金——一種從互聯網的土壤裡開採出來的數字商品。沒有一個有血有肉的實名創始人更能支撐這種敘事。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNHQ8YGb9pMDFUhLLQQdGfMPiw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>So how did you find him?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>那你是怎麼找到他的？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is a British computer scientist called Adam Back who is a pretty influential and prominent person in the Bitcoin community. He’s been on the list of the top suspects for many years, but no one ever got close to proving it — and he’s always denied it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有一位名叫亞當·巴克的英國計算機科學家，在比特幣社區極具影響力，非常有名。多年來他一直是頭號嫌疑人，但從來沒人能拿出確鑿證據，他本人也始終矢口否認。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But when I analyzed his and Nakamoto’s writings side by side, I made a number of discoveries. One of them was that both were pathologically incapable of using hyphens correctly. They use hyphens when they’re not needed and don’t use them when correct grammar calls for them to be used.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但當我把他和中本聰的文章逐字逐句放在一起對比分析時，有了一系列驚人的發現。其中之一是：兩人都無法正確使用連字符，簡直近乎病態——不該用連字符的時候亂用，在語法要求必須用的時候又偏偏不用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And I figured this was a writing tic that we could perhaps track by doing a broader analysis with the help of A.I., so that’s what we did.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我意識到這是一種獨特的寫作習慣，或許可以通過藉助人工智慧進行更廣泛的分析來進行追蹤，於是我們就這麼做了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>How sure are you that it’s him? In your story, Back insisted he wasn’t Satoshi and chalked up the linguistic similarities to a series of coincidences.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>你有多確定就是他？你的報導裡提到，巴克堅稱自己不是中本聰，還把語言上的相似之處歸結為一系列巧合。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He continues to deny it. But I’m between 99.5 percent and 100 percent sure. His denials felt pro forma to me, like he’s denying on the record so as to maintain plausible deniability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他至今仍在否認。但我有99.5%到100%的把握。在我看來，他的否認只是走個過場，彷彿他的正式否認只是為了保留合理的否認餘地。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKuI8oGb9pMDFYyZfwQddm85ZA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I should say that the Bitcoin community has cultish undertones, and they have their god, Satoshi Nakamoto, and they don’t want anyone to put a human face and name on their god. They want to continue to think of this as a collective, non-hierarchical project, a decentralized electronic currency where no one is in charge. One of their favorite slogans is “We are all Satoshi.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我必須說，比特幣社區帶有一定的邪典色彩。他們有自己的神——中本聰，而且不希望有人給他們的神安上具體的面孔和姓名。他們寧願繼續相信比特幣是一個集體的、無等級的項目，一種沒有人掌控的去中心化電子貨幣。他們最喜歡的口號之一就是：「我們都是中本聰。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>So who is Adam Back?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>那亞當·巴克又是個什麼樣的人？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was a member of this group of privacy-minded anarchists in the ’90s who wanted to escape the control, the surveillance and the censorship of the government. They wanted a currency that was outside of governments’ control because they feared that as modern financial transactions got increasingly digitized there would be a computer record of every transaction you made, and that governments would use that to track you. They wanted to get around that by creating what they called “electronic cash,” a digital version of physical cash that you can’t trace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上世紀90年代，他就是注重隱私的無政府主義群體中的一員。這群人想要擺脫政府的控制、監視和審查。他們渴望一種不受政府掌控的貨幣，因為他們擔心，隨著現代金融交易日益數位化，你的每一筆消費都會留下電腦記錄，而政府會利用這些記錄追蹤用戶。他們想要創造所謂的「電子現金」——實體現金的數字版本，無法被追蹤——來規避這一切。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Apropos cash, how much is he worth by now?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>說到現金，他現在身價多少了？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We know that Satoshi mined 1.1 million bitcoins in the first 16 months of the project. At current prices, that means he’s sitting on a fortune of about $82 billion, which would make him one of the richest people in the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們知道，中本聰在比特幣項目啟動後的前16個月裡一共挖出了110萬枚比特幣。按當前價格計算，他坐擁約820億美元的財富，足以躋身全球最富有的人之列。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>You’ve met Back several times. What’s he like?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>你見過巴克好幾次，他本人是什麼樣的？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CNnk8YGb9pMDFfmPfwQd2RQ13w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He’s the opposite of your typical crypto bro. He’s this mild-mannered, nerdy guy. He’s got slightly disheveled, thinning gray hair, a goatee and wire-rimmed glasses. He basically looks like a middle-aged computer scientist. He’s very pleasant to talk to.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他和那些典型的加密圈兄弟們完全相反。他是個溫文爾雅、帶點書呆子氣的人，頭髮有點亂，灰白稀疏，留著山羊鬍，戴著細框眼鏡，看起來基本上就是個中年計算機科學家。和他聊天非常愉快。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Back in the ’90s, he would often write posts about the need to operate under an alter ego so as not to raise the suspicion of the government. This is someone who has been plotting this for a very long time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">早在上世紀90年代，他就經常在網上發帖，說需要用化名行事，以免引起政府的懷疑。他已經為這件事謀划了非常非常久。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文節譯自時報全球新聞電郵The World。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260417/bitcoin-satoshi-adam-back-israel-lebanon-ceasefire/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

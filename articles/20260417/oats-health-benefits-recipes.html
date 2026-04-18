@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>燕麥有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">燕麥有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Oats?</h2>
+    <div class="meta-line">SIMAR BAJAJ <span style="margin: 0 8px;">•</span> 2026-04-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/04/13/well/13WELL-HEALTHY-OATS/13WELL-HEALTHY-OATS-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hearty, basic and cheap, oats have been eaten for centuries. And now, they’re a staple of wellness culture — for good reason.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾個世紀以來，燕麥一直被作為一種營養豐富、基礎且廉價的食物。而現在，它已經成為健康文化的一大支柱——這不無道理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oats are a “balanced food” with a good amount of protein, relatively little fat and a variety of vitamins and minerals, said Elizabeth Hyde-Daddio, a dietitian and certified diabetes educator at Northwell Health in Long Island. What really sets them apart, however, is that they’re one of the best sources of a powerful type of fiber.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長島諾斯韋爾健康中心的營養師兼認證糖尿病教育工作者伊麗莎白·海德-達迪奧說，燕麥是一種「均衡食品」，含有大量的蛋白質、相對較少的脂肪以及各種維生素和礦物質。而真正讓它們與眾不同的是，它們是一種強大的纖維的最佳來源之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s a closer look, along with recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>以下是進一步的詳細介紹，以及來自《紐約時報》烹飪版(New York Times Cooking)的食譜。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re great for your heart.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們對你的心臟大有裨益。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CKb3pYWb9pMDFcnilAkdCQ8QHQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many studies have found that oats lower LDL cholesterol, or the “bad” cholesterol that increases your risk of heart attack and stroke.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>許多研究發現，燕麥可以降低低密度脂蛋白(LDL)膽固醇，即會增加心臟病發作和中風風險的「壞」膽固醇。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of this effect comes from beta-glucan, a type of fiber that thickens the contents inside the gut, trapping cholesterol-rich bile acids and carrying them out of the body.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種效果在很大程度上來自於β-葡聚糖，這是一種纖維，能夠增加腸道內容物的黏稠度，捕獲富含膽固醇的膽汁酸，並將其排出體外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The evidence is strong enough that, since the 1990s, the Food and Drug Administration has linked the beta-glucan in whole oats — at least three grams per day, or what you’d get in a half-cup of rolled oats — to a lower risk of coronary heart disease. In one small trial, consuming this much beta-glucan daily reduced LDL cholesterol by 12 percent after four weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">證據非常充分，以至於美國食品和藥物管理局自20世紀90年代起<span>就已經將全燕麥中的β-葡聚糖——每天至少三克，或者相當於半杯燕麥片的含量——與降低冠心病風險聯繫在一起。在一項小型試驗中，每天攝入這麼多的β-葡聚糖，四周後LDL膽固醇降低了12%。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People who have high cholesterol levels, in particular, can “see immediate, significant benefits,” said Padmanaban Krishnan, an emeritus professor of dairy and food science at South Dakota State University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">南達科他州立大學乳製品與食品科學榮休教授帕德馬納班·凱瑞希南表示，尤其是對於那些膽固醇水平高的人來說，可以「看到立竿見影的顯著益處」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is also emerging evidence that other compounds in oats, including antioxidants like avenanthramides, may help reduce blood pressure, said Candida Rebello, the director of the nutrition and chronic disease program laboratory at Louisiana State University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">路易斯安那州立大學營養與慢性病項目實驗室主任坎迪達·雷貝洛說，還有新的證據表明，燕麥中的其他化合物——包括燕麥蒽酰胺等抗氧化劑——可能有助於降低血壓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They support healthy blood sugar.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們支持健康的血糖水平。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CJinpoWb9pMDFe4JswAdMgMTuw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After carbohydrate-rich meals, blood sugar tends to spike, but studies suggest that oats can blunt the rise, Dr. Rebello said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>雷貝洛說，攝入富含碳水化合物的餐食後血糖往往會飆升，但研究表明燕麥可以減緩這種上升。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">High-fiber foods slow digestion and keep glucose from entering the bloodstream too quickly, Dr. Krishnan said, and beta-glucan is especially helpful for this.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">凱瑞希南表示，高纖維食物會減緩消化速度，防止葡萄糖過快進入血液，而β-葡聚糖在這一點上特別有幫助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Eating oats can be particularly beneficial for people with Type 2 diabetes, he added. Some data also suggests oats could help with prevention: In a 2020 study, higher oatmeal consumption (at least two servings per week) was tied to a 21 percent lower risk of developing Type 2 diabetes than lower consumption (less than a serving per month).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他補充說，食用燕麥對2型糖尿病患者尤其有益。一些數據還表明，燕麥可能有助於預防糖尿病：</span><span>2020年的研究顯示，較高的燕麥攝入量（每週至少兩份）與較低的2型糖尿病患病風險相關，其風險水平比攝入量低者（每月不足一份）要低21%。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They nourish your gut.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們滋養你的腸道。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most Americans don’t get enough fiber, and oats can help fill the gap. There are over four grams (including beta-glucan) in a half-cup of rolled oats; adults should consume 21 to 38 grams of fiber daily, depending on their age and sex.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>大多數美國人攝入的纖維不足，而燕麥可以幫助填補這一缺口。半杯燕麥片含有超過四克的纖維（包括β-葡聚糖）；成年人每天應攝入 21至38克纖維，具體取決於他們的年齡和性別。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oats are also good for your gut. Because beta-glucan isn’t digested well in the small intestine, it makes its way to the colon, where it can feed beneficial gut bacteria and act as a prebiotic, said Barbara Olendzki, the director of the Center for Applied Nutrition at UMass Chan Medical School. Researchers believe this could help support the gut lining and reduce inflammation, especially in people with high cholesterol, obesity and other metabolic diseases.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>燕麥也對你的腸道有益。麻薩諸塞大學陳氏醫學院應用營養中心主任芭芭拉·奧倫茨基表示，由於在小腸中不易被消化，β-葡聚糖會進入結腸，在那裡可以滋養有益的腸道細菌並充當益生元。研究人員認為，這可能有助於支持腸道黏膜並減輕炎症，尤其是對高膽固醇、肥胖和其他代謝疾病患者而言。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLLGpoWb9pMDFZPJlAkdjmcn-w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fiber in oats can also add bulk to stool and help keep you regular, provided you’re also drinking enough fluids and staying active, Ms. Hyde-Daddio said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">海德-達迪奧說，燕麥中的纖維還可以增加糞便的體積，幫助你保持排便規律，前提是你也攝入了足夠的水分並保持活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the healthiest way to eat them?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>最健康的吃法是什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oat groats are the least processed form of oats, with only the inedible hull removed, while instant oats are the most processed. In between are steel-cut oats (groats chopped into smaller pieces) and rolled oats (steamed and flattened groats).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">燕麥仁是加工最少的燕麥形式，只去除了不可食用的外殼，速溶燕麥則是加工最多的。介於兩者之間的是鋼切燕麥（被切成小塊的燕麥仁）和傳統壓扁燕麥片（經過蒸汽處理並壓扁的燕麥仁）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All of these can be healthy choices, but less-processed versions are generally the best because their beta-glucan is more intact. These types of oats take longer to cook, so Ms. Olendzki recommended prepping ahead of time and microwaving them in the morning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所有這些都可以是健康的選擇，但加工程度較低的版本通常是最好的，因為它們的β-葡聚糖更完整。這些類型的燕麥需要更長的時間來烹飪，因此奧倫茨基建議提前準備好，早上用微波爐加熱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Added sugars in flavored instant oats, or from toppings like maple syrup, can offset some of the health benefits, Ms. Hyde-Daddio said, so try mixing in fruits, nuts or cinnamon instead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">海德-達迪奧說，調味速溶燕麥中的添加糖，或來自楓糖漿等配料的糖可能會抵消一些健康益處，所以嘗試加入水果、堅果或肉桂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And don’t just relegate them to a daily bowl of oatmeal. “You can add oats to pretty much anything,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不要僅僅把它們局限於每天一碗燕麥粥。「你可以把燕麥加到幾乎任何東西裡，」她說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLCMqIWb9pMDFTLhlAkdYaAcPA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="4" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/health_4" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://245882effc49e89fcbdf080100b0221d.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Ready to eat more oats? Here are some recipes from </b><b>NYT Cooking</b><b>.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>準備好吃更多燕麥了嗎？這裡有一些來自</b><b>NYT Cooking</b><b>的食譜。</b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Slow-Cooker Steel-Cut Oats</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>慢燉鍋鋼切燕麥粥</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Slow-Cooker-Steel-Cut-gpvm/13WELL-HEALTHY-OATS-Slow-Cooker-Steel-Cut-gpvm-master1050.jpg" src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Slow-Cooker-Steel-Cut-gpvm/13WELL-HEALTHY-OATS-Slow-Cooker-Steel-Cut-gpvm-master1050.jpg"/></div><figcaption><span></span> <cite>Julia Gartland for The New York Times (Photography and Styling)</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With help from a slow cooker, you can wake up to a hot, zero-effort breakfast. Cooked with only water and salt, the creamy oats can take both savory and sweet toppings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">藉助慢燉鍋，你可以一覺醒來就享用到一份熱騰騰、毫不費力的早餐。僅用水和鹽烹製的奶油燕麥片既可以搭配鹹味配料，也可以搭配甜味配料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Slow-Cooker Steel-Cut Oats</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>食譜：慢燉鍋鋼切燕麥粥</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Savory Steel-Cut Oats With Fried Egg and Za’atar</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>煎蛋加扎塔爾香料鹹味鋼切燕麥粥</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Oatmeal-with-Roasted-Pepper-cqwl/13WELL-HEALTHY-OATS-Oatmeal-with-Roasted-Pepper-cqwl-master1050.jpg" src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Oatmeal-with-Roasted-Pepper-cqwl/13WELL-HEALTHY-OATS-Oatmeal-with-Roasted-Pepper-cqwl-master1050.jpg"/></div><figcaption><span></span> <cite>Andrew Scrivani for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This savory breakfast or dinner starts with a versatile hands-off technique for making steel-cut oats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份美味的早餐或晚餐源於一種多用途而簡便的鋼切燕麥粥烹製技巧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Savory Steel-Cut Oats With Fried Egg and Za’atar</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>食譜：煎蛋加扎塔爾香料鹹味鋼切燕麥粥</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Overnight Oats</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>隔夜燕麥片</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Overnight-zbch/13WELL-HEALTHY-OATS-Overnight-zbch-master1050.jpg" src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Overnight-zbch/13WELL-HEALTHY-OATS-Overnight-zbch-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Simply soaked in milk and left uncooked, these oats retain an earthy freshness. Bits of dried fruit complement their natural sweetness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">只需浸泡在牛奶中不需烹煮，這些燕麥片就能保持泥土般的清新感。少許果乾襯托出它們的自然甜味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Overnight Oats</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>食譜：隔夜燕麥片</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Baked Oatmeal Cups</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>烤燕麥杯</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Baked-Oatmeal-Cups-tmpj/13WELL-HEALTHY-OATS-Baked-Oatmeal-Cups-tmpj-master1050.jpg" src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Baked-Oatmeal-Cups-tmpj/13WELL-HEALTHY-OATS-Baked-Oatmeal-Cups-tmpj-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Food Stylist: Spencer Richards.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With mashed banana and almond butter in the gluten-free batter, these portable treats are wholesome and filling.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在無麩質麵糊中加入香蕉泥和杏仁脂，這些便攜式小點心既健康又飽腹。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Baked Oatmeal Cups</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>食譜：烤燕麥杯</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lemony Chicken-Feta Meatball Soup With Spinach</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>檸檬雞肉羊乳酪肉丸菠菜湯</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Lemony-Chicken-Soup-qwkt/13WELL-HEALTHY-OATS-Lemony-Chicken-Soup-qwkt-master1050.jpg" src="https://static01.nyt.com/images/2026/04/13/multimedia/13WELL-HEALTHY-OATS-Lemony-Chicken-Soup-qwkt/13WELL-HEALTHY-OATS-Lemony-Chicken-Soup-qwkt-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oats take the place of bread crumbs in these meatballs, binding the ingredients and keeping everything juicy and tender after cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些肉丸用燕麥代替了麵包屑，將各種配料粘合在一起，並在烹飪後保持多汁鮮嫩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Lemony Chicken-Feta Meatball Soup With Spinach</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>食譜：檸檬雞肉羊乳酪肉丸菠菜湯</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNGTvYWb9pMDFZi7rgUdo2MVFQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; display: inline-block; width: 320px; height: 50px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="5" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="50" id="google_ads_iframe_/29390238/cnnyt/health_5" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://245882effc49e89fcbdf080100b0221d.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="320"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Simar Bajaj為時報報導健康新聞。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260417/oats-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
