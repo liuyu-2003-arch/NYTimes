@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>如何擺脫焦慮、睡個好覺 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">如何擺脫焦慮、睡個好覺</h1>
+    <h2 class="en-headline">My Anxiety Is Keeping Me Up. How Can I Get Some Sleep?</h2>
+    <div class="meta-line">AMANDA SCHUPAK <span style="margin: 0 8px;">•</span> 2026-04-20</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/04/07/multimedia/07WELL-ASK-ANXIETY-SLEEP-hvct/07WELL-ASK-ANXIETY-SLEEP-hvct-jumbo.jpg" width="753"/><figcaption><span></span> <cite>Eric Helgas for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Q. I’ve been dealing with a lot of anxiety lately and am having a hard time sleeping. What can I do to get some rest?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>問：我最近一直被嚴重的焦慮困擾，睡眠也很差。有什麼辦法能讓我好好休息嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to recent polling from the American Psychiatric Association, Americans are feeling anxious — about current events, job security, finances, the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國精神病學協會近期的調查顯示，美國人普遍感到焦慮——焦慮時事、工作保障、財務狀況，也焦慮未來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You don’t have to be in the center of a storm (proverbial or literal) to be affected by it, said Roxane Cohen Silver, a professor of psychology, public health and medicine at the University of California, Irvine. Distressing news, coming at us constantly through our phones, TVs and radios, can be associated with anxious thoughts, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學歐文分校心理學、公共衛生與醫學教授羅克珊·科恩·西爾弗表示，即便你沒有身處風暴中心（無論是比喻意義還是字面意義上的），也可能受到它的影響。那些令人不安的新聞通過手機、電視和廣播不斷向我們湧來，往往會催生焦慮的想法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And those thoughts can interfere with sleep, said Dr. Aditi Nerurkar, a faculty member at Harvard Medical School who specializes in stress and burnout. “The human brain was not designed for this constant fire hose” of news.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈佛醫學院專攻壓力與職業倦怠的教員阿迪蒂·內魯卡爾博士說，這些思緒會干擾睡眠。「人類的大腦本就不是為了應對這種源源不斷的新聞洪流而設計。」</div></div></div></div></div><div class="big_ad" data-google-query-id="COKxy_vh_ZMDFdDLwgQdheA2qw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We spoke with four experts on stress and sleep about how to tamp down the worry that’s keeping you up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們採訪了四位壓力與睡眠領域的專家，探討如何平息那些讓你輾轉難眠的擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A Perpetual Cycle of Stress, Scrolling and Sleeplessness</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>壓力、刷手機與失眠的惡性循環</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Silver has spent the last 25 years studying how news of traumatic events, such as the Sept. 11 attacks and the Boston Marathon bombing, can affect people who didn’t experience them in person.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去25年裡，西爾弗博士一直在研究9·11恐怖襲擊、波士頓馬拉松爆炸案等創傷性事件的新聞會對並未親身經歷者產生怎樣的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her research has found that the more people were exposed to graphic stories and images of those events through televisions, newspapers, online news sources or social media, the more they reported post-traumatic stress symptoms like intrusive thoughts, feeling on high alert and trouble sleeping.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她的研究發現，人們通過電視、報紙、網路新聞或社群媒體接觸到的這些事件的血腥報導和畫面越多，報告出現侵入性思維、高度警覺、睡眠困難等創傷後應激癥狀的比例就越高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some cases, repeatedly reading about or watching footage of tragic events was associated with more stress than seeing them firsthand, Dr. Silver said. Getting upset by what you see in the media and seeking it out creates a cycle, she said, “more media, more distress, more distress, more media.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西爾弗博士說，在某些情況下，反覆閱讀或觀看悲劇事件的相關內容帶來的壓力甚至比親身經歷還要大。她表示，因媒體內容感到心煩意亂，又忍不住去主動尋找更多相關信息，就會形成一個惡性循環：「看的媒體內容越多，越痛苦；越痛苦，就越想看更多媒體內容。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When this happens at night, your stress response can overpower your drive to sleep, said Norah Simpson, a clinical professor of psychiatry and behavioral sciences at Stanford Medicine. That’s helpful from an evolutionary perspective — if you were, say, dozing in a cave when a predator attacked — but not when you’re fretting about the state of the world and need to be up for a 9 a.m. meeting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學醫學院精神病學與行為科學臨床教授諾拉·辛普森說，當這種情況發生在夜間，壓力反應就會壓倒睡眠的慾望。從進化的角度來看，這原本是有益的——比如你在洞穴裡打盹時遭遇捕食者襲擊，但如果你只是在為世界局勢發愁，第二天早上九點還要開會，這就毫無用處了。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMzSy_vh_ZMDFccXrQYdT-EDNQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Your amygdala, a region of the brain that responds to threats and regulates emotions like fear and anxiety, “doesn’t know the difference between something happening 5,000 miles away, or in another city or in your backyard,” Dr. Nerurkar said. Seeing something scary on social media can cause you to actively scan the environment (that is, your phone) for threats, prompting you to engage even more. Giving in to that “primal urge to scroll” while in bed, she said, can put you in a heightened state of alertness when you should be winding down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">內魯卡爾解釋說，大腦中負責應對威脅、調節恐懼和焦慮等情緒的區域杏仁核「分不清某件事是發生在5000英里以外、在另一個城市，還是在你家後院」。在社群媒體上看到可怕的內容會讓你主動掃描周圍環境（也就是你的手機）以尋找威脅，進而陷入更深的沉迷。她說，躺在床上時屈服於這種「刷手機的原始衝動」會讓你在本該放鬆入睡的時候進入高度警覺狀態。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those precious moments before you go to sleep might be the only quiet parts of your day, said Aric Prather, a professor of psychiatry and behavioral sciences at the University of California, San Francisco. If you use that time to engage with stressful content, your mind will become filled with anxious thoughts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學舊金山分校精神病學與行為科學教授埃里克·普拉瑟說，睡前的寶貴時光可能是你一天中唯一安靜的時刻。如果你用這段時間接觸壓力性內容，大腦就會被焦慮的想法填滿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>How to Quiet the Noise</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>如何屏蔽干擾</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of Dr. Prather’s patients benefit from setting a curfew for engaging with any media that might make it hard to sleep — such as no news or scrolling social media within an hour or two of bedtime. Some people find it helps to put time limits on apps like Instagram, Threads and X through their phone’s settings. Dr. Nerurkar puts her phone on grayscale at night; the lack of color makes it less engaging and therefore easier to put down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普拉瑟的許多患者都受益於為可能影響睡眠的媒體使用設定「宵禁」：比如睡前一到兩小時內，不看新聞、不刷社群媒體。有些人發現，通過手機設置給Instagram、Threads和X等應用設置使用時長限制也很有幫助。內魯卡爾會在晚上把手機調成灰度模式；沒有了鮮艷的色彩，手機的吸引力會大大降低，也就更容易放下。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Prather recommended creating a calming, news-free evening routine that helps you wind down for sleep. That might include meditating, reading or watching something funny or mindless — and not bringing your phone into bed, which can condition your brain to associate your bed with feeling anxious.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普拉瑟建議建立一個平靜且遠離新聞的晚間例行程序，幫助你為入睡做好準備。可以包括冥想、閱讀，或者看一些輕鬆搞笑、不用動腦的內容——而且絕對不要把手機帶上床，這會讓你的大腦把床和焦慮聯繫起來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Breathing exercises can help, too, Dr. Simpson said. One example is the 4-4-8 technique, where you inhale for four seconds, hold for four seconds and then exhale for eight seconds. Cognitive shuffling, in which you focus your mind on words that have nothing to do with one another, can also help clear your mind, making it easier to fall asleep, Dr. Simpson said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">辛普森說，呼吸練習也很有幫助。比如4-4-8呼吸法：吸氣四秒，屏息四秒，然後呼氣八秒。她還推薦認知重組法：把注意力集中在一些毫無關聯的詞語上，這能幫助清空大腦，讓你更容易入睡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKaHzPvh_ZMDFTDDwgQdB54yZA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you’re going to be on your phone, she suggested sticking with innocuous content like puppy videos or cooking blogs. Dr. Prather’s patients have had success listening to podcasts that are intentionally dull and designed to lull people to sleep. Some give verbal tours of castles or laundromats, or read books that people find boring.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果實在忍不住要看手機，她建議只看一些無害的內容，比如小狗影片或者美食部落格。普拉瑟博士的患者中，有人收聽那些故意做得枯燥、旨在讓人昏昏欲睡的播客，感覺效果不錯，這些播客有的用語音帶你遊覽城堡或自助洗衣店，有的會朗讀一些非常枯燥的書籍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Actively engaging with your worries during the day may help with sleep by reducing anxiety and giving your brain a chance to quiet down at night, Dr. Prather said. Dr. Simpson suggested scheduling 10 or 15 minutes in the morning or afternoon to really think about what’s making you anxious.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普拉瑟博士說，白天主動處理自己的擔憂能減輕夜間的焦慮，讓大腦在晚上得以平靜，從而有助睡眠。辛普森博士建議，每天在上午或下午專門留出10到15分鐘，認真思考那些讓你焦慮的事情。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then, when distressing thoughts crop up at night and you’re about to spiral, you can tell yourself, “‘I spent some time working on that earlier today, and I’m going to pick it up again tomorrow,’” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這樣一來，當令人不安的想法在夜間冒出來，你即將陷入情緒漩渦時，就可以告訴自己：「我今天已經花時間處理過這個問題了，明天再繼續想吧。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260420/anxiety-sleep/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
