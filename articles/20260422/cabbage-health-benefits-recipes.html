@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>捲心菜有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">捲心菜有多健康？</h1>
+    <h2 class="en-headline">How Healthy Is Cabbage?</h2>
+    <div class="meta-line">ALEXANDRA PATTILLO <span style="margin: 0 8px;">•</span> 2026-04-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/03/09/well/09WELL-HEALTHY-CABBAGE1/09WELL-HEALTHY-CABBAGE1-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Against all odds, the humble cabbage has become an It Vegetable. In restaurants and across the internet, it’s being transformed into cabbage steaks, cabbage pasta and cabbage burgers. So much for classic coleslaw.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>儘管出乎意料，不起眼的捲心菜已經成為了一種網紅蔬菜。在餐館和互聯網上，它被做成了捲心菜牛排、捲心菜義麵和捲心菜漢堡。傳統的涼拌捲心菜已經不算什麼了。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether you eat it fresh, cooked or fermented, cabbage is a “nutrient powerhouse” with a high concentration of vitamins, fiber and antioxidants, said Andrea Krenek, a dietitian and postdoctoral research fellow at Stanford University School of Medicine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學醫學院營養師、博士後研究員安德烈婭·克雷內克表示，無論是生吃、煮熟還是醃製，捲心菜都是一個「營養寶庫」，富含高濃度的維生素、纖維和抗氧化劑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what to know, along with healthy recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>以下是您需要了解的內容，以及來自《紐約時報》烹飪頻道(New York Times Cooking)的一些健康食譜。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s rich in vitamin K.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它富含維生素K。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CPi_rcjmgpQDFd27pgQdC44T_w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cabbage looks like a head of lettuce, but it’s actually a cruciferous vegetable, part of the family that includes brussels sprouts, cauliflower, kale and broccoli. There are hundreds of cabbage varieties, but some of the most common are green, red, napa, savoy and bok choy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>捲心菜看起來像一顆生菜，但它實際上屬於十字花科蔬菜，與抱子甘藍、花椰菜、羽衣甘藍和西蘭花同屬一科。捲心菜有數百個品種，但最常見的有綠捲心菜、紅捲心菜、大白菜、皺葉捲心菜和小白菜。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like many cruciferous vegetables, cabbage is high in vitamin K, which promotes blood clotting, wound healing and strong bones. A standard serving of raw green cabbage (85 grams) contains about half the daily recommended amount of vitamin K for the average adult.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>像許多十字花科蔬菜一樣，捲心菜富含維生素K，這有助於促進血液凝固、傷口癒合和保持骨骼強健。一份標準份量（85克）的生綠捲心菜含有普通成年人每日推薦維生素K攝入量的一半左右。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s good for your gut.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它對腸道有益。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fiber in cabbage acts as a prebiotic, feeding the good bacteria in your gut microbiome and boosting its diversity, said Dr. Zhaoping Li, chief of the division of clinical nutrition at U.C.L.A. Health. Higher consumption of prebiotics has been linked to greater blood-sugar control, a stronger immune system and a lower risk of colorectal cancer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學洛杉磯分校健康中心臨床營養科主任李兆萍<span>博士表示，捲心菜中的纖維起著益生元的作用，能夠滋養腸道微生物群中的有益細菌，並增加其多樣性。攝入較多的益生元</span>與<span>更好的血糖控制、更強的免疫系統以及較低的結直腸癌風險有關。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fermented cabbage, like that found in kimchi and sauerkraut, is also packed with probiotics — live microbes that replenish your gut flora and keep it in balance. Together, pre- and probiotics aid digestion, lower inflammation and help the body better absorb nutrients, Dr. Krenek said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">醃製的<span>捲心菜——如在泡菜和酸菜中的那種——也富含益生菌，這些活體微生物可以補充腸道菌群並保持其平衡。克雷內克說，益生元和益生菌共同作用，有助於消化、降低炎症並幫助身體更好地吸收營養。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s full of antioxidants.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它充滿抗氧化劑。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CICGrcjmgpQDFbS8pgQdB_gIvw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One serving of green cabbage has 38 percent of the recommended daily amount of vitamin C for men and 45 percent for women. This antioxidant is essential for forming collagen, a major protein in connective tissue, said Kendra Nelson, a ​​dietitian and postdoctoral research associate at the University of North Carolina at Chapel Hill Nutrition Research Institute. It also protects cells from damage and strengthens the immune system, she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>一份綠捲心菜含有男性每日推薦攝入量的38%的維生素C，女性的45%。北卡羅萊納大學教堂山分校營養研究所的營養師兼博士後研究助理肯德拉·尼爾森表示，這種抗氧化劑對於膠原蛋白的形成至關重要，膠原蛋白是結締組織中的一種主要蛋白質。她補充說，它還能保護細胞免受損傷並增強免疫系統。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Colorful cabbages, especially the red variety, get their vivid hues from anthocyanins, another type of antioxidant. These plant compounds may help lower the risk of cardiovascular disease by improving blood sugar management and reducing LDL cholesterol, said Moneek Madra, an assistant professor at the Institute of Human Nutrition at Columbia University Irving Medical Center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">色彩<span>鮮艷的捲心菜（尤其是紅捲心菜）鮮艷的顏色來自於花青素，這是另一種抗氧化劑。哥倫比亞大學歐文醫學中心人類營養研究所的助理教授莫尼克·馬德拉表示，這些植物化合物可能通過改善血糖管理和降低低密度脂蛋白</span>(LDL)<span>膽固醇來幫助降低患心血管疾病的風險。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cabbage also has glucosinolates, sulfur-containing compounds that have strong antioxidant properties. During digestion, they are broken down into other compounds which help protect against oxidative damage to tissues and curb overall inflammation, Dr. Nelson said. Higher consumption of cruciferous vegetables (and their glucosinolates) has been associated with a lower risk of several cancers, including those affecting the digestive tract.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>捲心菜還含有硫代葡萄糖苷，這是一種具有強大抗氧化特性的含硫化合物。尼爾森說，在消化過程中，它們被分解成其他化合物，有助於防止組織受到氧化損傷並抑制整體炎症。較多地食用十字花科蔬菜（及其硫代葡萄糖苷）與降低多種癌症的風險有關，包括那些影響消化道的癌症。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the healthiest way to eat it?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>最健康的吃法是什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cabbage is affordable and a great way to add bulk to meals, filling you up without excess calories, Dr. Madra said. One serving of raw green cabbage contains about 25 calories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬德拉說，捲心菜價格實惠，是餐食加量的好方法，可以在不增加多餘熱量的情況下讓你產生飽腹感。一份生綠捲心菜只含有大約25卡路里的熱量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Different varieties have slightly different nutrient profiles, so eat a mix to get the maximum benefits, Dr. Krenek advised.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">克雷內克建議，不同品種的營養成分略有不同，所以可以混合食用，以獲得最大的益處。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN-ercjmgpQDFSKjpgQdW-o2Rw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just don’t go overboard; too much of a good thing can cause gas, bloating and diarrhea. These symptoms stem from the fiber in cabbage, along with another compound called raffinose. Humans lack certain enzymes to fully digest raffinose in the upper gastrointestinal tract, so it’s instead fermented in the colon. Dr. Li suggested starting slowly, and trying cooked cabbage first rather than raw.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但要注意不要吃得太多；好東西吃多了也可能導致排氣、腹脹和腹瀉。這些癥狀源於捲心菜中的纖維，以及另一種叫做棉子糖的化合物。人類缺乏在上消化道完全消化棉子糖的特定酶，所以它會改為在結腸中發酵。</span>李兆萍建議慢慢開始，並先嘗試煮熟的捲心菜而不是生吃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And one shopping tip: Most kimchi and sauerkraut on grocery shelves is pasteurized, a process that can neutralize its probiotics. Opt for unpasteurized or pasteurized versions with added probiotics, Dr. Nelson said, both of which can be found in the refrigerated section.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有一個購物提示：雜貨店貨架上的大多數泡菜和酸菜都是經過巴氏殺菌的，這個過程會中和掉其中的益生菌。尼爾森說，可以選擇未經巴氏殺菌的產品，或者添加了益生菌的巴氏殺菌產品，這兩種通常都可以在冷藏區找到。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With that, here are some recipes to try from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>接下來，這裡有一些來自《紐約時報》</span>烹飪頻道的食譜供您嘗試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Charred Cabbage in Spiced Tomatoes With Tahini</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>1. <b>調味</b><b>番茄烤捲心菜</b></span><span><b>佐</b><span><b>芝麻醬</b><b></b></span></span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Charred-in-spiced-tomatoes-cwhb/09WELL-HEALTHY-CABBAGE-Charred-in-spiced-tomatoes-cwhb-master1050.jpg" src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Charred-in-spiced-tomatoes-cwhb/09WELL-HEALTHY-CABBAGE-Charred-in-spiced-tomatoes-cwhb-master1050.jpg"/></div><figcaption><span></span> <cite>Julia Gartland for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Searing cabbage wedges in a skillet gives them a caramelized smoky sweetness and buttery texture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在煎鍋中煎烤捲心菜塊能賦予它們焦糖般的煙熏甜味和黃油般的質感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Charred Cabbage in Spiced Tomatoes With Tahini</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b><b>調味</b><b>番茄烤捲心菜</b></span><span><b>佐</b><span><b>芝麻醬</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Scrunched Cabbage Salad With Fried Almonds</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2. 炸杏仁手揉捲心菜沙拉</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Scrunched-salad-zwkg/09WELL-HEALTHY-CABBAGE-Scrunched-salad-zwkg-master1050.jpg" src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Scrunched-salad-zwkg/09WELL-HEALTHY-CABBAGE-Scrunched-salad-zwkg-master1050.jpg"/></div><figcaption><span></span> <cite>Julia Gartland for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Crinkling cabbage leaves with your hands (as you would with kale) tenderizes them, helping them soak up the toasted-almond dressing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">用手揉搓捲心菜葉（就像處理羽衣甘藍那樣）可以使其變得柔軟，有助於它們吸收烤杏仁調料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Scrunched Cabbage Salad With Fried Almonds</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b><span><b>炸杏仁手揉捲心菜沙拉</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Sheet-Pan Roast Chicken and Mustard-Glazed Cabbage</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>3. 烤盤雞肉與芥末醬捲心菜</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Roast-Chicken-wvbz/09WELL-HEALTHY-CABBAGE-Roast-Chicken-wvbz-master1050.jpg" src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Roast-Chicken-wvbz/09WELL-HEALTHY-CABBAGE-Roast-Chicken-wvbz-master1050.jpg"/></div><figcaption><span></span> <cite>Andrew Purcell for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this one-pan meal, brushing cabbage wedges with a sharp mustard vinaigrette and nestling them under chicken to roast makes them extra flavorful.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道只需一個烤盤的菜肴中，在捲心菜塊上刷上辛辣的芥末油醋汁，並把它們塞在雞肉下烘烤，會使其特別入味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Sheet-Pan Roast Chicken and Mustard-Glazed Cabbage</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b><span><b>烤盤雞肉與芥末醬捲心菜</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Roasted Cabbage and Butter Beans</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>4. 烤捲心菜與黃油豆</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Butter-Beans-kfmw/09WELL-HEALTHY-CABBAGE-Butter-Beans-kfmw-master1050.jpg" src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Butter-Beans-kfmw/09WELL-HEALTHY-CABBAGE-Butter-Beans-kfmw-master1050.jpg"/></div><figcaption><span></span> <cite>Rachel Vanni for The New York Times. Food Stylist: Spencer Richards.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cutting cabbage into ribbons helps it cook quickly. Here, it’s tossed with garlic, anchovies and butter beans — giving the dish enough heft to be a main.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將捲心菜切成條狀有助於快速煮熟。在這裡，它與大蒜、鳳尾魚和黃油豆拌在一起，使這道菜的分量足以作為主菜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Roasted Cabbage and Butter Beans</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b><span><b>烤捲心菜與黃油豆</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Seared Tofu With Kimchi</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>5. 泡菜煎豆腐</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Tofu-tpqg/09WELL-HEALTHY-CABBAGE-Tofu-tpqg-master1050.jpg" src="https://static01.nyt.com/images/2026/03/09/multimedia/09WELL-HEALTHY-CABBAGE-Tofu-tpqg/09WELL-HEALTHY-CABBAGE-Tofu-tpqg-master1050.jpg"/></div><figcaption><span></span> <cite>Bryan Gardner for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mild tofu is an ideal partner for tart, funky kimchi. The two need only a splash of soy sauce and sesame oil to become an interesting dinner in under 30 minutes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">味道溫和的豆腐是酸爽風味泡菜的理想搭檔。這兩者只需要加一點醬油和芝麻油，就能在不到30分鐘內變成一頓有趣的晚餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Seared Tofu With Kimchi</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b><span><b>泡菜煎豆腐</b><b></b></span></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLnErcjmgpQDFYyQpgQdglkv1A" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2026年3月9日。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260422/cabbage-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
