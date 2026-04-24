@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mythos：強大到「比核彈還糟糕」的人工智慧 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">Mythos：強大到「比核彈還糟糕」的人工智慧</h1>
+    <h2 class="en-headline">Anthropic’s New A.I. Model Sets Off Global Alarms</h2>
+    <div class="meta-line">孟建國, ADAM SATARIANO <span style="margin: 0 8px;">•</span> 2026-04-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="971" src="https://static01.nyt.com/images/2026/04/23/business/00biz-mythos-risk/00biz-mythos-risk-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Pablo Delcan</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Anthropic told the world this month that it had built an artificial intelligence model so powerful that it was too dangerous to release widely, the company named 11 organizations as partners to help mount a defense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，Anthropic公司向世界宣布，它已構建了一個強大到「太危險而無法廣泛發布」的人工智慧模型，並點名了11家合作夥伴來幫助構建防禦體系。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All were from the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這11家機構全部來自美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Within two weeks, the model, called Mythos, had set off a global scramble unlike anything yet seen in the A.I. era. Mythos, which Anthropic has said is uncannily capable of finding and exploiting hidden flaws in the software that runs the world’s banks, power grids and governments, had become a geopolitical chip — and a U.S. company held it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>不到兩週時間，這個名為Mythos的模型就引發了人工智慧時代前所未有的全球爭奪。Anthropic表示，Mythos擁有驚人的能力，能夠發現並利用全球銀行、電網和政府所依賴軟體中的隱藏漏洞。它迅速成為一</span>個地緣政治籌碼——而握有這張牌的，是一家美國公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">World leaders have struggled to figure out the scale of the security risks and how to fix them, with Anthropic sharing Mythos with only Britain outside the United States. The Bank of England governor warned publicly that Anthropic may have found a way to “crack the whole cyber-risk world open.” The European Central Bank began quietly questioning banks about their defenses. Canada’s finance minister compared the threat to the closure of the Strait of Hormuz.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>各國領導人都在努力評估這一安全風險的嚴重程度以及如何應對。目前，除了美國之外，Anthropic只與英國分享了Mythos。英國央行行長公開警告稱，Anthropic可能已經找到了一種「把整個網路風險世界撕開」的方法。歐洲央行已開始</span>私底下詢問各銀行的防禦情況。加拿大財政部長則將這一威脅比作霍爾木茲海峽被關閉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK30namohZQDFccUigMdW20LCw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For U.S. rivals like China and Russia, Mythos underscored the security consequences of falling behind in the A.I. race. One Russian pro-Kremlin outlet called the model “worse than a nuclear bomb.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於中國和俄羅斯等美國對手而言，Mythos凸顯了在人工智慧競賽中落後的嚴重安全後果。一家親克里姆林宮的俄羅斯媒體稱該模型「比核彈還糟糕」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The responses illustrated a reality that A.I. researchers have long warned about mostly in theoretical terms: Whoever leads in building the most powerful A.I. models will gain outsize geopolitical advantages. Major A.I. breakthroughs are beginning to function less like product launches and more like weapons tests, and most nations want to understand how the technologies work and what protections are needed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些反應印證了人工智慧研究者長期以來主要在理論層面提出的警告：誰在構建最強大人工智慧模型的競賽中領先，誰就將獲得巨大的地緣政治優勢。重大的人工智慧突破正在越來越不像產品發布，而更像武器試驗。大多數國家都希望了解這些技術如何運作，以及需要什麼樣的防護措施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As foundational A.I. “models become more consequential, access becomes more geopolitical,” said Eduardo Levy Yeyati, a former chief economist at the Central Bank of Argentina and a regional adviser on growth and A.I. at the Inter-American Development Bank. “I would take this episode as a policy wake-up call. Governments can no longer ignore the issue.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著基礎人工智慧「模型的影響力越來越大，對這些模型的取用權限也越來越具有地緣政治意義」，阿根廷前央行首席經濟學家、現任美洲開發銀行增長與人工智慧區域顧問愛德華多·萊維·耶亞蒂表示。「我認為這一事件是一次政策上的警鐘。各國政府不能再忽視這個問題了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even the U.S. government, which has been embroiled in a clash with Anthropic over the use of A.I. in warfare, has taken notice of Mythos. On Friday, Dario Amodei, Anthropic’s chief executive, met with White House officials after some in the Trump administration noted the potential for the new model to wreak havoc on computer systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>即使是與Anthropic在人工智慧軍事應用問題上存在衝突的美國政府也</span>注意到了Mythos。上週五，在川普政府內部有人得知<span>新模型可能對計算機系統造成嚴重破壞後，Anthropic首席執行官達里奧·阿莫迪與白宮官員進行了會面。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="Anthropic首席執行官達里奧·阿莫代伊週五與白宮官員進行了一場「富有成效」的會談。" data-src="https://static01.nyt.com/images/2026/04/21/multimedia/00biz-mythos-risk-dario-zmbl/00biz-mythos-risk-dario-zmbl-master1050.jpg" src="https://static01.nyt.com/images/2026/04/21/multimedia/00biz-mythos-risk-dario-zmbl/00biz-mythos-risk-dario-zmbl-master1050.jpg"/></div><figcaption><span>Anthropic首席執行官達里奧·阿莫代伊週五與白宮官員進行了一場「富有成效」的會談。</span> <cite>Karsten Moran for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic, which is based in San Francisco, told The New York Times that it was keeping access to Mythos small because of safety and security concerns. It has focused on sharing the model with more than 40 organizations that provide technology used in maintaining critical global infrastructure like the internet or electricity grids. Anthropic named 11 of the organizations, including Amazon, Apple and Microsoft, that pledged to help develop security fixes for vulnerabilities identified by the model.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於舊金山的Anthropic公司告訴《紐約時報》，由於安全和安保方面的擔憂，它將對Mythos的訪問權限控制在很小範圍內。公司目前重點與40多家為互聯網、電網等全球關鍵基礎設施提供技術的組織分享模型。Anthropic公布了其中11家機構的名單，包括亞馬遜、蘋果和微軟，它們承諾幫助開發針對模型發現的漏洞的安全修復方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company said that it had no immediate timeline for widely expanding access, but that it would work with the U.S. government and industry partners to determine next steps. It said that it had been bombarded by calls from governments, companies and other organizations seeking access and information, but that these organizations could have varying levels of expertise to safely evaluate such a powerful A.I. model.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司表示，目前沒有短時間內放開大範圍訪問權限的時間表，但將與美國政府和行業夥伴共同決定下一步行動。它還提到，自己已接到來自各國政府、企業和其他組織的密集來電，尋求獲取模型或相關信息，但這些組織不一定具備對人工智慧模型進行安全地評估的專業能力。</div></div></div></div></div><div class="big_ad" data-google-query-id="COyXnqmohZQDFb_odQkd9KscsQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic added that it expected other groups to release A.I. models with similar cyber capabilities more widely within at least 18 months, giving organizations limited time to make the necessary security fixes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic補充稱，它預計其他機構將在至少18個月內更廣泛地發布具有類似網路能力的人工智慧模型，留給各國組織修補必要安全漏洞的時間非常有限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Tuesday, Anthropic said it was investigating a report that unauthorized users gained access to a version of Mythos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，Anthropic表示正在調查一則未經授權用戶獲取Mythos某一版本的報告。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The scramble over Mythos comes at a moment of minimal international cooperation on A.I. Governments are viewing one another with suspicion as corporations race to outpace rivals. There is no equivalent of the Nuclear Nonproliferation Treaty, no shared inspections and no agreed-upon rules for how to handle something like Mythos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Mythos引發的爭奪發生在國際人工智慧合作極度匱乏的時刻。各國政府在相互猜疑中注視著對方，而企業則在競相超越對手。目前還沒有類似於《核不擴散條約》的機制，沒有共同的檢查制度，也沒有就如何處理類似Mythos的情況達成一致規則。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Anthropic announced the model, many experts praised the company’s caution in limiting who gets to try the model, but expressed concerns about the lack of international coordination to deal with the risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當Anthropic宣布該模型時，許多專家讚揚了公司在限制測試對象方面的謹慎態度，但同時對缺乏國際協調來應對風險表示擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Britain was the only other nation to gain access. Its A.I. Security Institute, a government-backed organization, tested Mythos and published an independent evaluation last week, confirming that it could carry out complex cyberattacks that no previous A.I. model had completed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英國是美國以外<span>唯一獲得訪問權限的國家。其政府支持的人工智慧安全研究所對Mythos進行了測試，並於上週發布了一份獨立評估報告，證實該模型能夠執行此前任何人工智慧模型都無法完成的複雜網路攻擊。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This represents a step up in A.I. cyber capabilities,” Kanishka Narayan, Britain’s A.I. minister, said last week on social media, saying the country was taking steps to protect “critical national infrastructure.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這代表了人工智慧網路能力的升級，」英國人工智慧與在線安全部長卡尼什卡·納拉揚上週在社群媒體上表示，並稱該國正在採取措施保護「關鍵國家基礎設施」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Others got less information. The European Commission, the executive branch of the 27-nation European Union, has met with Anthropic at least three times since the Mythos release, an E.U. official said. But the company has not provided access to the model because the two sides have not agreed on how to share it with the commission, the official said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他國家獲得的信息則少得多。歐盟執行機構歐洲委員會的一名官員表示，自Mythos發布以來，歐盟已與Anthropic至少會面三次。但由於雙方尚未就如何向委員會提供模型達成協議，該公司尚未給予訪問權限。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="自Mythos發布以來，歐盟執行機構歐盟委員會已與Anthropic至少會面三次。" data-src="https://static01.nyt.com/images/2026/04/21/multimedia/00biz-mythos-risk-04-lqcw/00biz-mythos-risk-04-lqcw-master1050.jpg" src="https://static01.nyt.com/images/2026/04/21/multimedia/00biz-mythos-risk-04-lqcw/00biz-mythos-risk-04-lqcw-master1050.jpg"/></div><figcaption><span>自Mythos發布以來，歐盟執行機構歐盟委員會已與Anthropic至少會面三次。</span> <cite>Frederick Florin/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a statement, the commission said it was “assessing possible implications” of Mythos, which “exhibits unprecedented cyber capabilities.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲委員會在一份聲明中表示，正在「評估Mythos可能產生的影響」，並稱該模型「展現了前所未有的網路能力」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Claudia Plattner, the president of Germany’s cybersecurity agency, known as B.S.I., said it had not received access to Mythos, but she met with Anthropic employees in San Francisco recently for “meaningful insight” into how it works. The capabilities point to “a paradigm change in the nature of cyber threats,” Ms. Plattner said in a statement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國聯邦信息安全局局長克勞迪婭·普拉特納表示，該機構尚未獲得Mythos的訪問權限，但她最近在舊金山與Anthropic員工會面，獲得了「有意義的洞見」。她在一份聲明中稱，這些能力指向「網路威脅性質的範式轉變」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIeenqmohZQDFaM0igMdHScnOA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among U.S. rivals, the response has been more muted. Despite Anthropic’s recent clash with the Trump administration, Mr. Amodei has made clear that A.I. should be used to defend the United States and other democracies and defeat autocratic adversaries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在美國對手中，反應相對低調。儘管Anthropic最近與川普政府存在衝突，但阿莫迪已明確表示，人工智慧應當用於保衛美國和其他民主國家，並擊敗專制對手。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Neither Beijing nor Moscow has made a major public statement on Mythos. Inside China, researchers and the broader A.I. community have been watching closely, according to analysts studying the country’s tech community. Many of the country’s banks, energy companies and government agencies run on the same software in which Mythos found vulnerabilities — but for now, they have no seat at the table.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京和莫斯科均未就Mythos發表重大公開聲明。據研究中國科技界的分析師稱，中國國內的研究人員和更廣泛的人工智慧社區一直在密切關注這一事件。中國許多銀行、能源企業和政府機構所使用的軟體，正是Mythos發現存在漏洞的那些軟體——但目前，它們沒有資格參與。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="杭州的阿里巴巴創新園區。在中國國內，研究人員和更廣泛的人工智慧社區一直密切關注著Mythos。" data-src="https://static01.nyt.com/images/2026/04/21/multimedia/MYTHOS-RUSK-Hangzhou2-tblz/MYTHOS-RUSK-Hangzhou2-tblz-master1050.jpg" src="https://static01.nyt.com/images/2026/04/21/multimedia/MYTHOS-RUSK-Hangzhou2-tblz/MYTHOS-RUSK-Hangzhou2-tblz-master1050.jpg"/></div><figcaption><span>杭州的阿里巴巴創新園區。在中國國內，研究人員和更廣泛的人工智慧社區一直密切關注著Mythos。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For China I think this is the second wake-up call after ChatGPT,” said Matt Sheehan, a senior fellow at the Carnegie Endowment for International Peace. He added that a U.S. policy to prevent China from obtaining the most sophisticated semiconductors for building advanced A.I. systems was helping to extend the U.S. lead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對中國來說，我認為這是繼ChatGPT之後的第二次警鐘，」卡內基國際和平基金會高級研究員馬特·希恩表示。他補充說，美國阻止中國獲得用於構建先進人工智慧系統的最尖端半導體，這一政策正在幫助美國擴大領先優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some A.I. researchers in China have privately expressed concern that the country could fall further behind, missing out on advantages that come with building a foundational model first, said Jeffrey Ding, a professor of political science at George Washington University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">喬治·華盛頓大學政治學教授傑弗里·丁（音）表示，一些中國人工智慧研究者私下表達了擔憂，認為中國可能會進一步落後，錯失率先構建基礎模型所帶來的優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Liu Pengyu, a spokesman for the Chinese Embassy in Washington, said China was not familiar with the specifics of Mythos but supported a peaceful, secure and open cyberspace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國駐華盛頓大使館發言人劉鵬宇表示，中國對Mythos的具體細節並不熟悉，但支持和平、安全、開放的網路空間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mythos is the latest sign of a growing global A.I. divide. Nations without powerful computing infrastructure and A.I. models risk being left dependent on companies like Anthropic, Google and OpenAI while having little sway over how their products are designed and safeguarded, Mr. Yeyati said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>Mythos是全球人工智慧鴻溝日益擴大的最新跡象。耶亞蒂表示，那些缺乏強大計算基礎設施和人工智慧模型的國家，可能會越來越依賴Anthropic、谷歌和OpenAI等公司，同時對這些產品的設計和防護方式幾乎沒有話語權。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CP6inqmohZQDFe8zigMdpAsOyQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The idea that access to frontier A.I. is something a company can unilaterally restrict, using criteria that are opaque and unappealable, should be a real concern,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「一家公司可以單方面根據不透明且無法上訴的標準來限制對前沿人工智慧的訪問，這種情況本身就應該引起真正的擔憂，」他說道。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">孟建國(Paul Mozur)是時報全球科技記者，常駐台北。此前，他自香港、上海和首爾報導亞洲科技與政治的交叉議題。</p><div class="" data-poster=""><span><p class="cn-p">Adam Satariano是時報科技記者，常駐倫敦。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260423/anthropics-mythos-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

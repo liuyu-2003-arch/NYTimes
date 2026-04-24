@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本對地震已「習以為常」，但如果特大地震發生呢？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">日本對地震已「習以為常」，但如果特大地震發生呢？</h1>
+    <h2 class="en-headline">Japan Is Used to Earthquakes, but What About a Big One?</h2>
+    <div class="meta-line">JOHN YOON, HISAKO UENO <span style="margin: 0 8px;">•</span> 2026-04-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一地震後，日本電視上播出的海嘯預警畫面。" height="700" src="https://static01.nyt.com/images/2026/04/21/multimedia/21xp-quake-kzct/21xp-quake-kzct-master1050.jpg" width="1050"/><figcaption><span>週一地震後，日本電視上播出的海嘯預警畫面。</span> <cite>Philip Fong/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A 7.4-magnitude earthquake jolted Japan this week and set off a tsunami warning, but shoppers at one grocery store simply steadied their carts and kept browsing as the building shook. Within hours, Tokyo’s subways were once again packed and bullet trains had resumed journeys near the epicenter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本週，日本發生7.4級強震並引發海嘯預警，但在一家超市裡，顧客只是扶穩購物車，在房子晃動時繼續挑選商品。幾小時內，東京的地鐵再次擠滿了人，震中附近的新幹線列車也恢復了運行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s happened so many times, I think it’s not a big deal,” said Hiroyuki Utsunomiya, 77, who runs a trucking company in the northeastern city of Ishinomaki.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種事發生太多次了，我覺得沒什麼大不了的，」77歲的宇都宮博行說，他在東北城市石卷經營一家貨運公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Japan is one of the most seismically active parts of the world, with an average of two to three quakes each day. For many people in the country, tremors are not extraordinary and life tends to swiftly return to normal after an earthquake.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本是全球地震最活躍的地區之一，平均每天會發生兩到三次地震。對許多日本人來說，地震沒什麼大驚小怪的，地震過後生活通常會很快恢復正常。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But after the quake on Monday, the national meteorological agency urged people to be prepared for a more destructive earthquake. It warned that there was an elevated risk of a “megaquake” — magnitude 8 or higher — in northeastern Japan in the following week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在週一的地震之後，日本氣象廳敦促民眾為可能發生更具破壞性的地震做好準備。該機構警告說，未來一週內，日本東北地區發生8級或以上「強烈地震」的風險升高。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK-696qohZQDFRAJ2wEd9x0P7w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not possible to predict earthquakes and only probabilities can be calculated, according to the U.S. Geological Survey. The Japan Meteorological Agency is candid about the limitations of its advisories. “This information is extremely uncertain,” the agency said on Monday. A megaquake might not hit at all or there might be one after the advisory expires in a week, it added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據美國地質調查局的說法，地震無法預測，只能計算髮生的概率。日本氣象廳也坦言其預警存在局限性。「這些信息極其不確定，」該機構在週一表示。它還說，強烈地震可能根本不會發生，也可能在這一週的預警期結束後發生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The megaquake advisories were designed after a 2011 earthquake devastated Japan as a way of encouraging preparations, officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官員們表示，強烈地震預警系統是在2011年那場重創日本的地震之後設計的，目的是鼓勵民眾提前做好準備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The advisory system for the Nankai Trough, a seismically active zone off southern Japan, began in 2019. A second system was created in 2022 for a zone off northeastern Japan where Monday’s quake struck. The advisories are rare, though. Together, the systems have generated only two other alerts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">針對日本南部外海地震活躍帶南海海溝的預警系統於2019年啟動。2022年的時候，針對週一發生地震的日本東北外海區域創建了另一個預警系統。不過，這類預警非常少見，兩套系統加起來此前只發布過兩次警報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both systems note the increased probability of a megaquake based on historical data. On Monday, the agency assessed that the chance of such a quake in northeastern Japan had risen to 1 percent from the base-line 0.1 percent — a tenfold increase in probability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩個系統都是基於歷史數據來判斷發生強烈地震的概率上升。本週一，日本氣象廳評估認為，日本東北地區發生此類地震的概率已從基準的0.1%升至1%——增加了十倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the authorities in Japan, where most structures are built with earthquakes in mind, even the slight rise in probability of a catastrophe merited the warning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於日本當局而言，在這個大多數建築在建造時就考慮了抗震因素的國家，即便災難發生概率只是略有上升，也值得發出預警。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since the latest advisory was issued on Monday, officials in the northeastern city of Kuji have sent alerts three times a day — via radio, messaging apps and email — reminding residents to keep emergency kits ready and prepare to seek shelter anytime.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自週一發布最新預警以來，東北城市久慈的官員每天通過廣播、即時通訊應用和電子郵件發送三次提醒，督促居民隨時備好應急包，並做好隨時避險的準備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are raising awareness and disseminating information in a way that does not cause too much panic,” said Teruki Maeno, a crisis management official in Kuji, a city in Iwate prefecture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們在提高公眾意識、傳播信息的同時，也盡量避免引發過度恐慌，」岩手縣久慈市的一名危機管理官員前野輝樹表示。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週一地震後，日本東北部仙台市顯示新幹線停運通知的顯示屏。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/21xp-quake-pvwh/21xp-quake-pvwh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/21xp-quake-pvwh/21xp-quake-pvwh-master1050.jpg"/></div><figcaption><span>週一地震後，日本東北部仙台市顯示新幹線停運通知的顯示屏。</span> <cite>Kyodo, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This balance — vigilance without panic — is the result of living with earthquakes for centuries. The consequences of Japan’s geology are everywhere: skyscrapers built on shock-absorbing rubber pads; early warning systems that can halt bullet trains seconds before tremors arrive; and generations who grew up doing regular earthquake drills in school.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種「保持警惕但不恐慌」的平衡是日本人數個世紀以來與地震共存的結果。日本的地質條件帶來的影響無處不在：建在減震橡膠墊上的摩天大樓；可以在震動到來前幾秒讓新幹線停車的預警系統；一代又一代的日本人從小就在學校裡定期參加地震演習。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most devastating earthquakes have shaped how life, cities and architecture have developed in modern Japan. Experts say this focus on readiness helps explain why there were so few injuries on Monday, even though a similarly powerful earthquake could have leveled towns in another country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最具破壞性的地震塑造了現代日本的生活、城市和建築發展方式。專家表示，這種對防範的重視有助於解釋，為什麼本週一的地震雖然威力強大——同樣的地震如果發生在其他國家可能會夷平整座城鎮——卻幾乎沒有造成人員傷亡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN7q96qohZQDFSUB2wEdldUMUg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Ishinomaki has sturdy buildings that are rebuilt in the bedrock,” said Mr. Utsunomiya, whose office was swept away by the tsunami unleashed by the 2011 Fukushima quake. “It won’t budge.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「石卷的建築非常堅固，都是建在基岩之上的，」宇都宮博行說。他的辦公室曾在2011年福島地震引發的海嘯中被沖毀。「建築不會輕易動搖。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That earthquake and the resulting tsunami killed more than 19,000 people and led to a nuclear disaster. The Fukushima catastrophe is fresh in the memories of people in northeastern Japan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2011年那場地震及其引發的海嘯造成超過1.9萬人遇難，並導致了核災難。福島災難至今仍深深印在日本東北地區民眾的記憶中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This region has lived with the threat of tsunamis since ancient times,” said Mr. Maeno, the Kuji city official. “The lessons learned from the past have been passed down through generations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這個地區自古以來就一直生活在海嘯威脅之下，」久慈市官員前野輝樹說，「從過去吸取的教訓是一代代傳承下來的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But that confidence has its limits. The small tsunami wave — under three feet tall — that reached the coast of Iwate on Monday caused little concern. Had the authorities warned of something even bigger, Mr. Maeno said, the mood would have been completely different.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這種從容也並非沒有邊界。週一到達岩手海岸的海嘯浪高不足一米，並未引起太多擔憂。前野輝樹表示，如果當局預警的是更大的海嘯，民眾的反應就會完全不同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everyone would panic,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「所有人都會恐慌，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週二，日本大船渡市，一名漁民準備出海。此前一天，地震引發了海嘯預警。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/21xp-quake-zchq/21xp-quake-zchq-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/21xp-quake-zchq/21xp-quake-zchq-master1050.jpg"/></div><figcaption><span>週二，日本大船渡市，一名漁民準備出海。此前一天，地震引發了海嘯預警。</span> <cite>Kyodo, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is for this reason, officials said, that the Japanese authorities take care with their earthquake advisories. If the tone is too alarming, they could cause the kind of panic that paralyzes life and the economy. If it’s too vague, nobody would pay attention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官員們表示，也正因為如此，日本當局在發布地震預警時格外謹慎。如果語氣過於危言聳聽，可能引發癱瘓生活和經濟的恐慌；如果過於含糊，則沒人會在意。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 1 percent chance the agency warned of on Monday was carefully calibrated. It indicated that the risk of catastrophe was elevated but low enough to keep the economy running normally, said Hiroki Muramatsu, a cabinet official who oversees disaster prevention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">氣象廳週一提出的1%概率是經過精心權衡的。負責災害防控的內閣官員村松弘規表示，這一數字既表明災難風險有所上升，同時又足夠低，不至於影響經濟的正常運轉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP7F-KqohZQDFQOJywEdEkMB7w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Simply saying ‘it’s dangerous’ won’t get anyone to act,” said Hiroshi Ueno, an earthquake specialist at the Japan Meteorological Agency, referring to the probability-based warnings. “So we thought it would be more reliable to have some kind of numerical data.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本氣象廳的地震專家上野寬在談到基於概率的預警方式時說：「單純說『很危險』不會讓任何人採取行動。所以我們認為，提供某種量化數據會更可靠。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the port in Kuji, Takuro Kokami, a fishery association official, said that fishermen reacted in different ways to the tsunami warning after the earthquake on Monday. Some took their boats out to sea instead of evacuating, hoping to protect their vessels from the waves, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在久慈港，當地漁業協會負責人小上拓朗表示，週一地震後發布海嘯預警時，漁民的反應各不相同。他說，有些人為了保住漁船，沒有選擇撤離，而是把船開到了海上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is entirely a matter of individual responsibility and judgment,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這完全是個人自己的事，自己判斷、自己負責，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Kokami said he takes a different approach: Evacuate first, get back to work later.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">小上拓朗表示，他採取了不同的做法：先撤離，之後再回來工作。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">John Yoon是時報駐首爾記者，報導突發新聞和熱點新聞。</p><p class="cn-p">Hisako Ueno是時報駐東京記者和研究員，主要報導日本政治、商業、勞工、性別和文化議題。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260423/japan-earthquake-megaquake-tsunami/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
