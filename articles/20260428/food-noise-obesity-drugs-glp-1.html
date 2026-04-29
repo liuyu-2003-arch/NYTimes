@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「食物噪音」：你總是忍不住想吃東西嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「食物噪音」：你總是忍不住想吃東西嗎？</h1>
+    <h2 class="en-headline">The Day the Food Noise Died</h2>
+    <div class="meta-line">GINA KOLATA <span style="margin: 0 8px;">•</span> 2026-04-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/04/28/science/27sci-food-noise/27sci-food-noise-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Xia Gordon</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the new obesity drugs came on the market, almost no one used the term food noise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在新型減肥藥上市之前，幾乎沒有人使用「食物噪音」這個說法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers studying and developing drugs like Ozempic, Wegovy, Mounjaro and Zepbound analyzed doses, side effects, weight loss and improvements in conditions such as diabetes, heart disease and sleep apnea. Incessant thoughts about food and internal dialogues about what to eat, what not to eat, when to eat, how to resist eating — these were not on the research agenda.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究並開發Ozempic、Wegovy、Mounjaro和Zepbound這類藥物的科學家，主要分析劑量、副作用、減重效果，以及對糖尿病、心臟病和睡眠呼吸暫停等疾病的改善。至於那些對食物揮之不去的念頭，以及關於吃什麼、不吃什麼、什麼時候吃、如何克制不吃的內心對話——這些並不在研究議程之內。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But if the obesity-drug researchers weren’t talking about food noise, people taking GLP-1s had a lot to say about it. For as long as they could remember, users of the drugs said, they had been plagued by food noise. But they thought it was just a normal part of life. They thought everyone had it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但如果說減肥藥的研究人員沒有討論食物噪音，服用GLP-1類藥物的人對此卻有說不完的話。服用這些藥物的人說，從他們記事起，就一直受食物噪音的困擾。但他們一直以為這很正常，人人都有。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Until they took one of the new drugs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">直到他們開始服用這些新藥。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMyYzsr0kZQDFQqHfwQdphAwIg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Suddenly, food noise was silenced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">突然之間，食物噪音消失了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And that effect is leading to new questions about the drugs. If researchers can clarify the source of this inner buzz and what makes it go away, that could lead to a clearer understanding of what causes obesity in the first place.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而這種效果也引發了關於這些藥物的新問題。如果研究人員能弄清楚這種內心雜音的來源，以及是什麼讓它消失，那麼就可能更清楚地理解肥胖最初是如何產生的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>‘You Don’t Want the Salad’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>「你不想吃沙拉」</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People who struggle with their weight describe relentless thoughts of food.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與體重作鬥爭的人描述說，關於食物的種種念頭一刻不停地糾纏著他們。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lena Smith Parker, 53, of Hamden, Conn., spent decades dieting and regaining weight. All the while, she said, she was plagued by internal voices urging her to eat and shaming her for eating.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">53歲的莉娜·史密斯·帕克來自康乃狄克州哈姆登，多年來反覆節食又反彈。她說，在這期間，她一直受到內心聲音的困擾——這些聲音一邊催促她去吃東西，一邊又因為她吃了而讓她感到羞愧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One, she said, is like a relentless auctioneer. “You know there’s cake in the kitchen. Hey, there’s cake in the kitchen. Don’t you want the cake in the kitchen?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，其中一個聲音就像一個不知疲倦的拍賣師。「你知道廚房裡有蛋糕。嘿，廚房裡有蛋糕。你難道不想吃廚房裡的那塊蛋糕嗎？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another, she said, is like “a really bad used-car salesman.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，另一個聲音就像一個「特別差勁的二手車推銷員」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You don’t want the salad. You don’t want the carrots,” the voice says. “You want the cake.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你不想吃沙拉。你不想吃胡蘿蔔，」那個聲音說。「你想吃的是蛋糕。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then, there’s the bully. “You are so fat. I can’t stand you.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然後，還有一個霸凌的聲音。「你太胖了。我受不了你。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Finally, there’s the advance planner. “Can I get to the store next Tuesday to get the special cupcakes so I can eat them in the car before I get home?” it asks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最後，還有個提前做規劃的聲音。「我能不能下週二去店裡買那些特價紙杯蛋糕，然後到家之前先在車裡把它們全吃掉？」它問道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But why would people like Ms. Parker have such thoughts?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但為什麼像帕克女士這樣的人會有這些念頭呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers suspect the answer lies in an elusive concept called the set point.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員懷疑，答案在於一個難以捉摸的概念——設定點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The idea arose from studies in the 1940s. Researchers discovered that if they got rodents to gain or lose weight, the animals would quickly return to their starting weight when the study ended. The same thing seemed to happen with people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這個想法源於20世紀40年代的研究。當時的研究人員發現，如果他們讓嚙齒動物增重或減重，實驗結束後這些動物會迅速恢復到原來的體重。同樣的情況似乎也發生在人身上。</div></div></div></div></div><div class="big_ad" data-google-query-id="CL7Lzsr0kZQDFeWjfwQd9CMXCA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That led to the concept that became known as the set point. It says that each person has a weight their body naturally gravitates toward — their set point. It can change over a person’s lifetime. For some, the set point may malfunction, reaching such a high level that a person’s health is affected by excess weight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這就引出了後來被稱為「設定點」的概念。這個概念認為，每個人的身體都會自然趨向於一個特定的體重——也就是他們的設定點。這個設定點在一個人的一生中可能會發生變化。但對某些人來說，設定點可能出現異常，升到一個很高的水平，以至於過重開始影響健康。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Obesity results from the initial elevation of the set point to an abnormal level,” said Dr. Lee Kaplan, director of the Obesity and Metabolism Institute in Boston. Dr. Kaplan consults for a number of pharmaceutical companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「肥胖是設定點最初升高到異常水平所導致的結果，」波士頓肥胖與代謝研究所所長李·卡普蘭博士說。卡普蘭博士擔任多家製藥企業的顧問。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Any time a person tries to get their weight much below their set point, researchers have observed, food noise will kick in. That may be part of a physiological process. When weight is lost, the body’s metabolism slows so a person needs less food than would be expected to maintain their weight. At the same time, the researchers have noticed, food noise kicks in, compelling a person to eat more calories than the body can handle without storing some as fat. That’s why diets almost always fail in the long run.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員觀察到，每當一個人試圖把體重降到遠低於其設定點時，食物噪音就會出現。這可能是生理過程的一部分。當體重下降時，身體的新陳代謝會減慢，因此維持體重所需的食物會比預期少。與此同時，研究人員還注意到，食物噪音會被觸發，促使一個人攝入超過身體需要的熱量，其中一部分會以脂肪形式儲存。這就是為什麼從長遠來看，節食幾乎總是會失敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And food noise is not restricted to people with obesity, researchers stress. Anyone can have it if their weight falls below the body’s preferred set point.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員強調，食物噪音並不只存在於肥胖人群中。只要體重低於身體偏好的設定點，任何人都可能出現這種現象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Jules Hirsch at Rockefeller University and his colleagues Dr. Rudolph Leibel and Dr. Michael Rosenbaum at Columbia saw that effect decades ago when they studied the metabolic and behavioral changes that occurred when people lost weight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾十年前，在研究人們減重時出現的代謝和行為變化時，洛克菲勒大學的朱爾斯·赫希博士以及哥倫比亞大學的魯道夫·萊貝爾博士和麥可·羅森鮑姆博士就觀察到了這一效應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their subjects lived at the Rockefeller hospital and stayed on a low-calorie diet until they lost at least 10 percent of their weight. Some studies involved people with obesity but others involved people of normal weight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們的研究對象居住在洛克菲勒醫院，堅持低熱量飲食，直到體重至少減輕10%。部分研究針對肥胖者，但也有一部分針對正常體重者。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKX8zsr0kZQDFXeJfwQd5M4skg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But although the participants’ weights were lower when they left the hospital, they had the physiological signs of starving people. Their metabolisms were low, and they dreamed and fantasized about food. And they binged when they were no longer subjected to an enforced diet. It was a condition so extreme it became called “semi-starvation neurosis.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，儘管參與者出院時體重下降了，他們卻表現出類似飢餓人群的生理特徵。他們的新陳代謝變慢，還會夢見和幻想食物。一旦他們不再受強制節食的約束，他們就會暴飲暴食。這種情況極為極端，以至於被稱為「半飢餓神經症」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The situation was, Dr. Leibel said, “a perfect storm for weight regain.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正如萊貝爾博士所說，這種情況是「體重反彈的完美風暴」。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/04/28/science/27sci-food-noise-2/27sci-food-noise-2-master1050.jpg" src="https://static01.nyt.com/images/2026/04/28/science/27sci-food-noise-2/27sci-food-noise-2-master1050.jpg"/></div><figcaption><span></span> <cite>Xia Gordon</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>‘My Brain Is Empty’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>「我的大腦安靜了」</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Smith Parker thought that food noise was normal, that everyone had it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史密斯·帕克女士曾以為食物噪音是正常的，每個人都有。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then, she went to a weight-loss clinic at Yale run by Dr. Ania Jastreboff who enrolled her in a clinical trial of tirzepatide, one of the new obesity drugs that was marketed as Zepbound.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後來，她去了耶魯大學由阿尼亞·賈斯特雷博夫博士負責的減肥診所，她在那裡被納入一項關於替爾澤帕肽的臨床試驗。這是一種新型減肥藥，上市時名為Zepbound。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Suddenly, the food noise was gone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">突然間，食物噪音消失了。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPfZz8r0kZQDFaiyfwQdpX8gxg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the study ended, however, she no longer had access to the drug because it was not yet approved by the Food and Drug Administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，研究結束後，她無法再獲得這種藥物，因為它當時尚未獲得美國食品藥品監督管理局的批准。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The food noise came roaring back with a vengeance,” Ms. Smith Parker said. “I gained back 40 pounds pretty much by eating spaghetti nonstop, and chocolate cupcakes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「食物噪音以更猛烈的方式捲土重來，」史密斯·帕克女士說。「我幾乎是不停地吃意大利麵和巧克力紙杯蛋糕，結果體重又反彈了40磅（約18公斤——譯註）。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So Dr. Jastreboff prescribed Wegovy — which was approved — for Ms. Smith Parker, and those voices in her head telling her to eat were gone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">於是，賈斯特雷博夫博士給她開了已經獲批的Wegovy，而她腦海中那些催促她進食的聲音也隨之消失了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I was like, Wait. My brain is empty,” Ms. Smith Parker said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我當時想，『等等，我的大腦安靜了』，」史密斯·帕克女士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Jastreboff, who conducts clinical trials for makers of obesity drugs and is on multiple scientific advisory boards for pharmaceutical companies, thinks there’s an explanation for what happened to Ms. Smith Parker and her other patients. The new obesity drugs seem to be resetting the set point at a lower level. As a result, people still can get hungry, but she says they no longer have a running internal dialogue about food that drives them to continue eating.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賈斯特雷博夫博士為多家減肥藥製造商進行臨床試驗，並擔任多家製藥企業的科學顧問委員會成員。她認為，史密斯·帕克女士和她的其他患者身上發生的情況是有解釋的。新型減肥藥似乎能將設定點重置在更低的水平。結果是，人們仍然會感到餓，但她說，他們不再有那種持續不斷的關於食物的內心對話來驅使他們繼續進食。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Dr. Jastreboff and other researchers say the drugs only change the set point while people are taking them. The original set point seems to return if people stop taking the drugs. So does food noise, followed by increased eating and regained weight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但賈斯特雷博夫博士和其他研究人員表示，這些藥物只是在服用期間改變設定點。一旦停藥，原來的設定點似乎會恢復。食物噪音也會隨之恢復，接著是進食增加和體重反彈。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKWQ0sr0kZQDFU9MLQQdAK0w0g" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Leibel, who consults for makers of obesity drugs, likens the effects of the drugs on food noise to the effects of aspirin on a fever. Aspirin, he noted, “will suppress a fever without curing the underlying cause.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">擔任減肥藥製造商顧問的萊貝爾博士將這些藥物對食物噪音的作用，比作阿司匹林對發燒的作用。他指出，阿司匹林「可以退燒，但治不了病根」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But if the new obesity drugs reset the set point, how do they do it?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但如果這些新型減肥藥真的能重置設定點，它們是如何做到的呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What’s the thing that’s set and what’s reading that as set?” asked Dr. Daniel Drucker, a University of Toronto researcher who helped develop the new obesity drugs decades ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「究竟是什麼被設定了？又是什麼在讀取這個設定值？」多倫多大學的研究員丹尼爾·德魯克博士問道。他在數十年前參與開發了這些新型減肥藥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And how exactly are the GLP-1s and similar drugs affecting set points?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">GLP-1類藥物及類似藥物究竟是如何影響設定點的？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That’s the million or billion dollar question,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這可是個百萬甚至十億美元級別的問題，」他補充道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Understanding the mechanism might help explain why the disease of obesity is characterized by a set point that is so high and perhaps suggest new ways of lowering it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">弄清這種機制，或許有助於解釋為什麼肥胖這種疾病會以如此高的設定點為特徵，並可能為降低設定點提供新思路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For people like Oprah Winfrey, life without food noise has been remarkable. In a book she published this year and co-wrote with Dr. Jastreboff, she said until hers was silenced by one of the obesity drugs she thought everyone had food noise, that it was normal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於像歐普拉·溫弗瑞這樣的人來說，沒有食物噪音的生活簡直太了不起了。在她今年出版、與賈斯特雷博夫博士合著的一本書中，她寫道，在服用減肥藥讓這種噪音消失之前，她一直以為每個人都有食物噪音，以為那是正常的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The single biggest surprise of taking the medications was waking up and not thinking about the very first thing I wanted to eat … or the healthier thing I should have wanted … or the bargain I could make with myself so I could eat first thing,” she wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「服用這些藥物後，最大的驚喜就是醒來後不再去想我最想吃的第一口東西……或者我本該想吃的那個更健康的食物……或者我能和自己做什麼樣的交易，以便能先吃點東西，」她寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Drucker said there was a lesson here about food noise for those who do not experience it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德魯克博士說，沒經歷過食物噪音的人，也能從中得到一點啟示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“People who are not struggling with their weight can be very judgmental,” he said. “They never had their brains driving their behavior.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「那些沒有體重困擾的人，很容易帶有評判態度，」他說，「他們從沒體驗過被自己的大腦牽著鼻子走是什麼感覺。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p"><span>Gina Kolata報導疾病和治療方法、治療方法的發現和測試以及它們對人們的影響。</span></p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260428/food-noise-obesity-drugs-glp-1/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
