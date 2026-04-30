@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京叫停Manus交易 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">北京叫停Manus交易</h1>
+    <h2 class="en-headline">The Split Between China and Silicon Valley Just Got Wider</h2>
+    <div class="meta-line">MEAGHAN TOBIN, ERIN GRIFFITH <span style="margin: 0 8px;">•</span> 2026-04-30</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一，中國對Facebook母公司Meta與人工智慧初創企業Manus之間20億美元的交易喊停。
+
+" height="700" src="https://static01.nyt.com/images/2026/04/29/multimedia/29biz-china-tech-split-01-jgqf/29biz-china-tech-split-01-jgqf-master1050.jpg" width="1050"/><figcaption><span>週一，中國對Facebook母公司Meta與人工智慧初創企業Manus之間20億美元的交易喊停。 </span><cite>Ian C. Bates for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Manus, an artificial intelligence start-up, began with an idea among three engineers in Wuhan, China, united by an obsession with A.I. and a shared ambition to build a global venture. From the outset, they looked beyond China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Manus是一家人工智慧初創公司，由三名工程師在中國武漢創立，他們因對人工智慧的痴迷和打造全球化企業的共同抱負而走到一起。從一開始，他們的目光就投向了中國以外的世界。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their big break came in March last year. Manus had drawn the attention of Silicon Valley investors with an A.I. agent capable of carrying out tasks on its own. By year’s end, Meta had agreed to acquire Manus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年3月，他們取得了重大突破。Manus憑藉一款能夠自主執行任務的人工智慧代理引起了矽谷投資人的關注。到年底，Meta同意收購Manus。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It looked like a clean breakout from China’s crowded, tightly regulated market and a path to the world stage. Then, on Monday, the Chinese government stepped in and demanded that the $2 billion deal be undone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這看起來本是從中國擁擠且監管嚴格的市場中一次乾淨利落的突圍、邁向世界舞台的機會。然而週一，中國政府介入，要求撤銷這筆20億美元的交易。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A decade ago, Silicon Valley investors raced to back Chinese start-ups. Today, few do. Deals like Meta’s acquisition of Manus were already rare, as China’s tech sector drifted from American capital. Beijing’s intervention sharpens the split.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">十年前，矽谷投資者競相押注中國的初創公司。如今，這樣的情況已不復存在。隨著中國科技行業逐漸疏遠美國資本，像Meta收購Manus這樣的交易本已罕見，而北京的介入則進一步加深了這種分裂。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNbHtPa1lJQDFUfg_QUdG5sEWg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors and founders say the move reflects a fragmenting landscape. Chinese start-ups are raising money at home and building for domestic markets, while U.S. investors steer clear of the scrutiny that comes with backing them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資人和創業者表示，這一舉動反映出一個正在分化的格局。中國初創公司在國內融資、面向本土市場發展，而美國投資人則迴避支持它們所帶來的審查風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Great founders and free markets used to decide who won, but increasingly, outside forces may have the final say,” said Linus Liang, an investor at Kyber Knight, a venture firm based in San Francisco.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「過去，誰勝出取決於優秀的創業者和自由市場，但如今，外部力量可能越來越有最終發言權，」舊金山風投公司Kyber Knight的投資人萊納斯·梁表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Liang said his firm had already been cautious about cross-border investments because of the risks and complexity. But the Manus episode underscored that A.I. products and talent are now treated “like strategic national assets,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，考慮到存在的風險和複雜性，他的公司早已對跨境投資保持謹慎。但Manus事件凸顯出，人工智慧產品和人才如今被視為「如同戰略國家資產」，他表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has further chilled an already weak market. Deals involving Chinese companies and foreign investors have dropped sharply since 2021, according to PitchBook, which tracks private investment. In 2024, the number of deals was down 73 percent from the 2021 peak, while the total value of such transactions dropped to $7.8 billion from $54 billion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該事件進一步冷卻了本就低迷的市場。根據追蹤私募投資的PitchBook數據，自2021年以來，涉及中國公司與外國投資人的交易大幅下降。到2024年，這類交易數量較2021年的峰值下降了73%，總交易額也從540億美元降至78億美元。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="高盛和富達是中國的電商巨頭阿里巴巴的早期投資者。" data-src="https://static01.nyt.com/images/2026/04/29/multimedia/29biz-china-tech-split-02-jgqf/29biz-china-tech-split-02-jgqf-master1050.jpg" src="https://static01.nyt.com/images/2026/04/29/multimedia/29biz-china-tech-split-02-jgqf/29biz-china-tech-split-02-jgqf-master1050.jpg"/></div><figcaption><span>高盛和富達是中國的電商巨頭阿里巴巴的早期投資者。</span> <cite>Wang Zhao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Things were not always this way. In the 2010s, American investment firms flocked to China, drawn by Silicon Valley-style growth and encouraged by policymakers in Washington. Goldman Sachs and Fidelity were early investors in Alibaba, the e-commerce giant. Tiger Global and Coatue Management were early investors in Didi Chuxing Technology Company, known as the Uber of China. And General Atlantic and Sequoia Capital backed ByteDance, the parent company of TikTok.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">情況並非一直如此。在2010年代，美國投資機構曾蜂擁進入中國，被類似矽谷的高速增長所吸引，同時這也受到華盛頓政策制定者的鼓勵。高盛和富達是電商巨頭阿里巴巴的早期投資者；Tiger Global和Coatue Management則是滴滴出行的早期投資者——這家公司被稱為「中國優步」；General Atlantic和紅杉資本則投資了字節跳動，它是TikTok的母公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By 2016, however, officials in the Obama administration were raising concerns about unfair competition and government interference.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但到了2016年，歐巴馬政府的官員開始對不公平競爭和政府干預提出了擔憂。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMH-tPa1lJQDFdj4_QUdImQe5g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tensions escalated under President Trump, who moved to ban TikTok in 2020. Relations worsened a few years later when Congress investigated U.S. venture capital investments in Chinese companies with military ties. President Joseph R. Biden Jr. issued an executive order barring U.S. investments in certain Chinese technologies, including artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普任內，緊張關係進一步升級，他在2020年推動封禁TikTok。幾年後，當國會調查美國風險投資對與中國軍方有關聯公司的投資時，關係進一步惡化。拜登總統隨後簽署行政命令，禁止美國投資包括人工智慧在內的某些中國科技領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many firms have since pulled back. Some firms with a large presence in China, including Sequoia and GGV Capital, split their Chinese funds into separate firms. GGV renamed its U.S. business Notable Capital and rebranded its Asia business Granite Asia. Sequoia spun off its China unit, now called HSG.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，許多公司相繼撤出。紅杉資本和GGV資本等在華業務規模較大的公司將中國業務拆分為獨立實體。GGV將其美國業務更名為Notable Capital，亞洲業務則重組為Granite Asia。紅杉資本則將中國業務拆分出去，現更名為HSG。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese founders must now consider the composition of their investors early on. Too much Chinese funding could scare off American investors wary of regulatory scrutiny, while global expansion may invite the kind of unwanted attention faced by companies like TikTok and the fast-fashion retailer Shein. Both moved their headquarters to Singapore, but neither shed the perception of Chinese ties.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國的創業者從一開始就必須考慮投資者構成。中國資金佔比過高可能會讓擔心監管審查的美國投資人卻步；而一旦嘗試全球擴張，又可能引來類似TikTok和快時尚零售商Shein所遭遇的那種不必要的關注。兩家公司都將總部遷至新加坡，但都未能擺脫與中國存在關聯的印象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An A.I. start-up founder in China, who has worked at major U.S. and Chinese tech companies and raised money abroad but not in the United States, said it took too much effort to convince Silicon Valley investors that a business could be separated from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位曾在美中兩國的大型科技企業工作過、並曾在海外（不包括美國）籌集過資金的中國人工智慧初創公司創始人表示，說服矽谷投資者相信一家企業可以與中國切割，需要耗費很大很大的精力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not worth the effort, said the entrepreneur, who asked not to be identified to avoid drawing the attention of Chinese officials. Most founders, he added, are choosing to stay in China and raise money locally.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這位要求匿名以避免引起中國官員關注的創業者表示，這不值得費勁。他補充道，大多數創始人選擇留在中國，並在國內融資。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some are turning instead to investors in Southeast Asia, the Middle East and Australia. While Silicon Valley venture capital firms can back companies like OpenAI and Anthropic, investors elsewhere, with fewer promising A.I. start-ups at home, remain interested in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些人則轉向東南亞、中東和澳洲的投資者。矽谷的風投機構可以投資像OpenAI和Anthropic這樣的公司，而其他地區的投資者在本土缺乏有前景的人工智慧初創公司情況下，對中國依然保有興趣。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPD-tPa1lJQDFTbh_QUdIMwQLw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Manus tried to bridge those two worlds. Founded by Chinese engineers with a Chinese parent company, it was incorporated offshore and structured as a foreign-owned entity in China with offices in Beijing and Wuhan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Manus曾試圖在這兩個世界之間架起橋樑。它由中國工程師創立，母公司在中國，但在境外註冊，在中國以外資企業架構運營，在北京和武漢設有辦公室。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silicon Valley took notice. The venture firm Benchmark led a $75 million funding round in March 2025, and its partner Chetan Puttagunta joined the board as the founders moved the company to Singapore. By December, Manus said it had surpassed $100 million in annual recurring revenue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷很快注意到了這家公司。2025年3月，風投機構Benchmark領投了一輪7500萬美元融資，其合伙人切坦·普塔貢塔加入董事會；與此同時，創始團隊將公司遷至新加坡。到12月，Manus表示其年度經常性收入已突破1億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Puttagunta did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普塔貢塔未回應置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Meta acquired Manus, many saw a new playbook for Chinese start-ups. That is no longer the case.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當Meta收購Manus時，許多人認為這是中國初創企業的一條新出路。如今，這一判斷已成過去式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Homan Yuen, an investor at Keymaker VC, a venture capital firm based in Menlo Park, Calif., said the move would slow the pipeline of Chinese companies relocating to Singapore to raise U.S. funding and expand. Over time, he added, it could strengthen China’s tech ecosystem.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於加州門洛帕克的風險投資公司Keymaker VC的投資人霍曼·袁表示，此舉將放緩中國企業遷往新加坡、以獲取美國資金並謀求擴張的趨勢。從長遠來看，這反而可能強化中國的科技生態。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They’ll continue to build for themselves, as opposed to trying to sell or get acquired,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它們會繼續為自己做大做強，而不是奔著出售或收購去，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKKXtfa1lJQDFSnl_QUd6Vw1Lw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China requires approval for the export of certain sensitive and advanced technologies. It is now clear that regulators count A.I. products among them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對某些敏感和先進技術的出口實行審批制度。如今可以明確的是，監管機構已將人工智慧產品納入其中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How the acquisition will be unwound remains unclear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這筆收購將如何撤銷，目前仍不明朗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After Meta paid for Manus in late December, the funds were wired to Manus’s shareholders in the ensuing weeks. Venture backers, including Benchmark, distributed the proceeds to the investors in their funds, according to a person familiar with the transaction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Meta於去年12月完成對Manus的收購後，款項在隨後數週陸續轉賬至Manus股東帳戶。據一位知情人士透露，包括Benchmark在內的風險投資方已將所得收益分配給各自基金的投資者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Clawing the money back would be complicated, if not impossible, the person said. Meta has already had access to Manus’s technology and engineers for months and has described the two teams as “deeply integrated.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這位人士表示，要把這些錢追回來將非常複雜，甚至幾乎不可能。Meta實際上已經在過去幾個月中獲得了Manus的技術和工程師資源，並稱這兩個團隊已「深度融合」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meta said in a statement on Monday that the transaction complied with applicable law and that it expected an “appropriate resolution.” The company declined to comment further. Several Chinese firms with previous investments in Manus did not return emails seeking comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Meta週一在聲明中表示，這筆交易符合適用法律，並期待「得到適當的解決」。公司拒絕進一步置評。此前投資過Manus的多家中國公司均未回覆置評郵件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Benjamin Qiu, a lawyer at Pierson Ferdinand in New York who has spent two decades advising Chinese tech companies on foreign investment and cross-border deals, outlined a possible fix. Meta could sell a majority ownership in Manus to Beijing-approved investors and instead pay to license Manus’s technology, mirroring the arrangement under which American investors license TikTok’s U.S. operations from ByteDance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約Pierson Ferdinand律師事務所律師本傑明·邱在為中國科技公司提供外商投資和跨境交易諮詢方面擁有20年經驗，他提到了一種可能的解決方案：Meta可將Manus的多數股權出售給北京認可的投資者，轉而支付許可費來使用Manus的技術——這與美國投資者從字節跳動手中獲得TikTok美國業務許可的安排如出一轍。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKSltfa1lJQDFRXQuAgdYiYS2g" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But whatever the outcome, the message from the Chinese government is clear: It intends to keep top talent and technology from leaving the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但無論最終結果如何，中國政府釋放的信號已經十分明確：它打算阻止頂尖人才和關鍵技術流出國境。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Beijing is nervous about a flight of tech talent together with its deemed crown jewels in A.I.,” Mr. Qiu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「北京方面對科技人才及其視為人工智慧領域『皇冠上的明珠』的技術流失感到擔憂，」邱律師說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That approach might come at a cost, said Graham Webster, an academic focused on geopolitics and technology at Stanford University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學專注於地緣政治與技術問題的學者格雷厄姆·韋伯斯特表示，這種做法可能會帶來代價。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s going to continue to be a drag on entrepreneurs in China if people don’t think they can sell their start-ups to the companies that want to buy them,” Mr. Webster said. “The Chinese market is huge, but it’s one-fifth of humanity. Then there’s the other 80 percent.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果創業者認為自己無法將公司賣給有意收購的買家，這將持續對中國的創業者形成拖累，」韋伯斯特說。「中國市場固然龐大，但也只是全球人口的五分之一，還有另外80%呢。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Xinyun Wu自台北對本文有報導貢獻。</p><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Erin Griffith自舊金山報導科技公司、初創企業，以及矽谷文化。</p></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260430/china-silicon-valley-manus/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
