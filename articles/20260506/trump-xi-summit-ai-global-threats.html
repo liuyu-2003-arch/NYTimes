@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美共同的敵人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美共同的敵人</h1>
+    <h2 class="en-headline">The U.S. and China Have a Common Foe. Hint: It’s Not the U.S.S.R.</h2>
+    <div class="meta-line">湯馬斯·佛里曼 <span style="margin: 0 8px;">•</span> 2026-05-06</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/05/05/multimedia/05Friedman-pjtw/05Friedman-pjtw-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Photo Illustration by The New York Times. Photographs: XINHUA / AFP via Getty Images; Tyrone Siu/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The summit between President Trump and President Xi Jinping in Beijing next week could be the most significant encounter between American and Chinese leaders since Richard Nixon met Mao Zedong in Beijing in 1972.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">下週，川普總統與習近平主席將在北京舉行會晤，這可能是自1972年理查德·尼克森與毛澤東在北京會面以來中美兩國領導人之間最重要的一次會晤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That summit eased decades of Sino-American animosity and forged a tacit alliance between the United States and China against the Soviet Union. This summit comes at a similar transformational moment in world affairs, when there is a new shared threat to both China and America. It is a metastasizing disorder that could destabilize the world and harm both countries unless they figure out a way to simultaneously compete and collaborate against a growing list of challenges. These challenges can be successfully confronted only by their collective action — starting with the United States and China together creating guardrails against the malign uses of A.I., now that the latest models have demonstrated staggeringly powerful cyberattack capabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那次會晤緩和了中美之間長達數十年的敵意，促成了美中兩國針對蘇聯的默契同盟。本次會晤同樣發生在國際局勢發生類似變革的時刻，中美如今正面臨一個全新的共同威脅。這是一種不斷擴散的失序風險，若兩國無法在競爭的同時開展合作、應對日益增多的挑戰，這種風險或將動搖全球穩定，損害兩國利益。唯有中美兩國攜手行動，才能有效應對這些挑戰——首先，鑒於最新的人工智慧模型已展現出驚人的網路攻擊能力，中美兩國應攜手建立防護機制，防止人工智慧被惡意利用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two paradigm shifts have changed the world since the Nixon-Mao summit. The first — still not widely appreciated, although the alarm bells are now ringing off the wall — is the emergence of these new, asymmetric artificial intelligence tools that could superempower small, malign actors, be they terrorists, anarchists, criminals, political groups or small nation-states.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自尼克森與毛澤東會晤以來，兩大範式轉變重塑了世界。第一大轉變——儘管警鐘已響徹全球，但仍未被廣泛重視——正是新型非對稱人工智慧工具的出現。這類工具能為小型惡意行為體賦予極大的能力，無論是恐怖分子、無政府主義者、犯罪分子、政治團體，還是小型國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two guys in a cave with a laptop, access to the latest A.I. models and a Starlink terminal could attack the critical infrastructure of any society.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩個人躲在山洞裡，僅用一台筆記型電腦、接入最新AI模型和星鏈終端，就能對任何國家的關鍵基礎設施發動攻擊。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMfL0v-CppQDFVrAKAUd5_oFcA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The second has to do with globalization. The Nixon-Mao summit began the process of taking the world from disconnected to much more connected and then interconnected. When Nixon and Mao began easing China out of its isolation from the global economy — which Deng Xiaoping then vastly accelerated by shifting China to state-led capitalism — they unleashed a cascade of economic and technological forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二大轉變與全球化有關。尼克森與毛澤東會晤，開啟了世界從彼此隔絕到緊密連接、進而深度交織的進程。當年，尼克森與毛澤東推動中國逐步融入全球經濟，隨後鄧小平大力加速這一進程，推動中國轉向國家主導的資本主義模式，由此釋放了一系列經濟與技術力量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By the time the early 21st century rolled around, the combination of China joining the World Trade Organization and the world being wired with the internet meant that more people in more places could compete, connect and collaborate in more ways for less money on more things than at any other time in human history. It is why I wrote a book in 2005 titled “The World Is Flat.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">進入21世紀初，中國加入世界貿易組織以及全球互聯網的普及前所未有地讓更多地區、更多的人能以更低的成本、更多的方式在更多的領域展開競爭、聯結與協作。正因如此，我在2005年撰寫了《世界是平的》(The World Is Flat)一書。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is in the nature of technological change, though, that each major step forward comes faster than the previous one, because it builds on the tools that the previous era unleashed. So, years after I argued that the world is flat, technology, and other forces, marched on and took us, as Dov Seidman, the founder of The HOW Institute for Society, argued, from interconnected to interdependent, or as he puts it, from flat to “fused.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，技術變革的本質在於，每一次重大進步都比前一次更快，因為它建立在前一時代所釋放的工具之上。因此，在我提出「世界是平的」多年後，技術與其他力量繼續演進，正如HOW社會研究院創始人多夫·賽德曼所言，世界從相互聯接走向了相互依存，或如他所說，是從「平的」走向了「融合的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You could unplug from the flat world. There is no escaping the fused world. We are all going to rise and fall together now.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在平的世界裡，你尚可選擇拔掉插頭；但在融合的世界裡，無人能夠逃離。如今，我們已是命運與共，休戚相關。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is not only because advances in the internet, smartphones, fiber optics, satellites and wireless communication have fused us technologically more than ever before. It is also because a set of planetary-scale challenges has fused our fates together more than ever before as well. These challenges are so large in scope and so indifferent to national borders that no single state, however powerful, can address or escape them alone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這不僅是因為互聯網、智慧型手機、光纖、衛星及無線通信技術讓我們在技術層面以前所未有的方式緊密相連；更因為一系列全球性挑戰讓我們的命運前所未有地交織在一起。這些挑戰影響範圍極廣，且不受國界限制，任何國家無論實力多強都無法獨自應對或逃避。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We know what they are: mitigating climate change, preventing the spread of nuclear and biological weapons, managing global migrations, controlling pandemics, keeping global supply chains that we all now depend on operating smoothly and — most important and immediate — managing this new A.I. species we have conjured up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們清楚這些挑戰是什麼：減緩氣候變化、防止核武器與生物武器擴散、管理全球移民、遏制疫情、維護如今我們都依賴的全球供應鏈順暢運轉，以及最重要且最緊迫的事項——管控我們親手創造的新型人工智慧物種。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMKl0_-CppQDFYgcigMdw2UFbQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We have been able to postpone or get by with limited collaboration on many of these planetary-scale issues, but time is up on A.I.’s cyberattacking powers. There is no kicking this can down the road. There is no more road.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在眾多全球性議題上，我們尚且能夠通過有限的合作來拖延或是勉強應對，但面對人工智慧的網路攻擊能力，我們已經沒有時間。再沒有拖延的餘地，已經無路可退。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For years, notes Craig Mundie — a former head of research and strategy at Microsoft and my tutor and partner in thinking about this new A.I. threat — the United States and China have regularly poked and probed each other, and have embedded malware infrastructure and stolen information from<strong> </strong>each other with covert cyberoperations. But they also knew, Mundie noted, that if the Chinese took out our electricity grids, we could take out theirs, and that if they could turn the lights out in Washington, we could do the same in Beijing. It’s the same as with nuclear weapons: “They had recreated mutually assured destruction,” Mundie said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微軟前研究與戰略主管、也是我研究人工智慧新威脅的導師與合作夥伴克雷格·蒙迪指出，多年來，美國和中國一直在網路空間相互試探、滲透，通過祕密網路行動在對方系統植入惡意軟體基礎設施並竊取信息。但蒙迪指出，雙方也心知肚明，若中方癱瘓我們的電網，我們也能癱瘓中方電網；若中方能讓華盛頓斷電，我們也能讓北京斷電。這與核武器的邏輯如出一轍：「他們重現了相互確保摧毀的格局，」蒙迪說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But now guess who’s coming to dinner? A new set of actors, potentially very dangerous, and they’re not just countries. Yet they can threaten us both.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但現在猜猜誰又已經入局？一批新的、潛在極具危險性的行為體，它們不再局限於國家主體，卻能同時威脅中美兩國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These are the agentic A.I. systems recently disclosed by Anthropic and OpenAI that could give tools to small cyberattackers to disrupt both China’s economy and ours — and anybody else’s — with very little money and virtually no expertise. You can bet that other U.S. models, like Google’s Gemini, and soon China’s A.I. models, will offer the same powers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這就是Anthropic與OpenAI近期披露的代理式人工智慧系統。這類系統能為小型網路攻擊者提供工具，使其能以極低成本擾亂中美兩國乃至全球任何國家的經濟，而且幾乎無需專業技術。可以肯定的是，谷歌的Gemini等其他美國人工智慧模型以及中國後續推出的人工智慧模型也將具備同等能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because companies in the United States and China have been the first to produce these agentic systems, “the two of them must take the lead in controlling their distribution and building defenses to protect themselves — and everyone else if they leak out,” Mundie said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蒙迪表示，由於中美企業率先研發出這類代理式系統，「兩國必須牽頭管控它們的傳播，並構建防禦體系——既要保護自身，也要防範技術洩漏後危害他人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic and OpenAI say their newest models are so potent at finding and exploiting flaws in software that both companies have chosen to limit their distribution for now. But it is only a matter of time before they escape into the wild, if they haven’t already.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic與OpenAI稱，其最新模型在發現和利用軟體漏洞方面能力極強，因此兩家公司目前選擇限制其傳播。但即使尚未洩漏，技術流入公開領域也只是時間問題。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLje0_-CppQDFaUyigMd12YUlQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This should be a big motivator for the two countries to come together — if only on this narrow issue, which is now a clear and present danger to both,” Mundie argued.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蒙迪認為：「這應當成為兩國攜手合作的強大動力——哪怕僅限於這個狹窄的議題，它如今已經對雙方構成了迫在眉睫的威脅。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not asking the impossible. China and the United States were able to cooperate in the days of Nixon and Mao, Mundie concluded, “because we had a common problem: the Soviet Union. Well, now we have another common problem. It is not another country; it’s a technology — the emerging risks from asymmetric cyberthreats from agentic A.I. systems.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這並非不切實際的要求。蒙迪指出，尼克森與毛澤東時代，中美能夠合作「是因為當時我們有共同的敵人蘇聯。如今，我們面臨另一個共同問題，它並非某個國家，而是一項技術——代理式人工智慧系統帶來的非對稱網路威脅引發的新興風險」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The old G2, the United States and China, need to work with what I’ll call the new I7 — Anthropic, Google/Alphabet, OpenAI, Meta, Alibaba Group, DeepSeek and ByteDance — to figure out a way to get the best from these new A.I. models while cushioning against the worst. The governments can’t solve this by themselves, and neither can the companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去的G2（即中美兩國）應當同我稱之為「新I7」的七家企業——Anthropic、谷歌/Alphabet、OpenAI、Meta、阿里巴巴、深度求索、字節跳動——攜手合作，在充分發揮新型人工智慧模型價值的同時有效防範其最壞影響。僅靠政府無法解決這一問題，企業同樣力有未逮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a development that received too little attention because of the Iran war, Trump is reportedly now considering imposing oversight on A.I. models before they are made publicly available. That is very wise of Trump. People need to wake up: We are entering a world in which private companies can now, in effect, split the atom, in terms of the power they can unleash in every direction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於伊朗戰爭的影響，這一動態未受到應有的關注，但據報導，川普正考慮在人工智慧模型公開前對其實施監管。川普此舉非常明智。人們必須清醒認識到：我們正進入一個新時代，私營企業如今掌握的力量堪比裂變原子，它們能夠釋放的影響力將輻射到各個領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“And as with splitting the atom, you can either make electricity or bombs,” Mundie said. The same is true with agentic A.I. “We have the power to do unlimited good or create weapons — hugely asymmetric weapons.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「和裂變原子一樣，這項技術既可以用來發電，也能製造炸彈，」蒙迪說。代理式人工智慧亦是如此。「我們既可創造巨大福祉，也能製造武器——而且是極具非對稱破壞力的武器。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The topic of agentic A.I. is expected to be on the Trump-Xi agenda. What would truly make this the most significant U.S.-China summit since Mao and Nixon is not just that the two men talk about it, but that they decide to work together on it — now. Later will be too late. It’s just coming too fast.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">代理式人工智慧預計將成為川普與習近平會晤的議題。而真正能讓本次會晤成為自毛澤東與尼克森會晤以來最重要中美峰會的，不僅僅是兩國領導人就此展開討論，而是他們決定現在就攜手應對——拖到以後就太遲了，技術發展速度已經不容拖延。</div></div></div></div></div><div class="big_ad" data-google-query-id="COPT0_-CppQDFdUyigMd2OIuwA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if many leaders in Washington, Beijing and, for that matter, Moscow still haven’t grasped it, this is the first era of human history in which we Homo sapiens must govern, innovate, collaborate and coexist at a planetary scale to thrive. We will either build complex, adaptive coalitions to do that or we will be overwhelmed together.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管華盛頓、北京乃至莫斯科的許多領導人尚未完全意識到這一點，但人類歷史已經第一次進入這樣一個全新階段：我們智人必須以地球為尺度，開展治理、創新、協作與共存，才能實現繁榮發展。我們要麼構建複雜且自適應的合作聯盟來實現這一目標；要麼就是一起沉淪。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our fates are now fused.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們的命運如今已經融合在一起。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">湯馬斯·L·佛里曼(Thomas L. Friedman)是外交事務方面的專欄作者。他1981年加入時報，曾三次獲得普立茲獎。他著有七本書，包括贏得國家圖書獎的《從貝魯特到耶路撒冷》(From Beirut to Jerusalem)。歡迎在Twitter和Facebook上關注他。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260506/trump-xi-summit-ai-global-threats/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
