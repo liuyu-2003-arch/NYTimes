@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你應該擔心漢坦病毒嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">你應該擔心漢坦病毒嗎？</h1>
+    <h2 class="en-headline">Should You Worry About Hantavirus?</h2>
+    <div class="meta-line">NINA AGRAWAL, DANI BLUM <span style="margin: 0 8px;">•</span> 2026-05-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/05/06/multimedia/WELL-HANTAVIRUS-QUESTIONS2-fphl/WELL-HANTAVIRUS-QUESTIONS2-fphl-master1050.jpg" width="1050"/><figcaption><span></span> <cite>-/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An outbreak of hantavirus aboard a cruise ship in the Atlantic Ocean has heightened concerns about the rare but deadly virus. Public health officials say that the threat to the general public remains low based on what we know about the virus and how it spreads.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大西洋一艘郵輪上爆發的漢坦病毒疫情加劇了人們對這種罕見但致命病毒的擔憂。公共衛生官員表示，基於目前對該病毒及其傳播方式的認知，該病毒對普通公眾的威脅依然較低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The outbreak involves the Andes strain of the virus.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>本次疫情涉及的是漢坦病毒的安第斯毒株</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are many different strains of hantavirus, said Dr. Gaby Frank, director of the Johns Hopkins Special Pathogens Center in Baltimore. Laboratory testing has shown that the cruise outbreak involves the Andes strain, which is endemic to South America, including Argentina, where the ship departed on April 1. Dr. Maria Van Kerkhove, head of epidemic and pandemic preparedness and prevention at the W.H.O., said the initial cases of hantavirus were in a couple believed to be infected before they boarded in Argentina.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巴爾的摩約翰斯·霍普金斯大學特殊病原體中心主任加比·弗蘭克博士表示，漢坦病毒存在多種不同毒株。實驗室檢測確認，本次郵輪疫情的致病原為安第斯毒株，該毒株是南美洲的地方性流行毒株，這艘郵輪4月1日正是從阿根廷啟航。世界衛生組織流行病與大流行病預備及預防負責人瑪麗亞·范·科克霍夫博士稱，本次疫情最初的漢坦病毒感染病例為一對夫婦，據信他們在阿根廷登船前就已被感染。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most forms of hantavirus spread through contact with the feces, urine and saliva of infected rodents, including when humans breathe in particles of the virus. The Andes virus is the only strain known to spread from human to human, though such cases are rare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數漢坦病毒毒株通過接觸受感染嚙齒動物的糞便、尿液和唾液傳播，包括人類吸入含病毒氣溶膠顆粒的情況。安第斯病毒是目前已知唯一可發生人傳人的漢坦病毒毒株，不過此類傳播病例十分罕見。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNfc0L_FqJQDFUDn_QUdcuw50A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike the flu, Covid or even the common cold, it’s exceedingly difficult for the Andes strain to move between people, said Bryce Warner, a research scientist at the Vaccine and Infectious Disease Organization at the University of Saskatchewan who has extensively researched hantavirus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">薩斯喀徹溫大學疫苗與傳染病研究所長期致力於漢坦病毒研究的研究科學家布萊斯·沃納表示，與流感、新冠甚至普通感冒不同，安第斯毒株的人際間傳播難度極高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The flu and Covid primarily spread from the upper respiratory tract and replicate in high levels. Hantavirus sheds less easily, and also burrows deep into the lungs and infects blood vessels. “It’s not very easy for the virus to get out,” Dr. Warner said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">流感和新冠病毒主要在上呼吸道複製，並在體內大量複製。而漢坦病毒不僅難以排出體外，還會深入肺部組織、感染血管。沃納說：「這種病毒很難從人體中排出。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those at highest risk of person-to-person transmission are people who have been in close quarters for prolonged periods of time with someone who has been infected, like health care workers or those who share a household. Two of the passengers who died on the ship were a married couple. The ship’s doctor showed symptoms of the virus and was evacuated from the ship. It isn’t clear yet how other people on board may have been infected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人際傳播的最高風險人群是與感染者長期處於密閉空間的人，比如醫護人員或共同居住者。本次郵輪上兩名死亡的乘客是一對夫妻，隨船醫生出現病毒感染癥狀後已被撤離船隻。目前尚不清楚船上其他人員的感染途徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Van Kerkhove has said that some of the cases were in close contact with one another, and that “human-to-human transmission can’t be ruled out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范·科克霍夫博士表示，部分病例之間存在密切接觸，且「無法排除人傳人的可能性」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Most passengers remain on the ship.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>大多數乘客仍滯留船上</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Health officials have not said how those on the ship may need to quarantine when they disembark. They might ask people who were exposed to the infected cases to quarantine, but it’s tricky to keep people isolated for an extended period of time, since it can take between one and six weeks after a person is exposed for symptoms to appear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">衛生部門尚未明確乘客下船後可能需要採取何種隔離措施。相關部門或會要求確診病例的接觸者進行隔離，但長期隔離的執行難度極大，因為從接觸病毒到出現癥狀可能需要一至六週的時間。</div></div></div></div></div><div class="big_ad" data-google-query-id="COiA0b_FqJQDFY_c_QUdemESPQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The W.H.O. said that health officials have initiated contact tracing for people who may have been exposed to people who left the ship, such as one woman who flew to South Africa for care and who later died.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">世界衛生組織稱，衛生部門已對可能接觸過離船者的人員啟動接觸者追蹤，其中包括一名飛往南非就醫後死亡的女性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some passengers have already left the ship, including Americans. The Georgia Department of Public Health said it was monitoring two residents who are “currently in good health and show no signs of infection,” adding that they were following recommendations from the Centers for Disease Control and Prevention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分乘客已離船，其中包括美國公民。喬治亞州公共衛生部門表示，正在監控兩名當地居民，二人「目前健康狀況良好，無任何感染跡象」，同時稱二人正在遵循美國疾控中心的相關建議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Outside of this outbreak, the virus is dangerous, but rare.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>除本次疫情外，該病毒危險但罕見</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In general, hantaviruses pose a small risk to the general population. There have been a total of 890 cases in the United States since surveillance began in 1993. The vast majority of these have been caused by the Sin Nombre strain of the virus and have occurred west of the Mississippi River, with case counts highest in New Mexico, Colorado, Arizona and California. Of these cases, 35 percent have been fatal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總體而言，漢坦病毒對普通人群的感染風險極低。美國自1993年啟動監測以來累計報告890例漢坦病毒感染病例，其中絕大多數由「無名」型毒株引發，發生在密西西比河以西地區，新墨西哥州、科羅拉多州、亞利桑那州和加利福尼亞州的病例數最高。這些病例的病死率為35%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Andes virus is not endemic, or native, to the United States, though there have been imported cases from other countries, said Steven Bradfute, an associate professor at the University of New Mexico Health Sciences Center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新墨西哥大學健康科學中心副教授史蒂芬·布拉德富特表示，安第斯病毒並非美國本土的地方性流行毒株，不過美國曾出現過境外輸入的相關病例。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both the Andes and Sin Nombre strains can cause hantavirus pulmonary syndrome, a condition that begins with flu-like symptoms such as fever and chills but can rapidly progress to lung problems and difficulty breathing. There is no drug that can treat the infection, so doctors can offer only supportive care, which might include oxygen or a heart-lung machine. Getting to a hospital quickly and receiving breathing support can improve the chances of survival.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">安第斯毒株與無名毒株均可引發漢坦病毒肺綜合症，發病初期表現為發熱、寒戰等流感樣癥狀，但病情可快速進展為肺部病變和呼吸困難。目前尚無針對該病毒感染的特效藥，醫生僅能提供支持性治療，包括包括供氧或使用心肺機。及時就醫並接受呼吸支持治療可提升患者的存活機率。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO-X0b_FqJQDFbTm_QUdJgU0Xg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Different strains of the virus circulate in Europe and Asia, where there are thousands of cases each year, but the lethality rate is lower, between less than 1 percent and 15 percent, depending on the strain. Those versions of the virus primarily affect the kidneys.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲和亞洲也流行著漢坦病毒的其他不同毒株，每年累計報告數千例病例，但病死率更低，依毒株不同在1%以下到15%之間。這些毒株變種主要損害人體腎臟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But researchers stressed that the average person should not worry about the virus or necessarily change their daily behavior.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但研究人員強調，普通民眾無需擔心這種病毒，也不必因此改變日常行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s really no risk to anyone who is not on that ship,” Dr. Warner said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沃納說：「對於不在這艘郵輪上的人來說，完全沒有風險。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s very different from the early spread of Covid.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>與新冠病毒的早期傳播截然不同</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reports of the outbreak might seem similar to the early days of the Covid pandemic, when a mysterious virus was spreading on cruise ships and passengers were being quarantined on board. But experts said that the hantavirus is much more difficult to transmit and has considerably less potential to turn into a pandemic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於此次疫情的報導似乎與新冠疫情初期頗為相似，當時一種神秘病毒在郵輪上傳播，乘客被隔離在船上。但專家表示，漢坦病毒的傳播難度要大得多，演變為全球大流行的可能性也小得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s good to be cautious, but there’s no need for concern over a global outbreak,” Dr. Bradfute said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布拉德富特說：「保持謹慎是好事，但無需擔心全球爆發疫情。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CP_F0b_FqJQDFUfg_QUdfSkc9Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Emily Abdoler, a clinical associate professor of infectious diseases at Michigan Medicine, said that past cases of the virus spreading between humans had not resulted in large outbreaks — “nothing even close to the scale of Covid.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根大學醫學院傳染病學臨床副教授艾米麗·阿布多勒博士表示，過往的漢坦病毒人際傳播病例從未引發大規模疫情，「規模完全無法與新冠相提並論」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Those at greatest risk can take steps to protect themselves.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>高風險人群可採取措施自我防護</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Agricultural workers who come into contact with mice and rodent droppings are at increased risk. People cleaning out sheds and garages might also want to be especially careful about mouse and rodent droppings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">頻繁接觸老鼠及嚙齒動物糞便的農業從業者感染風險相對更高。清理棚屋和車庫的人員也需格外留意老鼠及嚙齒動物的糞便。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You can wear gloves and use a bleach solution or a household cleaner to wet surfaces when cleaning them. Don’t sweep or use a vacuum, which could stir particles into the air that you could inhale. Wearing a well-fitting N95 mask can offer protection against viral particles, Dr. Bradfute said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">清潔時可佩戴手套，用漂白劑溶液或家用清潔劑浸濕待清潔的表面。勿直接清掃或使用吸塵器，以免將可被人體吸入的顆粒物揚起到空氣中。布拉德富特稱，佩戴貼合良好的N95口罩，可有效防範病毒顆粒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People who travel to places where the virus is common and visit rural areas or go camping or hiking should take precautions to minimize exposure to potentially infectious materials. The W.H.O. has a fact-sheet that describes where infections are most prevalent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前往病毒流行地區、到訪鄉村區域，或是露營、徒步的人士應採取防護措施，最大限度減少接觸可能具有傳染性的物質。世界衛生組織發布過相關情況說明，列明了漢坦病毒感染最常發生的地區。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Nina Agrawal是時報健康記者。</p><p class="cn-p">Dani Blum是時報健康記者。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260507/hantavirus-symptoms-strains/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
