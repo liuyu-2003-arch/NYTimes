@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>各國衛生官員追蹤漢坦病毒接觸者 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">各國衛生官員追蹤漢坦病毒接觸者</h1>
+    <h2 class="en-headline">Global Health Officials Race to Track Hantavirus but Predict ‘Limited’ Outbreak</h2>
+    <div class="meta-line">CLAIRE MOSES, AIMEE ORTIZ, RYLEE KIRK <span style="margin: 0 8px;">•</span> 2026-05-08</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週三，佛得角普拉亞市，一輛救護車接走疑似漢坦病毒感染者。" height="700" src="https://static01.nyt.com/images/2026/05/07/multimedia/07xp-cruise-02-zlbm/07xp-cruise-02-zlbm-master1050.jpg" width="1050"/><figcaption><span>週三，佛得角普拉亞市，一輛救護車接走疑似漢坦病毒感染者。</span> <cite>Danilson Sequeira/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Health officials in a growing list of countries scrambled on Thursday to track people connected to a deadly outbreak of the hantavirus on a cruise ship. The World Health Organization also predicted a “limited” spread of the virus if public health measures were enacted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>隨著越來越多國家將漢坦病毒列入關注名單，衛生官員週四緊急行動，追蹤與一艘郵輪的致命漢坦病毒疫情相關的接觸者。世界衛生組織也預測，如果採取公共衛生措施，該病毒</span>將只會「有限」傳播。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is not Covid, this is not influenza,” Dr. Maria Van Kerkhove, the W.H.O.’s head of epidemic and pandemic preparedness, said on Thursday at a news conference in Geneva. “This spreads very, very differently.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這不是新冠，這不是流感，」世界衛生組織流行病和大流行病防範負責人瑪麗亞·范·科霍夫博士週四在日內瓦的新聞發布會上表示。「它的傳播方式非常、非常不同。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Human-to-human transmission of the hantavirus, a family of viruses carried by rodents, is rare. The Andes strain of the hantavirus, which has been confirmed in cases tied to the cruise ship, is the only one known to spread from human to human, but it is transmitted primarily through close personal contact, Dr. Van Kerkhove said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">漢坦病毒是由嚙齒動物攜帶的一類病毒，人傳人極為罕見。范·科霍夫說，已確認與該郵輪<span>病例相關的安第斯株漢坦病毒是目前已知唯一能人傳人的毒株，但主要通過密切個人接觸傳播。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is not the start of an epidemic, this is not the start of a pandemic,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這不是疫情的開始，也不是大流行的開始，」她說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJeuy5HJrZQDFVGFrgUdlVku4g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since April 11, three passengers who were aboard the MV Hondius, a Dutch-flagged cruise ship, have died and at least five other people have been sickened after showing symptoms of the hantavirus, according to the W.H.O. Health officials have confirmed five cases of the hantavirus on the ship so far, all of them involving the Andes strain, which is primarily found in South America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>據世界衛生組織通報，自4月11日以來，曾登上荷蘭旗郵輪宏迪號</span>的三名乘客死亡，至少另有五人在出現漢坦病毒癥狀後患病<span>。衛生官員迄今已在船上確認五例漢坦病毒病例，均為安第斯株，該毒株主要見於南美洲。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People in several countries are now being tested or monitored after possibly being in contact with the virus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多個國家目前正在對可能接觸過該病毒的人員進行檢測或觀察。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three people in the Netherlands who developed symptoms after coming into contact with an infected person on a plane were tested for the virus, Dutch public health officials said. Two of the results came back negative, and the third was still being analyzed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>荷蘭公共衛生官員稱</span>，三名在飛機上接觸過感染者後出現癥狀的荷蘭人已接受病毒檢測。其中兩人結果為陰性，第三人的結果仍在分析中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earlier, the Dutch health ministry said a flight attendant was undergoing testing for the hantavirus at a hospital on Thursday after she came into contact with an infected person.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此前，荷蘭衛生部稱，一名空乘人員週四因接觸過感染者，正在醫院接受漢坦病毒檢測。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dutch media outlets reported that the flight attendant worked for KLM Royal Dutch Airlines. The company declined to comment, citing privacy considerations for its employees, and the Dutch health ministry did not specify whether the two negative results included the flight attendant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">荷蘭媒體報導，該空乘人員供職於荷蘭皇家航空。該公司以保護員工隱私為由拒絕置評，荷蘭衛生部也未說明兩個陰性結果是否包括這名空乘人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The authorities did not say if the flight attendant was showing symptoms, or whether she had worked on a flight that one of the victims of the cruise ship outbreak had briefly boarded the day before dying. That victim, a 69-year-old Dutch woman, died on April 26 in Johannesburg, South Africa.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當局未說明該空乘人員是否出現癥狀，也未透露她是否曾在一名郵輪疫情遇難者死亡前一天值飛過該乘客搭乘的航班。那名遇難者是一名69歲的荷蘭女性，於4月26日在南非約翰尼斯堡去世。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Thursday evening, Tedros Ghebreyesus, the director-general of the World Health Organization, said in a message that the flight attendant, who has been reported to have symptoms, had tested negative on two tests. The news was first reported in the Inside Medicine newsletter. The result is reassuring because it suggests the virus is not being transmitted in ways beyond what scientists have observed in prior outbreaks. Mr. Ghebreyesus did caution, however, that the virus can have a long incubation time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>週四晚些時候，世界衛生組織總幹事譚德塞在一則消息中表示，據報有癥狀的這名空乘人員兩次檢測結果均為陰性。該消息最早由《Inside Medicine》通訊報導。這一結果令人安心，表明病毒並未以超出科學家此前在歷次暴發中所觀察到的方式傳播。不過譚德塞也提醒，該病毒的潛伏期可能較長。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週二，宏迪號郵輪在佛得角附近海域航行。" data-src="https://static01.nyt.com/images/2026/05/07/multimedia/07xp-cruise-01-zlbm/07xp-cruise-01-zlbm-master1050.jpg" src="https://static01.nyt.com/images/2026/05/07/multimedia/07xp-cruise-01-zlbm/07xp-cruise-01-zlbm-master1050.jpg"/></div><figcaption><span>週二，宏迪號郵輪在佛得角附近海域航行。</span> <cite>Arilson Almeida/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The day before she died, the Dutch woman boarded KLM Flight 592 from Johannesburg to Amsterdam and spent about an hour on the plane, according to the airline. Barbara de Beukelaar, a passenger on that flight, said in a phone interview that the woman had been helped onto the plane in a wheelchair.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據航空公司稱，這名荷蘭女性在去世前一天登上了從約翰尼斯堡飛往阿姆斯特丹的荷航592航班，在飛機上停留約一小時。當時同機乘客芭芭拉·德·博伊克拉在電話採訪中表示，她是被用輪椅推上飛機的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Airline staff members tended to the woman and decided to remove her ahead of the nearly 12-hour flight’s departure because of her condition, according to KLM.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據荷航稱，機組人員照顧了這名女性，並因其健康狀況決定在近12小時的航班起飛前讓她下機。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNyFzJHJrZQDFZfclAkdULwBhQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Nobody on board thought that they were dealing with a contagious virus,” Ms. de Beukelaar said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「機上沒有人認為他們面對的是一種傳染性病毒，」德·博伊克拉說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">KLM said it had handed over the flight’s passenger list to Dutch health authorities for contact tracing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">荷航表示已將該航班的乘客名單交給荷蘭衛生部門用於接觸者追蹤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Hondius — carrying almost 150 passengers and crew from almost two dozen countries — was on its way Thursday to the Canary Islands after three people who may have been infected with the virus were evacuated to the Netherlands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，載有來自20個左右國家近150名乘客和船員的宏迪號郵輪<span>在三名可能感染病毒的人員被撤離至荷蘭後，正駛向加那利群島。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ship will not dock in the Canary Islands, but will remain anchored offshore until passengers are transferred by boat to Tenerife for evacuation flights to their countries, the Canary Islands authorities said. The ship is expected to arrive there on Sunday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加那利群島當局表示，郵輪不會在加那利群島靠岸，而是會停泊在近海，直到乘客通過小艇轉運至特內裡費島，再搭乘撤離航班返回各自國家。郵輪預計將於週日抵達該區域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oceanwide Expeditions, the Dutch company operating the cruise, said in a statement on Thursday that two of the people evacuated to the Netherlands were crew members with symptoms, a 56-year-old British national and a 41-year-old Dutch citizen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">運營該郵輪的荷蘭泛海探險週四發表聲明稱，被撤離至荷蘭的兩人為有癥狀的船員，分別是一名56歲的英國籍人士和一名41歲的荷蘭籍人士。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A 65-year-old German woman without symptoms was also evacuated. She is undergoing tests in Germany, according to Düsseldorf University Hospital.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名65歲無癥狀的德國女性也被撤離。據杜賽道夫大學醫院消息，她正在德國接受檢測。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMiDzJHJrZQDFWTilAkdDgIyeA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Genetic sequencing of samples in South Africa suggests that the virus is nearly identical to the version seen in Argentina and has not mutated in ways that would make it a greater threat, according to Tulio de Oliveira, director of the Centre for Epidemic Response and Innovation at Stellenbosch University in South Africa. Dr. De Oliveira was not involved in the work but said the results had been presented <strong>t</strong>o an expert group of which he is a member.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">南非斯泰倫博斯大學流行病應對與創新中心主任圖利奧·德·奧利維拉表示，南非的基因測序結果顯示，該病毒與阿根廷發現的毒株幾乎完全相同，並未發生會使其威脅性增加的突變。德·奧利維拉博士雖未參與該測序工作，但表示結果已提交給他所屬的一個專家組。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tracing everyone who may have come in contact with those sickened by the virus could prove challenging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">追蹤所有可能接觸過感染者的工作可能極具挑戰性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On April 24, 30 people from at least 12 countries left the ship in St. Helena, a remote island in the South Atlantic. That was more than a week before the first confirmed case of the virus was reported, according to Oceanwide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4月24日，來自至少12個國家的30人在南大西洋偏遠島嶼聖赫勒拿島下船。據泛海探險稱，這比首例確診病例報告時間早了一個多星期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company said it had contacted the people who disembarked in St. Helena. At least one of them, a man in Switzerland, was receiving care in a hospital in Zurich and had tested positive for the virus, according to the W.H.O.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司表示已聯繫到在聖赫勒拿島下船的人員。據世界衛生組織通報，其中至少一人是一名在瑞士蘇黎世醫院接受治療的男子，檢測結果呈陽性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are working to establish details of all passengers and crew who embarked and disembarked” the ship since March 20, Oceanwide said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">泛海探險表示：「我們正在努力確定自3月20日以來所有登船和離船的乘客和船員的詳細信息。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Singapore, two people who had been on the ship were in isolation and being tested for the virus, according to the National Center for Infectious Diseases. In Denmark, local health authorities said a Danish passenger of the ship who had not been tested for the hantavirus was self-isolating without any symptoms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新加坡國家傳染病中心表示，兩名曾登上該船的新加坡人在隔離中接受病毒檢測。在丹麥，當地衛生部門稱，一名未接受漢坦病毒檢測的丹麥乘客正在無癥狀自我隔離。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLyqzJHJrZQDFdcRswAd8nIzNw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A French national who came into contact with one of the cruise passengers on an April 25 flight to Johannesburg from St. Helena island exhibited mild symptoms and is in isolation, French officials said on Thursday. That person is also undergoing diagnostic testing, the officials said. Seven other French nationals on the flight are being monitored.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">法國官員週四表示，一名在4月25日從聖赫勒拿島飛往約翰尼斯堡的航班上接觸過郵輪乘客的法國籍人士出現輕微癥狀，目前正在隔離。該官員稱，此人正在接受診斷檢測。同機另有七名法國籍人士正在接受觀察。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, residents in five states were being monitored for potential hantavirus infections after being on the ship, officials said. None of them had symptoms, the officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，來自五個州的居民因<span>曾登上該船正在接受潛在漢坦病毒感染的觀察。這些人均無癥狀。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Lynsey Chutel、Apoorva Mandavilli、Carlos Barragán和Amelia Nierenberg對本文有報導貢獻。</p><p class="cn-p"><span>Claire Moses是《紐約時報》駐倫敦記者，報導突發和熱點新聞。</span></p><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Aimee Ortiz為時報報導突發新聞和其他議題。</p><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Rylee Kirk為時報報導突發新聞、熱點新聞和正在發生的重大事件。</p></div></div></div></div></div><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260508/hantavirus-cruise-ship-outbreak/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
