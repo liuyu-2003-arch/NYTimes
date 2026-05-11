@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>習川會將談些什麼？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">習川會將談些什麼？</h1>
+    <h2 class="en-headline">The World’s 2 Most Powerful Men Are Set to Meet Again. Here’s What to Know.</h2>
+    <div class="meta-line">郭莉莉 <span style="margin: 0 8px;">•</span> 2026-05-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2025年，川普總統在韓國釜山與中國領導人習近平會晤。" height="700" src="https://static01.nyt.com/images/2026/05/07/multimedia/OakArticle-69fd448d-fbvp/OakArticle-69fd448d-fbvp-master1050.jpg" width="1050"/><figcaption><span>2025年，川普總統在韓國釜山與中國領導人習近平會晤。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump and China’s leader, Xi Jinping, are scheduled to meet in Beijing next week for a high-stakes summit that could shape the next stage of rivalry between the world’s two major powers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統與中國國家主席習近平定於本週在北京舉行一場事關重大的峰會，此次會晤或將決定全球兩大強國下一階段的競爭格局。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump and Mr. Xi are expected to discuss the war in Iran, trade, Taiwan and other points of contention during a two-day summit beginning on Thursday. Mr. Trump and Mr. Xi last met in October in South Korea, where they agreed to pause a bruising trade war in which the U.S. imposed triple-digit tariffs on Chinese goods and Beijing threatened to throttle the global supply of rare earths.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為期兩天的峰會將於週四啟幕，預計川普與習近平將討論伊朗戰爭、貿易、台灣及其他爭議議題。兩人上一次會面是去年10月在韓國，當時雙方同意暫停一場激烈的貿易戰——當時美國對中國商品加徵三位數關稅，北京則威脅限制全球稀土供應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The visit next week could determine whether an uneasy détente that has emerged since that meeting will hold.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此次訪問或將決定自上次會晤後形成的脆弱緩和局面能否延續。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A lot has changed since the two leaders last met. Mr. Trump is now embroiled in a war with Iran, China’s closest partner in the Middle East, that has led to a global energy crisis and diverted U.S. military assets from Asia. The war has also depleted U.S. munitions, raising doubts among some Chinese analysts about the United States’ ability to defend Taiwan, a close partner of Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩國領導人上次會面以來，局勢已發生諸多變化。川普如今深陷與伊朗的戰爭，而伊朗是中國在中東最親密的夥伴，這場衝突已引發全球能源危機，並迫使美國將軍事力量從亞洲調離。戰爭還消耗了美國大量軍火儲備，令部分中國分析人士懷疑美國是否有能力保衛其親密盟友台灣。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMmupfiOsJQDFRvL0gQdnpwTow" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi faces his own challenges as he grapples with slower economic growth, higher energy prices and the possibility of a global recession that would hurt China’s export-reliant economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平則面臨自身挑戰：他正努力應對經濟增速放緩、能源價格高企，以及可能爆發的全球衰退——這將重創依賴出口的中國經濟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What is on the table?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>談判議題有哪些？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump and Mr. Xi are likely to discuss trade, including possible investment in each other’s countries. Washington has been emphasizing what analysts call the “Five B’s.” These include Chinese purchases of Boeing airplanes, U.S. beef and soybeans, as well as the creation of a board of investment and a board of trade. Those two entities would carve out areas of economic exchange between the United States and China that do not raise national security concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普與習近平或將討論貿易問題，包括兩國間潛在的相互投資。美方一直強調所謂的「五B」：中國採購波音飛機(Boeing)、美國牛肉(beef)與大豆(soybeans)，以及設立投資委員會(board of investment)和貿易委員會(board of trade)。這兩個機構將劃定中美經濟交流中不涉及國家安全風險的領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese have been emphasizing the “Three T’s”: tariffs, technology and Taiwan, which Beijing claims is part of China’s territory. Beijing is likely to push for an extension of last year’s trade truce and the loosening of export controls on advanced semiconductors that China needs to upgrade its industrial sector. Mr. Xi, who told Mr. Trump by phone in February that his country would “never allow Taiwan to be separated from China,” is likely to push Mr. Trump to dial back U.S. support for the self-governed island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中方則強調「三T」：關稅(tariffs)、科技(technology)與台灣(Taiwan)——中國宣稱台灣為其領土一部分。北京或將推動延續去年的貿易休戰協議，並放寬對中國升級工業部門所需先進半導體產品的出口管制。習近平於今年2月與川普通電話時表示，中國「永遠不可能讓台灣分裂出去」，他很可能將敦促川普減少美國對這個自治島嶼的支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump is expected to call on Beijing to persuade Iran to reopen the Strait of Hormuz. The two sides are also expected to discuss cooperation on managing risk related to artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普預計將要求中國勸說伊朗重新開放霍爾木茲海峽。雙方還可能討論人工智慧風險管理領域的合作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has said that he will raise the case of the Hong Kong democracy activist Jimmy Lai, who was sentenced in February to 20 years in prison for collusion and sedition. Other issues include the buildup of China’s nuclear weapons, security in the South China Sea and reducing flows of fentanyl into the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普已表示，將提及香港民主活動人士黎智英的案件，黎智英於今年2月因串謀及煽動罪被判處20年監禁。其他議題還包括中國核武器擴張、南海安全，以及減少吩坦尼流入美國等。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ7rpfiOsJQDFcfG0gQd1dEZjQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What are the possible outcomes?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>可能出現哪些結果？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has been boastful about his relationship with Mr. Xi, whom he calls “a friend,” and is keen to announce an increase in Chinese investment in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普一向吹噓自己和習近平的關係，稱其為「朋友」，並急於宣布中國增加對美投資的消息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But expectations are not high that the two sides will reach a major economic deal or resolve their deep differences. A more likely outcome is a set of modest agreements on investment and an extension of last year’s temporary trade truce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但外界對雙方達成重大經濟協議或化解深層分歧的預期並不高。更可能的結果是，雙方就投資達成若干溫和的共識，並延續去年達成的臨時貿易休戰協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We probably shouldn’t expect this meeting to have particularly substantial, major breakthroughs,” said Zhao Minghao, an international relations expert at Shanghai’s Fudan University, who said the meeting would serve as a starting point for more engagement. American officials have said that the two leaders could meet four times this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">復旦大學國際關係專家趙明昊表示：「我們不應期待此次會晤取得特別重大的突破性進展。」他認為，此次會面將成為兩國進一步互動的起點。美方官員透露，兩國領導人今年或舉行四次會晤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analysts say the summit is also a way for both sides to buy themselves time to reduce reliance on the other country as competition continues. “Within China there is also still a deep sense of suspicion about the United States,” said Bonny Lin, director of the China Power Project and senior adviser at the Center for Strategic and International Studies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士稱，隨著競爭持續，此次峰會也是雙方為自己爭取時間、降低對彼此依賴的一種方式。戰略與國際研究中心中國實力項目主任、高級顧問林洋表示：「中國國內對美國仍存有根深蒂固的疑慮。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What could go wrong?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>可能出現什麼問題？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CJaLpviOsJQDFbrX0gQdegsSWw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Contention over the war in Iran could undermine the talks. Without naming Mr. Trump, Mr. Xi last month criticized the American president’s flouting of international law as a “return to the law of the jungle.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與伊朗戰爭相關的爭議有可能破壞會談進程。上月，習近平雖未點名川普，但批評其無視國際法是「倒退回叢林法則」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While China is prodding Iranian officials to negotiate with the United States, it has held back from doing more to help resolve a war that Beijing sees as Washington’s problem. The Chinese foreign minister, Wang Yi, met his Iranian counterpart, Abbas Araghchi, this week in Beijing. Mr. Wang called for greater efforts to open the strait but also said China supported Iran’s “legitimate right to the peaceful use of nuclear energy.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國雖敦促伊朗官員與美國談判，但並未採取更多行動推動解決這場衝突——北京視其為華盛頓的問題。中國外長王毅上週在北京會見伊朗外長阿巴斯·阿拉格奇，呼籲各方加大努力開放海峽，同時表示中國支持伊朗「和平利用核能的正當權利」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Trump said Thursday that he believes China has not provided more support for the Iranian position out of respect for his relationship with Mr. Xi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但川普週四稱，他認為中國之所以沒有進一步支持伊朗立場，是因為尊重他與習近平之間的關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both China and the United States have been strengthening their weapons of economic warfare. When the U.S. Treasury imposed sanctions on a Chinese refinery in April for buying Iranian oil, China ordered its companies not to comply and issued regulations giving authorities powers to investigate foreign companies and governments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中美兩國均在強化自身經濟戰武器。今年4月，美國財政部以購買伊朗石油為由制裁一家中國煉油廠，中國隨即下令本國企業不予配合，並出台法規，授權相關部門調查外國企業及政府。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Pei-Lin Wu和Luke Broadwater對本文有報導貢獻。</p><div class="" data-poster=""><span><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p><div class="" data-poster=""></div></span></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260511/trump-xi-china-us-summit/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
