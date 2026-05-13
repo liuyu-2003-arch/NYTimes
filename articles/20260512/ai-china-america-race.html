@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>為什麼中國人不像美國人那樣懼怕人工智慧 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">為什麼中國人不像美國人那樣懼怕人工智慧</h1>
+    <h2 class="en-headline">Why China Is So Much Less Scared of A.I.</h2>
+    <div class="meta-line">JACOB DREYER <span style="margin: 0 8px;">•</span> 2026-05-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/05/08/opinion/08dreyer-image/08dreyer-image-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Allison Filice</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Every evening as our children eat dinner, my phone notifies me that our 3-year-old’s teacher has uploaded photos taken during the day at school. An artificial intelligence facial recognition feature puts a red square around his face, letting me know which photos to look at. It’s kind of creepy, but kind of helpful, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每天晚上，當我們的孩子吃晚飯時，我的手機就會通知我，我們三歲孩子的老師上傳了當天在學校拍攝的照片。人工智慧人臉識別功能會在他的臉周圍畫一個紅框，提醒我該看哪些照片。這有點令人毛骨悚然，但也挺有幫助的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, surveillance technology and A.I. surround our everyday life. It’s built into the way we order food delivered to us from online apps; almost nobody I know here in Shanghai buys groceries at a grocery store, so we rely on A.I.-powered technologies to keep us fed. It’s visible in the infrastructure we use to go to work and school, from trains using facial recognition in lieu of physical tickets to self-driving taxis. China’s technological system offers an unparalleled convenience, and A.I. is such a huge part of it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，監控技術和人工智慧已經滲透到日常生活的方方面面。我們通過在線應用訂外賣時就用到了它；我在上海認識的人幾乎沒人去實體超市買菜，我們依賴人工智慧驅動的技術來解決吃飯問題。在我們上下班和上學的基礎設施中也能看到它的身影——從用刷臉代替實體車票的列車，到自動駕駛計程車。中國的技術體系提供了無與倫比的便利，而人工智慧是其中極其重要的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many American leaders believe the United States cannot overcome its adversary China unless it beats the country in the A.I. race. Every new chip that President Trump approves for sale to China, every visit by Nvidia chief’s executive, Jensen Huang, to Shanghai and every Chinese A.I. breakthrough strikes terror into the hearts of America’s China hawks. Hardware, rare-earth metals, revamped power grids and human talent could all dictate which side ends up creating the first superintelligence. The upcoming summit between Mr. Trump and China’s leader, Xi Jinping, may lead to a few policy changes, but this belief is more fixed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多美國領導人認為，美國要想戰勝自己的對手中國，必須在人工智慧競賽中擊敗它。<span>每一次川普總統批准向中國出售的新晶片，每一次英偉達首席執行官黃仁勛訪問上海，以及每一次中國人工智慧的突破，都讓美國的「</span>對華鷹派」感到恐懼。硬件、稀土金屬、升級後的電網以及人才，都可能決定哪一方率先創造出第一個超級智能。川普與中國領導人習近平即將舉行的峰會可能會帶來一些政策調整，但這種信念已經根深蒂固。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The reality is that China and the United States are racing in different directions, because the two countries conceptualize A.I. very differently. Americans want to create the most powerful technology humans have ever known. In the quest for superintelligence, the U.S. government is encouraging private firms to move full speed ahead, regulation be damned. Under the very tightest regulation, by contrast, the Chinese want to make A.I. more practical and embedded in society, more carefully selecting how it is deployed and used by the population. If the Chinese achieve their A.I. goals, they may take a lead in the larger geopolitical contest between the two nations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現實情況是，中國和美國正朝著不同的方向競賽，因為兩國對人工智慧的理解截然不同。美國人想要創造人類有史以來最強大的技術。在追求超級智能的過程中，美國政府鼓勵私營企業全速前進，讓監管見鬼去吧。相比之下，在極為嚴格的監管下，中國希望讓人工智慧變得更加實用、更加深入社會，更謹慎地選擇如何部署和讓民眾使用它。如果中國實現其人工智慧目標，他們可能會地緣政治的大國競爭中佔據上風。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI-38_mStZQDFQzh_QUd0NI1NA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most Chinese policymakers don’t believe A.I. superintelligence is arriving any time soon. Instead, the Chinese strategy is about advancing a government-directed strategy referred to as “A.I.+” that treats A.I. as if it were infrastructure. This includes government-coordinated plans, local subsidies and national computing-power programs to diffuse cheap, capable A.I. tools into every public service. Chinese people encounter A.I. as a natural part of their day-to-day lives. Sometimes it’s visible and palpable, like the “smile to pay” terminals used in many shops. Sometimes it’s invisible, like Hangzhou’s City Brain, which uses A.I. to analyze massive amounts of data for urban management needs like regulating traffic and environmental protection.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>大多數中國決策者並不認為人工超級智能很快就會到來。相反，中國的戰略是推進一項政府主導的策略，稱為「人工智慧+」，將人工智慧視為基礎設施。這包括政府協調的規劃、地方補貼以及國家算力項目，目的是將廉價、高性能的人工智慧工具普及到每一項公共服務中。中國人把人工智慧當作日常生活自然而然的一部分。有時它顯而易見，比如許多商店裡使用的「微笑支付」終端；有時它隱形無蹤，比如杭州的「城市大腦」，它利用人工智慧分析海量數據，用於交通管理和環境保護等城市治理需求。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike in the United States, where most people remain wary, A.I. seems to have had less of a backlash in China. The Chinese A.I.+ strategy is practical and comprehensible to the local population in a way that the U.S. strategy simply is not, which may explain why the Chinese appear so much more optimistic about A.I. than Americans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>與美國不同（大多數人仍對人工智慧保持警惕），人工智慧在中國似乎沒有引發太多反彈。中國的「人工智慧+」戰略對當地民眾來說實用且易於理解，而美國的戰略則遠非如此，這或許解釋了為什麼中國人對人工智慧顯得比美國人樂觀得多。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese leaders are trying to maximize the country’s resources. The country’s chief resource is not oil, soybeans or pork bellies, but Chinese people. As of the 2020 census, nearly 40 percent of Chinese lived in rural areas, including 110 million children. Even more are living without access to quality education and health care. For Chinese leaders, the fact that so many Chinese people are structurally denied access to their best lives is a crisis even bigger than the low birthrate. How many potential geniuses are there among those 110 million rural children? What if the gross domestic product per capita of all of them could be quadrupled?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國領導人正在努力最大化國家的資源。中國最重要的資源不是石油、大豆或五花肉，而是中國人民。根據2020年人口普查，近40%的中國人生活在農村地區，其中包括1.1億兒童。還有更多人無法獲得優質教育和醫療。對中國領導人來說，如此多的中國人被結構性剝奪了過上最好生活的機會，這是一場比低生育率更大的危機。在那1.1億農村兒童中，有多少潛在的天才？如果他們所有人的國內生產總值人均值都能翻兩番呢？</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. may be the answer. Are the teachers in rural schools overworked and undertrained? A.I. agents can help teach students with personalized instruction. Are the hospitals lacking in high-quality doctors? A.I. can diagnose diseases by analyzing patients’ health data. A.I. could make it easier to hire and train the caregivers needed for China’s growing elderly population, with robotic or digital companions supplementing the work of human nurses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>人工智慧或許就是答案。農村學校的老師是否負擔過重、培訓不足？人工智慧代理可以提供個性化教學來幫助學生。醫院是否缺乏高素質醫生？人工智慧可以通過分析患者健康數據來診斷疾病。人工智慧還能</span>協助<span>招聘和培訓中國日益增長的老齡人口所需的護理人員，機器人或數字伴侶可以輔助人類護士的工作。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. could also make it easier to predict and prepare for extreme weather events that could set back local economies. It could further optimize the transition to green energy. China has ports in which machines put containers on ships with barely any human supervision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>人工智慧還可以更容易地預測和準備極端天氣事件，這些事件可能拖累地方經濟。它還能進一步優化向綠色能源的轉型。中國的一些港口已經實現機器在幾乎無人監督的情況下將集裝箱裝上船。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China’s A.I.-as-infrastructure strategy is about more than just improving the country’s domestic quality of life. It’s also about exporting Chinese influence. Chinese A.I. is already integrated into the supply chains that dominate world trade.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但中國「人工智慧即基礎設施」的戰略不僅僅是為了改善國內生活質量。它還關乎輸出中國的影響力。中國人工智慧已經融入主導世界貿易的供應鏈之中。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJbQ8_mStZQDFUrU_QUd9-0Ijg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And increasingly, rather than selling individual goods or services, China is selling a whole suite — energy, infrastructure, telecoms, transportation, surveillance — with A.I. systems to manage it all. As emerging markets from Southeast Asia to Latin America to Europe seek solutions to large problems like keeping power grids running, Chinese A.I. solutions may be what they end up buying. These models don’t have to be as powerful as American ones; they just have to be powerful <i>enough</i>. In that way, as China exports those A.I. models, it will be exporting Chinese governance as well, with all of the safety, abundance, surveillance and embedded hierarchies that entails.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且，中國越來越不是在銷售單個商品或服務，而是銷售一整套解決方案——能源、基礎設施、電信、交通、監控——並用人工智慧系統來管理這一切。從東南亞到拉丁美洲再到歐洲，新興市場都在尋找解決大規模問題（如維持電網運行）的方案，最終可能都會選擇中國的人工智慧解決方案。這些模型不必像美國的那樣強大，只要足夠強大就行。這樣一來，隨著中國出口這些人工智慧模型，它也將同時輸出中國的治理模式，包括隨之而來的安全、富足、監控以及嵌入其中的等級秩序。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s why the difference between these two countries in the A.I. race matters so much. America’s spaceship might still be the first to take off. But back on planet Earth, the Chinese will be using A.I. to run their hospitals, schools, roads and more. Brazilians, Russians, Africans and even the Europeans may be doing so soon, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這就是為什麼兩國在人工智慧競賽中的差異如此重要。美國的「宇宙飛船」可能仍是第一個起飛的。但在地球上，中國人正在用人工智慧管理他們的醫院、學校、道路等等。巴西人、俄羅斯人、非洲人，甚至歐洲人，可能很快也會這麼做。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jacob Dreyer是一位作家和編輯，過去18年的大部分時間居住在上海。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260512/ai-china-america-race/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
