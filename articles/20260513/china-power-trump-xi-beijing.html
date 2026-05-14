@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國遠沒有表面上看起來強大，這才是問題所在 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國遠沒有表面上看起來強大，這才是問題所在</h1>
+    <h2 class="en-headline">China Is Much Weaker Than It Seems. That’s the Problem.</h2>
+    <div class="meta-line">BRET STEPHENS <span style="margin: 0 8px;">•</span> 2026-05-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/05/13/opinion/12stephens/12stephens-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Photo illustration by Evan Hume for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When President Trump visits Beijing this week, he should have the satisfaction of knowing that time, in the long run, is on America’s side. Unfortunately, that’s also the problem.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當川普總統本週訪問北京時，他理應感到欣慰，因為從長遠來看，時間站在美國這一邊。不幸的是，這恰恰也是問題所在。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s the opposite of a conventional wisdom that holds that the United States is a fumbling status quo power, akin to Britain in the waning years of its empire, squandering its strength in sideshow wars (South Africa then; Iran now) while failing to grapple with its principal strategic and economic competitor (Germany then; China now). It’s this same conventional wisdom that has been telling us that, any year now, China will overtake the United States as the world’s largest economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這與一種普遍觀點背道而馳——該觀點認為，美國是一個步履蹣跚、維持現狀的大國，類似於大英帝國衰落時期的樣子，在次要戰爭（當時是南非，現在是伊朗）中虛耗國力，卻未能應對主要的戰略和經濟競爭對手（當時是德國，現在是中國）。正是這種傳統觀念一直在告訴我們，中國隨時都會超越美國，成為世界第一大經濟體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China’s economy most likely will never overtake America’s, just as past would-be contenders — whether they were the Soviet Union, Japan or the European Union — all fell short. Why? Because history shows that the most productive national assets are political freedom and open markets — the freer, more open and more competitive, the better.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國的經濟極有可能永遠不會超過美國，就像過去那些潛在的競爭者——無論是蘇聯、日本還是歐盟——最終都未能如願。為什麼？因為歷史表明，最高效的國家資產是政治自由和開放市場——越自由、越開放、越具競爭性，就越好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s a point that often gets lost with those who think that good economics means a wise industrial policy, one that steers government revenues into technologies of “the future.” Hence China’s supreme leader, Xi Jinping, has ordered heavy investment in robotics, electric cars, lithium-ion batteries and military kit, just as Germany’s leaders at the beginning of this century made a titanic push into renewable energy — only to see it founder long before Vladimir Putin’s invasion of Ukraine exposed Berlin’s backdoor dependence on cheap Russian gas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些認為良好的經濟就意味著英明的產業政策，也就是由政府將財政收入引向「未來」技術的人，往往會忽略這一點。因此，中國最高領導人習近平下令在機器人、電動汽車、鋰離子電池和軍事裝備領域進行大規模投資，正如本世紀初德國領導人對可再生能源的大力推動——結果在普丁入侵烏克蘭暴露出柏林對廉價俄羅斯天然氣的隱蔽依賴之前，這一努力就早已陷入失敗。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN7ggrfVt5QDFagHTwgdCDUMog" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Outside of emergencies, particularly war, such an approach rarely works out well. Technologies of the future often turn out to be anything but. (Remember ethanol-fueled cars as environmental godsends?) Taxpayer funds steered toward so-called national champion industries frequently lead to sloppy practices as corporate leaders become more attuned to political demands — like keeping money-losing factories open — than to tough-minded management. And corruption tends to become endemic whenever the lines between business and government become hopelessly blurred.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了緊急狀態（尤其是戰爭）之外，這種方法很少取得良好效果。所謂「未來的技術」往往被證明名不副實。（還記得曾被視為環保救星的乙醇燃料汽車嗎？）當納稅人的資金被導向所謂的國家冠軍產業時，企業領導者往往更關注政治需求——比如維持虧損工廠的運營——而非嚴謹的管理，這常導致管理鬆懈。而一旦商業與政府之間的界限變得難以區分，腐敗往往就會成為痼疾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States periodically suffers from some of this, not least under the current administration. China’s problems are orders of magnitude worse.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國週期性地遭受其中一些問題的困擾，在現任政府領導下尤為如此。但中國的問題要嚴重得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As of last year, state-owned or “mixed-ownership” enterprises account for about 60 percent of China’s largest companies. The bursting of China’s real-estate bubble — creating the eerie phenomenon of “ghost cities” — has depleted the savings of millions of ordinary Chinese and helped cause a municipal financing crisis. And China’s corporate sector is increasingly being “zombified” as companies become dependent on cheap credit to cover their losses: “Business debt has doubled since 2019, while revenues are only 30 percent higher,” reports Fortune.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至去年，國有制或「混合所有制」企業約佔中國最大企業的60%。中國房地產泡沫的破裂催生了「鬼城」這一詭異現象，耗盡了數以百萬計普通中國人的積蓄，並引發了地方財政危機。而中國的企業部門正日益「殭屍化」，因為公司正日益依賴廉價信貸來彌補虧損：據《財富》雜誌報導，「自2019年以來，企業債務翻了一番，而收入僅增長了30%。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This economic house of cards rests, if you’ll forgive the mixed metaphor, on a foundation of sand: an aging and declining work force, net emigration, widespread youth unemployment, plummeting foreign direct investment, an arbitrary rule of law that terrifies business leaders, repeated purges of the military that project far more paranoia than confidence and a truculent foreign policy that does little more than alarm and alienate China’s neighbors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">請恕我混用隱喻，這座經濟紙牌屋是建立在沙子的地基之上：勞動力老齡化且規模萎縮、人口凈流出、廣泛的青年失業、外商直接投資驟減、讓商界領袖膽戰心驚的隨意執法、暴露出猜疑而非自信的反覆軍隊清洗，以及除了引發鄰國驚恐和疏遠之外別無他用的強硬外交政策。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Great powers should have a combination of hard and soft power — the power to compel and the power to attract, in Joseph Nye’s famous formulation. What today’s China has is brittle power: power with too much hardness and not enough capacity to bend or adapt. Sooner or later, it is destined to shatter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據約瑟夫·奈著名的表述，大國應該兼具硬實力和軟實力——也就是強制力和吸引力。而今天的中國擁有的是一種 「脆實力」：這種力量硬度有餘，但缺乏彎曲或適應的能力。遲早，它註定會破碎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That, however, is what makes today’s China so scary. Rising nations, which is what China was under Deng Xiaoping and Jiang Zemin, have the luxury of being able to bide their time. Declining nations don’t. It tends to make them more inclined to gamble with their future. It’s why Putin invaded Ukraine after he realized the country was moving inexorably into the West’s orbit. It’s also why Xi will be powerfully tempted to seize Taiwan by invasion or blockade despite the enormous risks it poses not only to the world’s economy but also to his own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這正是當今中國如此令人恐懼的原因。正在崛起中的國家——鄧小平和江澤民時期的中國正是如此——有餘裕可以靜待時機。衰落的國家則沒有。這往往使它們更傾向於拿未來進行豪賭。正因如此，普丁在意識到烏克蘭正不可避免地進入西方軌道後，決定入侵烏克蘭。同樣因為如此，習近平會感受到強烈的誘惑，渴望通過入侵或封鎖來奪取台灣，儘管此舉不僅對世界經濟，而且對他自身也構成巨大風險。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPSvg7fVt5QDFaUHTwgdK5I3bA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What would a wise American policy look like in the face of this kind of challenge? In a sentence, it would be dovish on the terms of trade and hawkish on the defense of our allies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">面對這種挑戰，明智的美國政策應該是怎樣的？簡而言之，就是在貿易條款方面採取鴿派立場，在保衛盟友方面採取鷹派立場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s roughly the opposite of what the administration’s rhetoric and policies have been thus far: a constantly threatened trade war along with decidedly mixed signals on whether the U.S. will continue to supply Taiwan with arms or come to its defense in the event of a conflict. If Trump uses his summit to barter away a pledged $11 billion arms sale to the island in exchange for a variety of diplomatic or economic promises from Beijing — whether the subject is the Strait of Hormuz or the supply of rare earths — you’ll know the summit has been a fiasco.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這與本屆政府目前的言論和政策幾乎相反：政府一方面不斷威脅要發動貿易戰，另一方面，在是否繼續向台灣提供武器、以及衝突發生時是否提供防禦的問題上，釋放出明顯矛盾的信號。如果川普利用這次峰會，將承諾的110億美元對台軍售作為籌碼，去換取北京在外交或經濟上的各種承諾——無論是霍爾木茲海峽還是稀土供應——那麼你就會知道，這次峰會是一場徹底的慘敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Certain readers will be tempted to remark that, when it comes to repression or corruption, Trump is every bit the match of Xi. If that were true, this column couldn’t be published. What is true, as Bill Clinton put it in his first Inaugural Address, is that “there is nothing wrong with America that cannot be cured by what is right with America” — which goes for this administration. Nothing similar can be said about China’s Communist Party. That is what makes it dangerous to us now and an even greater danger to itself later.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">某些讀者可能會忍不住指出，在壓迫或腐敗方面，川普與習近平不相上下。如果真是那樣，本篇專欄文章就根本無法發表。正如比爾·柯林頓在他的第一次就職演說中所說，事實是：「美國的所有問題，都能用美國的優點來糾正」——這同樣適用於本屆政府。但對於中國共產黨，卻無法得出類似的結論。正因如此，它在當下對我們構成危險，而在未來卻會對自身構成更大的危險。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">圖片來源：Print Collector/Getty Images；Zoonar GmbH/Alamy</p><p class="cn-p">Bret Stephens是時報觀點版面專欄作者，寫作領域包括外交政策、美國國內政策以及文化議題。 歡迎在Facebook上關注他。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260513/china-power-trump-xi-beijing/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
