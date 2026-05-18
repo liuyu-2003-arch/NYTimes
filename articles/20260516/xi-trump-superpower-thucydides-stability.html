@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「建設性戰略穩定」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「建設性戰略穩定」</h1>
+    <h2 class="en-headline">Xi Pitches His Vision for Avoiding a Superpower Collision</h2>
+    <div class="meta-line">DAVID PIERSON, 郭莉莉 <span style="margin: 0 8px;">•</span> 2026-05-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國國家主席習近平於週四在北京歡迎川普總統。" height="700" src="https://static01.nyt.com/images/2026/05/15/multimedia/15china-xi-swap-bqmj/15china-xi-swap-bqmj-master1050.jpg" width="1050"/><figcaption><span>中國國家主席習近平於週四在北京歡迎川普總統。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s leader, Xi Jinping, has spent the last year standing up to President Trump. He met triple-digit tariff with triple-digit tariff and restricted rare earth exports, forcing the Trump administration to back down. Both sides suffered, and so did the global economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領導人習近平在過去一年中與川普總統針鋒相對。他以三位數關稅回擊三位數關稅，並限制稀土出口，迫使川普政府做出讓步。雙方都付出了代價，全球經濟也深受其害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But having made his point, and established China as America’s peer, Mr. Xi is now pivoting from retaliation to conciliation. At a summit in Beijing this week that he billed as historic, Mr. Xi offered Washington a choice: Accept China as an equal power with red lines that must not be crossed or continue in a cycle of conflict that risks a global “Thucydides Trap” of superpower collision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在表明立場、確立中國作為美國對等大國的地位後，習近平現在正從報復轉向和解。在本週北京舉行的他稱為具有歷史意義的峰會上，習近平讓華盛頓做出選擇：是接受中國作為擁有不可逾越紅線的平等大國，還是繼續一個可能導致全球<span>落入「修昔底德陷阱」</span>的超級大國衝突循環。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has given this new blueprint a new, if somewhat stilted, name: “constructive strategic stability.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他為這一新藍圖起了一個略顯拗口的新名字：「建設性戰略穩定」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He trotted out the term throughout the summit, a visit designed to show Mr. Trump what friendship could look like between the two countries, with pageantry in the cavernous rooms of the Great Hall of the People, a private tour of the Temple of Heaven and talks inside Zhongnanhai, the secretive walled compound of the Chinese leadership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在整個峰會期間反覆使用這個詞，此次訪問旨在向川普展示兩國之間友誼可能的樣子：在人民大會堂寬敞大廳舉行的盛大儀式、參觀天壇的私人導覽，以及在中南海——壁壘森嚴的中國領導人園區——內進行的會談。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKyZutrdwZQDFUrglAkdvnMs2A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some ways, the Trump administration was already playing by China’s rules on this visit. The American president was largely deferential to Mr. Xi. Mr. Trump lavished him with praise and refrained from pushing back when the Chinese leader issued a warning to the United States about treading carefully on the subject of Taiwan, the self-governed island claimed by Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在某些方面，川普政府此次訪問已經是在<span>按照中國的規則行事。美國總統在很大程度上對習近平持順從態度。川普對他大加讚揚，當中國領導人就台灣問題警告美國要謹慎行事時，川普也沒有反駁。台灣是北京聲稱擁有主權但實行自治的島嶼。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Redefining the terms of engagement</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>重新定義接觸</b></span><span><b>原則</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi spoke in lofty, abstract terms about what exactly constructive strategic stability entailed. He spoke of “cooperation” being a “mainstay”; “competition within proper limits”; “manageable differences” and “expectable peace.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平以宏大而抽象的措辭闡述了「建設性戰略穩定」究竟意味著什麼。他談到「合作為主」；「競爭有度」；「分歧可控」和「和平可期」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What that boils down to, said Xin Qiang, a U.S.-China expert at Fudan University in Shanghai, is the acknowledgment that competition is part of the relationship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">復旦大學中美問題專家信強表示，這歸根結底是承認競爭是兩國關係的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite that, the two countries can hold out hope that there are more reasons to cooperate than there are to clash. The summit underscored some of the ways in which they could potentially work together, such as combating the flow of fentanyl to the United States, setting ground rules for artificial intelligence and resolving the standoff in the Strait of Hormuz.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，兩國仍可寄希望於合作的理由多於衝突的<span>理由。此次峰會凸顯了雙方可能合作的若干領域，例如打擊吩坦尼流入美國、為人工智慧制定基本規則，以及解決霍爾木茲海峽的僵局。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Is Washington on board with this?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>華盛頓是否接受這一理念？</b><b></b></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CN2vutrdwZQDFWo-swAdRjInxQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s official summary of the meeting said Mr. Trump agreed to Mr. Xi’s new definition of the relationship. Though the White House made no mention of it in its own summary, Secretary of State Marco Rubio suggested in an interview with NBC on Friday that the Trump administration had endorsed the concept.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官方對此次會晤的總結稱，川普同意習近平對兩國關係的新定義。雖然白宮自己的總結中並未提及，但美國國務卿馬可·魯比奧週五在接受NBC採訪時表示，川普政府已認可這一理念。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“One of the things the Chinese emphasize, which we agree, is strategic stability in our relationship, a constructive relationship, but also one that establishes strategic stability so that we don’t have misunderstandings that could lead to broader conflict,” Mr. Rubio said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國人強調的一點是我們也同意的，那就是我們關係中的戰略穩定，一種建設性的關係，同時也建立戰略穩定，以避免可能導致更大衝突的誤解，」魯比奧說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="此次訪問旨在向川普展示兩國可以建立怎樣的友誼。" data-src="https://static01.nyt.com/images/2026/05/15/multimedia/15China-analysis-02-gcjm/15China-analysis-02-gcjm-master1050.jpg" src="https://static01.nyt.com/images/2026/05/15/multimedia/15China-analysis-02-gcjm/15China-analysis-02-gcjm-master1050.jpg"/></div><figcaption><span>此次訪問旨在向川普展示兩國可以建立怎樣的友誼。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just a few years ago, Beijing was vehemently opposed to a policy of the Biden administration called “managed competition” that has echoes of what Mr. Xi is proposing now. It entailed accepting that the two sides were rivals, but also imposing guardrails to prevent the relationship from veering into conflict. Beijing rejected that framework as a bid to contain China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在幾年前，北京還強烈反對拜登政府提出的「可控競爭」政策，該政策與習近平現在提出的理念有相似之處。它承認雙方是競爭對手，但同時設置護欄以防止關係滑向衝突。北京當時拒絕這一框架，認為這是遏制中國的企圖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why Mr. Xi is comfortable with the idea today could have much to do with the growing parity in power between China and the United States. Beijing feels as though it can no longer be pushed around by Washington after fighting the Trump administration to a draw during last year’s trade war by threatening to throttle global supplies of critical minerals needed to make modern technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>習近平如今願意接受這一理念，可能與中美兩國權力日益接近對等有很大關係。在去年貿易戰中，北京通過威脅扼殺全球關鍵礦產供應（這些礦產是製造現代技術所必需的）與川普政府戰成平手，此後北京覺得華盛頓再也無法隨意擺布自己。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why Xi is ready to talk</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>習近平為何願意對話</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, confrontation with the United States does China no favors. Its economy has been stagnant for years because of a property crisis, and it cannot afford any disruptions to global trade, its chief engine of growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，與美國對抗對中國毫無益處。由於房地產危機，中國經濟多年來一直停滯不前，無法承受全球貿易的任何中斷，而全球貿易是中國經濟增長的主要引擎。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKyBu9rdwZQDFc3llAkdTdck6A" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi is signaling that he wants to lock in the current stalemate so that the Trump administration will not interfere with his greater vision for China’s future: a country brimming with technological and industrial might poised to overtake a declining United States as the premier global power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平正在發出信號，他希望鎖定目前的僵持局面，以便川普政府不會干擾他對中國未來的更大願景：一個擁有強大技術和工業實力的國家準備超越日益衰落的美國，成為全球首要大國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For China, this phrase is about buying time and playing for advantage as Beijing tries to wait out the Trump administration,” said Evan Medeiros, a Georgetown professor who was senior Asia director on the National Security Council under President Barack Obama.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對中方而言，這個表述是為了爭取時間並在等待川普政府任期結束的過程中佔據優勢，」喬治城大學教授、曾在貝拉克·歐巴馬政府擔任國家安全委員會亞洲事務高級主任的麥艾文(Evan Medeiros)說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China wants to manage what they see as gradual U.S. decline in the hopes of both expediting it but also making it as non-disruptive as possible,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國希望管理他們所看到的美國逐漸衰落的過程，既希望加速這一過程，又希望讓它盡可能不具破壞性，」他補充說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is playing the long game</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>中國</b></span><span><b>著眼於長線</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States is no stranger to China’s attempts to frame the two countries’ relationship to its advantage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國對中國試圖以有利於自己的方式定義兩國關係並不陌生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi tried to sell Mr. Obama on what he called “a new model of great power relations” in 2013 that called on the United States to respect what China considers its core interests such as its claims to Taiwan and the South China Sea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2013年，習近平曾試圖向歐巴馬推銷他所謂的「新型大國關係」，要求美國尊重中國認為的核心利益，例如對台灣和南海的主權主張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Obama administration ultimately refused to endorse the concept, recognizing that it required ceding power in Asia and leaving allies and partners vulnerable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐巴馬政府最終拒絕認可這一概念，認為它要求美國在亞洲讓渡權力，並置盟友和夥伴於險境。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2015年，中國國家主席習近平與美國總統歐巴馬會面。" data-src="https://static01.nyt.com/images/2026/05/15/multimedia/15China-analysis-03-gcjm/15China-analysis-03-gcjm-master1050.jpg" src="https://static01.nyt.com/images/2026/05/15/multimedia/15China-analysis-03-gcjm/15China-analysis-03-gcjm-master1050.jpg"/></div><figcaption><span>2015年，中國國家主席習近平與美國總統歐巴馬會面。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is a classic Chinese move which they try to get the United States to agree to a framework as a way to bind Washington and set the terms of the bilateral relationship going forward,” Mr. Medeiros said of Mr. Xi’s latest attempt.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是典型的中國做法，他們試圖讓美國同意一個框架，以此來約束華盛頓並設定未來雙邊關係的條款，」麥艾文在談到習近平最新嘗試時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These phrases are geopolitical quick sand,” he added. “Once you step in you cannot get out, and the more you try, the deeper you get pulled in by China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這些表述是地緣政治的流沙，」他補充道。「一旦踏入就無法脫身，你越掙扎，就會被中國拉得越深。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJKRu9rdwZQDFSHglAkdbFUE2Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How China will use this reset</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>中國將如何利用這一重置</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is a reframing of the relationship, but on Beijing’s terms, said Shen Dingli, an international relations scholar in Shanghai.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上海國際關係學者沈丁立表示，這是在按照北京的條件重新定義兩國關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, for example, could later claim that the Trump administration had violated the tenets of constructive strategic stability by continuing to sell more arms to Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>例如，中國以後可能會聲稱，川普政府繼續向台灣出售更多武器違反了建設性戰略穩定的原則。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What China wants is for the China-U.S. relationship to be good and stable, but with the condition that China says, ‘I am the one providing the path and I am the one pointing the way,” Mr. Shen said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國想要的是中美關係良好且穩定，但前提條件是中國說，『我才是提供路徑的人，我才是指明方向的人，』」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other Chinese analysts say a new framework is necessary to dampen the influence of China hawks in Congress, who threaten to derail the détente. There is also a fear that Mr. Trump could change his position on China after the 2026 midterm elections.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有一些中國分析人士表示，需要一個新框架來削弱國會中對華鷹派的影響力，他們威脅要破壞當前的緩和局面。同時也擔心川普在2026年期中選舉後可能改變對華立場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The worry is always there. It’s something he’s quite known for,” said Dr. Xin of Fudan University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種擔心始終是存在的。所以為什麼擔心？因為打過交道了，」復旦大學的信強說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Berry Wang和Pei-Lin Wu對本文有報導貢獻。</p><p class="cn-p">David Pierson報導中國外交政策和中國與世界的經濟與文化交互。他從事新聞工作已超過20年。</p><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260516/xi-trump-superpower-thucydides-stability/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
