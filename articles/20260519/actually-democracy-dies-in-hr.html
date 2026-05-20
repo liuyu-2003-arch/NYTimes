@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>民主死於平庸打工人？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">民主死於平庸打工人？</h1>
+    <h2 class="en-headline">Actually, Democracy Dies in H.R.</h2>
+    <div class="meta-line">AMANDA TAUB <span style="margin: 0 8px;">•</span> 2026-05-19</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="1982年「骯髒戰爭」期間，阿根廷安全部隊在布宜諾斯艾利斯抓捕一名青年。" height="799" src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-01-jwzf/19ideas-loyallosers-01-jwzf-master1050.jpg" width="1050"/><figcaption><span>1982年「骯髒戰爭」期間，阿根廷安全部隊在布宜諾斯艾利斯抓捕一名青年。</span> <cite>Horacio Villalobos/Corbis, via Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even the most capable autocrats cannot rule alone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就算是最有能力的獨裁者也無法獨自統治。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Russia, Vladimir Putin needs his circle of handpicked oligarchs; in Iran, the Revolutionary Guard and its allies in the business world protect the regime’s power; Viktor Orban transformed Hungary into an “elected autocracy” with the help of a few crucial judges, political enforcers and friendly tycoons. But to actually carry out the dirty work of consolidating and maintaining power, such leaders rely on help from a far greater number of lower- and midlevel people: military officers, secret police and bureaucrats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在俄羅斯，普丁需要他親手挑選的寡頭圈子；在伊朗，革命衛隊及其商界盟友保護著政權的權力；歐爾班在幾位關鍵法官、政治執行者和友好財閥的幫助下，將匈牙利轉變為一個「民選專制政體」。但要真正執行鞏固和維持權力的骯髒工作，這些領導人還依賴數量龐大得多的中下層人員：軍官、祕密警察和官僚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet until recently, researchers paid little attention to how leaders convince and recruit ground-level workers to go along with their demands. The incentives for elites to stay loyal have been studied extensively, but the rank and file have remained something of a black box. In the absence of real data, researchers have tended to assume that they cooperate because of ideological extremism, fear of persecution or some combination of the two.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，直到前不久，研究人員還很少關注領導人如何說服和招募基層人員來配合其要求。精英階層保持忠誠的動機已經被廣泛研究，但普通基層人員仍然像是一個黑箱。在缺乏真實數據的情況下，研究人員往往傾向於假設他們之所以合作，是因為意識型態極端主義、對迫害的恐懼，或者是兩者的結合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">New research, drawing on an extraordinary data set from Argentina’s Dirty War in the 1970s and ’80s, suggests a very different explanation. It turns out that the kinds of career pressures familiar to employees everywhere — the desire to revive a stalled career or obtain a minor promotion — can be enough to incentivize lower- and midlevel officials to violate professional obligations, fundamental norms and even basic morality. The people who make those decisions, the research suggests, are neither extremists nor victims. They are often just middling workers looking for a way to get ahead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">基於1970年代和80年代阿根廷「骯髒戰爭」的一組非凡數據，新的研究提出了一種截然不同的解釋。研究發現，世界各地職場人士熟悉的職業壓力——渴望重振停滯不前的職業生涯，或者獲得一次小小的晉陞——足以激勵中下層官員違背職業義務、基本規範乃至最基本的道德。研究表明，做出這些決定的人既不是極端分子，也不是受害者。他們通常只是尋找出頭之日的普通打工人。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNS_hprhxpQDFSnglAkdezYqWg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Making a Career in Dictatorship,” a new book by two German political scientists, Adam Scharpf and Christian Glassel, reads like what you might get if you crossed Hannah Arendt’s ideas about the “banality of evil” with a business school guide on how to get the most out of low performers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國政治學家亞當·沙爾普夫和克里斯蒂安·格拉塞爾合著的新書《在獨裁政權中謀求職業發展》(Making a Career in Dictatorship)讀起來就像是將漢娜·阿倫特關於「平庸之惡」的觀點與商學院關於如何充分激發低績效員工潛力的指南結合在一起。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their in-depth study of Argentina’s military during that country’s era of coups and forced disappearances found that low performers — whom they refer to as “career-pressured” individuals — filled the ranks of the secret police. That service allowed them to “detour” around the ordinary military hierarchy, the book shows, achieving promotions and career success they could never have managed otherwise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們對阿根廷政變和強迫失蹤時期的軍隊進行了深入研究，發現低績效者（他們稱之為「面臨職業壓力」的個人）充斥於祕密警察隊伍。該書表明，這份工作使他們能夠「繞過」常規的軍隊層級制度，獲得他們原本無法企及的晉陞和職業成功。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It turns out that would-be authoritarians don’t need to staff their regimes with ideological true believers, offer extreme enticements or impose draconian punishments in order to make successful power grabs. They just need to figure out how to target their ideal labor pool: the frustrated and mediocre.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實證明，潛在的威權統治者不需要用意識型態上的死忠分子來充實政權，也不需要提供極端的誘惑或是施加嚴厲的懲罰，就能成功奪取權力。他們只需要弄清楚如何鎖定他們理想的勞動力群體：那些受挫的平庸之輩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their conclusions have implications for countries around the world grappling with the stability of their democracies — including the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們的結論對世界上正在苦苦應對民主穩定性問題的國家（包括美國）具有啟示意義。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A Data Set of Mediocrity</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>一份關於平庸的數據集</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When he was a young doctoral student, Scharpf was conducting dissertation research in Buenos Aires when a government official dropped a fateful offhand comment during a conversation in a cafe. During the military dictatorship, the official said, the intelligence officers who did the regime’s worst dirty work were “essentially idiots.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當沙爾普夫還是一名年輕的博士生時，他在布宜諾斯艾利斯進行論文研究。有一次，他在一家咖啡館與一位政府官員交談時，對方隨口說出了一句決定性的話。這位官員說，在軍事獨裁時期，為政權乾最骯髒勾當的情報官員「基本上都是白痴」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At first, Scharpf thought the man was just being insulting. He soon realized that the official meant the comment literally — that the military junta’s secret police had been, in his view, incompetent losers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">起初，沙爾普夫以為這個人只是在罵人。但他很快意識到，這位官員說的是真話——在他看來，軍政府的祕密警察確實是一群無能的失敗者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When he returned to his university in Germany, he mentioned the discussion to his colleague, Glassel. Both men saw a glimmer of social-science possibility. They decided to learn more. Argentina, it turned out, had published information on all of its military officers’ graduation ranks, promotions and retirements going back to the late 1800s, which meant that it was possible to identify and track the low performers. And because secret police work during the Dirty War was conducted primarily by army intelligence Battalion 601, the researchers could trace exactly which officers joined the unit, how long they stayed and what happened to their careers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">回到德國的大學後，他向同事格拉塞爾提到了這次討論。兩人都從中看到了社會科學研究的可能性。他們決定深入探究。後來，阿根廷公布了自19世紀末以來所有軍官的畢業排名、晉陞和退役信息，這意味著識別和追蹤其中的低績效者成為可能。而且，由於在「骯髒戰爭」期間，祕密警察工作主要由陸軍601情報營負責，研究人員可以準確地追蹤哪些軍官加入了該部隊、他們在那裡待了多久，以及他們的職業生涯情況如何。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在「骯髒戰爭」期間，那些因國家安全部門而「失蹤」者的母親和親屬在抗議。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-04-jwzf/19ideas-loyallosers-04-jwzf-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-04-jwzf/19ideas-loyallosers-04-jwzf-master1050.jpg"/></div><figcaption><span>在「骯髒戰爭」期間，那些因國家安全部門而「失蹤」者的母親和親屬在抗議。</span> <cite>Horacio Villalobos/Corbis, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The data showed that the official’s offhand comment had been right. For the most part, the Argentine military operated under a meritocratic “up or out” system. Officers who underperformed early would fall behind their peers, and eventually be forced into retirement. But Battalion 601 offered a detour around that meritocracy: Low performers could transfer into the secret police, spend a few years earning promotions there and then return to the regular army, often leapfrogging over peers who had stayed with the regular forces. Men who took the detour ended up with longer careers, higher salaries and better pensions than similar individuals who stayed in the mainstream military units.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數據顯示，那位官員隨口說的話確實沒錯。在大多數情況下，阿根廷軍隊實行的是任人唯賢的「不進則退」制度。早期表現不佳的軍官會落後於同齡人，最終被迫退役。但601營提供了繞過這套精英體制的迂迴路徑：低績效者可以調入祕密警察部隊，在那裡待上幾年時間，獲得晉陞，然後返回正規軍，往往還能超越那些一直留在正規部隊的同僚。走這條迂迴路徑的人，最終往往比留在主流軍事單位的同類人員擁有更長的職業生涯、更高的薪水和更好的養老金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>How Regimes Rely on ‘Loyal Losers’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>政權如何依賴「忠誠的失意者」</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CKHZhprhxpQDFWm7rgUdECAf1A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ordinarily, of course, it is very difficult to get complete information on who a regime’s “dirty workers” are or what motivated them to take those jobs. So there aren’t really comprehensive data sets to compare with Glassel and Scharpf’s research on Argentina.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，在通常情況下，要全面了解一個政權裡的「臟活執行者」究竟是誰、他們從事這些工作的動機是什麼，是非常困難的。因此，實際上並不存在能夠與格拉塞爾和沙爾普夫關於阿根廷的研究進行對比的全面的數據集。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, available information suggests that other countries may have followed a similar pattern. For example, Glassel and Scharpf found that superiors in the Nazi bureaucracy skillfully exploited career pressures to recruit commanders for the Einsatzgruppen, the mobile killing squads that carried out the “Holocaust by bullets” in Eastern Europe. Many of the recruits had backgrounds that placed them at a disadvantage, such as records blemished by disciplinary proceedings, unclear “racial purity” or lack of military and policing experience. Zealous service in the killing squads helped them improve their careers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，現有信息表明，其他國家可能也出現過類似的模式。例如，格拉塞爾和沙爾普夫發現，納粹官僚體系構中的上級官員非常善於利用職業晉陞壓力，為別動隊招募指揮官。別動隊是在東歐執行「子彈大屠殺」的流動殺戮隊。許多被招募者都存在某種劣勢，例如因紀律處分而留下不良記錄、「種族純潔性」存疑，或者缺乏軍事與警務經驗。而在殺戮隊中的賣力表現則有助於他們改善自己的職業前途。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Soviet Union, the NKVD, the secret police who killed hundreds of thousands of people during the so-called Great Terror of 1937, “deliberately recruited individuals with poor formal skills and knowledge,” Glassel and Scharpf write, often with no more than a primary school education. Senior commanders nurtured their subordinates’ fear of failure by instigating competition between different offices to see who could arrest more people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">格拉塞爾和沙爾普夫寫到，在蘇聯，內務人民委員部——1937年「大清洗」期間殺害數十萬人的祕密警察機構NKVD——「刻意招募那些正規技能和知識水平低下的人」，他們的教育程度往往不超過小學。高級指揮官通過在各個部門之間挑起競爭、看誰能逮捕更多人，來培植下屬對失敗的恐懼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the modern era, autocratic leaders often win power via elections, and then dismantle checks and balances to concentrate power in their own hands. That process tends to be far less violent than the acts carried out by the Argentine military junta or Stalin’s NKVD, but over time it sharply curtails political competition and freedom of expression.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在當代，威權領導人往往藉助選舉贏得權力，隨後再逐步拆除制衡機制，將權力集中到自己手上。這一過程通常遠不及阿根廷軍政府或史達林時期NKVD那樣充滿血腥暴力，但隨著時間推移，它會對政治競爭和言論自由造成嚴重的壓制。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1943年，在卡廷森林的一處萬人坑中進行挖掘工作，史達林領導的內務人民委員部曾將約2.2萬名被其殺害的波蘭戰俘的遺體拋棄於此。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-05-jwzf/19ideas-loyallosers-05-jwzf-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-05-jwzf/19ideas-loyallosers-05-jwzf-master1050.jpg"/></div><figcaption><span>1943年，在卡廷森林的一處萬人坑中進行挖掘工作，史達林領導的內務人民委員部曾將約2.2萬名被其殺害的波蘭戰俘的遺體拋棄於此。</span> <cite>Universal History Archive, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although each country has its own idiosyncrasies, that process tends to follow a pattern, said Erica Frantz, a political scientist at Michigan State University who studies democratic backsliding. Initially, elected would-be autocrats often appoint “loyal losers” to important positions to rubber-stamp their power grabs, Frantz said. “The leader knows that people are going to be more likely to be loyal if they don’t have many other career options, so when I say losers, I kind of mean it literally,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根州立大學研究民主倒退問題的政治學家埃麗卡·弗蘭茨表示，儘管每個國家都各有特色，但這一過程往往遵循一種模式。弗蘭茨說，最開始，當選的潛在威權者常常將「忠誠的失意者」任命到重要崗位，讓他們對自己攫取權力的行為「蓋章放行」。她說：「領導人知道，如果一個人沒有太多別的職業出路，他就更容易保持忠誠。所以，所以當我說『失意者』的時候，某種意義上真的是字面意思。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The American Case</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>美國的情況</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CJnkhprhxpQDFfftlAkdEoc0zA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Americans, this is not just an academic question. Many experts worry that democratic decay appears to be progressing especially quickly during President Donald Trump’s second term.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對美國人來說，這並非純粹的學術問題。許多專家擔心，在川普總統的第二任期內，美國民主制度的衰敗跡象似乎正在明顯加速。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Frantz sees parallels between Trump’s presidency and some of the elected authoritarian leaders she has studied elsewhere. Although Trump did not create the Republican Party, he has reshaped it over the last decade into an institution centered around himself. And a number of his Cabinet members and political appointees, particularly in his second term, appear to fit the paradigm of loyalists whose resumes would be unlikely to land them roles in any other administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">弗蘭茨認為，川普的執政方式與她研究過的一些「民選威權領導人」存在相似之處。雖然川普並不是共和黨的創建者，但過去十年裡，他已經把共和黨重塑成了一個高度圍繞個人運轉的政治組織。而且，他的一些內閣成員與政治任命官員——尤其是在第二任期——看起來也符合那種忠誠失意者的模式：他們的履歷不太可能在其他任何政府中為他們謀得類似職務。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="匈牙利總理歐爾班在4月舉行的最後一場競選集會上。儘管他已在司法系統、新聞媒體等各個領域安插了親信，還是在選舉中落敗。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-06-jwzf/19ideas-loyallosers-06-jwzf-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/19ideas-loyallosers-06-jwzf/19ideas-loyallosers-06-jwzf-master1050.jpg"/></div><figcaption><span>匈牙利總理歐爾班在4月舉行的最後一場競選集會上。儘管他已在司法系統、新聞媒體等各個領域安插了親信，還是在選舉中落敗。</span> <cite>Janos Kummer/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So the Trump administration’s apparent attempts to secure political control over the armed services, as well as the FBI and Immigration and Customs Enforcement, stand out as worrying even when compared with other cases, Frantz said. Elected leaders “tinkering with” the security services “tends to be something that we see once a system has already transitioned to authoritarianism,” she said, rather than when democracy is in decline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">弗蘭茨說，正因如此，川普政府明顯試圖對武裝部隊、聯邦調查局和移民與海關執法局進行政治控制的舉動，即便與其他國家的情況相比，也顯得尤為令人憂慮。她說，民選領導人對安全機構「動手腳」，「通常意味著一個體制已經完成向威權主義的轉型」，而不僅僅是民主正在衰退。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Glassel and Scharpf are concerned that Trump’s planned expansion of ICE, in particular, could make it an ideal venue for “detouring” by ambitious underperformers who could be deployed for anti-democratic purposes. The worry is especially profound given the storming of the Capitol at the end of Trump’s first term, albeit by a less organized band of loyalists.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">格拉塞爾和沙爾普夫擔心，川普計劃擴大移民與海關執法局的規模，可能會使其成為那些能力平庸但野心勃勃的人通過「繞道晉陞」獲得發展機會的理想場所，這些人可能繼而被調遣用於反民主目的。這種擔憂之所以格外強烈，也與川普第一任期結束時發生的國會山莊騷亂有關——儘管那次行動的參與者還只是一個組織較為鬆散的忠誠者群體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The playbook for a leader to create a loyal security service, they said, is to set up or repurpose an institution that can become a “second ladder” for career promotions, resource it generously and ensure that the barriers to getting hired there are low, signaling that it offers career opportunities to those who cannot find them elsewhere. (Cutting other government jobs or squeezing budgets can create a larger pool of potential recruits.) The leadership then signals impunity for people on that second ladder, to assure them that they won’t face consequences for wrongdoing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩位學者表示，一個領導人若想建立一支忠誠的安全力量，通常會採用這樣一套劇本：首先，建立或改造一個機構，使其成為職業晉陞的「第二階梯」； 然後，為這個機構投入大量資源，同時降低進入門檻，以此向那些在別處謀不到出路的人發出機會信號。（削減其他政府部門職位或壓縮預算，也會擴大潛在招募對象。）接下來，領導層再向這條「第二階梯」上的人釋放「免責」信號，讓他們相信，自己不會因為不當行為而面臨後果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration seems to tick those boxes, even if Trump’s intentions are obscure. (The president has spoken openly of a third term in violation of the Constitution and disparaged the need for an election.) ICE remains an anti-immigration force, but it is set to be radically expanded, with a budget that would dwarf other federal law-enforcement agencies if the current funding bill passes. The Trump administration has drastically cut employment in other federal agencies, leaving thousands of people unemployed or fearful that they soon might be. And top officials in the administration, including Vice President JD Vance and Stephen Miller, Trump’s deputy chief of staff, explicitly assured ICE officers of “immunity” after immigration officers killed a protester in Minneapolis in January.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這屆政府似乎正在一一對應，儘管川普的真實意圖尚不明朗。（川普曾公開談及違反憲法謀求第三任期，並貶低選舉的必要性。）移民與海關執法局目前仍是針對移民的的執法力量，但正處於大規模擴張之中——若當前的撥款法案獲得通過，其預算規模將使其他聯邦執法機構相形見絀。川普政府已大幅裁減其他聯邦機構的工作崗位，導致數千人失業，或人心惶惶地擔憂自己即將步其後塵。政府高層官員——包括副總統萬斯和川普的副幕僚長斯蒂芬·米勒——在移民官員於今年1月在明尼阿波利斯打死一名抗議者後，明確向移民與海關執法局官員人員承諾「豁免權」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI7xhprhxpQDFTj44wcdAHUDJw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, it has become easier than ever to become an Immigration and Customs Enforcement agent. Ryan Schwank, a former training academy instructor, testified to Congress in February that new cadets “are graduating from the academy despite widespread concerns among training staff that even in the final days of training, the cadets cannot demonstrate a solid grasp of the tactics or the law required to perform their jobs.” ICE recruits must now complete only nine practical examinations to graduate from the training academy, compared with 25 exams that were listed in a training syllabus dated July 2021. It’s a good career opportunity for someone looking to get ahead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，成為一名移民與海關執法局探員比以往任何時候都容易。前培訓學院教官萊恩·施萬克今年2月在國會作證稱，新學員「畢業時，培訓人員普遍擔心，即便到了培訓最後階段，他們也依然無法證明自己真正掌握了執行任務所需的戰術與法律知識」。如今，移民與海關執法局的招募對象只需完成九項實操考試即可從培訓學院畢業，而根據2021年7月的培訓大綱，列出的考試項目為25項。對於一個想要出人頭地的人來說，這無疑是個不錯的職業機會。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Amanda Taub撰寫解析(Interpreter)專欄，這是一個關於全球事務的解釋性專欄和新聞電郵。她常住倫敦。</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260519/actually-democracy-dies-in-hr/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

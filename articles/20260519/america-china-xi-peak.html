@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國衰落中國崛起？沒這麼簡單 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國衰落中國崛起？沒這麼簡單</h1>
+    <h2 class="en-headline">Is America in Decline and China Rising? Not for Long.</h2>
+    <div class="meta-line">ROSS DOUTHAT <span style="margin: 0 8px;">•</span> 2026-05-19</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/05/17/multimedia/17-ed-board-hbvt/17-ed-board-hbvt-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A grand summit in Beijing is a natural time to assess the state of the U.S.-China competition, the dynamics of great power conflict, the balance of forces in this new Cold — or maybe just Cool? — War.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京舉行的盛大峰會正是審視中美競爭態勢、大國衝突動態以及這場新冷戰——或者只是「涼戰」？——力量平衡的恰當時機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s also a good time to revisit my own predictions. Six years ago, in the early days of the coronavirus, I argued that rather than a “Chinese century” we might be looking at a “Chinese decade,” a window when China’s power would hit a peak and the American position would be maximally endangered — but with a more favorable balance awaiting the United States in the later part of the century, if we could get through the Chinese maximum unscathed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這也是重新審視我個人預測的好時機。六年前，在新冠疫情暴發初期，我曾提出，我們或將迎來的與其說是「中國世紀」，不如說可能是「中國十年」：在這個窗口期，中國國力將達巔峰，美國地位面臨最大威脅；但只要我們能安然度過中國實力的鼎盛期，本世紀後半段的力量對比將對美國更為有利。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One part of that analysis was simply wrong. I was writing at a moment when the American response to the pandemic seemed much more shambolic than Beijing’s efficient containment strategy, and I assumed that there could be a kind of Covid dividend for China from that difference. In hindsight, America’s stumbling approach actually proved more effective than China’s in the long run, because the People’s Republic eventually found itself in a permanent-lockdown trap that yielded all kinds of social and economic damage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我的分析中，有一部分顯然錯了。我寫那篇文章時，美國應對疫情的舉措看似比北京高效的防控措施混亂得多，我因此認為，這種差異會為中國帶來某種新冠紅利。事後看來，美國磕磕絆絆的應對方式從長遠看實則比中國更有效，因為中華人民共和國最終陷入了長期封控的陷阱，造成了各類社會與經濟創傷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in other ways, the 2020s have proceeded somewhat as I expected. The American imperium has been hard pressed on every front, and our leadership — slumping and senescent in the last presidency, obnoxious and bullying in this one — has gifted China a reputation for relative stability, notwithstanding Xi Jinping’s own aggressive and repressive moves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在其他方面，2020年代的局勢發展大致如我所料。美國帝國在各條戰線均承受巨大壓力；我們的領導力——上屆政府萎靡衰老，本屆政府蠻橫霸道——反而讓中國贏得了相對穩定的聲譽，儘管習近平本人亦採取了咄咄逼人和鎮壓性的舉措。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKGC2ZvhxpQDFfEtswAdjdUi3g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is a lot of talk about rebuilding American manufacturing, and the Trump era has seen a partial decoupling of the United States and China, a clear shift away from the “Chimerica” model that defined the 2010s. But the decoupling is taking place in the shadow of a profound Chinese industrial advantage and continuing Chinese scientific and technological success. We can debate what it means that China lags just behind Silicon Valley in the artificial intelligence race (that’s the topic of this week’s episode of my podcast, “Interesting Times”), but our edge in frontier models doesn’t feel like a definite hard-power advantage as long as China is radically outpacing us in building machine tools, robots, ships and drones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當下，關於重建美國製造業的討論層出不窮，川普時代也見證了美中部分脫鉤，這明顯背離了定義2010年代的「中美一體」模式。然而，脫鉤進程始終籠罩在中國顯著的工業優勢與持續的科技成就陰影之下。中國在人工智慧領域緊隨矽谷之後意味著什麼，對此我們各持意見（這是我的播客Interesting Times的本週話題）；但只要中國在機床、機器人、船舶與無人機製造領域遠超我們，我們在前沿模型上的優勢就難言是絕對的硬實力優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Six months ago, I was telling myself an optimistic story about the national security balance, where the United States maintained an edge in battlefield experience — with our support for Ukraine against Russia and our interventions in Iran and Venezuela serving as a testing ground for new weapons and A.I.-enabled tactics. But watching the American military stockpile collapse under the pressure of a regional war against Iran this year should make everyone skeptical that our advantages are adequate for a sustained conflict in East Asia. Fighting Iran to a stalemate seems like the kind of thing that happens just before you fight the Chinese and lose.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">六個月前，我曾為自己描繪了一幅關於國家安全平衡的樂觀圖景：美國在戰場經驗上保持著優勢——支持烏克蘭對抗俄羅斯以及在伊朗和委內瑞拉的干預行動都成為測試新武器和人工智慧戰術的試驗場。但今年，在與伊朗的地區戰爭壓力下，美國軍事儲備捉襟見肘，這會讓所有人懷疑：我們的優勢是否足以支撐東亞的長期衝突？與伊朗的戰爭陷入僵局似乎正是與中國交戰並敗北之前會發生的那種事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So the world of the 2020s does seem to have gone China’s way in very important respects. To the extent that comparisons to the actual Cold War are relevant, China is a more powerful material competitor than the Soviet Union ever managed to become, and our so-far-unsuccessful Iranian gamble has left the American hard-power position looking as parlous as it’s ever been.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，2020年代的世界在諸多關鍵領域確實朝著有利於中國的方向發展。若要與真實的冷戰相比，中國的物質實力遠超當年的蘇聯；我們在伊朗問題上迄今無果的豪賭也讓美國的硬實力陷入史上罕見的岌岌可危境地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But what about the world of the 2040s or 2060s? Six years ago I wrote that China’s growth rate might be slowing, making it less likely to achieve either the living standards of its East Asian neighbors or eclipse the United States as the world’s largest economy. Since then, the Chinese attempt to lock in a broad economic sphere of influence through its Belt and Road Initiative has hit repeated setbacks. And as it turned out, 2021 was the point of greatest nominal-G.D.P. convergence with the United States, and since then America has grown faster while China has struggled with its Covid hangover and various internal problems — raising the possibility that there will never be a moment when the Chinese economy is the biggest in the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但2040或2060年代又會如何？六年前我曾寫道，中國的經濟增長率可能正在放緩，使其既難以企及東亞鄰國的生活水平，也難以超越美國成為全球第一大經濟體。此後，中國試圖通過「一帶一路」倡議構建廣泛經濟影響力，卻屢遭挫折。事實證明，2021年是中國名義GDP與美國差距最小的一年，隨後美國增速加快，中國則受疫情後遺症與各類內部問題困擾——這使得中國經濟更有可能永遠無法成為世界第一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or maybe we should call it a likelihood rather than a possibility, since it’s incredibly difficult to generate high rates of growth under conditions of rapid population aging — and the other great trend of the last six years is that China’s demographic situation now looks much, much worse.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">或許不是「可能無法成為世界第一」，而是「大概率無法成為世界第一」：在人口快速老齡化的背景下，維持高增長極其困難。而過去六年的另一大趨勢是，中國的人口形勢如今看起來要糟糕得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The end of the one-child policy in 2016 was supposed to boost birthrates. Instead the Chinese fertility rate has been crashing, hitting an average of 1.0 births per a woman’s lifetime in 2025, half the replacement level; it was the country’s fourth consecutive year of population decline. The grim social trends that attract justified attention in the United States — the alienation of the sexes from each other, a loss of interest in marriage and family — seem to have advanced much more rapidly in China. A new paper on attitudes among Chinese young people finds that 32 percent of those aged 18 to 24 reported “no desire for children,” up from 5 percent in 2012.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2016年獨生子女政策終結本應提振生育率，結果卻是中國的生育率持續暴跌：2025年，女性終身平均生育子女數僅為1.0，僅為人口更替水平的一半；這已是中國連續第四年人口負增長。在美國引發廣泛關注的嚴峻社會趨勢——兩性關係疏離、對婚姻和家庭的興趣減退——在中國似乎發展得更為迅速。一項關於中國年輕人態度的新研究顯示，18至24歲群體中，32%明確表示不想要孩子，2012年這一比例僅為5%。</div></div></div></div></div><div class="big_ad" data-google-query-id="COC_2ZvhxpQDFQHglAkd5OETLA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These patterns make a striking counterpoint to the evidence of increasing Chinese confidence, even arrogance and hubris, about the inevitability of American decline. Just how confident can Chinese people really be in their culture’s future if the rising generation is so disinclined to reproduce? Just how confident should China’s leaders be that they can outlast the United States if their population could be cut in half over the next few generations? How much power, hard or soft — and China’s global cultural influence remains notably limited — can a rapidly aging civilization expect to project?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些趨勢與中國日益高漲的自信——甚至自負與狂妄——形成鮮明對比：不少人堅信美國必然衰落。若年輕一代如此不願生育，中國人對自身文化的未來究竟能有多大信心？若未來幾代中國人口可能減半，中國領導人又怎能確信自己能比美國更長久地存續下去？一個快速老齡化的文明又能指望投射多少硬實力與軟實力？何況中國的全球文化影響力至今仍相當有限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the very least, any scenario where Chinese power doesn’t ebb has to involve radical technological disruption. As in, a world where robots and A.I. take over an extraordinary share of economic and creative labor. Or a world where radical health improvement makes population aging far less economically significant. Or a world where technology revolutionizes human reproduction, making it possible for authoritarian states to engineer repopulation, like the World State with its hatcheries in Aldous Huxley’s “Brave New World.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至少，任何中國實力不會衰退的可能場景都必然伴隨著顛覆性的技術變革：比如一個機器人與人工智慧接管絕大部分經濟與創意勞動的世界；或是一個醫療技術飛躍，大幅削弱老齡化對經濟衝擊的世界；又或者是一個技術徹底革新人類生殖方式的世界，讓威權國家能像奧爾德斯·赫胥黎的《美麗新世界》中擁有孵化場的「世界國」那樣進行人口工程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In any of these scenarios, a potential Chinese age in human history will look like no era or imperium we’ve ever seen before. Whereas if you imagine a future that remains at least somewhat normal, somewhat human, it still seems reasonable to short the Chinese century and bet that Beijing’s power is peaking now or soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論在哪種場景裡，人類歷史中可能的「中國時代」都將呈現出前所未有的面貌，與我們以往所見的任何時代或帝國都截然不同。反之，若設想一個至少在某種程度上仍保持著正常、多少具備人性的未來，那麼看空「中國世紀」、押注北京的實力正在或即將達到頂峰，似乎仍是合理的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then the great question becomes whether Xi Jinping sees the world this way. To the extent that we believe in the narrative of Chinese confidence, a comfortable expectation in the Middle Kingdom that America’s problems are part of a long arc of Western decline, we should be hopeful that we can pass through this moment without a deadly confrontation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那麼，關鍵問題在於習近平是否以這種方式看待世界。若我們相信中國從自信角度出發的敘事——在這個中央王國，人們普遍認為美國的問題是西方長期衰落趨勢的一部分——那麼我們有理由期待，我們能夠平安度過這一時刻，避免發生致命的對抗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese hubris, in this sense, might be the best guarantor of world peace, ensuring that Beijing will wait and wait to test its power against ours, wait and wait to claim Taiwan … and find, in waiting, that its best chance has passed it by.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從這個意義上說，中國的自負或許是世界和平的最大保障：它會確保北京一再推遲與我們較量實力的時機，暫不統一台灣……在等待中，發現最佳時機已經錯過。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But presumably Xi and his circle can see all the trends that I’ve just described. And if they don’t have perfect confidence in technological revolution, if they aren’t self-deceived about the prospects for American collapse, then I would expect them to have a plan for potential confrontation very, very soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但可以想見，習近平及其核心圈子同樣能看清我剛才描述的所有趨勢。若他們對技術革命並非絕對自信，對美國崩潰的前景沒有自欺欺人，那麼我預計，他們很快——非常、非常快——就會針對潛在的對抗制定出計劃。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Ross Douthat自2009年起一直在時報擔任觀點版面的專欄作者，也是觀點版播客節目《有趣的時代》的主持人。他的最新著作是《Believe: Why Everyone Should Be Religious》。歡迎在Facebook和Twitter上關注他。</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260519/america-china-xi-peak/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
