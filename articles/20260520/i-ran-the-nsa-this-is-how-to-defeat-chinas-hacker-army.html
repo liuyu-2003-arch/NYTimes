@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前美國國安局長：如何擊敗中國駭客軍團 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">前美國國安局長：如何擊敗中國駭客軍團</h1>
+    <h2 class="en-headline">I Ran the N.S.A. This Is How to Defeat China’s Hacker Army.</h2>
+    <div class="meta-line">TIMOTHY D. HAUGH <span style="margin: 0 8px;">•</span> 2026-05-20</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/05/11/opinion/11haugh-daniel-everett/11haugh-daniel-everett-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Daniel Everett</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Behind the pageantry that will be on display during President Trump’s meeting with President Xi Jinping of China this week is a less pleasant reality. For at least the last decade, Beijing has been actively targeting America’s telecommunications networks, intellectual property and electrical and water utilities in a sustained campaign of intrusion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統與中國國家主席習近平會面的盛大排場背後隱藏著一個不是那麼令人愉快的現實。過去至少十年間，北京一直在對美國的電信網路、知識產權以及電力和供水等基礎設施發動持續的侵入行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The summit provides an opportunity to raise the issue more forcefully with Mr. Xi than American leaders have in the past. But America also has its own unpleasant reality to face: Protecting the country from bad actors in cyberspace is a job for Americans, and we haven’t been doing enough to defeat China’s efforts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這次峰會提供了一個機會，讓美國領導人可以比以往任何時候都更有強有力地向習近平提出這一問題。但美國自己也不得不面對一個令人難堪的現實：保護國家免受網路空間惡意行為者的侵害本來就是美國自己的責任，而我們在抵禦中國相關行動方面做得還不夠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The good news is that the United States has a huge advantage in today’s cybercompetitions: the extraordinary concentration of technical capability, network reach and institutional knowledge embedded in American industry. Our cybersecurity companies monitor billions of devices globally, observing adversary activity faster and more precisely than any intelligence service. American cloud and telecommunications providers power the preponderance of global commerce. U.S. technology firms operate at a scale no government entity can replicate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">好消息是，美國在當今的網路競賽中擁有巨大優勢：美國業界匯聚了強大的技術能力、網路覆蓋範圍和組織記憶。我們的網路安全公司監控著全球數十億台設備，能夠比任何情報機構更快、更精確地觀察對手的活動。美國的雲計算和通信公司支撐著全球絕大多數商業運轉。美國科技企業的規模是任何政府實體都無法複製的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of the challenge has been engaging American technology companies in the fight. The tech industry can no longer accept the status quo of vulnerabilities across its networks. But the government can take steps to fix things, too, by rewriting opaque laws, helping states and municipal systems patch vulnerabilities, and investing in countermeasures to defend against the most dangerous emerging cyberthreats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">挑戰之一在於讓美國科技公司參與到這場鬥爭中來。科技行業不能再安於網路系統長期存在漏洞的現狀。但政府也可以採取修補行動，比如修訂模糊的法律、幫助州和地方系統修補漏洞，以及投資於防禦措施以應對最危險的新興網路威脅。</div></div></div></div></div><div class="big_ad" data-google-query-id="COjPyOiiyZQDFScSRAgd2Q0oMA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We need a system with shared responsibility for defending America in cyberspace. Voluntary information sharing between private companies and the government — the default approach to cyberdefense until now — is not enough. Here’s how industry, local, state and federal government can get serious about defending against cyberattacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們需要建立一個共同負責保衛美國網路空間的體系。私營公司與政府之間自願的信息共享——迄今為默認的網路安全防禦方式——是不夠的。以下是產業界與地方、州和聯邦政府認真應對網路攻擊的可行路徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s important to understand the scale of the problem. Through its hacking proxy, Volt Typhoon, China has sought to pre-position malware in hundreds of local utility systems with the intent to disrupt Americans’ critical water and electrical supplies. With Salt Typhoon, which gained access to networks nationwide, it has tapped the phones of senior American officials and the telecommunications providers serving millions of Americans. Every year, China-sponsored actors steal intellectual property from U.S.-based companies worth between $225 billion and $600 billion, according to a 2017 report from the Commission on the Theft of American Intellectual Property.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">了解問題的規模很重要。中國試圖通過其駭客代理組織「伏特颱風」在數百個地方的公用事業系統中預置惡意軟體，意圖擾亂美國民眾的關鍵水電供應。而「鹽颱風」已滲透全國網路，竊聽美國高級官員的電話，併入侵為數百萬美國人提供服務的電信網路。根據美國知識產權盜竊委員會2017年的一份報告，每年中國資助的行為者從美國公司竊取的知識產權價值在2250億至6000億美元之間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fortunately, the model for how to fight back already exists. In February 2026, Google disrupted a Chinese espionage campaign that targeted 53 organizations across 42 nations. By terminating the attackers’ use of cloud storage, revoking their access to networks and neutralizing the programs they used to control and activate their plots, Google accomplished in days what years of government advisories could not. That operation is the template: Companies should identify malicious activity on their platforms and remove it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幸運的是，反擊的範例已然存在。2026年2月，谷歌挫敗了一起針對42個國家、53家組織的中國間諜活動。通過切斷攻擊者的雲存儲權限、撤銷其網路訪問權限並使其用於控制和實施陰謀的程序失效，谷歌在數天之內完成了政府歷年警示都未能實現的目標。這一行動提供了一個模板：企業應當識別並清除其平台上的惡意活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The challenge is enabling major technology and cybersecurity firms to follow it. In theory, it is not hard: The ability to spot bad actors and the tools to neutralize them are present across the private sector. What has been missing is a clear expectation that this is part of the job, not an optional public service. The model should be more akin to the banking industry’s relationship to fraud: When fraud is detected, industry stops it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">真正的挑戰在於，如何讓大型科技企業和網路安全公司遵循這一樣板。從理論上講，這並不難：私營部門具備發現惡意行為者的能力和消除它們的工具。一直以來缺失的是一種明確的預期，即這是份內職責，而非可選的公益服務。這套模式應更接近銀行業對待欺詐的方式：一旦發現欺詐行為，行業會立即出手阻止。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To encourage industry to step up the way Google did, Congress should update the legal architecture governing cyberoperations to remove ambiguity that some private companies say makes it hard to defend themselves. Explicitly authorizing coordinated disruption operations by U.S. industry on its own networks against foreign state actors would free tech companies to use tools they already have. Another positive step might be to create a special court, like the one used to authorize domestic surveillance, to authorize such operations, an idea put forward by the Center for Strategic and International Studies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為鼓勵業界像谷歌那樣挺身而出，國會應更新監管網路行動的法律架構，消除一些私營公司聲稱使其難以自我防禦的模糊地帶。明確授權美國業界在其自有網路上針對外國國家行為者開展協同阻斷行動，將使科技公司能夠自由動用它們已有的工具。另一個積極的舉措或許是參照授權國內監控的專門法庭模式，設立一個專門法庭來批准此類行動——這一構想已由戰略與國際研究中心提出。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Separately, Congress and the federal government can improve the defense of electric, water and other utilities by helping states and local authorities to buy and deploy the best cyberdefenses, which many currently can’t afford to purchase and maintain on their own. There are other opportunities for innovations, some technical, others organizational; Washington and the states will need help from universities and industry to layer our defenses and identify and close vulnerabilities before adversaries can exploit them, especially when doing so requires using fast-advancing A.I. tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，國會和聯邦政府可以通過幫助各州和各地方當局購買和部署最先進的網路防禦系統來改善電力、供水及其他公用事業的防禦能力，目前許多地方當局既無力購置，也缺乏維護能力。還有其他創新機會，有些是技術層面的，有些是組織層面的；華盛頓和各州需要藉助高校和產業界的力量，構建多層次防禦體系，在對手利用漏洞之前發現並將其堵上——尤其是在這一過程中需要運用快速迭代的人工智慧工具的背景下。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJeTyOiiyZQDFQwK7wIdXj08KQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Defense isn’t everything. Washington must clearly and publicly articulate to China and other nations that attacks on America’s economy and critical infrastructure are unacceptable and will carry consequences. Until now, that message has been muted. It needs to be stated plainly and enforced consistently.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">被動防禦並非全部。華盛頓必須向中國及其他國家清晰、公開地闡明：對美國經濟和關鍵基礎設施的攻擊是不可接受的，必將付出代價。迄今為止，這一信息一直不夠明確。它需要直接了當地表達出來，並得到持續執行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here, too, the United States has advantages. It is uniquely positioned to identify Chinese operations with precision, expose their intent and identify the specific individuals within Beijing’s leadership who authorize them. Changing behavior in an autocracy means changing the cost-benefit calculations of those who hold power. Publicly naming responsible officials — with evidence — is one of the most effective tools available. It has been used sparingly. It should be used more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這方面，美國同樣具有優勢。美國擁有獨特的能力，可以精準識別中國的行動、揭露其意圖，並鎖定北京領導層中授權這些行動的具體個人。改變威權國家行為的關鍵在於改變決策者的成本收益計算。公開點名責任人並附上證據是最有效的工具之一。然而這一工具迄今使用甚少，理應更為頻繁地使用才對。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beyond naming the leaders responsible, the intelligence community, law enforcement and relevant departments and agencies must use their unique authorities to more actively target and disrupt China’s cybercampaigns — independently and in concert with allies. When they identify authorities behind malign cyberattacks, the U.S. government should use sanctions, indictments, disruptions and regulatory changes more frequently against bad actors. This wouldn’t be new; the government has led these activities episodically.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了點名責任人外，情報界、執法部門及相關政府部門和機構必須更積極地利用其獨有的權限，更主動地打擊和破壞中國的網路行動——既要獨立行動，也要與盟友協同配合。一旦查明惡意網路攻擊背後的主使，美國政府應更頻繁地對惡意行為者動用制裁、起訴、阻斷和監管調整等手段。這些手段並不新，只是過去使用不夠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Finally, to defend the country against cyberattacks, U.S. Cyber Command needs to keep pace with China’s accelerating investment. Recent congressional increases to funding are welcome, but represent around 1 percent of the overall defense budget — inadequate for what is, in practice, one of the most consequential strategic competitions of this era.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最後，為保衛國家免受網路攻擊，美國網路司令部必須跟上中國不斷加快的投入步伐。國會近期增加預算固然值得肯定，但它僅佔整體國防預算的約1%——對於實際上已成為這個時代最具戰略意義的競爭領域之一而言，這一投入是遠遠不夠的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The claim that America is outmatched in cyberspace — technically, organizationally or intellectually — is wrong. The capability to defend the nation’s economy and critical infrastructure is distributed across American industry, government and academia right now. American companies have visibility into adversary operations that no other nation’s government or private sector can match. American government agencies possess authorities and intelligence that no industry partner has. The combination, properly aligned and legally enabled, is formidable — and increasingly needed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">認為美國在網路空間——無論是技術、組織還是智力層面——已落於下風的說法是錯誤的。捍衛國家經濟和關鍵基礎設施的能力分布在美國的產業界、政府和學界。美國企業對對手行動的洞察能力，是任何其他國家的政府或私營部門都無法比擬的。美國政府機構擁有業界合作夥伴所不具備的權限和情報。兩者若能妥善整合、依法賦能，就能形成極其強大的合力，而美國越來越需要這種合力。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2025年5月11日。</p><p class="cn-p">Timothy D. Haugh將軍是耶魯大學傑克遜全球事務學院的傑出高級研究員，也是喬治城大學外交學院的傑出研究員。他曾任美國網路司令部司令、國家安全局局長。2025年他以四星上將軍銜從美國空軍退役。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260520/i-ran-the-nsa-this-is-how-to-defeat-chinas-hacker-army/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
