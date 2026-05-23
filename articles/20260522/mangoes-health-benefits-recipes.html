@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芒果有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">芒果有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Mangoes?</h2>
+    <div class="meta-line">CAROLINE HOPKINS LEGASPI <span style="margin: 0 8px;">•</span> 2026-05-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/05/20/well/WELL-HEALTHY-MANGO1/WELL-HEALTHY-MANGO1-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In India, the mango is known as the “king of fruits.” The fruit, and its tree and leaves, are symbols of prosperity, good luck and love.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在印度，芒果被稱為「水果之王」。這種水果及其樹木和葉子都是繁榮、好運和愛情的象徵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There’s a lot to love nutritionally, too. Mangoes are rich in vitamin C and potassium. And they freeze well, making them a year-round smoothie staple.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">營養方面，芒果也有很多讓人喜愛的地方。芒果富含維生素C和鉀。而且它們適合冷凍，可以作為一年四季製作奶昔的主打食材。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what to know about their health attributes, along with delicious recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是關於其健康屬性須知的<span>信息，以及來自《紐約時報》烹飪頻道的美味食譜。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re high in sugar — but it’s not like eating a cookie.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們含糖量很高，但跟曲奇仍然是兩碼事。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CMrC9vmkzpQDFamrOgUd10YcdA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One half of a peeled mango contains about 23 grams of sugar, which is more than twice what you get in a typical store-bought chocolate chip cookie.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>半個去皮芒果含有大約23克糖，是你在商店購買的普通巧克力碎餅乾中所能攝入糖分的兩倍多。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the natural sugar in mangoes doesn’t spike your blood glucose the way the added sugar in cookies does, said Jessica Higgins, a dietitian in the Lifestyle Medicine program at NYC Health + Hospitals Woodhull. That’s because your body has to break down the beneficial fiber in a mango to access the fruit’s sugar. This takes time, which gives your body a chance to gradually process the glucose. In a cookie, she said, the refined sugar is immediately available, which is why it can cause a spike.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但紐約市健康與醫院系統<span>伍德霍爾醫院生活方式醫學項目的營養師傑西卡·希金斯說，芒果中的天然糖分不會像餅乾中的添加糖那樣讓你的血糖飆升。這是因為你的身體必須分解芒果中有益的纖維才能吸收水果的糖分。這需要時間，給你的身體提供了一個逐漸處理葡萄糖的機會。她說，在</span>曲奇中，精製糖是可以被立即吸收的，這就是它會引起血糖飆升的原因。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One half of a mango has around 10 percent of your daily fiber needs, said Stephanie Rogus, an assistant professor and extension nutrition specialist at Texas A&amp;M University. Mangoes aren’t quite as high in fiber as fruits like apples or pears — in part because we typically don’t eat the fibrous mango skin — but they still cross the “good source of fiber” threshold, Dr. Rogus said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德克薩斯農工大學助理教授、推廣營養專家斯蒂芬妮·羅古斯說，半個芒果大約含有你每日所需纖維量的10%。芒果的纖維含量不像蘋果或梨等水果那麼高——部分原因是我們通常不吃纖維豐富的芒果皮——但它們仍然達到了「良好纖維來源」的標準，她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beyond slowing down your digestion, the fiber in mangoes can help keep your blood cholesterol in check and support the good bacteria in your gut, said Maya Vadiveloo, a dietitian and associate professor of nutrition at the University of Rhode Island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅德島大學營養學副教授、<span>營養師瑪雅·瓦迪維盧說，除了減緩你的消化速度，芒果中的纖維還可以幫助控制你的血膽固醇並支持腸道中的益生菌。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Their vitamin C levels are up there with citrus fruits.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們的維生素C水平可以與柑橘類水果相媲美。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One half of a mango contains 61 milligrams of vitamin C, similar to what you’d get from one half of a navel orange or a grapefruit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>半個芒果含有61毫克維生素C，與你從半個臍橙或葡萄柚中攝入的量</span>相當。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLvY9vmkzpQDFfBaCAQdbwsBgQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beyond vitamin C’s well-known immune-boosting properties, it can also help your body absorb iron from plant-based foods, Dr. Vadiveloo said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>瓦迪維盧說，除了維生素C眾所周知的免疫提升特性外，它還可以幫助你的身體從植物性食物中吸收鐵質。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The iron in foods like leafy greens and beans isn’t as easily accessible as the iron you get from eating animal products, she said. Pairing these foods with vitamin C-rich foods like mango can help convert the iron into a more usable form.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，綠葉蔬菜和豆類等食物中的鐵質不像吃動物產品時獲得的鐵質那樣容易吸收。將這些食物與芒果等富含維生素C的食物搭配，可以幫助將鐵質轉化為更容易被利用的形式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Their potassium could help lower your blood pressure.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們含有的鉀可能有助於降血壓。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bananas may be the most famous potassium-rich tropical fruit, but mangoes aren’t that far behind. One half of a mango contains 282 milligrams; a medium banana has 422.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">香蕉可能是最著名的富含鉀的熱帶水果，但芒果也並沒有落後太多。半個芒果含有282毫克鉀；一根中等大小的香蕉含有422毫克。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potassium can help to counteract the heart disease risk that comes with consuming too much sodium, Ms. Higgins said. Excess sodium can cause your body to retain fluid, which can raise your blood pressure. Over time, high blood pressure can increase your risk for heart attacks and strokes. Potassium helps to balance your body’s fluid levels, she said, so it can help bring your blood pressure back down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>希金斯說，鉀有助於抵消攝入過多鈉帶來的心臟病風險。過量的鈉會導致你的身體滯留水分，從而升高你的血壓。隨著時間的推移，高血壓會增加</span>心梗和中風的風險。她說，鉀有助於平衡身體的水分水平，因此它可以幫助把血壓降下來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the best way to eat mango?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>吃芒果最好的方法是什麼？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CNTn9vmkzpQDFWpcCAQdjoo9dQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Try it frozen.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>嘗試冷凍芒果。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If a ripe mango is nowhere to be found, Dr. Vadiveloo recommended buying frozen chunks. As long as the frozen kind doesn’t contain added sugar, it’s just as nutritious as fresh mango, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果找不到成熟的芒果，瓦迪維盧建議購買冷凍芒果塊。她說，只要冷凍芒果不含添加糖，就和新鮮芒果一樣有營養。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Don’t overdo it on the dried mango.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>不要吃太多芒果乾。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One-half cup of dried mango contains 255 calories and 53 grams of sugar — far more than the 50 calories and 11 grams of sugar you’d get from the same amount of fresh fruit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">半杯芒果乾含有255卡路里熱量和53克糖——遠高於同等數量新鮮芒果所含的50卡路里熱量和11克糖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When we take all the water out, we’re concentrating the sugars and the calorie-containing macronutrients,” Ms. Higgins said. “That’s a pretty big difference.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當我們脫掉水分時，實際上就是濃縮了糖分和含有卡路里的大量營養素，」希金斯女士說。「這是一個相當大的差異。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>To judge ripeness, use your thumb.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>用拇指判斷成熟度。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CNSA9_mkzpQDFYdlCAQdmq8imA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Higgins recommended using what she called the “press method” to select a perfectly ripe mango. When you gently press your thumb into the fruit, you should feel just a slight give.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希金斯女士建議使用她所謂的「按壓法」來挑選完美成熟的芒果。當你用大拇指輕輕按壓水果時，你應該能感覺到輕微的凹陷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some fresh ways to enjoy that perfect mango, from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是一些享用完美芒果的新鮮方式，來自《紐約時報》烹飪頻道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Mango With Chile-Lime Salt</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 芒果配辣椒、青檸和鹽</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Mango-With-Chile-Lime-Salt-wflb/12WELL-HEALTHY-MANGO-Mango-With-Chile-Lime-Salt-wflb-master1050.jpg" src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Mango-With-Chile-Lime-Salt-wflb/12WELL-HEALTHY-MANGO-Mango-With-Chile-Lime-Salt-wflb-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this take on a classic Mexican street-food snack, mango is sprinkled with a blend of ground chile, lime zest and salt to bring out its tang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道對經典墨西哥街頭小吃的改良版本中，芒果撒上辣椒粉、青檸皮碎和鹽的混合物，以帶出其酸甜風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Mango With Chile-Lime Salt</strong></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>Recipe:</b> <b>Mango With Chile-Lime Salt</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Mango-Avocado Salad With Lime Vinaigrette</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 青檸油醋汁芒果酪梨沙拉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-kc-mango-salad-fqzg/12WELL-HEALTHY-MANGO-kc-mango-salad-fqzg-master1050.jpg" src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-kc-mango-salad-fqzg/12WELL-HEALTHY-MANGO-kc-mango-salad-fqzg-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist:Frances Boswell.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A savory lime-and-fish-sauce dressing coats this creamy, crunchy salad. Pair with a protein and you’ve got dinner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一款鮮美的青檸和魚露醬汁包裹著這道口感細膩、爽脆的沙拉。配上蛋白質，你就可以享用晚飯了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Mango-Avocado Salad With Lime Vinaigrette</strong></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>Recipe:</b> <b>Mango-Avocado Salad With Lime Vinaigrette</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Mango Lassi</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 芒果拉西</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Lassi-cphz/12WELL-HEALTHY-MANGO-Lassi-cphz-master1050.jpg" src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Lassi-cphz/12WELL-HEALTHY-MANGO-Lassi-cphz-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This refreshing South Asian drink blends ripe, sweet mango with yogurt and milk (or water). Topping it with pistachios, almonds and cardamom is optional — and delicious.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款清爽的南亞飲品將成熟甜美的芒果與酸奶和牛奶（或水）混合在一起。在上面可以選擇撒上開心果、杏仁和豆蔻——而且非常美味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Mango Lassi</strong></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>Recipe:</b> <b>Mango Lassi</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Poke Bowl</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 波奇飯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Poke-Bowl-wkvc/12WELL-HEALTHY-MANGO-Poke-Bowl-wkvc-master1050.jpg" src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Poke-Bowl-wkvc/12WELL-HEALTHY-MANGO-Poke-Bowl-wkvc-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The poke bowl duo of chopped fish and rice can take on endless additions. Here, mango gives the savory meal a dose of juicy tartness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">切塊的魚肉和米飯組成的波奇飯組合可以添加無限多的配料。在這裡，芒果為這頓鮮美的菜肴增添了一抹多汁的酸甜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Poke Bowl</strong></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>Recipe:</b> <b>Poke Bowl</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Black Pepper Chicken Thighs With Mango, Rum and Cashews</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 黑椒芒果朗姆酒腰果炒雞腿肉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Black-Pepper-Chicken-Thighs-tclp/12WELL-HEALTHY-MANGO-Black-Pepper-Chicken-Thighs-tclp-master1050.jpg" src="https://static01.nyt.com/images/2025/05/12/multimedia/12WELL-HEALTHY-MANGO-Black-Pepper-Chicken-Thighs-tclp/12WELL-HEALTHY-MANGO-Black-Pepper-Chicken-Thighs-tclp-master1050.jpg"/></div><figcaption><span></span> <cite>Andrew Scrivani for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Stirring mango into a sizzling skillet of chicken and spiced cashews makes this hearty meal taste like sunshine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將芒果拌入正在滋滋作響的雞肉和香料腰果煎鍋中，讓這頓豐盛的菜肴散發著陽光般的美妙滋味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Black Pepper Chicken Thighs With Mango, Rum and Cashews</strong></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>Recipe:</b> <b>Black Pepper Chicken Thighs With Mango, Rum and Cashews</b></div></div></div></div></div><div class="big_ad" data-google-query-id="COql9_mkzpQDFftOCAQdvvQYRA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2025年5月12日。</p><p class="cn-p">Caroline Hopkins Legaspi是時報記者，主要關注營養和睡眠問題。</p><p class="cn-p">翻譯：經雷、杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260522/mangoes-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
