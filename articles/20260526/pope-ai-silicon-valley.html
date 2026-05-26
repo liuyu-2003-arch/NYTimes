@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教宗警告人工智慧風險 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">教宗警告人工智慧風險</h1>
+    <h2 class="en-headline">As A.I. Fever Rises in Silicon Valley, Pope Leo Has a Few Words</h2>
+    <div class="meta-line">DAVID STREITFELD <span style="margin: 0 8px;">•</span> 2026-05-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/05/25/multimedia/00biz-pope-valley-PROMO/00biz-pope-valley-PROMO-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Remo Casilli/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silicon Valley has always had messianic dreams, dating back to the days when computers filled entire rooms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷一直以來都懷揣著救世主式的夢想，這可以追溯到計算機動輒佔據整個房間的時代。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the oldest industry jokes has a programmer asking a computer, “Is there a God?” The computer answers: “There is now.” The Whole Earth Catalog, a proto-hacker compendium of tools that deeply influenced Steve Jobs, proclaimed, “We are as gods and might as well get good at it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">業內最古老的笑話之一是一個程序員問計算機：「上帝存在嗎？」計算機回答道：「現在存在了。」曾對史提夫·賈伯斯產生深遠影響的駭客工具指南雛形《全球目錄》(Whole Earth Catalog)曾宣稱：「我們與神無異，既然如此，不妨讓自己變得擅長於此。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By investing hundreds of billions of dollars in artificial intelligence, tech leaders are signaling that those early dreams have been fulfilled. Next stop, transcendence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過向人工智慧領域投入數千億美元，科技領袖們正在釋放一個信號，即當初那些夢想已經實現。下一站，便是超越。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just as the new religion of A.I. seemed to be solidifying its control over mankind’s destiny, however, a new voice is being heard on the other side of the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，正當這種新的人工智慧宗教似乎正在鞏固其對人類命運的控制時，地球的另一端傳來了一種全新的聲音。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNC0mLvr1ZQDFfAQ0AQdingOOQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Its message to the tech industry: Slow down. Elevate the human. Machines are not gods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它向科技行業傳達的信息是：慢下來。給人類帶去提升。機器不是神。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pope Leo XIV, the first American pope, published with great ceremony on Monday his first encyclical, Magnifica Humanitas, or “Magnificent Humanity.” The 42,300-word policy statement is respectful and named no names, but is at heart a sharp rebuke to Silicon Valley’s assertions that it alone can be trusted to develop the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第一位美國籍教宗良十四世<span>週一隆重發表了他的首份通諭——《崇高人性》</span>(Magnifica Humanitas)。這份長達42300詞的政策聲明言辭克制且沒有指名道姓，但其實質上是對矽谷堅信只有自己才配引領未來這一主張的尖銳斥責。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A.I. can be a valuable tool,” the pope acknowledged, but the technology “tends to amplify the power of those who already possess economic resources, expertise and access to data.” Without adequate oversight and transparency, he warned, “those who control A.I. will impose their own moral vision, which will become the invisible infrastructure of these systems.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「人工智慧可以成為一種寶貴的工具，」教宗承認，但這項技術「往往會放大那些已經擁有經濟資源、專業知識和數據獲取管道的人的權力。」他警告說，如果沒有充分的監管和透明度，「控制人工智慧的人將強加他們自己的道德圖景，而這會成為這些系統的隱形基礎設施。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That would be bad news, he said: “A more moral A.I. is not enough if that morality is determined by a few.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，那將是一場災難：「如果道德僅由少數人決定，那麼一個更具道德感的人工智慧也是不夠的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The encyclical is expected to be at the center of the 70-year-old pontiff’s reign in the same way that Rerum Novarum, which advocated for workers’ rights and a fair wage, was at the heart of Pope Leo XIII’s papacy at the end of the 19th century. Released while Silicon Valley slept, Magnifica Humanitas marked the latest effort to shape and possibly restrain the A.I. boom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份通諭預計將成為這位70歲教宗執政時期的核心，正如19世紀末教宗良十三世倡導工人權利和公平薪酬的《新事》通諭在其任期內的核心地位一樣。在矽谷還在熟睡時發表的《崇高人性》標誌著引導並可能限制人工智慧熱潮的最新嘗試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump last week came close to signing a measure that would have given the federal government the power to evaluate A.I. models before they were publicly released — then canceled the signing. The same day, California’s governor, Gavin Newsom, signed a measure to study A.I.’s impact on employment, an acknowledgment of the turmoil the companies insist is coming. Elon Musk, who has his own A.I. ambitions, tried to derail OpenAI, the leading A.I. company, with a lawsuit but was thwarted this month on technical grounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>川普總統上週險些簽署一項法案，該法案原本將賦予聯邦政府在人工智慧模型公開發布前對其進行評估的權力——但他隨後取消了簽署。同一天，加利福尼亞州州長加文·紐森簽署了一項法案，旨在研究人工智慧對就業的影響，這等同於承認了各大公司堅稱即將到來的動盪。</span>本身也<span>抱有人工智慧雄心的伊隆·馬斯克曾試圖通過訴訟摧毀領先的人工智慧公司OpenAI，但本月因技術性原因遭到駁回。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CNHKmLvr1ZQDFR8X0AQdoqc1yQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Magnifica Humanitas arrives as a challenge to tech moguls like Mr. Musk, whose power and influence rival such medieval popes as Innocent III. Pope Innocent asserted that the papacy was the sun and mere kings the moon: The latter could not be seen without the light cast by the former.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《崇高人性》的到來對像馬斯克這樣的科技巨頭構成了挑戰，他們的權力和影響力已經可以與依諾增爵三世等中世紀教宗相媲美。依諾增爵教宗曾斷言，教廷是太陽，而世俗君王只是月亮：後者如果沒有前者投射的光芒就無法被看見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Love ’em or hate ’em, Mr. Musk, Mark Zuckerberg, Peter Thiel, Sam Altman and their peers exert similar influence on our modern kings, which is to say politicians. The American economy is being propped up by spending on A.I. The technology is being deployed in offices and classrooms with dizzying speed and unknown effect.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論你喜歡還是討厭他們，馬斯克、馬克·祖克柏、彼得·蒂爾、薩姆·奧爾特曼以及他們的同行對現代的君王（也就是政治人物）施加著類似的影響。美國經濟目前正受到人工智慧支出的支撐。這項技術正以令人眩暈的速度和未知的影響被部署到辦公室和課堂中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The old religion challenging the new is a dramatic story, the stuff of thrillers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">古老宗教挑戰新興宗教是一個富有戲劇性的故事，堪稱驚悚片的絕佳素材。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silicon Valley has encountered little public opposition in its 50-year history. Certainly nothing with the sweep and authority of Magnifica Humanitas. Pope Leo is the spiritual leader of 1.4 billion Catholics, and instructing them to be cautious or even suspicious of A.I. — especially if the warning is regularly reinforced among the laity — could put a dent in tech’s global ambitions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷在其50年的歷史中鮮少遇到公眾的反對。像《崇高人性》這樣具有廣泛影響力和權威性的反對當然就更不存在了。教宗是14億天主教徒的精神領袖，指示他們對人工智慧保持謹慎甚至懷疑——特別是如果這種警告在信徒中得到定期強化——可能會挫敗科技行業的全球雄心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“How much influence does the pope have in our secular Western world?” asked Timothy Ahn, a doctoral candidate at the University of California, Berkeley, studying the development of A.I. in religious institutions. “We’re about to see. I doubt that tech executives in Palo Alto are going to be reading this encyclical.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在我們這個世俗的西方世界，教宗究竟有多大的影響力？」加州大學柏克萊分校研究宗教機構中人工智慧發展的博士候選人蒂莫西·安(Timothy Ahn)問道。「我們即將得到答案。我估計帕洛阿爾托的科技高管們不會去讀這份通諭。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the best-case scenario, said Mr. Ahn, a former seminarian, the encyclical “will shape some moral deliberations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾是修生的蒂莫西·安表示，這份通諭最多也只能是「引發一些道德層面的考量」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJSWmbvr1ZQDFZs60AQdw-8COg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Popes have traditionally worked with the long term in mind, and any evaluation of the encyclical’s effect is years away. Those who know both Silicon Valley and the Vatican say any expectations of a head-on confrontation, much less a holy war, are misguided. A decade ago, Pope Francis began inviting tech luminaries in for an annual A.I. conference called the Minerva Dialogues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">教宗們傳統上行事都著眼於長遠，對這份通諭影響力的任何評估也都是多年後的事了。對矽谷和梵蒂岡均有了解的人士表示，不應指望會出現正面衝突乃至聖戰。十年前，方濟各教宗就已開始邀請科技巨頭參加一年一度的名叫「密涅瓦對話」的人工智慧會議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In any case, if Leo confronted Silicon Valley outright, he would probably lose.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論如何，如果良與矽谷正面交鋒，他很可能會輸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fact that the Vatican unveiled the encyclical with Christopher Olah, a co-founder of Anthropic, the self-styled “good” A.I. firm, pointed to the possibility that Leo is trying less to undermine A.I. than simply participate in the conversation around it. When Francis released his scathing encyclical about climate change in 2015, no oil company executives were invited to speak.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">梵蒂岡邀請了自詡為「善良」人工智慧公司的Anthropic聯合創始人克里斯托弗·奧拉共同發布這份通諭，這一事實表明，與其說教宗是想破壞人工智慧，倒不如說只是想參與到相關的對話中來。當方濟各在2015年發表關於氣候變化的嚴厲通諭時，可沒有任何石油公司的頂級高管獲邀發言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Luke Burgis, the founder of the Cluny Institute, which explores how faith and reason bear on technology and innovation, was optimistic that Leo’s words would have an effect.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">探索信仰與理性如何影響技術和創新的克魯尼研究所創始人盧克·布爾吉斯樂觀地認為，良十四世的話會產生效果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This encyclical is a live wire that truly has the potential to change what is getting built in Silicon Valley,” said Mr. Burgis, also a former seminarian. “It could help to give people a vocabulary to understand a new thing, in the same way that Rerum Novarum helped people understand the concept of a just wage.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這份通諭是一根充滿活力的導火線，真正有可能改變矽谷正在建造的東西，」同樣曾是修生的布爾吉斯說。「它可以幫助人們獲得理解新事物的詞彙，就像《新事》通諭曾幫助人們理解公正薪酬的概念一樣。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it won’t happen automatically, or quickly, or easily.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這不會自動、迅速或輕易地發生。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM39mLvr1ZQDFRc10AQd0TMhBg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The church is only beginning its work here,” Mr. Burgis said. “It needs to engage with a powerful counterforce that currently has it outnumbered, in both capital and compute.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「教會在這裡的工作才剛剛開始，」布爾吉斯說。「它需要與一個強大的反對力量交鋒，而對方目前在資本和算力上都佔有絕對優勢。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">David Streitfeld撰寫撰寫有關科技、科技從業者以及科技如何影響周圍世界的報導。他常駐舊金山。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260526/pope-ai-silicon-valley/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
