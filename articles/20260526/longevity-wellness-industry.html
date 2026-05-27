@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花更多錢能讓你活得更久、更健康嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">花更多錢能讓你活得更久、更健康嗎？</h1>
+    <h2 class="en-headline">Can Spending More Improve Your Health and Prolong Your Life?</h2>
+    <div class="meta-line">PAUL SULLIVAN <span style="margin: 0 8px;">•</span> 2026-05-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="962" src="https://static01.nyt.com/images/2026/05/03/multimedia/03sp-long-longevity-04/03sp-long-longevity-04-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Dadu Shin</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Humans have — presumably — always aspired to living longer, healthier lives. Now that might be more possible than ever before — especially if you have enough money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人類一直渴望活得更長久、更健康——大概是這樣。如今，這個願望或許比以往任何時候都更有可能實現——尤其是如果你有足夠的錢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Think about the Fountain of Youth. Versions of the promise of a life-giving spring date to Ancient Greek philosophers, with variations through the centuries. But the basic concept was: Find the spring, drink its waters, and you’re young and spry again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">想想「不老泉」吧。關於賦予生命的泉水的種種傳說可以追溯到古希臘哲學家，在幾個世紀中演變出不同的版本。但基本概念始終如一：找到這口泉水，喝下它，你便能重獲青春活力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, people seem more inclined than ever to believe there is a path to better health, increased longevity and an improved healthspan — a term from the 1980s meaning that the quality and quantity of life can more closely align.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，人們似乎比以往任何時候都更傾向於相信，存在一條道路，可以通往更健康、更長壽，以及更長的「健康壽命」（healthspan）——這個術語源自上世紀80年代，意指生命的質量與長度更加緊密的結合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To meet this desire is a growing longevity and wellness industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了滿足這種渴望，長壽與健康產業正日益壯大。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMHQnoiv2JQDFdTg_QUdEBoFJg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Typically on the science side, in addition to doctors in traditional practices are the growing number of concierge medical practices across the country that offer a wide range of services to those who can afford them. Begun in the 1990s and expanding ever since, they eschew insurance in favor of annual retainers that can range from $4,000 to $45,000 or more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在科學領域，除了傳統診所的醫生外，全美各地還出現了越來越多提供禮賓醫療服務的診所，為負擔得起的人提供各種服務。這種模式始於上世紀90年代並不斷擴張，它們避開醫療保險，使用年費制，收取每年4000美元到4.5萬美元乃至更高的預付會員費。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The internal medicine or family medicine doctors who have started these practices are not necessarily better trained than the doctors who have stayed in the traditional insurance-model practices. But they have chosen to see fewer patients, spend more time with them, and offer in-house services — like scans, for example — that otherwise would have to be outsourced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">創辦這些診所的內科或全科醫生並不一定比留在傳統保險模式診所的醫生受過更好的訓練。但他們選擇接待更少的患者，花更多時間在患者身上，並提供原本需要外包的院內服務，例如影像掃描檢查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to the Private Physicians Alliance, a membership group of concierge doctors, somewhere from 7,000 to 22,000 concierge medical practices operate in the United States today. That’s compared with nearly 400,000 insurance-based medical practices, according to the Bureau of Health Workforce<strong>.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據禮賓醫生會員組織「私人醫生聯盟」稱，目前美國大約有7000到2.2萬家禮賓醫療診所。相比之下，根據美國衛生人力局的數據，基於保險的醫療診所將近40萬家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Typically, a concierge doctor sees about 20 percent (or less) of the patients that an insurance-based doctor sees. That patient has the doctor’s cellphone and greater access to the doctor’s time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通常情況下，禮賓醫生接待的患者數量大約是保險內醫生的20%（或更少）。患者擁有醫生的手機號碼，並且能更多地佔用醫生的時間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The growing and expanding wellness industry doesn’t have criteria for entry. So aside from trained doctors, it also leaves room for those in the lucrative vitamin and supplement business, which has grown rapidly on the promise of enhancing health and longer life. In 2024, it was valued at $192 billion. Supplements can include tablets, capsules, powders and gummies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不斷發展壯大的健康產業並沒有準入門檻。因此，除了受過訓練的醫生之外，它也為利潤豐厚的維生素和補充劑業務留下了空間。這些業務憑藉增強健康和延長壽命的承諾而迅速發展。2024年，該行業的估值達1920億美元。補充劑包括片劑、膠囊、粉劑和軟糖等形式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Medications undergo stringent Food and Drug Administration review and are prescribed by doctors. Vitamins like D, B-12 and iron can be prescribed as well to address specific deficiencies that are identified in blood tests. Supplements, however — like collagen, creatine and fish oils — undergo less rigorous testing and are usually taken voluntarily, rather than prescribed by a doctor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">藥物需要經過美國食品藥品監督管理局(FDA)的嚴格審查，並由醫生開具處方。維生素D、維生素B-12和鐵劑等也可以作為處方藥開具，以解決在血液檢查中發現的特定營養缺乏問題。然而，膠原蛋白、肌酸和魚油等膳食補充劑的檢測不那麼嚴格，且通常是人們自願服用，而非由醫生開具處方。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJfin4iv2JQDFfP5uAgdFcoDfw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The F.D.A. puts more of the responsibility for their efficacy on the manufacturers. The American Medical Association has cautioned people from putting too much stock in supplements, which the F.D.A. treats as food and not medicine.<strong> </strong>Supplements often are sold in monthly subscriptions and frequently promoted by prominent podcasters and influencers, who often generate income through the sale of them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">FDA將確保產品效用的責任更多交給製造商。美國醫學會曾警告人們不要過分相信補充劑，因為FDA是將這些產品視為食品而非藥物來管理的。補充劑經常以按月訂閱的方式銷售，並頻繁由知名播客和網紅進行推廣，這些人往往通過銷售補充劑來獲取收入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Steve Mister, president and chief executive of the Council for Responsible Nutrition, a trade group for supplements, said the average person spent $50 a month on supplements and is more likely focused on longstanding ones that had proven benefits, like vitamin D, Omega 3 and calcium.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">補充劑行業協會「負責任營養理事會」的總裁兼首席執行官史提夫·米斯特表示，普通人每月在補充劑上的花費約為50美元，並且更傾向於關注那些歷史悠久且已被證明有益的補充劑，比如維生素D、歐米伽-3和鈣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While he is concerned with influencers who make promises that aren’t backed up by science, he also pushed back against doctors who dismiss less-well-known supplements without understanding them. “They’re suspicious of these products because they’re not taught about them in medical school,” Mr. Mister said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然他對網紅做出的那些沒有科學依據的承諾感到擔憂，但他也反駁了那些不了解情況就盲目否定小眾補充劑的醫生。「他們對這些產品持懷疑態度，是因為他們在醫學院沒有學過這些內容，」米斯特說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Combining standard drugs and supplements can be tricky — both for patients and for doctors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將標準藥物和補充劑結合使用可能會很複雜——對患者和醫生來說都是如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I had a patient who was on a statin but decided to add red yeast rice as a supplement to lower her LDL cholesterol,” said Dr. Cari Dawson, who runs the Colorado Center for Medical Excellence, a concierge practice in Denver. “The problem was she decided to take her statin every other day, and she took a supplement that you don’t know what’s in it all the time. She picked red yeast rice over a statin that we’ve studied for 30 years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我有一位原本在服用他汀類藥物的患者，但她決定添加紅曲米作為補充劑來降低低密度脂蛋白膽固醇，」在丹佛經營禮賓診所科羅拉多卓越醫療中心的卡裡·道森醫生說。「問題是，她決定隔天服用一次他汀類藥物，而且她服用了一種成分不明的補充劑。她選擇了紅曲米，而不是我們已經研究了30年的他汀類藥物。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="卡裡·道森醫生在丹佛經營著科羅拉多卓越醫療中心，這是一家提供禮賓醫療的診所。「只要有人對醫療體系存在不信任，他們就總會去尋找替代療法，」她說。" data-src="https://static01.nyt.com/images/2026/05/03/multimedia/03sp-long-wellness-lpjt/03sp-long-wellness-lpjt-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/03/multimedia/03sp-long-wellness-lpjt/03sp-long-wellness-lpjt-jumbo.jpg"/></div><figcaption><span>卡裡·道森醫生在丹佛經營著科羅拉多卓越醫療中心，這是一家提供禮賓醫療的診所。「只要有人對醫療體系存在不信任，他們就總會去尋找替代療法，」她說。</span> <cite>Theo Stroomer for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Dawson said she often debunked what people had seen online about statins and supplements, contending that the information had no scientific support.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">道森醫生說，她經常駁斥人們在網上看到的關於他汀類藥物和膳食補充劑的說法，指出這些信息並沒有科學依據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s a lot of noise about statins online,” she said. “Yes, about 5 percent of people will get achy muscles with them. We know that’s real. But 95 percent of people do fine on this drug. And there’s an argument that everyone over the age of 50 should be on a statin to lower their cholesterol.” (She ultimately persuaded the patient to stick with the statin, she said.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「網上有很多關於他汀類藥物的雜音，」她說。「沒錯，大約有5%的人服用後會感到肌肉酸痛。我們知道這是真實存在的。但是95%的人服用這種藥都沒問題。而且有一種觀點認為，所有50歲以上的人都應該服用他汀類藥物來降低膽固醇。」（她說，她最終說服了該患者繼續服用他汀類藥物。）</div></div></div></div></div><div class="big_ad" data-google-query-id="CIPsnoiv2JQDFbLh_QUdNqMALA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The F.D.A. does not allow supplement companies to market their products as a substitution for prescription drugs,” Mr. Mister said. “I worry about misinformation all the time.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「FDA不允許補充劑公司將其產品作為處方藥的替代品進行銷售，」米斯特說。「我一直都在擔心錯誤信息的問題。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Dawson said she understood, though, where this searching came from. “If you have anyone who has any distrust of the medical system, they’re always seeking out alternative treatments,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">道森醫生表示，她能夠理解人們為什麼會不斷尋找各種替代療法。「只要有人對醫療體系存在不信任，他們就總會去尋找替代療法，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Anton Titov, founder of Diagnostic Detectives Network, is a supplement opponent, contending that their advocates are driven by financial gains —<strong> </strong>and playing on the distrust people have in institutions far beyond medicine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">診斷偵探網路公司的創始人安東·季托夫醫生反對使用補充劑，他認為補充劑的倡導者是受經濟利益驅動的——而且是在利用人們對體制——不僅僅是醫療體制——的不信任。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You can sell gazillions of supplements and vitamins. You have to see the patient to prescribe the statin. You can’t make money telling people to get on the maximum dose of statins to improve their cardiovascular health,” he said, about the supplement business. His practice finds experts in specialty areas to help clients solve their often complex medical issues. He said he charged a flat fee of around $6,000, which escalates if more experts were needed or he had to do more to connect patients and doctors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「補充劑和維生素能賣出天文數字般的銷量。可你想開他汀類藥物，就必須親自給病人看診。你不能靠告訴人們服用最大劑量的他汀來改善心血管健康來賺錢，」他在談到補充劑行業時說道。他的公司會幫客戶尋找各專業領域的專家，幫助客戶解決他們往往復雜的醫療問題。他表示，自己的服務收費大約是6000美元起步；如果需要更多專家參與，或協調病患與醫生的工作量更大的話，費用還會相應增加。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To sort through the various approaches to longevity, a key question might be: What’s the best way to invest money in my health so I live well for decades to come?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要在五花八門的長壽方案中理清頭緒，也許有一個核心問題值得先問：怎樣把錢花在健康上，才能讓自己在未來數十年活得好？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Jordan Shlain, the founder of Private Medical who is considered one of the earliest concierge doctors, said the focus for everyone, regardless of wealth, was similar. Putting aside fatal accidents, there are four major causes of death: cardiovascular, neurological, cancerous and metabolic, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">喬丹·施萊因醫生是Private Medical的創始人，被視為禮賓醫生的先驅之一。他說，無論貧富，每個人關注的重點其實大同小異。他表示，撇開意外死亡不談，人類有四大主要死因：心血管疾病、神經系統疾病、癌症和代謝疾病。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPHWn4iv2JQDFYLm_QUd-FkXKQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Your genetics are critical, and they account for 50 to 70 percent of your longevity,” Dr. Shlain said. “Then you get to these foundation things: sleep, exercise, diet and social nutrition. Sleep and social interactions are the most important things to focus on.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你的基因至關重要，它們決定了你壽命的50%到70%，」施萊因醫生說。「然後才輪到這些基礎要素：睡眠、鍛煉、飲食和社交營養。睡眠和社交互動是最需要關注的事情。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To manage care through nontraditional medical practices, patients should expect different things at different price points. While the concierge practices generally have smaller patient loads, the offerings can become even more personalized.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過非傳統醫療方式管理健康時，不同價位意味著不同層級的服務。禮賓醫療通常患者量較小，因此服務也可以變得更加個性化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Ramon Jacobs-Shaw, a Harvard-trained doctor who is board-certified in internal medicine and pediatrics, is a private doctor, generally defined as one who operates in a self-owned practice outside a larger medical system. He makes old-fashioned house calls from his base in Fairfield County, Conn., and does not see patients in an office. The cost for him to focus on you is $25,000 a year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉蒙·雅各布斯-肖醫生畢業於哈佛，持有內科與兒科雙執照，他是一名私人醫生——通常指那些在大型醫療體系之外自立門戶執業的醫生。他以康乃狄克州費爾菲爾德縣為基地，提供老派的上門出診服務，不在診所接待病人。他專注為你服務的費用是每年2.5萬美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The hallmark of patient care is that doctor-patient relationship,” he said. “Right now, it feels transactional. Health care should not be that way. It requires a relationship, and that requires time.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「醫療護理最核心的東西是醫患關係，」他說。「現在的醫療感覺越來越像一種交易。醫療本不該如此。它需要的是一種關係，而關係需要時間來培養。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some concierge doctors are part of practice groups. MD2, which first opened in Seattle in 1996 and now has offices around the country, limits its doctors to 50 patients and charges $30,000 a year. Private Medical, which Dr. Shlain founded, charges $45,000 a year for each patient and sees just 1,500 families in six locations in California, Florida and New York. The Atria Health and Research Institute costs $60,000. Its two locations, New York and Palm Beach, have in-house specialists, including cardiology, neurology and women’s health.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些禮賓醫生隸屬於診所集團。MD2於1996年在西雅圖創立，如今已在全美多地設有分支，每位醫生的患者數量上限為50人，收費是每年3萬美元。施萊因醫生創立的Private Medical每位患者年費為4.5萬美元，在加利福尼亞州、佛羅里達州和紐約州共有六處診所，僅為1500個家庭提供服務。阿特里亞健康與研究機構的收費則達到每年6萬美元。它在紐約和棕櫚灘設有兩處中心，設心臟科、神經科、女性健康等駐診專科醫生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What’s different about our approach is we focus holistically on the prevention of disease,” said Alan Tisch, Atria Health’s co-founder and chief executive. “We’re primary care plus 15 other specialties. We’re also lifestyle and psychology. We integrate all the most cutting-edge technology in-house so we don’t have to send you out for it. And we’re here to keep you healthy, but we’re also responsible for giving the best care for you and your family when you get sick.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們的與眾不同之處在於，我們是從整體上專注於疾病的預防，」阿特里亞健康與研究機構的聯合創始人兼首席執行官艾倫·蒂什說。「我們是初級保健加上其他15個專科，同時涵蓋生活方式指導和心理健康。我們將所有最前沿的技術整合在院內，無需將你轉介他處。我們的職責是讓你保持健康，同時也負有為你和你的家人在患病時提供最好的治療。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CNj6noiv2JQDFTDzuAgdFpsLeQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meantime, regardless of the medical practices one chooses, Dr. Titov said the two things anyone could do to promote their longevity was to focus on their cardiac health and weight. “G.L.P.s [not inexpensive injectable drugs for weight management] are showing that all these other ailments go away when people lose weight. So, get to your ideal weight, and then do exercise.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，不管選擇哪種醫療體系，安東·季托夫醫生認為，每個人都可以做兩件真正有助於延壽的事：關注心臟健康，以及控制體重。「GLP類藥物（一種價格不菲的注射類減肥藥）已經表明，當人們減重之後，很多其他疾病也會隨之消失。所以，先把體重降到理想範圍，再去運動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Aaron Wenzel, a former emergency room physician and weight-loss doctor, runs a concierge practice in Nashville that is focused on overall wellness. He charges $10,900 a year. “When I was doing E.R. medicine, I had this epiphany that the only people I ever saw improve their health removed excess fat from their body,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">亞倫·溫澤爾醫生曾是一名急診科醫生和減肥專科醫生，目前在納什維爾經營一家專注於整體健康的禮賓診所，年費為1.09萬美元。「在做急診的那些年，我明白了一件事：我所見過的健康狀況真正改善的人，無一例外都減掉了身上多餘的脂肪，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While G.L.P.s make it easier today, he said his practice focuses on helping people optimize their metabolism. It’s hard work, which is why he has sympathy for people who seek supplements as an easier route.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，儘管GLP類藥物讓這件事變得容易了，但他的診所更注重幫助患者優化新陳代謝。不過這並不容易，這也是為什麼他對那些轉而依賴保健品尋求捷徑的人抱有一份同情與理解。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’m seeing a lot of people, regardless of economic firepower, be drawn to the noise of the new thing. But their diet, their fitness, their relationships are fragile.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我看到很多人，不論經濟實力如何，都被各種新鮮事物的喧囂所吸引。然而他們的飲食、健身習慣和人際關係，其實都非常脆弱。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those, he said, are what people need to spend their time and money on the most.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，那些才是人們最應該投入時間和金錢的地方。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260526/longevity-wellness-industry/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

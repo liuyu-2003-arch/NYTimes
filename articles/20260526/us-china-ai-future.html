@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美共同的人工智慧焦慮：被未來收割 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美共同的人工智慧焦慮：被未來收割</h1>
+    <h2 class="en-headline">The Shared Feeling of Being Harvested by the Future</h2>
+    <div class="meta-line">YI-LING LIU <span style="margin: 0 8px;">•</span> 2026-05-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/05/12/opinion/12liu-image/12liu-image-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Chris W. Kim</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Within an hour of landing in Shanghai, I was sitting in the back of a Didi cab while the driver pleaded with me to game the company’s algorithm. Didi is the “Uber of China” and has a ubiquitous footprint in the country, dispatching tens of millions of rides per day. Could I cancel the ride and pay him directly through WeChat?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">落地上海不到一小時，我坐在一輛滴滴的後排，司機正懇求我幫他鑽公司算法的空子。滴滴是「中國版優步」，在中國幾乎無處不在，每天要派出數千萬單行程。他問我能不能取消訂單，然後直接通過微信轉賬給他。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was an oversupply of drivers competing for too few fares, he explained. After dropping me off, he would be sent straight back to the airport, where he would have to wait for hours for another pickup. If I canceled, he could take a place near the front of the line. “I hope you understand,” he said. “I’ve got an older and a younger generation to support.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他解釋說，現在司機太多，而活兒太少。把我送到目的地之後，系統會立刻把他派回機場，而他又得等上好幾個小時，才能接到下一單。如果我取消訂單，他就可以排到隊伍的前面。「希望你能理解，」他說。「我上有老、下有小。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The driver’s plight reminded me of the DoorDash workers in the United States whose earnings are controlled by optimized dispatch systems, or the Amazon Flex workers who compete for scarce delivery blocks, never certain when the next job will come.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這位司機的困境讓我想起了美國的DoorDash送餐員——他們的收入受到優化調度系統的控制；還有亞馬遜Flex的司機，他們爭搶有限的配送時段，永遠不確定下一份工作何時到來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I have spent years reporting and living in both the United States and China and wrote a book chronicling the history and evolution of the Chinese internet. Moving between the two countries, I’ve been struck by how they have come to mirror and resemble each other. There is a shared sense of precarity that lies beneath the envy and distrust: the technological future is taking shape at vertiginous speed yet its promise is not shared by all.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，我在美中兩國生活、做報導，還出版了一本關於中國互聯網歷史與演變的書。往返兩國間，我驚訝地發現，它們竟已變得如此相似、如出一轍。在羨慕與猜忌之下，隱藏著一種共同的不安全感：技術的未來正以令人眩暈的速度成形，而它所許諾的紅利，並非人人有份。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNjpw4uv2JQDFdBVCAQd0HoxUQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>The growth of artificial intelligence</strong> has been presented as a rivalry between two fundamentally different systems. America commands capital and chips while China marshals engineering talent and manufacturing prowess. America holds an edge in building software — enterprise tools and cloud platforms. China leads in hardware — humanoids and autonomous vehicles. America pushes ahead with frontier models, with its artificial intelligence labs making moonshot bets to build a superintelligence. China focuses on scale and diffusion, with its tech firms embedding A.I. as quickly as possible in every sector of society.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧的發展一直被描繪成兩種根本不同體制之間的較量。美國掌握著資本和晶片；而中國則調動工程人才和製造實力。美國在構建軟體（企業工具和雲平台）方面佔據優勢；而中國則在硬件領域領先（人形機器人和自動駕駛汽車）。美國在前沿模型上發力，其人工智慧實驗室豪賭超級智能的打造；中國則專注於規模和普及，其科技公司盡可能迅速地將人工智慧嵌入社會的各個領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We’ve been told that the ultimate prize in A.I. is the achievement of artificial general intelligence, or A.G.I. The country that figures this out, the theory holds, will establish world dominance through turbocharged economic and military power. In podcasts and political speeches — shaped by Silicon Valley executives and Washington policy wonks — the United States and China are almost always “battling,” “competing,” or “locked” in this race. China is years behind, no, months behind; it’s pulling ahead; it’s winning; it’s losing, it’s racing toward A.G.I., not racing toward A.G.I.; or it’s racing on a different track.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們一直被灌輸這樣一種觀念：人工智慧的終極目標是實現通用人工智慧(AGI)。理論上講，誰搞定了AGI，誰就能通過經濟與軍事力量的雙重飛躍確立全球霸主地位。在播客和政治演講中——由矽谷高管和華盛頓的政策專家塑造的敘事裡——美中幾乎總是在這場競賽中「較量」、「競爭」或「膠著」。中國落後數年——不對，是落後數月；它正迎頭趕上；它要贏了；它輸了；它正朝著AGI全力衝刺——不對，它並沒有沖向AGI；又或者，它其實是在另一條賽道上奔跑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The story of the race blew up last year after the introduction of DeepSeek R1, a Chinese open-source model that reportedly rivaled U.S. frontier models at a fraction of the cost. A wave of “China envy” overtook U.S. tech leaders who marveled at China’s speed in building bridges, high-speed trains and advanced prototypes. Marc Andreessen warned that the United States must reindustrialize or fall behind a world of “Chinese robots.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，DeepSeek R1橫空出世後徹底引爆這場競賽的敘事——據稱，中國的這款開源模型以極低的成本達到了美國頂尖模型的水平。一股「羨慕中國」的情緒隨即席捲美國科技界，他們驚嘆於中國建造橋樑、高鐵和先進原型機的速度。馬克·安德森警告說，美國必須再工業化，否則就會在「中國機器人」主導的世界裡落敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The leftist influencer Hasan Piker traveled to China in 2025, a copy of Mao Zedong’s quotations in hand, to see what America might “adopt and emulate.” The popular YouTuber Darren Watkins, known as IShowSpeed, streamed his trip to Shenzhen, where he danced with humanoids and ordered KFC by drone. Just as Chinese people were once transfixed by American consumer abundance — its shopping malls and sprawling suburbs — Americans have become obsessed with China’s robots and manufacturing power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">左翼網紅哈桑·派克在2025年手持一本毛主席語錄前往中國，想看看美國可以「借鑒與效仿」之處。知名YouTube部落客IShowSpeed（本名達倫·沃特金斯）直播了他的深圳之行，他在那裡與人形機器人共舞，還體驗了無人機送來的肯德基。正如中國人曾經對美國消費主義的豐盛景象心馳神往——那些購物中心和龐大的郊區——如今，美國人卻開始痴迷中國機器人與製造業實力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But looking past the headlines and the highlight reels, you can see the sharp divide in both countries brought on by A.I. Those who build and bankroll the technology speak of the future as a promise to be profited from, an opportunity to be exploited. In Silicon Valley, college dropouts talk of A.I. tackling climate change and curing disease. Researchers are courted with nine-figure salaries like N.B.A. stars, and roadside billboards call on residents to “Supercharge your A.I.” and “Stop Hiring Humans.” Tech workers have earnestly adopted China’s infamous “996” work schedule: 9 a.m. to 9 p.m., six days a week. They are hustling hard and “locking in” to ensure that they emerge as the rich and powerful victors of the A.I. gold rush.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但拋開頭條新聞和精剪短片，你會發現人工智慧在兩國都造成了深刻的分裂。那些創造並資助技術的人把未來視為一種可以獲利的承諾、一個可以被利用的機會。在矽谷，輟學創業的年輕人大談人工智慧如何應對氣候變化、攻克疾病。研究人員像NBA球星一樣，被九位數的酬勞爭搶，路邊的廣告牌呼籲民眾「為你的AI加足馬力」和「停止僱用人類」。科技從業者甚至認真採納了中國臭名昭著的「996」工作制：早九晚九，每週六天。他們拚命工作、「鎖定狀態」，只為確保自己能在這場人工智慧淘金熱中笑到最後，成為富貴贏家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s tech hubs are driven by a similar sense of urgency. In Beijing’s Zhongguancun, known as China’s Silicon Valley, office towers stay lit deep into the night as A.I. lab employees hustle to beat their rivals across the road. Companies poach one another’s star engineers while freelance coders burn through tens of thousands of Claude tokens to vibecode products. The start-up founders hunt for what they call the <i>fengkou </i>or “wind vent” — an opportunity that, if seized at the right moment, can propel an entrepreneur straight to fortune. They study translations of Peter Thiel’s “Zero to One” and lionize Elon Musk because, as one tech worker told me, “He moves quickly, his execution is crazy and he can really deliver stuff.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的科技中心同樣被緊迫感驅動。在北京被稱為中國矽谷的中關村，寫字樓燈火通明直至深夜，人工智慧實驗室的員工正在奮力擊敗馬路對面的對手。企業互相挖角明星工程師，而自由職業的碼農們消耗著數以萬計的Claude代幣來進行氛圍編程，快速搞出產品。創業公司創始人尋找他們口中的「風口」——一個如果在正確的時機抓住，就能讓企業家一夜致富的機會。他們研讀彼得·蒂爾的《從0到1》(Zero to One)的中譯本，並把伊隆·馬斯克奉為偶像，正如一位科技工作者告訴我的，「他行動迅速，執行力瘋狂，而且真的能把東西做出來。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CIv-w4uv2JQDFY5nCAQdjXIl9Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s most recent wind vent was “raising lobsters” — a shorthand for training the free, open-source A.I. agent OpenClaw. Nearly 1,000 people, from amateur coders to housewives, lined up outside the tech giant Tencent’s headquarters to install the software on their devices. Users claimed that OpenClaw could kick-start side hustles and double stock returns; parents bought “lobster installation services” for their grade school children to keep up with their peers. Tech companies raced to monetize this anxiety, charging users for cloud servers and software access. “This is not ‘embracing the future,’” one disillusioned user on RedNote described the OpenClaw craze. “It’s ‘being harvested by the future.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國最近的一個風口是「養龍蝦」——這是對訓練免費開源人工智慧代理OpenClaw的戲稱。從業餘程序員到家庭主婦，近千人在科技巨頭騰訊總部外排隊，給自己的設備安裝該軟體。用戶聲稱，OpenClaw能幫忙搞副業、讓股票回報翻倍；家長們甚至為自己上小學的孩子購買「龍蝦安裝服務」，生怕孩子落後於同齡人。科技公司競相利用這種焦慮變現，向用戶收取雲伺服器和軟體使用費。「這不是『擁抱未來』，」小紅書上一個感到失望的用戶這樣形容OpenClaw，「這是『被未來收割』。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Farther south in Shenzhen, China’s hardware capital, start-ups boast of operating at “Shenzhen speed” and have been embedding A.I. into everything from coffee makers to construction cranes. At a high-tech fair in the city, hosted in 20 halls the size of airport hangars, I walked by stalls advertising A.I. pianos, A.I. beef noodle makers, A.I. holographic tour guides and A.I. English tutors. I sat down in front of an A.I.-powered traditional Chinese medicine doctor that scanned my tongue and delivered a diagnosis. A crowd gathered around a boxing ring, cheering on a pair of sparring humanoids made by the robotics giant Unitree.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">再往南，在中國硬件之都深圳，創業公司自豪地宣稱自己以「深圳速度」運轉，競相將人工智慧植入從咖啡機到工程吊車的一切設備之中。在這座城市舉辦的一個高科技博覽會上（展廳多達20個，每個都像飛機庫那麼大），我走過一個個展位，看到了AI鋼琴、AI牛肉麵機、AI全息導遊和AI英語家教。我在一台AI中醫前坐下，它掃描了我的舌頭，然後給出了診斷。一群人圍著一個拳擊台，為宇樹科技製造的一對正在對擂的人形機器人歡呼喝彩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s a highly competitive environment right now,” a Shenzhen software engineer told me. “I feel like if I stop, I’ll be left behind.” His anxiety is not new. Unstable work situations and economic insecurity long predate the current A.I. boom. But A.I. has supercharged those anxieties and made them much harder to contest.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「現在的環境競爭非常激烈，」一位深圳的軟體工程師告訴我。「我覺得一旦停下來，就會被拋在後面。」他的焦慮並不新鮮。不穩定的工作狀況和經濟上的不安全感早在當前的人工智慧熱潮之前就已存在。但人工智慧加劇了這些焦慮，也使得人們更難與之抗衡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A parallel set of memes has emerged to capture the sense of powerlessness. In the United States, the Silicon Valley tech elite identify as “high agency,” while the rest of us are “bots” condemned to the “permanent underclass.” In China, ordinary workers describe themselves as shechu (“corporate cattle”) and jiabangou (“overtime dogs.”) These same workers have long used the viral term “involution” to capture the feeling of being trapped in a cycle of meaningless competition. In both countries, those disaffected by A.I. identify with the gaming meme of the “NPC” or “non-player character.” They feel like the background role in someone else’s video game, existing only to fill the world but not to shape it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一系列平行的網路迷因應運而生，捕捉到這種無力感。在美國，矽谷科技精英自詡擁有「高自主性」，而我們其餘的人則是註定淪為「永久底層」的「機器人」。在中國，普通打工人將自己描繪成「社畜」和「加班狗」。同樣是這些工人，長期以來一直用「內卷」這個爆紅詞彙來表達那種被困在無意義競爭循環中的感覺。在這兩個國家，對人工智慧感到不滿的人都把自己比作遊戲中的「NPC」（也就是「非玩家角色」）。他們覺得自己就像是別人電玩遊戲裡的背景角色，存在的意義僅僅是為了填充這個世界，而不是去塑造它。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>In 2025, a group of A.I. researchers</strong> from the United States, Canada and Europe coined the term “gradual disempowerment” to describe a future in which ever more capable A.I. would quietly erode human agency. The technology would steer our core institutions with little regard for human values. Though framed as a future risk, to someone who has been observing the United States and China closely, it already felt like a diagnosis of the present day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年，一群來自美國、加拿大和歐洲的人工智慧研究人員</b>創造了「漸進式失權」一詞，用來描述未來能力日益強大的人工智慧將如何悄無聲息地侵蝕人類的能動性。這項技術將主導我們的核心機構，卻幾乎不顧及人類的價值觀。儘管這被描繪成一種未來的風險，但對於一直密切觀察中美兩國的人來說，這感覺已經像是對當下的診斷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The knowledge workers of both countries feel the surveillance presence of the technology. A.I. is now used in decisions to hire and fire employees. It tracks attendance at work, predicts an employee’s growth potential, flags “idle hours” and enforces discipline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩國的知識工作者都感受到了這種技術帶來的監控壓力。如今，人工智慧被用於員工僱傭和解僱的決策。它追蹤工作出勤率，預測員工的成長潛力，標記「閑散時間」，並執行紀律管理。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNuBxIuv2JQDFY6sOgUdT6cg8g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Outside the office, both Chinese and Americans have become enamored with A.I. as a source of frictionless companionship and emotional validation, with companies now monetizing emotional intimacy at scale. Over 70 percent of American teenagers report using chatbots as companions, nearly one in eight for mental health support.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在辦公室之外，中美兩國民眾都開始迷戀人工智慧，將其視為提供無摩擦陪伴和情感認同的源泉，而企業現在正大規模地將情感親密關係變現。超過70%的美國青少年報告說他們使用聊天機器人作為陪伴者，近八分之一的人將其作為心理健康支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Similarly, in China, one survey found that nearly half of young Chinese had used an A.I. chatbot to discuss their mental health. In a country where living alone is quickly becoming the norm — with single-person households expected to possibly reach 200 million by 2030 — A.I. companions have emerged as a quick fix to a growing loneliness epidemic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣，在中國，一項調查發現，近一半的中國年輕人曾使用人工智慧聊天機器人討論自己的心理健康問題。在一個獨居正迅速成為常態的國家——預計到2030年，單身家庭數量可能達到2億——面對日益嚴重的孤獨流行病，人工智慧伴侶已成為一種速效解藥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This year, the app “Are You Dead?” — which alerts a contact if a user fails to check-in — has been wildly popular. (Its Chinese name, <i>Sileme, </i>is a morbid play on the name of the popular food delivery app <i>Ele.me</i>, meaning “Are You Hungry?”) But “Are You Dead?” addresses a serious need: the growing number of people who are living solo, far away from family and deprived of social support, and who are afraid of disappearing without being noticed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年，一款名為「死了么」的應用程序非常受歡迎——如果用戶未能在規定時間內打卡，它就會向聯繫人發出警報——這個中文名字是對流行外賣應用「餓了么」的一種略帶病態的戲仿。但是，「死了么」解決了一個嚴肅的需求：越來越多的人獨自生活，遠離家人，缺乏社會支持，他們害怕自己悄然離世卻無人察覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The people of both countries are turning toward the spiritual for solace and agency in a world accelerating out of their control. The 20-somethings of America check astrology apps like Co-Star, part of a $3 billion dollar industry. Some in Gen Z are rediscovering Christianity, and religious conservatism has re-entered public life. In China, fortunetelling bars have popped up in cities, astrology apps like Cece are going viral and young people are consulting DeepSeek to predict their futures.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一個正在加速失控的世界裡，兩國民眾都在轉向精神層面尋求慰藉和掌控感。20多歲的美國人熱衷查看Co-Star這樣的占星應用，這已成為一個價值30億美元的產業。一些Z世代正在重新發現基督教，宗教保守主義重新進入了公共生活。在中國，占卜酒吧在各大城市湧現，像「測測」這樣的占星應用正在走紅，年輕人們甚至向DeepSeek請教，預測自己的未來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last fall in Beijing, I found myself at a dinner with a group of women in their 20s and 30s whose conversation circled familiar anxieties: shrinking job prospects (and recruitment horror stories), disenchantment with dating (none of them wanted to get married or have children), and a growing fascination with <i>bazi</i>, tarot and the occult. When I asked one guest about tarot’s rising appeal, she answered simply, “No one turns to tarot when times are good.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年秋天在北京，我參加了一場晚宴，同席的是一群二三十歲的女性，她們的談話圍繞著熟悉的焦慮：日益萎縮的就業前景（以及招聘中的恐怖故事），對約會的幻想破滅（她們中沒有一個人想結婚生子），以及對八字、塔羅牌和玄學日益增長的痴迷。我問一位客人，為什麼塔羅牌越來越受歡迎，她簡單地回答說：「時運好的時候，沒人會去算塔羅牌。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the future loses its promise, the past becomes a refuge. Both societies have seen a surge of nostalgia, a longing for a time remembered as simpler and more stable. Many Chinese idolize rural vloggers such as the celebrity YouTuber Li Ziqi, who rose to viral fame during the pandemic by sharing videos of her self-sufficient, pastoral life in the Sichuan countryside. You can see the same dynamics in the popularity of the tradwife Instagrammer known as Ballerina Farm, who documents her Utah homestead, milking cows and making doughnuts from scratch for her eight children. Both of those women live off the grid and embody an imagined idyll where chatbots and corporations do not exist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當未來失去承諾時，過去就成了避難所。兩個社會都出現了懷舊熱潮，人們渴望回到記憶中那個更簡單、更穩定的時代。許多中國人崇拜鄉村影片部落客，比如著名YouTuber李子柒，她在疫情期間因為分享自己在四川鄉下自給自足的田園生活影片而爆紅。在Instagram上以Ballerina Farm為名大受歡迎的一位傳統主婦部落客身上，也能看到同樣的現象，她記錄了自己在猶他州的農場生活，擠牛奶，親手為她的八個孩子製作甜甜圈。這兩位女性都過著與世隔絕的生活，體現了一種想像中的田園詩篇——在那裡，聊天機器人和企業都不復存在。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKTLxIuv2JQDFRxYCAQdFU467w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nostalgia also has a dark side, encouraging the rise of once fringe, illiberal ideas into the mainstream. This has been underway in China for years, with its influencers and ideologues rejecting liberal ideas and drifting toward a conservative centralized authority. In the United States, we see the growing influence of pundits like Curtis Yarvin, who argues that liberal democracy should be dismantled in favor of a C.E.O.-led monarchy and whose ideas have found an audience among both America’s tech and political elite, from Peter Thiel to JD Vance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">懷舊也有其黑暗的一面，它助長了曾經處於邊緣的非自由主義思想步入主流。這在中國已經發生多年，網紅和理論家們拒絕自由主義思想，逐漸走向保守的中央集權體制。在美國，我們看到像柯蒂斯·雅文這樣的評論人士影響力日益增長，他主張應該廢除自由民主制，代之以由首席執行官領導的君主制，而他的思想在美國的科技和政治精英中都找到了受眾，從彼得·蒂爾到 JD·萬斯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Faced with such a system, the simplest response</strong> is to surrender: accept one’s fate, sink into the apathy of inevitable decline and, in the words of Chinese netizens, “let it rot.” It’s easy to flee the friction of the real world for the comfort of our feeds and to confide in chatbots rather than friends. In doing so, we enable our leaders to leverage our fears and displace our anxieties onto the meme version of a foreign country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>面對這樣一個系統，</b>最簡單的反應就是投降：接受命運，陷入對不可避免的衰退所帶來的麻木之感，用中國網民的話來說，就是「擺爛」。人們很容易逃避現實世界的摩擦，躲進信息流的舒適區，向聊天機器人而不是朋友傾訴。這樣一來，我們就助長了領導者利用我們的恐懼，將我們的焦慮轉移到一個被網路迷因塑造的外國形象上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead of addressing A.I.’s challenges in isolation, why not bring together people from all sectors of society to reclaim agency over our own lives? We can pursue collaboration, as scientists and policymakers have already begun to do. On the sidelines of the World A.I. Conference in Shanghai last summer, scientists from across the world met to address critical A.I. risks, calling for international cooperation to ensure that advanced A.I. systems remain aligned with human values.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與其孤立地應對人工智慧的挑戰，為什麼不將社會各界人士聚集起來，重新奪回我們對自己生活的能動性呢？我們可以尋求合作，就像科學家和政策制定者已經開始做的那樣。在去年夏天上海舉行的世界人工智慧大會場外，來自世界各地的科學家聚在一起探討了人工智慧的關鍵風險，呼籲國際合作，以確保先進的人工智慧系統始終與人類的價值觀保持一致。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Workers can band together to resist toxic work cultures at Big Tech firms that sacrifice human dignity for profit and competition. It was only in 2019 that Chinese programmers launched the 996.ICU campaign on GitHub, to protest grueling work hours. They drew support from U.S. tech workers and hundreds of tech employees worldwide, from Spain to Singapore, one of the largest online mobilizations of tech workers in history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科技巨頭為了利潤和競爭而犧牲人類尊嚴，工人們可以團結起來抵制這種有毒的企業文化。就在2019年，中國程序員在GitHub上發起了996.ICU運動，抗議令人精疲力竭的工作時間。他們得到了美國科技工作者以及從西班牙到新加坡的全球數百名科技員工的支持，這是歷史上規模最大的科技工作者在線動員之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once you step back, it’s easy to see the warping effect of the U.S. vs. China race. It’s a story used to justify sprinting ahead without guardrails in the name of beating the other. By focusing on our rivalry, we have become blind to our vulnerability. Instead of fixating on who crosses the finish line first, we must work together to lift up the people that both countries have left behind.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">退後一步看，我們不難發現美中競爭帶來的扭曲效應。打著擊敗對方的旗號，這種敘事成了不要護欄、全力衝刺的藉口。因為專注競爭，我們對自身的脆弱變得盲目。我們不應執迷於誰先衝過終點線，而是必須攜手合作，去扶持那些被這兩個國家拋在後面的人們。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2026年5月12日。</p><p class="cn-p">Yi-Ling Liu是塔貝爾人工智慧新聞中心的駐訪記者，也是《牆上的舞者：在中國互聯網上尋找自由與聯繫》(「The Wall Dancers: Searching for Freedom &amp; Connection on the Chinese Internet」)一書的作者。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260526/us-china-ai-future/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

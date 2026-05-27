@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>給老年人的11條守則 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">給老年人的11條守則</h1>
+    <h2 class="en-headline">How to Be Old</h2>
+    <div class="meta-line">ROGER ROSENBLATT <span style="margin: 0 8px;">•</span> 2026-05-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/05/25/opinion/25rosenblatt/25rosenblatt-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Daniel Forero</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is a list of rules for the elderly, the aim of which is to keep us elderly elderly, and not to see us go one step further. Staying alive in one’s later years is an art generally requiring the avoidance of wrong moves. The key word to a lot of one’s behavior is “don’t.” If more old people simply did not do certain things, especially on impulse, the world would be a safer place. Duller but safer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一份給老年人的守則，其目的在於讓我們這些老年人繼續當老年人，而不是看著我們再往前多邁一步。人到暮年，活下去是一門藝術，通常要求避免走出錯棋。你諸多行為的關鍵詞只有一個：「別。」如果更多老年人能剋制住自己，特別是克制住衝動，別去做某些事，這個世界會安全得多。乏味，但安全。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I should add that if you fail to follow these rules, I’m not saying that you are doing anything morally wrong. Only that you will suffer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我還要補充一句：如果你沒能遵守這些規矩，我並不是說你道德上有什麼問題。我只想說，你會吃苦頭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>1. Run</strong> <strong>when you hear “We must do this again.”</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>1. 聽到「我們一定得再聚一次」時，趕緊跑。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is often said at the end of some pointless social event in which you participated reluctantly. Inevitably someone will say cheerily, “We must do this again.” Nonsense. They don’t mean it. You don’t mean it. Nobody means it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這話通常出現在某場你原本就不情不願參加的、毫無意義的社交活動尾聲。總會有人興高采烈地說：「咱們一定得再聚！」胡扯。他們不是真心的。你也不是。沒人是真心的。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK2n9Ymv2JQDFdHA_QUd3sgZaA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>2. Marry above your station.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>2. 找個門第高些的對象結婚。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Usually you can’t help it. But you’ve probably found that out already.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這通常也由不得自己。不過你可能早就發現這一點了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>3. Don’t forget to bestow confidence.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>3. 別忘了給予信任。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s the best thing you can give someone you love. Saying “You can do it” to a loved one in a situation in which that person has self-doubt — taking an exam, making a speech, writing a poem — means more than any sweet profession of affection. It means that you love that person so wholeheartedly that you wish him or her the inner satisfaction of self-realization. The pride of achieving themselves. What more can you say that so expresses your love?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是你能送給摯愛之人最好的禮物。當所愛之人陷入自我懷疑時——比如面臨考試、發表演講或是寫詩，對他說一句「你能行」勝過千言萬語的甜言蜜語。這意味著你全心全意地愛著他，希望他能獲得自我實現的由衷滿足。那種通過自身成就獲得的驕傲。還有什麼比這更能表達你的愛意呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>4. Observe the moth.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>4. 觀察飛蛾。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In her essay “The Death of the Moth,” Virginia Woolf notices a moth in its death throes, batting about a small windowpane. The author watches the animal’s plight with pity and admiration — awe, really. Its struggles are beautiful. She imagines the moth saying death was too strong, even for it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維吉尼亞·伍爾夫在她的散文《飛蛾之死》中描寫了一隻瀕臨死亡的飛蛾，在小窗玻璃上撲騰。作者懷著憐憫與欽佩——確切地說是敬畏——注視著這個小動物的困境。它的掙扎是美麗的。她想像飛蛾在說：死亡太強大了，連它也抵擋不住。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Observe the moth in its monumental fight for life, and do likewise. We gain life’s powers by knowing that eventually they will be taken away. There is beauty in this struggle. Murmurations of starlings occur only in the evening.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">觀察飛蛾為生命進行的殊死搏鬥，然後照做。我們正是通過知曉力量終將被剝奪，才獲得了生命的力量。這掙扎中有美。椋鳥群飛只會在黃昏時分出現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>5. Don’t share despair.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>5. 別</b></span><b>吐露自己的</b><span><b>絕望。</b><b></b></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLC39Ymv2JQDFSzE_QUdHhwObg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not even with your friends. Not that they won’t sympathize. It’s just too much to ask of someone dear to you to bear your burdens.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哪怕是面對朋友也不行。倒不是說他們不會同情你。只是，要求你珍視的人背負你的重擔，實在太過分了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>6. Don’t compromise, especially a little.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>6. 絕不妥協，尤其是微小的妥協。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unless you’re a professional negotiator, don’t compromise. Give in a little, you might as well give up the ship. During the McCarthy era, students were required to submit loyalty oaths to maintain their scholarships. At a meeting of the Harvard faculty, a professor who had escaped Mussolini’s Italy challenged the dean on this matter. The dean responded that signing and sending in the oaths was merely pro forma and had no more meaning than licking the stamps on the letters. The Italian professor stood and said something like, “Mr. Dean, I’m from fascist Italy, and in fascist Italy you learn one thing. First you lick the stamps. Then you lick something else.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除非你是職業談判專家，否則別妥協。退讓一小步，你就乾脆把整艘船都交出去算了。麥卡錫主義時期，學生必須提交忠誠宣誓書才能保住獎學金。在哈佛的一次教員會議上，一位逃離墨索裡尼統治的義大利教授就此事質問院長。院長回應說，簽字上交不過是走個形式，其意義還不如舔郵票上的膠水。那位義大利教授站起來說道：「院長先生，我來自法西斯治下的義大利，在那兒你只會學會一件事。先是舔郵票，然後你就得開始舔別的了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>7. Screw it up royally.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>7. 把事情搞砸，而且要搞得轟轟烈烈。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You’ve spent a long life telling yourself that mistakes are to be avoided, but that isn’t necessarily so. Playing jazz piano, whenever you make a mistake, which is inevitable, you make another mistake deliberately to make something right out of something wrong. Then you do it again. Theoretically, you could play an entire tune of mistakes, and it would sound just fine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你花了一輩子告誡自己要避免犯錯，但這未必是對的。彈爵士鋼琴時，當你彈錯了一個音符（這是難免的），你要故意再彈錯一個，把錯的變成對的。然後你再來一次。理論上，你可以整首曲子全是錯的，聽起來卻依然美妙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You may think it would be better not to make the mistake in the first place. But a creative mistake may be truer to life, as you’ve no doubt discovered. You took a job you didn’t want, soon to discover it’s the ideal job for you. You were born to do that job. When you think of it, life is an assembly of creative mistakes. Even when you don’t think of it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你或許覺得一開始不錯才是最好的。但你無疑已經發現，創造性的錯誤往往更接近生活的真相。你接了一份你不想要的工作，很快卻發現這正是為你量身定做的理想工作。你生來就該幹這一行。仔細想想，生活就是一連串創造性的錯誤堆砌而成的。即便你不去想，它也是如此。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLrQ9Ymv2JQDFRni_QUd0F8vCQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>8. Don’t question everything you don’t understand.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>8. 別去質疑每一個你不明白的事物。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The older you get, the more wonderful the world appears. Wonderful meaning full of wonders. The sudden appearance of something beautiful in the midst of heartbreak, for instance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">年紀越大，世界就顯得越奇妙。比如，在心碎欲絕之時，突然出現了美好的事物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You are at a low point, and you think you’re going to stay there, there’s no relief, when out of the blue, something by Mahler or Beethoven comes into your air, and all at once the sorrow dissipates. You don’t question or analyze the moment. You’re simply grateful for it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你跌入了谷底，以為自己會永遠待在那裡，以為解脫無望，這時，馬勒或貝多芬的某個樂章忽然飄進了你的空氣裡，悲傷瞬間消散。你不去質疑，也不去分析那一刻。你只是心懷感激。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Where heartbreak is, beauty intrudes. Wondrously.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哪裡有心碎，哪裡就有美的闖入。神奇得很。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>9. Grab the chicken leg.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>9. 搶過那隻雞腿。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So there we were, in our 20s, Ginny and I and a bunch of friends, having a picnic by the Charles River in Cambridge, when I picked up a chicken leg with the intention of eating it and held it aloft. A little boy walked by and took it from my hand and kept walking. My friends and I laughed — the boy was so casual. Ginny said, “He must think that life is a chicken leg, waiting to be snatched.” In fact it is, even when you’re no longer a spring chicken.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那是在我們二十多歲的時候，我和金妮還有一群朋友，在坎布里奇的查爾斯河畔野餐。我拿了一隻雞腿，高高舉起打算吃。一個小男孩走過，一把抄走我手上的雞腿繼續往前走。我和朋友們大笑——那孩子太淡定了。金妮說：「他肯定覺得生活就是一根雞腿，等著你去搶。」事實確實如此，哪怕你早已不再是童子雞。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJns9Ymv2JQDFdDm_QUdXQ4mbQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>10. Look only at the rim.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>10. 只看籃筐。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When I was playing intramural basketball in college, I was 5-foot-11, a mite in the land of giants, and my all-around game was so-so at best. Yet most of the time I managed to score in the double digits by paying no attention to the defense. I simply pretended it wasn’t there. I looked only at the rim of the basket. And sure enough, most of the time the defense didn’t touch me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大學時我打校內籃球賽，身高1米8，在巨人們的世界裡是個小不點，我的綜合球技充其量也就是一般般。然而大多數時候，我都能得分上雙，因為我根本不去理會防守隊員。我假裝他們不存在。我只盯著籃筐的框沿。果然，大多數時候，防守隊員根本碰不到我。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other games in life offer similar opportunities, at any age. Disregard the impediments to your well-being — a noisy neighbor, a treacherous colleague — and concentrate instead on where you are headed. You’ll be pleasantly surprised how easily you get there. Nothing but net.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">生活中的其他比賽也提供類似的機會，不分年齡。無視那些阻礙你幸福的絆腳石——比如吵鬧的鄰居、陰險的同事——把注意力集中在你要去的地方。你會驚喜地發現，抵達終點竟是如此輕鬆。空心入網。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>11. Do not seek immortality.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>11. 別追求不朽。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It won’t come to you anyway, certainly not through your works and achievements. But the good feeling you have for others, and they for you, that goes on forever. I’m fond of quoting the poet Philip Larkin: “What will survive of us is love.” That should do it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">反正永生是不可能的，尤其別指望通過作品和成就來實現了。但是你對他人、他人對你的那份美好情愫是會永存的。我喜歡引用詩人菲利普·拉金的話：「我們身後能留下的，唯有愛。」這就夠了。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Roger Rosenblatt是《More Rules for Aging》的作者，本文改編自這部著作。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260527/aging-advice/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
