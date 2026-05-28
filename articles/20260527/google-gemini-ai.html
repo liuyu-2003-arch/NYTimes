@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谷歌是如何「逆風翻盤」、開始贏得人工智慧競賽的？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">谷歌是如何「逆風翻盤」、開始贏得人工智慧競賽的？</h1>
+    <h2 class="en-headline">How Google Is Starting to Win the A.I. Race</h2>
+    <div class="meta-line">BRIAN X. CHEN <span style="margin: 0 8px;">•</span> 2026-05-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="735" src="https://static01.nyt.com/images/2026/05/21/business/19techfix/19techfix-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Sisi Yu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just two years ago, Google looked like it was in trouble. In a desperate move to play catch-up with the OpenAI chatbot that had upended the tech industry, the search giant debuted an unpolished version of its artificial intelligence on Google.com. The A.I. spat out shoddy information, including advice for people to eat rocks and put glue on their pizza.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">僅僅在兩年前，谷歌似乎還深陷困境。為了拚命追趕顛覆了整個科技行業的OpenAI聊天機器人，這家搜索巨頭在Google.com上推出了一個尚未打磨完善的人工智慧版本。該系統輸出了許多極其糟糕的信息，包括建議人們吃石頭，以及在披薩上抹膠水。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google’s reign over the internet seemed at risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌對互聯網的統治地位似乎搖搖欲墜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But today, consensus is forming in Silicon Valley not only that Google has recovered and caught up but that it could actually win the A.I. race, a testament to how so much can change in so little time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在今天，矽谷正形成一種共識：谷歌不僅已經恢復元氣並實現了趕超，而且實際上有可能贏得這場人工智慧競賽。這證明即使在短短時間內也可以發生巨大的變化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google announced on Tuesday at Google I/O, its conference for software developers, that in only one year the number of people regularly using its chatbot, Gemini, had more than doubled to 900 million, on a par with OpenAI’s self-reported number of active users for ChatGPT and nearly 30 times the estimated web traffic of Anthropic’s Claude chatbot, which is more focused on business customers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌在週二的軟體開發者大會Google I/O上宣布，在短短一年內，定期使用其聊天機器人Gemini的人數增加了一倍多，達到9億人。這一數字與OpenAI自報的ChatGPT活躍用戶數持平，且幾乎是Anthropic旗下更側重企業客戶的Claude聊天機器人預估網路流量的30倍。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPajsPDq2pQDFeCWpgQdTIgQuw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And unlike Anthropic and OpenAI, which are still losing money from operating expensive A.I. data centers, Google is rapidly developing ways to use A.I. to increase profit with online advertising, its bread and butter. In its last quarter, Google reported, its advertising revenue rose 16 percent to $77 billion, fueled by A.I. technology that has helped marketers collect deeper information about users’ interests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與仍在因運營昂貴的人工智慧數據中心而虧損的Anthropic和OpenAI不同，谷歌正在迅速開發新方法，利用人工智慧來增加其核心業務網路廣告利潤。谷歌報告稱，在上一個季度，由於人工智慧技術幫助營銷人員收集了關於用戶興趣的更深層次信息，其廣告收入增長了16%，達到770億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pretty soon, Gemini will become a staple on a competitor’s platform: Apple’s iPhone. Google and Apple said in January that Gemini would become the foundational A.I. technology for a future version of Siri, Apple’s voice assistant. Gemini is already included on Android devices, so the partnership with Apple will, in effect, bake Gemini into virtually all of the world’s phones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Gemini很快將成為競品平台蘋果iPhone上的核心配置。谷歌和蘋果在1月份表示，Gemini將成為蘋果語音助手Siri未來版本的底層人工智慧技術。由於Gemini已經內置於安卓設備中，因此與蘋果的合作實際上將把Gemini植入全球幾乎所有的手機中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At I/O this week, Google shared its vision for how it would use A.I. to increase sales for online retailers, including through a new type of shopping cart that automatically surfaces promotions to shoppers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在本週的I/O大會上，谷歌分享了利用人工智慧增加在線零售商銷量的願景，其中包括一種新型購物車，可自動向購物者推送促銷信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company also said it was continuing to add its A.I. into tools that people use every day — for instance, by letting a person using Google Docs ask Gemini to draft a speech that includes personal anecdotes and jokes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司還表示，它將繼續把人工智慧融入人們日常使用的工具中——例如，允許谷歌文檔用戶要求Gemini起草一份包含個人軼事和笑話的演講稿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If I had to put a wager on the biggest winner of A.I., I would say it’s Google,” said Gary Rivlin, a former New York Times reporter who wrote a book about the tech industry’s race to cash in on A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果讓我押注誰是人工智慧最大的贏家，我會說是谷歌，」《紐約時報》前記者加里·里夫林表示，他曾寫過一本關於科技行業競相從人工智慧中獲利的書。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you asked me that same question a year and a half ago, the answer wouldn’t have been Google,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你在一年半前問我同樣的問題，答案絕不會是谷歌，」他還說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPOusfDq2pQDFbKXcgAdcrgBnQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google’s success with Gemini is a case study in how even a juggernaut can seemingly transform itself overnight to remain dominant. But past incumbents faced with similar existential threats did not have the same story.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌在Gemini上取得的成功是一個經典案例研究，展示了即使是行業巨頭，似乎也能在一夜之間完成自我轉型，從而保持主導地位。然而，過去那些面臨類似生存威脅的老牌巨頭卻沒能得到這樣的成功</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">About 15 years ago, Microsoft, whose leadership in personal computing was challenged by the rise of Apple’s iPhone and Google’s Android ecosystems, failed to stay relevant in the mobile phone era even after releasing its Windows Phone devices and acquiring the handset maker Nokia for $7.2 billion. Microsoft remains extremely profitable thanks to business customers, and it has a large video game business, but it no longer leads the pack among consumers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大約15年前，微軟在個人電腦領域的領導地位受到了蘋果iPhone和谷歌安卓生態系統崛起的挑戰。即使推出了Windows Phone設備，並以72億美元收購了手機製造商諾基亞，微軟也沒能在流動電話時代保持競爭力。得益於企業客戶以及龐大的電玩遊戲業務，微軟依然盈利豐厚，但在消費者市場中已不再領跑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The two companies have denied the suit’s claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已對OpenAI和微軟提起訴訟，指控其侵犯了與人工智慧系統相關的新聞內容版權。這兩家公司均否認了訴訟中的指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead of isolating Gemini, Google reinvented itself by blending A.I. into all of its most important products. To name a few: There is a team working on Gemini for Gmail, another working on Gemini inside Google Maps and yet another focused on the Gemini chatbot app.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌並沒有將Gemini孤立起來，而是通過將人工智慧融入其所有最重要的產品，從而實現自我重塑。例如：有一個團隊正致力於將Gemini應用於Gmail，一個團隊致力於將Gemini整合到谷歌地圖中，還有一個團隊專注於Gemini聊天機器人應用本身的開發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google is also in a position to use A.I. to capitalize on the travel industry. Gemini is the only chatbot with native access to Google Flights and Google Hotels for looking up airfare and lodging, which makes it a superior travel agent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌也具備利用人工智慧在旅遊業中獲利的條件。Gemini是唯一能夠原生接入谷歌航班和谷歌酒店以查詢機票和住宿的聊天機器人，這使它成為一個更優秀的旅行顧問。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To put it another way: What Google has that other A.I. companies lack is cultural cachet. And with the Gemini model integrated into so many popular services that people rely on every day for work and play, Google has made it much more likely that people will interact with its A.I., said Carolina Milanesi, the president of Creative Strategies, a consumer technology research firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">換句話說：谷歌擁有其他人工智慧公司所缺乏的東西——文化威望。消費科技研究公司創意戰略的總裁卡羅琳娜·米拉內西表示，隨著Gemini模型被整合到人們日常工作和娛樂所依賴的眾多熱門服務中，谷歌極大地增加了人們與其人工智慧進行互動的可能性。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPX5sPDq2pQDFRSXpgQdjfMdBw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s not about just how good the model is, but where it is and how easy it is for people to discover Gemini and then use it and get value,” Ms. Milanesi said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這不僅僅在於模型有多好，而是在於它所在的位置，以及人們能否輕鬆發現Gemini、使用它、並且從中獲得價值，」米拉內西說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google clearly leaned into its advantages to improve its technology. It made A.I.-generated answers a permanent fixture on Google.com — still the most visited website in the world — without giving users the ability to opt out of seeing them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌顯然利用了自身優勢來改進其技術。它將人工智慧生成的答案作為固定內容呈現於至今仍是全球訪問量最大網站Google.com，且沒有給用戶提供關閉該功能的選項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite making glaring mistakes about the nutritional value of rocks, among other errors, in its early days, Google quickly honed the model. But there is still some work to do. A recent analysis from The Times concluded that Google’s A.I.-generated responses were correct 90 percent of the time. Google disputed the study and argued that its answers were more accurate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管在早期犯下了關於石頭的營養價值等顯而易見的錯誤，谷歌還是迅速優化了該模型。不過仍有一些工作要做。《紐約時報》最近的一項分析得出結論，谷歌人工智慧生成的回答準確率為90%。谷歌對這項研究提出了異議，並堅稱其回答更加準確。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They just have this reach that few, if any, companies on Earth have,” Mr. Rivlin said. “Looking for the next Google? It’s probably Google.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們擁有這種地球上極少數公司才擁有的觸達能力，」里夫林說。「尋找下一個谷歌？那可能還是谷歌。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Brian X. Chen是時報首席消費科技作者。他撰寫產品評測以及科技工坊(Tech Fix)——一個關於解決科技相關問題的專欄。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260527/google-gemini-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

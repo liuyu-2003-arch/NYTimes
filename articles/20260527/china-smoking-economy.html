@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國禁煙為何這麼難？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國禁煙為何這麼難？</h1>
+    <h2 class="en-headline">Xi Jinping Quit Smoking. China Still Cannot.</h2>
+    <div class="meta-line">JOY DONG <span style="margin: 0 8px;">•</span> 2026-05-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國在控煙和頒佈全國性室內禁煙令方面進展緩慢。" height="700" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-01-jwvg/00biz-china-smoking-01-jwvg-master1050.jpg" width="1050"/><figcaption><span>中國在控煙和頒佈全國性室內禁煙令方面進展緩慢。</span> <cite>Gilles Sabrie for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a warm spring day in 2012, Xi Jinping, then China’s vice president, met with Bill Gates in Beijing. As the men were walking out of the meeting room, the conversation turned to smoking in a country that consumes nearly half the world’s cigarettes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2012年一個溫暖的春日，時任中國國家副主席習近平在北京會見了比爾·蓋茲。當兩人走出會議室時，話題轉向了在這個消耗全球近半香煙國家裡的吸煙問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi, a former smoker, said he felt much better after quitting years earlier and described tobacco use as a serious problem for China, recalled Dr. Ray Yip, then head of the Gates Foundation in China. Mr. Xi, who would become president the next year, promised to “do something about tobacco,” Dr. Yip said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據時任蓋茲基金會中國區負責人的葉雷博士回憶，曾是煙民的習近平說，他在幾年前戒煙後感覺好多了，並稱煙草使用是中國面臨的一個嚴重問題。葉雷表示，將於次年出任國家主席的習近平曾承諾要「對煙草問題採取行動」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Days later, Mr. Gates appeared at an antismoking event with Peng Liyuan, the Chinese leader’s wife and a celebrity singer. Both wore red shirts emblazoned with an antismoking slogan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾天後，蓋茲與這位中國領導人的妻子、著名歌唱家彭麗媛共同出席了一場控煙活動。兩人都穿著印有控煙標語的紅色T恤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet in the 14 years since, as Mr. Xi has become China’s most dominant leader in decades, Beijing has made only slow progress curbing tobacco use or enacting a national indoor smoking ban. While cigarette sales have fallen across much of the world, China has moved in the opposite direction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，在之後的14年裡，儘管習近平已成為中國幾十年來最具統治力的領導人，北京在遏制吸煙或制定全國性室內禁煙令方面進展緩慢。在全球大部分地區捲煙銷量下降的同時，中國卻走向了相反的方向。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNrZnevq2pQDFTuTpgQd3F4V5Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cigarette consumption in China rose 39 percent from 2003 to 2023, even as it fell 26 percent in the rest of the world. The 2.4 trillion cigarettes sold in China each year account for nearly half the global total, according to a report by a nongovernmental organization founded by former officials from the Chinese Center for Disease Control and Prevention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2003年至2023年間，中國的捲煙消費量增長39%，同期世界其他地區的消費量則下降了26%。由中國疾病預防控制中心前官員創立的一家非政府組織的報告顯示，中國每年售出2.4萬億支香煙，佔全球總量近一半。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The percentage of smokers has declined over the last 13 years, as fewer young people smoke, but cigarette sales have steadily grown. Cigarettes prices are low: A pack costs about $3 on average, roughly one-third the price in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去13年來，隨著吸煙的年輕人減少，吸煙率有所下降，但捲煙銷量卻在穩步增長。香煙價格低廉：平均每包售價約20元，大約是美國價格的三分之一。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="蓋茲基金會前中國區負責人葉雷表示，習近平曾誓言「對煙草問題採取行動」。" data-src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-02-jwvg/00biz-china-smoking-02-jwvg-master1050.jpg" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-02-jwvg/00biz-china-smoking-02-jwvg-master1050.jpg"/></div><figcaption><span>蓋茲基金會前中國區負責人葉雷表示，習近平曾誓言「對煙草問題採取行動」。</span> <cite>Owen Davies for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The failure to slow cigarette sales is a measure of the clout wielded by China’s State Tobacco Monopoly Administration, which both regulates the industry and operates the country’s dominant cigarette maker, the China National Tobacco Corporation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">捲煙銷量未能放緩反映了中國國家煙草專賣局所掌握的巨大影響力，該機構既是行業的監管者，也運營著中國佔據主導地位的捲煙製造商中國煙草總公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company generated roughly $244 billion in profit and tax revenue in 2025, about 7 percent of national government revenue and nearly what China says it spends on defense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司在2025年創造了約16570億元的利稅總額，約佔國家政府財政收入的7%，幾乎與中國官方公布的國防支出相當。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With economic growth slowing and a prolonged property slump eroding local governments’ land-sale income, tobacco revenue has become even more essential. The agency has also channeled its profits to support several of Mr. Xi’s strategic priorities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著經濟增長放緩以及長期的房地產低迷侵蝕了地方政府土地出讓收入，煙草收入變得更加不可或缺。該機構還將其利潤用於支持習近平的多項戰略優先事項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, it injected more than $1 billion into one of China’s biggest banks to shore up the financial system. It has also been a major backer of a $100 billion national semiconductor investment fund.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，它向中國最大的銀行之一注資超過75億元，以支撐金融系統。它也是一項規模達7000億元的國家半導體投資基金的主要支持者。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ7snevq2pQDFcWgcgAdzLYf5A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The financial weight has translated into political influence. The agency’s chief administrator holds a rank equivalent to a deputy government minister. Seven former top administrators have been arrested on corruption charges in the past seven years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種財務實力已轉化為政治影響力。該機構的最高管理者擁有相當於政府副部長的行政級別。在過去七年中，已有七名前高管因腐敗指控被捕。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2022, the agency expanded its authority to cover vapes, imposing far stricter rules, including limits on where they can be sold and bans on flavored products. Unlike in other countries, vaping has not eroded cigarette demand in China. Beijing ratified the World Health Organization tobacco-control treaty in 2005 but has never implemented its strictest provisions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年，該機構將管轄權擴大到了電子煙領域，實施了嚴格得多的規定，包括限制銷售地點和禁止銷售調味產品。與其他國家不同的是，電子煙並沒有削弱中國對傳統捲煙的需求。北京於2005年批准了世界衛生組織的控煙條約，但從未實施其最嚴格的條款。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="煙草管理部門阻止了推行全國性室內禁煙令的努力，將責任推給了地方政府，而地方政府的執法力度往往較弱。" data-src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-05-jwvg/00biz-china-smoking-05-jwvg-master1050.jpg" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-05-jwvg/00biz-china-smoking-05-jwvg-master1050.jpg"/></div><figcaption><span>煙草管理部門阻止了推行全國性室內禁煙令的努力，將責任推給了地方政府，而地方政府的執法力度往往較弱。</span> <cite>Gilles Sabrie for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration’s clearest victory came around 2017 when it blocked a yearslong push for a national indoor smoking ban, shifting responsibility to local governments, where enforcement is often weak.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該局最明顯的一次勝利發生在大約2017年，當時它阻撓了一項推動數年的全國室內禁煙令，將責任推給了地方政府，而地方的執法往往較弱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, many local smoking regulations are largely toothless and offer scant protection from secondhand smoke, particularly in less developed parts of the country. While cigarette packs in the United States and other Western countries carry impossible-to-ignore health warnings, packaging in China bears a single-line caution alongside images of national symbols like pandas and the Gate of Heavenly Peace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，許多地方的控煙法規在很大程度上形同虛設，對二手煙的防護作用微乎其微，尤其是在該國的欠發達地區。美國和其他西方國家的煙盒上印有不容忽視的健康警告，而在中國，煙盒包裝上只有一行簡單的警示語，旁邊還印著熊貓和天安門等國家象徵的圖案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A 2022 study published by the Chinese C.D.C. concluded that the country’s inability to rein in smoking was the result of interference by the state monopoly and the government’s “ambiguous attitudes” toward tobacco.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國疾病預防控制中心於2022年發表的一項研究得出結論，中國無法遏制吸煙趨勢是因為國家專賣局的干預以及政府對煙草的「曖昧態度」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The influence of local branches of the State Tobacco Monopoly Administration deepened after the Covid-19 pandemic, when many governments were left financially strained by the cost of mass testing. Their lobbying is especially effective because cigarette production and consumption taxes are instrumental to local budgets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在新冠疫情之後，隨著大規模核酸檢測帶來的成本使許多地方政府財政吃緊，國家煙草專賣局各地分支機構的影響力進一步加深。由於捲煙的生產和消費稅對地方財政起著舉足輕重的作用，這些分支機構的遊說尤為有效。</div></div></div></div></div><div class="big_ad" data-google-query-id="COidnuvq2pQDFcaEpgQdgCsyFw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A study by Zheng Rong, a professor at the University of International Business and Economics in Beijing, found that roughly half the revenue from each cigarette sold by Chinese manufacturers flowed into government coffers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京對外經濟貿易大學教授鄭榕的一項研究發現，中國製造商每售出一支香煙，其中大約一半的收入將流入政府財政。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The dependence is acute in China’s largest tobacco-producing regions. In Kunming, the capital of Yunnan Province in southwestern China, tobacco taxes accounted for more than half the city budget in 2024. In Changde, a city in Hunan Province in central China, tobacco taxes accounted for 20 percent of its tax revenue in 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種依賴在中國最大的煙草產區尤為嚴重。在中國西南部雲南省的省會昆明，2024年的煙草稅收占該市預算的一半以上。在中國中部湖南省的常德市，2022年的煙草稅收占其稅收總額的20%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Local tobacco bureaus fight to water down even modest antismoking initiatives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">地方煙草局甚至會極力阻撓哪怕最溫和的控煙倡議。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="在慢車車廂的兩端，吸煙是被允許的。" data-src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-gpjt/00biz-china-smoking-gpjt-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-gpjt/00biz-china-smoking-gpjt-jumbo.jpg"/></div><figcaption><span>在慢車車廂的兩端，吸煙是被允許的。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="酒吧吸煙區裡的吸煙者。" data-src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-03-jwvg/00biz-china-smoking-03-jwvg-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-03-jwvg/00biz-china-smoking-03-jwvg-jumbo.jpg"/></div><figcaption><span>酒吧吸煙區裡的吸煙者。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Xinyu, a city in Jiangxi Province, the local health commission proposed designating certain public areas as “smoke-free,” according to official documents posted online.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據網上公布的官方文件，在江西省新余市，當地衛健委曾提議將某些公共區域劃為「無煙區」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The proposal already excluded restaurants and bars, falling short of World Health Organization recommendations that all indoor public spaces be nonsmoking. But the local tobacco bureau suggested narrowing the definition of smoke-free schools to apply only to elementary and middle schools. After a public uproar, the bureau’s efforts were unsuccessful.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該提議已經排除了餐館和酒吧，未達到世界衛生組織關於所有室內公共場所均應禁煙的建議。但當地煙草局仍建議縮小無煙學校的定義範圍，僅使其適用於中小學。在引發公眾嘩然而遭到反對後，該局的這一企圖未能成功。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As government efforts have stalled, young people, especially women, have started organizing their own campaigns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著政府層面的努力停滯不前，年輕人——尤其是女性——開始組織自己的倡議活動。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLqwnuvq2pQDFeekpgQdEp8CUg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alva Zhang, a 23-year-old influencer, created a social media account and WeChat groups encouraging followers to confront smokers in public venues and file complaints with authorities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">23歲的網紅阿爾瓦·張（音）創建了一個社群媒體帳號和多個微信群，鼓勵粉絲在公共場所勸阻吸煙者，並向當局投訴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Because there are only some regulations with barely any penalty, I and many others have experienced anger and helplessness,” Ms. Zhang said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「因為只有一些規定，幾乎沒有處罰措施，我和許多其他人都有過憤怒和無助的感覺，「阿爾瓦·張說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Public support appeared to be growing. A female comedian gained national attention and praise from health agencies after performing a routine that mocked inconsiderate smokers. Hundreds have shared their proposals for stricter smoking rules in China’s government surveys.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">公眾的支持似乎在不斷增長。一位女性喜劇演員在表演了一段嘲諷不顧及他人的吸煙者的段子後，獲得了全國關注以及衛生機構的讚揚。在中國的政府調查中，已有數百人提出了對制定更嚴格控煙規則的建議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early in his tenure, Mr. Xi appeared willing to challenge the tobacco industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其任期初期，習近平似乎有意挑戰煙草業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After he came to power in 2013, the central government issued a directive forbidding officials to smoke during government activities or in public venues. It called on officials to show “exemplary compliance” with the rules.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在他於2013年上台後，中央政府發布了一項指令，禁止官員在政府活動或公共場所吸煙。該指令呼籲官員在遵守規定，「以身作則「。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國的煙草包裝上印有簡短的警示語以及天安門等國家象徵的圖片。相比之下，香港煙盒上的圖文健康警示佔據標籤大部分面積。" data-src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-04-jwvg/00biz-china-smoking-04-jwvg-master1050.jpg" src="https://static01.nyt.com/images/2026/05/14/multimedia/00biz-china-smoking-04-jwvg/00biz-china-smoking-04-jwvg-master1050.jpg"/></div><figcaption><span>中國的煙草包裝上印有簡短的警示語以及天安門等國家象徵的圖片。相比之下，香港煙盒上的圖文健康警示佔據標籤大部分面積。</span> <cite>Gilles Sabrie for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Yip, the former Gates Foundation official, said the directive most likely had come directly from Mr. Xi and helped accelerate Beijing’s adoption of indoor smoking restrictions, making the capital one of the first major Chinese cities to enact such rules.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前蓋茲基金會官員葉雷表示，這項指令極有可能直接來自習近平本人，並推動加速了北京市通過室內禁煙限制措施，使首都成為第一批批頒佈此類規定的中國大城市之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two years later, in 2015, China raised tobacco taxes, pushing cigarette prices up more than 10 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩年後的2015年，中國提高了煙草稅，促使香煙價格上漲了10%以上。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNflnuvq2pQDFfWGpgQdcFUqnA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the push for a national indoor smoking ban lost steam around the same time. It was also the last time Ms. Peng, China’s first lady, publicly championed antismoking efforts, appearing again with Mr. Gates in Seattle to assess research on helping people quit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但大約在同一時期，推動全國範圍內實施室內禁煙的勢頭卻有所減弱。那也是中國第一夫人彭麗媛最後一次公開倡導控煙行動，當時她與蓋茲再次在西雅圖露面，評估關於幫助人們戒煙的研究。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Yip and other experts point to one reason China’s antismoking momentum shifted. Beginning in 2015, China intensified its crackdown on foreign nongovernmental organizations, a major source of funding for antismoking campaigns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">葉雷和其他專家指出了中國控煙勢頭髮生轉變的一個原因：從2015年開始，中國加大了對外國非政府組織的打擊力度，而這些組織正是控煙活動的主要資金來源。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Matthew Kohrman, a Stanford University professor who studies smoking in China, said the country’s economic slowdown had most likely driven more people toward nicotine as a “potent mood modulator,” while weak enforcement of smoking restrictions had made cigarettes easier to consume in public.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學研究中國吸煙問題的教授馬修·科爾曼表示，中國經濟放緩極有可能促使更多人將尼古丁作為「強效的情緒調節劑」，同時對吸煙限制措施的執法不力使得人們在公共場合抽煙較為容易。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since the pandemic, the National Health Commission has prioritized disease control over curbing tobacco use. China still officially aims to bring the smoking rate down to 20 percent by 2030 from the current 23 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自疫情以來，國家衛生健康委員會已將疾病控制的優先級置於控煙之上。中國官方目前的目標仍然是在2030年將吸煙率從目前的23%降至20%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wu Xiangtian, an official from the National Health Commission, acknowledged in 2024 how difficult that target would be.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國家衛健委的一名官員吳翔天在2024年承認實現該目標非常困難。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“To be honest,” he said, “the pressure is immense.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「說實話，「他說，「壓力很大。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260527/china-smoking-economy/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
