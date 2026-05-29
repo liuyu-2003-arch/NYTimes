@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國物價正以三年來最快速度上漲 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國物價正以三年來最快速度上漲</h1>
+    <h2 class="en-headline">Prices in the U.S. Are Rising at the Fastest Pace in Years</h2>
+    <div class="meta-line">COLBY SMITH <span style="margin: 0 8px;">•</span> 2026-05-29</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/05/28/multimedia/28DC-PCE-3-lpcq/28DC-PCE-3-lpcq-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Vincent Alban/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A measure of inflation closely watched by the Federal Reserve accelerated in April to a three-year high, reinforcing the central bank’s budding support to consider raising interest rates if price pressures do not ease.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美聯儲密切關注的一項通膨指標在4月加速升至三年來的高點，這進一步增強了該央行內部正在萌生的一種立場：如果價格壓力沒有緩解，將考慮加息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Personal Consumption Expenditures index rose 3.8 percent from the same time last year. It was the fastest annual pace since May 2023, when the Fed was in the midst of raising rates to tame a burst of inflation that had emerged in the wake of the pandemic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">個人消費支出指數(PCE)同比上漲3.8%。這是自2023年5月以來的最快年增速，當時美聯儲正處於加息週期之中，以平息疫情後爆發的通膨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A measure of underlying inflation that strips out volatile food and energy prices also notched a multiyear high. That measure, “core” inflation, increased at an annual pace of 3.3 percent, the fastest since November 2023.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">剔除了波動較大的食品和能源價格後的潛在通膨指標也創下了多年來的新高。這一指標被稱為「核心」通膨，以3.3%的年增長率上升是自2023年11月以來的最快增速。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a monthly basis, inflation rose slightly less than expected. Overall prices jumped 0.4 percent and those excluding food and energy prices ticked up 0.2 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">按月計算，通膨漲幅略低於預期。整體價格上漲了0.4%，而剔除食品和能源價格的核心價格微升了0.2%。</div></div></div></div></div><div class="big_ad" data-google-query-id="CML5xf2x3ZQDFXhGCAQdPYkyDg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That was a welcome reprieve, but on the whole, the latest data, which the Commerce Department released on Thursday, underscored the difficult position that officials at the central bank are now in with price pressures intensifying because of the war with Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一個令人欣慰的喘息之處，但總體而言，美國商務部週四發布的最新數據凸顯了央行官員們目前所處的困境，因為與伊朗的戰爭導致價格壓力正在加劇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This month, the Consumer Price Index, another inflation gauge, also showed that consumer prices had risen at the fastest pace since May 2023.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，另一項通膨指標——消費者價格指數(CPI)也顯示，消費者價格正以自2023年5月以來的最快速度上漲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Consumers have started to moderate their spending in the face of resurgent prices, according to Thursday’s data. Spending, once adjusted for inflation, rose just 0.1 percent in April, as incomes flatlined and the savings rate dropped to the lowest level since June 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據週四的數據，面對反彈的物價，消費者已經開始節制開支。經通膨調整後，4月份的支出僅增長了0.1%，同時收入停滯不前，儲蓄率降至2022年6月以來的最低水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Commerce Department also revised lower its assessment of growth in the first quarter, noting that the economy expanded 1.6 percent on an inflation-adjusted basis compared with its initial estimate of 2 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">商務部還下調了對第一季度經濟增長的評估，指出經通膨調整後，經濟增長了1.6%，而最初的估計為2%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war, which began in late February, has severely disrupted global energy markets, raising the urgency of a deal between President Trump and Iranian officials. No agreement has emerged, however, and renewed hostilities in recent days have dimmed hopes that a crucial shipping pathway, the Strait of Hormuz, will be reopened soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場始於2月下旬的戰爭嚴重擾亂了全球能源市場，這增加了川普總統與伊朗官員達成協議的緊迫性。然而，目前尚未達成任何協議，而且近日戰火重燃，使得關鍵航運通道霍爾木茲海峽很快重新開放的希望變得渺茫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Fed typically ignores or “looks through” supply shocks because they historically tend to affect prices only temporarily. John C. Williams, president of the Federal Reserve Bank of New York, appeared to back this approach in remarks on Thursday. He acknowledged that continuing supply chain disruptions caused by the war were worrisome, but he estimated that the impact on inflation could peak in a few months.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美聯儲通常會忽略或「看淡」供應衝擊，因為從歷史上看，它們對價格的影響往往只是暫時的。紐約聯邦儲備銀行行長約翰·威廉斯在週四的講話中似乎支持這種做法。他承認，戰爭造成的持續供應鏈中斷令人擔憂，但他估計對通膨的影響可能會在幾個月內達峰。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPjnxv2x3ZQDFSGTOgUdU5AOLg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But other officials have begun to question whether the look-through approach is the right one, given that the war with Iran is the fourth shock in five years to push inflation further from the Fed’s 2 percent target. The U.S. economy has weathered a series of events that have raised prices, including the Covid-19 pandemic, Russia’s invasion of Ukraine and Mr. Trump’s global trade war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但其他官員已經開始質疑這種「看淡」的做法是否正確，因為與伊朗的戰爭已經是五年來第四次導致通膨進一步偏離美聯儲2%目標的衝擊。美國經濟已經經歷了一系列推高價格的事件，包括新冠疫情、俄羅斯入侵烏克蘭，以及川普的全球貿易戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since 2021, inflation has been higher than the central bank would like. Expectations about inflation in the next five or 10 years still reflect confidence that the central bank will eventually succeed in bringing inflation down to 2 percent. But the longer inflation stays above that target, the more likely that confidence could begin to ebb.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自2021年以來，通膨水平一直高於央行的預期。對未來五年或10年通膨的預期仍然反映出人們對央行最終成功將通膨降至2%充滿信心。但通膨高於該目標的時間越長，這種信心就越有可能開始動搖。。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With the labor market on firmer footing than just a couple of months ago, more Fed officials have embraced the possibility that rates may need to rise to get inflation fully under control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於勞動力市場比幾個月前更加穩固，越來越多的美聯儲官員接受了這樣一種可能性：可能需要加息才能將通膨完全控制住。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I want to be clear about my risk assessment: The risks remain tilted toward ⁠higher inflation,” said Lisa D. Cook, a Fed governor, in remarks on Wednesday. “I am prepared to raise rates, if the expected disinflation does not appear in a timely manner.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「關於我的風險評估，我想明確一點：風險仍然傾向於通膨走高，」美聯儲理事麗莎·庫克在週三的講話中表示。「如果預期的通膨回落沒有及時出現，我準備支持加息。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That followed a speech last week from Christopher J. Waller, another governor, who made clear that he could “no longer rule out rate hikes further down the road if inflation does not abate soon.” That, he added, was “especially true if measures of inflation expectations, some of which have risen lately, show signs of becoming unanchored.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在此之前，另一位理事克里斯托弗·沃勒在上週的演講中也明確表示，如果通膨「近期未能緩解」，他「不能再排除未來進一步加息的可能性」。他還說，「如果衡量通膨預期的指標——其中一些最近有所上升——顯示出脫離錨定的跡象，那就更是如此。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The specter of higher rates comes amid a leadership transition at the Fed. Kevin M. Warsh, whom Mr. Trump picked to replace Jerome H. Powell as chair, was sworn in to the top job at the Fed last week. Mr. Trump has long berated the Fed for not lowering rates quickly enough.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加息的陰影正值美聯儲領導層交接之際出現。川普挑選凱文·沃什接替傑羅姆·鮑威爾擔任主席，沃什已於上週宣誓就任美聯儲最高職位。長期以來，川普一直斥責美聯儲降息不夠迅速。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO34xv2x3ZQDFZdoCAQdXq05ag" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has hinted he will try to ease up on his pressure campaign now that Mr. Warsh is at the helm. At Friday’s swearing-in ceremony, which was held at the White House for the first time since 1987, the president said he wanted Mr. Warsh to be “totally independent.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普曾暗示，既然現在由沃什掌舵，他將試圖減輕對美聯儲的施壓。在週五的宣誓就職儀式上——這是該儀式自1987年以來首次在白宮舉行——總統表示，他希望沃什能夠「完全獨立」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But that leeway could quickly disappear, especially if the Fed begins to more seriously consider rate increases, which would make all types of borrowing more expensive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這種迴旋餘地可能會迅速消失，尤其是如果美聯儲開始更認真地考慮加息，這將使各類借款成本上升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Traders in federal funds futures markets expect the central bank to eventually raise rates early next year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聯邦基金期貨市場的交易員預計，美聯儲最終將在明年初加息。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Colby Smith為時報報導美聯儲和美國經濟。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260529/inflation-pce-gauge/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
