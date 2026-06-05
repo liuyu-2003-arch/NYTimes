@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「李老師」的非暴力抗爭 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「李老師」的非暴力抗爭</h1>
+    <h2 class="en-headline">How an Act of Vandalism Helped a Dissident Find His Voice</h2>
+    <div class="meta-line">袁莉 <span style="margin: 0 8px;">•</span> 2026-06-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/05/14/arts/blurred-faces-cover/blurred-faces-cover-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Li Ying</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One afternoon in October 2024, Li Ying was lying in bed, scrolling through X, when he got a notification on his phone from the peephole security camera on his apartment door in Turin, Italy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年10月的一個下午，李穎正躺在床上刷著X，這時他位於義大利都靈公寓門上的貓眼監控攝像頭向他的手機發來了通知。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two men were lingering in the hallway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩名男子正在走廊裡徘徊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He got up quietly, went to the door and watched them through the camera feed on his phone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他悄悄站起身，走到門前，通過手機上的攝像頭畫面觀察他們。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For two years, ever since he turned his X account into one of the most influential Chinese-language sources for uncensored news and dissent, Mr. Li had received threats of physical harm. Should those threats ever come to pass, he imagined summoning the courage to livestream his capture, possibly even his own death.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩年來，自從他把自己的X帳號變成了最具影響力的中文未審查新聞和異見來源之一，李穎就不斷收到人身傷害的威脅。他想像過，如果這些威脅真的變成現實，自己要鼓起勇氣，直播自己被捕、甚至可能是自己死亡的過程。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMT7j7OA75QDFe2MywEdyB8nQg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When one of the men reached into his pocket, Mr. Li froze. He forgot to livestream.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當其中一名男子把手伸進兜裡時，李穎僵住了。他忘了開直播。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The man pulled out a can of spray paint and scrawled the word “stupro,” Italian for rape. Then both men left.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那個男子掏出了一罐噴漆，在牆上胡亂寫下了「stupro」這個詞——義大利語意為「強姦」。然後兩人便離開了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Li’s worst fears had not come to pass. He called the police. Four officers came, and they took his statement and his security camera footage. A friend drove from Milan to collect him and his two cats. By morning the apartment was empty.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李穎最擔心的可怕情況並未發生。他報了警。四名警察趕到現場，記錄了他的陳述並取走了他的安全攝像頭錄像。一位朋友從米蘭開車來接他和他的兩隻貓。到了清晨，公寓裡已空無一人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After that moment, Mr. Li, who is known as “Teacher Li” to his followers on social media, decided that his life should not be dictated by fear. Rather than back down, he expanded his activities — traveling, attending human rights conferences and meeting diplomats, journalists, activists and politicians across Europe, Asia and North America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經歷了那個時刻後，在社群媒體上被粉絲稱為「李老師」的李穎決定，他的生活不應該被恐懼所支配。他沒有退縮，而是擴大了自己的活動範圍——四處旅行、參加人權會議，並與歐洲、亞洲和北美各地的外交官、記者、活動人士和政治人士會面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When you are able to face the abyss directly,” Mr. Li said, “the abyss gradually starts to fear you instead.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當你能夠直面深淵時，」李穎說。「深淵反而漸漸開始害怕你了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Italian police have not released any information about the investigation, but Mr. Li was certain that the Chinese government had hired the vandals. Under Xi Jinping, censorship and surveillance have made sustained dissent inside China extremely difficult. Beijing has proved equally determined to pursue those who speak out from abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">義大利警方尚未公布任何關於調查的信息，但李穎確信，這些破壞者是中國政府僱傭的。在習近平執政下，審查和監控使得在中國境內持續進行異議活動變得極其困難。北京同樣表示堅決追擊那些在海外公開發聲的人。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPyokLOA75QDFXSUywEdqKYNwQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Li, 34, is among the biggest targets of Beijing. Constant doxxing kept him on the move. Smears and death threats filled his X feed. Then the intimidation turned physical: Strangers appeared at his door, photographed his building and scrawled threats in his hallway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現年34歲的李穎是北京最大的目標之一。持續不斷的個人信息洩漏讓他不停搬遷。抹黑和死亡威脅充斥著他的X動態。接著，恐嚇演變成了實質的人身騷擾：陌生人出現在他的家門口，拍攝他的公寓樓，在他的走廊裡寫下恐嚇話語。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A growing number of Chinese who found living in an authoritarian state intolerable have moved abroad. Most are too fearful of a vengeful government to speak up. But people like Mr. Li provide an alternative to the official government narratives through podcasts, YouTube channels, bookstores and X accounts run from Tokyo, Toronto and New York.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">越來越多的中國人因無法忍受生活在威權國家而移居海外。他們中大多數人因害怕遭到政府的報復而不敢發聲。但也有李穎這樣的人，通過從東京、多倫多和紐約運營的播客、YouTube頻道、書店和X帳號，提供了另一種打破官方政府敘事的視角。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Few have reached an audience as large as Mr. Li’s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鮮少有人能像李穎那樣觸及如此龐大的受眾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to data analytics firm Similarweb, his X account, which has 2.2 million followers, ranked fifth globally on the site by traffic in December — extraordinary for an account written in Chinese. From 2023 to 2025, the account generated more than six billion views each year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據數據分析公司Similarweb的數據，他擁有220萬粉絲的X帳號訪問量在去年12月位居全球第五——這對於一個用中文帳號來說是驚人的。從2023年到2025年，該帳號每年都能創造超過60億次的瀏覽量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He posts accounts of unemployed university graduates, delivery drivers who once held more prestigious jobs, the people who spent money on apartments that were never built or who were never paid for their work. Some of the information is sent by people inside China, such as videos of the police cracking down on Wuhan residents protesting plans for a battery factory. Some posts come from Chinese social media sites, such as Weibo and Douyin, the sister short video app of TikTok.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他發布的內容涉及失業大學畢業生、曾經從事過更體面工作的外賣騎手、為爛尾樓付款的人，或勞務費未獲支付的人。其中一些信息來自中國國內人士，比如警察鎮壓武漢居民抗議電池廠規劃的影片。還有一些帖子來自中國的社群媒體網站，如微博和抖音（TikTok的姊妹短片應用）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“His is not just a single voice,” said Laura Harth, a director based in Italy for Safeguard Defenders, a human rights organization. “He’s like the loudspeaker through which all the other voices” — Chinese voices — “come out into the world.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他的聲音不僅僅代表他自己，」總部位於義大利的人權組織「保護衛士」的負責人勞拉·哈思說。「他就像一個揚聲器，所有其他的聲音」——中國人的聲音——「通過他傳向世界。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CNPrkbOA75QDFReFywEdqY0pqg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Cute and Menacing Cat</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>一隻可愛又帶著一絲威脅的貓</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Li grew up in eastern China’s Anhui Province and has been drawing for as long as he can remember. He moved to Italy to study painting. In November 2022, when demonstrations erupted in China protesting the country’s draconian “zero Covid” policies, he was living in Milan. He had a modest following on Twitter, as X was known at the time; his avatar is a hand-drawn cat that’s simultaneously cute and menacing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李穎在中國東部的安徽省長大，從記事起就一直在畫畫。他搬到義大利是為了學習繪畫。2022年11月，當中國暴發抗議嚴厲「清零」政策的示威活動時，他正住在米蘭。當時他在Twitter（即後來的X）上只有少量的關注者；他的頭像是一隻手繪的貓，看起來既可愛又帶著一絲威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The protests were the largest wave of public dissent since Tiananmen Square in 1989. Mr. Li opened his account to anyone inside China with something to show the world. People began sending him photographs, videos and witness accounts — for example, of police officers arresting protesters or people chanting for Mr. Xi to step down — that would have been censored on the Chinese internet. His following exploded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些抗議活動是自1989年天安門廣場事件以來最大規模的公開異見浪潮。李穎向所有身在中國國內、並且有內容想向世界展示的人開放了他的帳號。人們開始向他發送照片、影片和目擊者稱述——例如警察逮捕抗議者，或是人們高喊讓習近平下台的場景——這些內容在中國的互聯網上都會被迅速審查屏蔽。他的粉絲量隨即迎來了爆炸式增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then came the retaliation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接踵而至的是報復。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Each time he posted online, the police would appear at his parents’ house in Anhui. The Chinese Embassy in Italy wrote to a language school in Milan where Mr. Li worked, accusing him of fraud. He lost his job.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每當他在網上發布消息，警察就會出現在他安徽父母的家門前。中國駐義大利大使館向李穎工作的一所米蘭語言學校致信，指控他詐騙。他因此失去了工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His parents begged him to stop posting. His bank accounts in China were frozen. So were his payment apps and gaming accounts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的父母哀求他停止發帖。他在國內的銀行帳戶被凍結，他的支付應用和遊戲帳號也同樣被封禁。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIH1kLOA75QDFfMF2wEd_l8RfQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Convinced he was being tracked, he moved four times in a year. At his most isolated, he did not leave his building for two weeks, surviving mostly on McDonald’s takeout delivered to his house.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於確信自己被追蹤，他在一年內搬了四次家。在最孤立無援的時候，他連續兩週沒有離開過公寓，主要靠送上門的麥當勞外賣度日。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2024, the police in China began summoning Mr. Li’s followers and pressuring them to unfollow his account. Then came the graffiti in Turin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，國內警方開始傳喚李穎的關注者，施壓要求他們取消關注他的帳號。隨後發生了都靈走廊裡的塗鴉事件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Elon Musk Replies</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>伊隆·馬斯克的回覆</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China runs the most extensive version of transnational repression in the world, touching millions of people in at least 36 countries, according to a 2021 Freedom House report. Beijing uses espionage, cyberattacks, threats and physical assaults to silence and punish its critics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據「自由之家」 2021年的一份報告，中國實施著世界上最廣泛的跨國鎮壓系統，波及至少36個國家數以百萬計的民眾。北京利用間諜活動、網路攻擊、威脅和人身攻擊來使批評者噤聲並對其進行懲罰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past few years, the authorities in Europe and the United States have investigated and prosecuted cases linked to Beijing’s efforts to monitor and intimidate dissidents abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去的幾年裡，歐洲和美國當局調查並起訴了多起與北京試圖監視和恐嚇海外異見人士相關的案件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In February, an OpenAI report documented how Chinese law enforcement had used the company’s ChatGPT to conduct online influence operations against dissidents and foreign leaders, using Mr. Li as one of the examples. Mr. Li’s team and Safeguard Defenders encourage overseas Chinese to document their experiences of Beijing’s transnational repression and submit evidence to the authorities in democratic countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年2月，OpenAI的一份報告詳細記錄了中國執法部門如何利用該公司的ChatGPT對異見人士和外國領導人進行在線輿論引導，並以李穎作為例子。李穎的團隊和「保護衛士」鼓勵海外華人記錄自己遭遇北京跨國鎮壓的經歷，並向民主國家的當局提交證據。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIedkbOA75QDFe2FywEdyzA25Q" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing denies accusations of transnational repression and accuses foreign governments of interfering in China’s internal affairs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京堅決否認有關跨國鎮壓的指控，並指責外國政府干涉中國內政。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I’ve talked to Mr. Li many times over the years. I once joked to him that there are two publications I read every day to keep up with China news: the official People’s Daily and his X feed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些年來，我曾與李穎交談過許多次。我曾向他開玩笑說，為了解中國新聞，有兩份出版物是我每天必讀的：一份是官方的《人民日報》，另一份就是他的X平台動態。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early on, he resisted the “rebel” label and told me that he regretted what he had gotten himself into. He was incredulous that some Chinese pinned their hope of democracy on an influencer like him. Having paid the price of dissent, he understood why so few people dared to speak out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在早期，他抗拒「反叛者」的標籤，並曾告訴我他後悔讓自己陷入這種境地。有些中國人將民主的希望寄托在像他這樣的網紅身上，這讓他感到不可思議。在付出了反抗的代價後，他理解了為什麼很少有人敢於公開說話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But as time passed, Mr. Li seemed increasingly comfortable inhabiting his role as an activist. He still doesn’t want his photo taken, and he surveys any room he enters. But the man who once hid inside his apartment now moves confidently through airports and attends conferences and visits embassies. He briefs diplomats on what’s going on in China and Beijing’s methods of transnational repression.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但隨著時間的推移，李穎似乎越來越習慣於自己作為活動人士的角色。他仍然不希望被拍下照片，並且每進入一個房間都會仔細環視四周。然而，這位曾經躲在公寓裡不敢出門的人，現在已經自信地穿梭於各大機場、出席各種會議並拜訪各國大使館。他向外交官們簡報中國的現狀以及北京實施跨國鎮壓的手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He oversees staff and volunteers who help aggregate news and manage his X account as well as putting out a new weekly newsletter in English. In February 2025, Mr. Li’s team organized a crowdsourced investigation into long school hours inside China, drawing thousands of submissions from students and parents. Some schools adjusted their schedules after the findings circulated widely online. (His work is supported by private donors.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他領導著一支由員工和志願者組成的團隊，負責匯總新聞、管理他的X帳號，並每週發布一份英文簡報。2025年2月，李穎的團隊組織了一次針對中國國內學生在校時間過長的眾包調查，吸引了數以千計學生和家長的反饋。在調查結果於網上廣泛流傳後，一些學校調整了作息時間表。（他的工作由私人捐助者資助。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In December, I asked whether he considered himself a revolutionary. He hesitated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年12月，我問他是否認為自己是一個革命者。他猶豫了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The word, he said, carries associations with violence and bloodshed — things he abhors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這個詞會讓人聯想到暴力和流血——而這些是他所厭惡的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Li said he now saw his work as part of a nonviolent struggle against Communist Party rule.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但李穎表示，他現在將自己的工作視為反對共產黨統治的非暴力抗爭的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For a long time, I was the one being chased by them,” he told me, referring to the Chinese government. “But now, I’ve turned the tables — I’m the one pursuing them around the world and pushing back against them.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在很長一段時間裡，我都是那個被他們追捕的人，」他指的是中方政府。「但現在，我反客為主——是我在世界各地追著他們，並且做出反擊。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, we met in Tokyo. Mr. Li likes the city because of its Chinese diaspora, which in recent years has attracted a growing number of journalists, activists and intellectuals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年4月，我們在東京見面。李穎喜歡這座城市，因為這裡有龐大的華人流散群體，近年來吸引了越來越多移居此地的記者、活動人士和知識分子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He also likes the proximity to China — as close, perhaps, as an exiled dissident can get.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他同樣喜歡這裡距離中國很近——對於一位流亡異見人士來說，這或許是能達到的最近距離了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In May, during President Trump’s state visit to China, Mr. Li’s posts made a brief splash on Chinese social media. Mr. Li’s account had posted a photo showing Mr. Musk walking with his young son, who was wearing a Chinese-style vest. Mr. Musk, a member of the U.S. delegation, replied to the post in Chinese: “My son is learning Mandarin.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5月，在川普總統對中國進行國事訪問期間，李穎發布的帖子在中國社群媒體上引發了短暫的轟動。李穎的帳號發布了一張照片，畫面顯示馬斯克正與他年幼的兒子走在一起，孩子穿著一件中式馬甲。作為美國代表團成員的馬斯克用中文回覆了該帖子：「我的兒子正在學普通話。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The exchange quickly became one of the most discussed topics on Chinese social media. A state media outlet created a hashtag #ElonMusksaidhissonislearningChinese on the Weibo platform. Some comments slyly asked, “So, to whom he was responding?” After a few hours, the hashtag was deleted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一互動迅速成為中國社群媒體上討論度最高的話題之一。一家官媒在微博平台上創建了標籤「#伊隆·馬斯克說兒子正在學中文#」。一些評論敏銳地暗諷道：「那他是在回覆誰呢？」幾小時後，這個標籤被刪除了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon after, Mr. Li posted an image generated by artificial intelligence showing Mr. Musk and Mr. Xi seated together at a state dinner. Mr. Musk was holding up a phone toward the Chinese leader.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久之後，李穎發布了一張由人工智慧生成的圖片，畫面中馬斯克和習近平在國宴上並肩而坐。馬斯克正拿著手機給這位中國領導人看。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the screen was Mr. Li’s mischievous cat avatar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而在那塊手機螢幕上，顯示的正是李穎那隻調皮的貓咪頭像。</div></div></div><figure class="article-inline-photo with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/05/29/business/00NewWorld-Teacher-Li/00NewWorld-Teacher-Li-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/business/00NewWorld-Teacher-Li/00NewWorld-Teacher-Li-master1050.jpg"/></div><figcaption><span></span> <cite></cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">袁莉為《紐約時報》撰寫「新新世界」專欄，專注中國及亞洲科技、商業和政治交叉議題。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260602/teacher-li-transnational-repression/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

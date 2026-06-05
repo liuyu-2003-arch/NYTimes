@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沿66號公路，駛過一個世紀 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">沿66號公路，駛過一個世紀</h1>
+    <h2 class="en-headline">Time-Traveling Along Route 66, in Cars of the Past, Present and Future</h2>
+    <div class="meta-line">JAMIE LINCOLN KITMAN <span style="margin: 0 8px;">•</span> 2026-05-29</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="約翰·克拉夫奇克的1966款奧茲莫比爾。在戰後經濟繁榮時期，無數像他這輛奧茲莫比爾一樣的汽車紛紛向西進發。" height="691" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-03alt-lqtk/00wheels-route66-03alt-lqtk-master1050.jpg" width="1050"/><figcaption><span>約翰·克拉夫奇克的1966款奧茲莫比爾。在戰後經濟繁榮時期，無數像他這輛奧茲莫比爾一樣的汽車紛紛向西進發。</span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. Route 66, the Mother Road of novels, songs and movies and the highway that ran parallel with America’s postwar boom years, is celebrating its 100th anniversary. Driving it in 2026, you wouldn’t necessarily know that festivities were in order.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無數小說、歌曲與電影中的「母親之路」——美國66號公路是一條與美國戰後繁榮歲月並行的公路，如今它正迎來100週年紀念。如果你在2026年驅車行駛在這條路上，未必能意識到這裡正舉行慶祝活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The arrival of jet travel and the birth of the federal interstate program in 1956 led to a marked decline in traffic, followed by decades of neglect. Though it has long since lost its former luster, Route 66 remains a monument to its past and to the freedom and opportunity it once stood for in a nation migrating westward.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">噴氣式飛機旅行的到來以及1956年聯邦州際公路計劃的誕生導致公路沿線交通流量顯著下降，隨後便是數十年的沉寂與忽視。儘管它早已失去了往日的光彩，但66號公路依然是一座豐碑，銘刻著它的過去，也銘刻著它在一個一路向西遷徙的國家中曾代表的自由與機遇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, Route 66 is a dusty museum that wends its way lazily through eight states, from Chicago to Santa Monica, Calif. Along the way is a gallery of idiosyncratic Americana highlighting the nation’s first motorized century.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，66號公路就像一座落滿塵土的博物館，慵懶地在八個州蜿蜒而過，從芝加哥一直延伸到加利福尼亞州的聖莫尼卡。沿途如同一條畫廊，展現著風情獨特的美式風物，生動展現了這個國家首個汽車世紀的風貌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though completists might wish to traverse every one of its 2,448 miles, I set out for four days and three nights to explore part of it with some fellow road-tripping history buffs: David Brancaccio, a former host and now a correspondent for “Marketplace” on public radio, and John Krafcik, a former chief of Hyundai North America and of Waymo, the robotaxi venture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管完美主義者可能希望走完它全部的2448英里（約合3940公里），但我還是計劃用四天三夜的時間，與幾位熱愛公路旅行的歷史愛好者一起探索其中的一部分。他們是：公共廣播電台《市場》節目的前主持人、現任記者戴維·布蘭卡喬，以及現代汽車北美公司和無人駕駛計程車初創公司Waymo的前首席執行官約翰·科拉夫奇克。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJP13M-A75QDFXnwKAUdZj49pQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tarmac trail on which Dust Bowl farmers and hundreds of thousands of others emigrated to California from points East serves now as a captivating trip through time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這條柏油路曾見證了「塵暴」(Dust Bowl)時期的農民以及其他數十萬人從東部遷徙到加利福尼亞州，如今已成為一條引人入勝的時光隧道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We started from the road’s western terminus at the Santa Monica Pier, aiming for Albuquerque. For our nearly 900-mile journey east, we chose four vehicles, each representing a moment in automotive history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們從公路位於聖莫尼卡碼頭的西端終點出發，目的地是阿爾伯克基。在這段近1400公里的向東旅程中，我們選擇了四輛車，每輛車都代表了汽車歷史上的一個特定時刻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our larger mission was clear: assessing the health of the old road while comparing the technologies that have powered our mobile society for over 100 years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們更宏大的使命非常明確：評估這條老路的健康狀況，同時對比100多年來驅動我們社會汽車交通發展的各項技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Day 1</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>第一天</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We kicked things off in a Waymo, an autonomous electric Jaguar I-Pace. This is the future, we are told, and we don’t doubt it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們首先體驗的是Waymo的自動駕駛電動積架I-Pace。人們說這就是未來，我們對此深信不疑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our first destination is close, Mr. Krafcik’s home, to swap rides and venture back into the past, picking up his mint-green 1966 Oldsmobile 4-4-2, a two-door muscle car with a full-throated V8. This long, handsome coupe was considered midsize in its day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們的第一個目的地很近——科拉夫奇克的家。我們要在那裡換乘車輛，駛回過去。我們換上了他那輛薄荷綠色的1966年款奧茲莫比爾4-4-2。這是一輛擁有低沉轟鳴 V8發動機的雙門肌肉車。這款修長俊朗的雙門轎跑車當年被歸類為中型車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Next up is a bold step into the future with Mr. Brancaccio’s hybrid 2017 Chevrolet Volt, an early EREV (extended range electric vehicle), which uses a “stationary” gas engine to charge its batteries, rather than to power the driven front wheels. Though the Volt has sadly gone out of production, its technology is lately being revisited.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接下來，我們將駕駛布蘭卡喬的2017款雪佛蘭沃藍達混合動力車，大膽地邁向未來。這是一款早期的增程式電動車(EREV)，它的「固定式」燃油發動機為電池充電，而不是直接驅動前輪。儘管沃藍達已遺憾停產，但它的技術最近正重新受到關注。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="旅程的第一段由汽車自動駕駛：加利福尼亞州聖莫尼卡的Waymo計程車。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-01-flkp/00wheels-route66-01-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-01-flkp/00wheels-route66-01-flkp-master1050.jpg"/></div><figcaption><span>旅程的第一段由汽車自動駕駛：加利福尼亞州聖莫尼卡的Waymo計程車。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="此次自駕游的主力座駕是一輛Rivian電動SUV。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-04-flkp/00wheels-route66-04-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-04-flkp/00wheels-route66-04-flkp-master1050.jpg"/></div><figcaption><span>此次自駕游的主力座駕是一輛Rivian電動SUV。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Finally, for the bulk of our driving, was Mr. Krafcik’s all-electric Rivian R1S sport utility vehicle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最後，承擔我們大部分路程駕駛的是科拉夫奇克的純電動Rivian R1S運動型多用途汽車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A New World miracle in its heyday, Route 66 is undoubtedly older and sadder, but possibly wiser; a crossroad of history, where intense isolation was (and remains) tempered by a slow but steady influx of strangers passing through.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其鼎盛時期曾被稱為新世界奇蹟的66號公路如今無疑變得更蒼老、更落寞，但也或許變得更睿智；它是歷史的十字路口，在這裡，曾經且至今依然極為強烈的孤立感被源源不斷通過的緩緩陌生人流所沖淡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKGs3c-A75QDFfYJigMd5HIM1Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Day 2</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>第二天</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We rise early, emerging from the Wigwam Motel in San Bernardino, where each room is its own concrete tepee. Erected in 1949, it reminds us that gaudy nostalgia has been drawing people to the highway for decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們早早起床，走出位於聖貝納迪諾的威格瓦姆汽車旅館，這裡的每個房間都是一個獨立的混凝土印第安帳篷。這座建於1949年的旅館提醒著我們，幾十年來，這種花哨的懷舊風情一直吸引著人們來到這條公路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After charging the Rivian at a nearby station, we stop for a good breakfast at Peggy Sue’s ’50s Diner in Yermo. Built along the roadside in 1954, it fell on hard times only to reopen in 1987 as a ’50s-themed restaurant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在附近的一個充電站給Rivian充好電後，我們在耶爾莫的「佩吉·蘇50年代美式餐廳」停下來吃了一頓豐盛的早餐。該餐廳於1954年建在路邊，曾一度陷入困境，直到1987年才以50年代主題餐廳的名義重新開業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Filled today with its owner’s collection of memorabilia from old television programs and films, the place exudes a double layer of nostalgia — for the highway’s buoyant days (which no one can remember) and the public’s fascination with the 1950s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，店內擺滿了老闆收藏的老電視節目和電影紀念品，散發著雙重懷舊氣息——既是對這條公路曾經充滿活力時期的懷念（儘管現在已無人記得），也是對公眾對20世紀50年代迷戀的寫照。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Onward. In Newberry Springs, deep in the Mojave Desert, sits the Sidewinder Cafe, which Matt Parker bought in 2023. Some will know it as the setting for the 1987 film “Bagdad Cafe.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">繼續前行。莫哈韋沙漠深處的紐伯裡斯普林斯坐落著響尾蛇咖啡館，馬特·帕克於 2023 年買下了它。有些人可能知道，這裡是1987年電影《巴格達咖啡館》(Bagdad Café)的取景地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is no surprise that the interstate, with its busier traffic, is more flush with charge points. Rivian’s branded charging network — the Rivian Adventure Network, which numbers among its sites over 21,000 Tesla Superchargers that can be used with an adapter — proved refreshingly usable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">毫無疑問，交通更繁忙的州際公路擁有更密集的充電樁。Rivian的品牌充電網路——「Rivian冒險網路」站點中擁有超過21000個可通過適配器使用的特斯拉超級充電樁，便捷性令人耳目一新。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We also found ourselves impressed by the new charging stations set up by Ionna, a joint venture among numerous automakers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們也對由眾多汽車製造商成立的合資企業Ionna建立的新充電站印象深刻。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="位於加利福尼亞州聖貝納迪諾市66號公路旁的威格瓦姆汽車旅館。幾十年來，這條古老的公路一直喚起人們對往昔時光的懷念。" data-src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route6605-alt-wpgh/00wheels-route6605-alt-wpgh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route6605-alt-wpgh/00wheels-route6605-alt-wpgh-master1050.jpg"/></div><figcaption><span>位於加利福尼亞州聖貝納迪諾市66號公路旁的威格瓦姆汽車旅館。幾十年來，這條古老的公路一直喚起人們對往昔時光的懷念。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="威格瓦姆汽車旅館出售的紀念品。" data-src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-hjpk/00wheels-route66-hjpk-master1050.jpg" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-hjpk/00wheels-route66-hjpk-master1050.jpg"/></div><figcaption><span>威格瓦姆汽車旅館出售的紀念品。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="通車100週年之際，駕車行駛在這條公路上的司機未必會意識到正在舉行慶祝活動。" data-src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-08-flkp/00wheels-route66-08-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-08-flkp/00wheels-route66-08-flkp-master1050.jpg"/></div><figcaption><span>通車100週年之際，駕車行駛在這條公路上的司機未必會意識到正在舉行慶祝活動。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We arrive in Amboy, Calif., and Roy’s Motel and Café — built in the 1940s as a garage to fix travelers’ cars at a spot where its founder, Roy Crowl, once broke down. It’s a historic site on the National Trails Highway of U.S. Route 66, but the motel is not open, though it may return, said Nicole Rachel, who was working behind the counter the day we passed by and was happy to chat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們抵達了加利福尼亞州安博伊的羅伊汽車旅館與咖啡館——它建於20世紀40年代，最初是一家修理遊客車輛的汽車修理廠，其創始人羅伊·克勞爾曾在這個地方拋錨過。這是美國66號公路國家步道公路上的一個歷史遺迹，但旅館目前並未營業。不過，在我們經過那天，正在櫃檯後工作、並且很樂意聊天的妮可·蕾切爾說，它可能會重新開張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Rachel, who once lived on Route 66 in Missouri, said Amboy was the “coolest part of Route 66, and not because I work here.” She added: “I think that we’re finally on the upswing. It’s finally gotten to the point. Generationally, things come back. Like bell bottoms come back every decade.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蕾切爾女士曾在密蘇里州的66號公路沿線生活，她說安博伊是「66號公路上最酷的地方，這可不是因為我在這裡工作」。她還說：「我認為我們終於在走上坡路了。終於到了這個節點。從世代更替的角度來看，風潮總會輪迴。就像喇叭褲每十年就會流行回來一樣。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CMvP3c-A75QDFR8EigMdtkkmXg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Day 3</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>第三天</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After a long trip to Williams, Ariz., we awaken early at the Historic Grand Canyon Hotel. Opened in 1891 and billed as “Arizona’s Oldest Hotel,” it feels old but boutique-y, though it is nowhere near the famous canyon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經過漫長的旅程抵達亞利桑那州威廉斯後，我們在歷史大峽谷酒店早早醒來。這家酒店於1891年開業，被譽為「亞利桑那州最古老的酒店」，感覺很有年代感，又帶有些許精品酒店的格調，儘管它其實離著名的大峽谷還很遠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vicki Conklin, working the front desk, explained that the quaint, vaguely upscale town of Williams, with little of the hardscrabble feel we’d grown accustomed to, plays host to a railroad that takes travelers on a roughly two-hour ride up to the canyon in vintage rail cars pulled by steam locomotives. Once again, tourism and nostalgia play a big role helping support what appears to be a more prosperous community than most we’d see.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在前台工作的維基·康克林解釋說，威廉斯這座古樸而隱約透露出高檔氣息的小鎮幾乎沒有我們已經習慣的那種艱苦破敗感。這裡運營著一條鐵路，用蒸汽機車牽引著復古車廂，載著遊客行駛大約兩個小時，直達大峽谷。在這裡，旅遊業和懷舊情結再次發揮了巨大作用，支撐起這個看起來比我們沿途見的絕大多數社區都要繁榮的城鎮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Europeans, especially, they’re so interested in the West, it is amazing,” Ms. Conklin said. “Some travel all the way to Santa Monica from Chicago, all the way. They’re so interested. And then the Grand Canyon just is awe-inspiring. The American tourists love it just as much.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「尤其是歐洲人，他們對美國西部太感興趣了，這簡直太神奇了，」康克林說。「有些人一路從芝加哥原道而來，直奔聖莫尼卡。他們真的太有興趣了。而且大峽谷本身也令人讚歎。美國遊客也同樣熱愛它。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During our last night — in Gallup, N.M., at the El Rancho Hotel — we get our final blast of nostalgia as the lodging celebrates its Hollywood ties. Among the many films shot or set nearby: “The Grapes of Wrath,” from the John Steinbeck novel that first identified the highway as the Mother Road, along with “Touch of Evil,” “Easy Rider,” “Natural Born Killers,” “Little Miss Sunshine” and “Cars.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們的最後一晚在新墨西哥州蓋洛普的埃爾蘭喬酒店度過，在這家以同好萊塢的淵源為榮的旅館，我們感受到了最後一波懷舊狂潮。在附近拍攝或以此地為背景的眾多電影包括：改編自約翰·斯坦貝克小說的《憤怒的葡萄》（The Grapes of Wrath，該小說首次將這條公路稱為「母親之路」），以及《歷劫佳人》(Touch of Evil)、《逍遙騎士》(Easy Rider)、《天生殺人狂》(Natural Born Killers)、《陽光小美女》(Little Miss Sunshine)和《賽車總動員》(Cars)。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exciting us even more was a carnitas dinner at Jerry’s Café, a bit off the highway in downtown Gallup, surely the road trip’s best meal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">更讓我們興奮的是在傑裡咖啡館吃的墨西哥卡尼塔斯晚餐，它位於蓋洛普市中心，稍微偏離了公路，這絕對是這次公路旅行中最棒的一餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Day 4</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>第四天</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="66號公路是一座布滿塵埃的美國風情畫廊，展現了這個國家汽車世紀初期的獨特風貌。" data-src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-07-flkp/00wheels-route66-07-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/19/multimedia/00wheels-route66-07-flkp/00wheels-route66-07-flkp-master1050.jpg"/></div><figcaption><span>66號公路是一座布滿塵埃的美國風情畫廊，展現了這個國家汽車世紀初期的獨特風貌。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="奧茲莫比爾的儀錶盤。這條高速公路曾象徵著一個向西遷徙的民族所擁有的自由與機遇。" data-src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-03-flkp/00wheels-route66-03-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-03-flkp/00wheels-route66-03-flkp-master1050.jpg"/></div><figcaption><span>奧茲莫比爾的儀錶盤。這條高速公路曾象徵著一個向西遷徙的民族所擁有的自由與機遇。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="旅遊業和懷舊情懷在支撐66號公路沿線的商業活動中發揮著重要作用。" data-src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-06-flkp/00wheels-route66-06-flkp-master1050.jpg" src="https://static01.nyt.com/images/2026/05/26/multimedia/00wheels-route66-06-flkp/00wheels-route66-06-flkp-master1050.jpg"/></div><figcaption><span>旅遊業和懷舊情懷在支撐66號公路沿線的商業活動中發揮著重要作用。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We head out early for Albuquerque, to the Ancora Cafe. After breakfast burritos, Mr. Brancaccio and I spoke with Daniel Sullivan, who moved from Illinois and volunteers at the cafe, which provides job training to people in recovery and others.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們一早出發前往阿爾伯克基，前往安可拉咖啡館。吃過早餐卷餅後，布蘭卡喬和我與丹尼爾·沙利文聊了聊。他從伊利諾州搬來，目前在這家咖啡館做志願者，該咖啡館為康復期人員及其他群體提供工作技能培訓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Sullivan, who also coaches a football team for at-risk youths, has strong feelings about the road we’ve spent the last few days traveling, as it was the route he took to escape an alcoholic parent back in the Midwest.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沙利文還擔任一支針對問題青少年的橄欖球隊教練，他對我們過去幾天走過的這條路有著強烈的感情，因為當年他正是沿著這條路線逃離了中西部那個酗酒的親人。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIDP3s-A75QDFSMRigMdwOkYVw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think if more of today’s generation knew about Route 66 and the culture of how it got built before the I-40, seeing that small-town culture, seeing all those businesses that were booming at one time, the unique architecture — which are basically just abandoned buildings now — if we could bring them back to life, bring that culture and happiness back, that will bring more tourists here,” he said. He ticked off states along the route: “Oklahoma, Missouri, into Texas, that’s a beautiful sight,” he added, “a beautiful drive.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我認為，如果現在更多年輕一代了解66號公路，了解它在40號州際公路建成之前的建造文化，看到那種小鎮文化，看到曾經繁榮的商鋪，還有如今基本都已廢棄的獨特建築——如果我們能讓它們重煥生機，帶回那種文化和快樂，那將會吸引更多的遊客來到這裡，」他說。他一一數出沿途的幾個州：「奧克拉荷馬州、密蘇里州，再到得克薩斯州，那是極其美麗的風光，」他說。「一段美麗的自駕之旅。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Gabriella Angotti-Jones</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/culture/20260529/route-66-100-years-cars/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

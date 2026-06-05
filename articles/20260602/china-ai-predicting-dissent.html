@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國嘗試利用人工智慧預測異見傾向 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國嘗試利用人工智慧預測異見傾向</h1>
+    <h2 class="en-headline">China Aims A.I. at Predicting Who Could Pose a Political Risk</h2>
+    <div class="meta-line">JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-06-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="北京的天際線。一家中國公司正在研發利用人工智慧分析位置數據和網路使用情況的產品，以預測哪些人可能會發表批評政府的言論或有所行動。" height="700" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-China-AI-hgcf/00dc-China-AI-hgcf-master1050.jpg" width="1050"/><figcaption><span>北京的天際線。一家中國公司正在研發利用人工智慧分析位置數據和網路使用情況的產品，以預測哪些人可能會發表批評政府的言論或有所行動。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Chinese company has been trying to develop artificial intelligence-powered technology that would enable authoritarian governments to not just monitor dissidents but also potentially predict who could become one in the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一家中國公司一直在嘗試開發一項由人工智慧驅動的技術，不僅能讓威權政府監控異見人士，還能潛在地預測未來誰可能成為異見人士。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The work, which appears to be in the research stage, is ripped out of dystopian science fiction, offering a glimpse of a world in which an authoritarian state is able to move against its citizens before they begin any public dissent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項似乎還處於研究階段的工作簡直如同出自反烏托邦科幻小說，讓我們得以一瞥一個威權國家在公民尚未公開表達異議之前就對其採取行動的世界。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese company, Geedge Networks, sells a commercial version of the Great Firewall, the surveillance and censorship software that China uses to control online activity. Those tools allow governments to monitor internet traffic and flag when someone tries to get around traditional internet censorship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這家名為積至的中國公司銷售商業版的「防火長城」——中國用於控制網路活動的監控和審查軟體。這些工具使政府可以監控互聯網流量，並在有人試圖繞過傳統互聯網審查時發出警告。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But according to leaked company documents, the firm is working on new products that use artificial intelligence to examine location data and internet use to predict who could do or say something critical of the government, according to researchers at Vanderbilt University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但范德比爾特大學的研究人員表示，根據洩漏的公司文件，該公司正在開發使用人工智慧審查位置數據和互聯網使用情況的新產品，以預測哪些人可能會發表批評政府的言論，或是有所行動。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJnRjq6A75QDFR-CywEdxzM7AQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such technology, if perfected, would give authoritarian governments a powerful tool to use against perceived enemies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種技術一旦完善，將為威權政府提供一個對付假想敵的強大工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The idea that an authoritarian government would use artificial intelligence to suppress dissent is troubling enough. But the use of A.I. to predict dissent well before a person has taken action has become a nightmare scenario, according to some involved in the industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">威權政府利用人工智慧鎮壓異見的想法已經足夠令人不安。但一些業內人士表示，在個人採取行動之前就使用人工智慧來預測異見傾向已經成為一種噩夢般的場景。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is what happens when mass surveillance meets A.I.,” said Brett J. Goldstein, the director of the Wicked Problems Lab at Vanderbilt’s Institute of National Security. “Without checks and balances, what China is doing to its own citizens is a preview of what becomes possible anywhere these tools go unchecked.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這就是大規模監控與人工智慧結合時會發生的情況，」范德比爾特大學國家安全研究所棘手問題實驗室主任布雷特·戈德斯坦說。「在沒有制衡的情況下，中國對其本國公民所做的事情預示著，任何缺乏監管的地方都可能發生這樣的事情。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Vanderbilt researchers found that Geedge, working with its government-supported research arm, MESA Lab, was developing technology that would generate profiles of Chinese citizens and then use A.I. to highlight who may pose a political risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德比爾特大學的研究人員發現，積至正與其政府支持的研究分支MESA實驗室合作，開發一種技術，能生成中國公民的個人檔案，然後使用人工智慧來篩選出可能構成政治風險的人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the company’s progress appears to have been hampered by Biden-era export controls on U.S.-designed computer chips that power artificial intelligence. That suggests that U.S. restrictions may have slowed China’s development of the next generation of surveillance technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但拜登政府時期對驅動人工智慧的美國設計計算機晶片實施的出口管制似乎阻礙了該公司的進展。這表明，美國的限制措施可能已經減緩了中國下一代監控技術的發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Documents from Geedge show that in 2024, when tough U.S. export controls on China were in place, the company and its lab struggled to find enough computing power for surveillance technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">積至的文件顯示，2024年，當美國對中國實施嚴厲的出口管制時，該公司及其實驗室很難為監控技術找到足夠的算力。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="英偉達首席執行官黃仁勛，這是一家總部位於美國的科技公司，設計全球最強大的人工智慧晶片。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-China-AI-tbmc/00dc-China-AI-tbmc-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-China-AI-tbmc/00dc-China-AI-tbmc-master1050.jpg"/></div><figcaption><span>英偉達首席執行官黃仁勛，這是一家總部位於美國的科技公司，設計全球最強大的人工智慧晶片。</span> <cite>Mikayla Whitmore for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brett V. Benson, a political science professor at Vanderbilt, said the documents refer to GPU limitations. GPUs — graphic processing units — are the chips that power A.I. models. As a result of the limitations, he said, the company began using older, less powerful A.I. models and chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德比爾特大學政治學教授布雷特·本森表示，這些文件提到了 GPU（圖形處理器）的限制。GPU是驅動人工智慧模型的晶片。他說，由於這些限制，該公司開始使用較舊、性能較低的人工智慧模型和晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, Geedge has access to enough graphic processing units for its current products, according to U.S. officials. But to carry out the most ambitious version of its predictive technology, the company would probably need more advanced chips than China can acquire, the officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，如今，積至可以獲得足夠的圖形處理器用於其當前的產品。但官員們指出，要實現其最具野心的預測技術版本，該公司可能需要比中國所能獲得的更先進晶片。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO6hj66A75QDFRIC2wEdPFET-Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Former Biden administration officials said intelligence showed that their policies restricting China from high-end, U.S.-designed chips had worked at keeping the U.S. artificial intelligence edge and at slowing the development of other Chinese technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前拜登政府官員表示，情報顯示，他們限制中國獲取美國設計的高端晶片的政策在保持美國人工智慧優勢和減緩中國其他技術發展方面發揮了作用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But whether U.S. export controls will slow China’s development of more oppressive uses of artificial intelligence is an open question.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但美國的出口管制是否會減緩中國開發更具壓迫性的人工智慧應用仍是一個懸而未決的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration has weakened some of the Biden-era export controls and kept restrictions on the most advanced processors from Nvidia, the U.S. company that designs the world’s most powerful artificial intelligence chips. During President Trump’s recent trip to Beijing, U.S. officials said that China would have access to a more advanced version of the Nvidia chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府放寬了拜登時代的一些出口管制，保留了對英偉達最先進處理器的限制。英偉達是設計全球最強大人工智慧晶片的美國公司。在川普總統最近的北京之行中，美國官員表示，中國將可以獲得更先進版本的英偉達晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China is trying to wean its artificial intelligence companies off U.S.-designed chips, so that export controls can no longer constrain their ambitions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國正試圖讓其人工智慧公司擺脫對美國設計晶片的依賴，以便出口管制無法再束縛它們的雄心。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在川普總統最近訪問北京期間，美國官員表示，中國將能夠獲得英偉達晶片的更先進版本。" data-src="https://static01.nyt.com/images/2026/05/29/us/00dc-China-AI/00dc-China-AI-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/us/00dc-China-AI/00dc-China-AI-master1050.jpg"/></div><figcaption><span>在川普總統最近訪問北京期間，美國官員表示，中國將能夠獲得英偉達晶片的更先進版本。</span> <cite>Ng Han Guan/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Profiling Future Critics</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為未來的批評者建立檔案</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new information was gleaned from a trove of data, including 100,000 documents from Geedge that were originally posted last September. Working with the documents, Wired and other publications have outlined how Geedge exported its network security software to countries including Ethiopia, Kazakhstan, Myanmar and Pakistan, enabling them to conduct mass surveillance on mobile networks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些新信息是從大量數據中收集的，其中包括最初在去年9月發布的10萬份積至文件。通過研究這些文件，《連線》(Wired)和其他出版物概述了積至如何將其網路安全軟體出口到衣索比亞、哈薩克、緬甸和巴基斯坦等國家，使這些國家能夠對移動網路進行大規模監控。</div></div></div></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vanderbilt researchers scouring the documents focused not on the technology Geedge was selling, but the next generation of technology it was trying to develop, as well as the constraints that could prevent it from putting the strategy into effect.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德比爾特大學的研究人員在梳理這些文件時，關注的重點並非積至正在銷售的技術，而是它試圖開發的下一代技術，以及可能阻礙其實施戰略的限制因素。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the first months of 2024, according to the Geedge documents, the company’s researchers were working to develop behavioral profiles of people based on telecommunications, social media and location data. A.I. models were used to classify people and to “detect harmful information,” often a euphemism used by the Chinese Community Party to identify political dissent or other material the government wants suppressed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據積至的文件，在2024年的前幾個月，該公司的研究人員致力於根據電信、社群媒體和位置數據開發人們的行為檔案。人工智慧模型被用來對人群進行分類，並「檢測有害信息」——這是一種委婉說法，通常是指中國共產黨用來識別政治異見或其他政府希望壓制的材料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one meeting on Feb. 5, 2024, researchers discussed how to build profiles of people to “identify their intent” and “achieve discovery of harmful information,” according to minutes of the meeting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據2024年2月5日某次會議的紀要，研究人員討論了如何建立人員檔案以「識別其意圖」並「實現對有害信息的發現」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Geedge researchers appeared to be developing tools to use artificial intelligence to predict who could become critics of the Chinese government, based on the data patterns the company’s surveillance technology collected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">積至的研究人員似乎正在開發一種工具，利用人工智慧根據該公司監控技術收集的數據模式，預測哪些人可能會成為中國政府的批評者。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中科天璣致力於開發一款基於人工智慧的軟體，用於傳播針對性的中國宣傳內容。" data-src="https://static01.nyt.com/images/2026/05/29/us/00dc-china-ai/00dc-china-ai-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/us/00dc-china-ai/00dc-china-ai-master1050.jpg"/></div><figcaption><span>中科天璣致力於開發一款基於人工智慧的軟體，用於傳播針對性的中國宣傳內容。</span> <cite>Fang Jianfei/VCG, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Geedge’s research team was doing more than just documenting behavioral patterns. They were trying to predict what citizens might do next and with whom,” Mr. Benson said. “Those stockpiles of data on ordinary materials are raw materials for generating profiles that determine who you are and what you will do next.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「積至的研究團隊所做的不只是記錄行為模式。他們還試圖預測公民接下來可能會做什麼，以及和誰一起做，」本森說。「那些關於普通材料的龐大數據儲備，是生成個人檔案的原材料，這些檔案可以決定你是什麼樣的人，以及你下一步會做什麼。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Geedge did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">積至沒有回應置評請求。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMX4j66A75QDFeSuywEdb6kJ_w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The documents suggest that the company’s team was working to link the physical movements with other online activity, including what movies people watched and what books they read, according to the Vanderbilt researchers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德比爾特大學的研究人員表示，這些文件表明，該公司的團隊正致力於將物理移動軌跡與其他網路活動聯繫起來，包括人們看什麼電影和讀什麼書。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Geedge’s research was in some ways similar to work by another Chinese company with ties to the state, GoLaxy. Last year, Vanderbilt and The New York Times outlined GoLaxy’s efforts to develop artificial intelligence-powered software that would push targeted propaganda — themes supported by the Chinese government and against views that Beijing opposed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">積至的研究在某些方面與另一家與政府有聯繫的中國公司中科天璣的工作相似。去年，范德比爾特大學和《紐約時報》概述了中科天璣開發人工智慧驅動軟體的努力，該軟體將推送定向宣傳，這些宣傳主題得到中國政府的支持，並且反駁北京所反對的觀點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some ways, Geedge’s work also evokes the 2002 movie “Minority Report,” in which the government predicts who may commit a crime, and a specialized police unit moves to arrest people before a violation occurs. While seen as infallible, the “precogs” who predict the future in the movie wrongly accuse the main character, played by the actor Tom Cruise, of a murder.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在某些方面，積至的工作也讓人想起2002年的電影《少數派報告》(Minority Report)，在電影中，政府能預測誰可能會犯罪，一個專門的警察部隊會在違法行為發生前採取行動逮捕這些人。儘管被視為絕無差錯，但電影中預測未來的「先知」卻錯誤地指控了由演員湯姆·克魯斯扮演的主角涉嫌謀殺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been pursuing predictive surveillance technology for years. But as the Geedge documents show, artificial intelligence models have sped the development of such tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國多年來一直在追求預測性監控技術。但正如積至的文件所示，人工智慧模型加速了此類工具的開發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And Geedge shows how predictive policing technology could soon become a Chinese export.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且積至展示了預測性警務技術可能很快成為中國出口產品的趨勢。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="DeepSeek的手機端人工智慧助手。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-China-AI-wglb/00dc-China-AI-wglb-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-China-AI-wglb/00dc-China-AI-wglb-master1050.jpg"/></div><figcaption><span>DeepSeek的手機端人工智慧助手。</span> <cite>Kelsey McClellan for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Fine-Tuning a Surveillance State</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>完善監控國家體系</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the documents do not cover recent months, there is no evidence that Geedge has finalized or deployed the predictive technology, according to U.S. officials who spoke on condition of anonymity to discuss sensitive assessments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管這些文件沒有涵蓋最近幾個月的情況，但據要求匿名討論敏感評估的美國官員稱，沒有證據表明積至已經定型或部署了這種預測技術。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNyWkK6A75QDFe0O2wEdtmQBqw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But officials acknowledged that Chinese firms were working toward such technology to fine-tune their surveillance state. And China’s Public Security Bureaus have been racing to use DeepSeek, the country’s leading artificial intelligence model, to pursue other predictive policing technology, according to experts and government officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但官員們承認，中國企業正在努力開發這種技術，以完善其監控國家體系。據專家和政府官員透露，中國的公安局也一直在競相使用該國領先的人工智慧模型DeepSeek，開發其他預測性警務技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. officials said that Geedge and other Chinese surveillance companies probably have enough computing power for their current-generation tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，積至和其他中國監控公司可能擁有足夠的算力來支持其當前一代的工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But predictive tools, particularly if the company eventually incorporates intercepted phone calls or surveillance video, could come up against constraints on computing power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但預測性工具——尤其是如果該公司最終將截獲的電話通話或監控影片整合進來——可能會面臨算力上的限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the company tried to tap into those kinds of surveillance streams to predict security threats, it would more quickly come up against the limits of China’s current computing power, American officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，如果該公司試圖利用這類監控數據流來預測安全威脅，將更快地觸及中國當前算力的極限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Chinese security services are dealing with an overload of data,” said Jimmy Goodrich, a senior fellow at the University of California’s Institute on Global Conflict and Cooperation. “They have too much information at once. The real value of artificial intelligence is that they can triage the data and find the threats. But their ability to scale that depends on their access to compute. This is what makes export controls so important.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國安全部門正面臨數據過載的問題，」加州大學全球衝突與合作研究所高級研究員吉米·古德里奇說。「他們同時擁有太多的信息。人工智慧的真正價值在於他們可以對數據進行分類並發現威脅。但他們擴大這種能力取決於他們獲得算力的途徑。這就是出口管制如此重要的原因。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260602/china-ai-predicting-dissent/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常惠珍，用鏡頭構建自主的香港女性形象 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">常惠珍，用鏡頭構建自主的香港女性形象</h1>
+    <h2 class="en-headline">Overlooked No More: Nancy Sheung, Whose Camera Captured Women on Their Own Terms</h2>
+    <div class="meta-line">STELLA RAINE CHU <span style="margin: 0 8px;">•</span> 2026-06-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="在《辮子》這幅作品中，常惠珍讓女兒安妮·龐身著條紋裝，在條紋背景前擺出姿勢。" height="1024" src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-06-wcjg/28Overlooked-Sheung-06-wcjg-jumbo.jpg" width="700"/><figcaption><span>在《辮子》這幅作品中，常惠珍讓女兒安妮·龐身著條紋裝，在條紋背景前擺出姿勢。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>This article is part of </i><i>Overlooked</i><i>, a series of obituaries about remarkable people whose deaths, beginning in 1851, went unreported in The Times.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><i>《</i><i>被忽視的逝者</i><i>》是一個傑出人物訃告系列，這些人物在1851年後離世，當時沒有得到時報的訃聞報導。</i></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nancy Sheung told stories about herself the way she composed her photographs: dramatically, and with careful attention to how she was framed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">常惠珍(Nancy Sheung)講述自己故事的風格和她構圖拍照的風格一樣：充滿戲劇性，並且格外留意自己如何被框入畫面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She claimed to have worked at an opium den when she was 14 to pay for her education. She said she rode alone on horseback to school, carrying a gun for protection. She recalled long afternoons speeding through Hong Kong in a Fiat 124 Spider convertible in the 1960s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她自稱14歲時曾在鴉片館工作以支付學費。她說自己曾獨自騎馬去上學，並帶著槍防身。她回憶起20世紀60年代，在漫長的午後，她駕駛著一輛菲亞特124 Spider敞篷車在香港飛馳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her family would later debate the details of some of these stories. But whether embroidered or exact, they spoke to the persona Sheung constructed: fearless, modern, impossible to contain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她的家人後來對其中一些故事的細節提出過爭議。但無論這些故事是經過潤色還是確有其事，它們都彰顯著常惠珍所構建的個人形象：無畏、現代、不受束縛。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKzoi8mA75QDFQWVywEdi-wnfQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/obits_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In both her self-fashioning and in her photography, Sheung was deeply invested in crafting an image of female autonomy and audacity at a time when women’s lives were constrained by traditional expectations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論是在自我塑造還是在攝影作品中，常惠珍都致力於打造一個自主、大膽的女性形象，而在那個時代，女性的生活仍受到傳統期望的諸多限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In “The Long Haired Girl,” a young woman stands with her back to the camera, her hands on her hips as she looks to the side with a defiant, steely expression. Her hair, braided into two pigtails, stretches down her back and sways to the side as she turns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在《長髮女孩》(The Long Haired Girl)中，一位年輕女性背對鏡頭，雙手叉腰，目光轉向一側，神情挑釁堅毅。她的頭髮編成兩條辮子，垂在背後，隨著轉身，辮子向一側搖曳。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="在《長髮女孩》這幅作品中，一名女子背對鏡頭，側目而視，神情倔強。" data-src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-05-wcjg-print1SUB/28Overlooked-Sheung-05-wcjg-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-05-wcjg-print1SUB/28Overlooked-Sheung-05-wcjg-jumbo.jpg"/></div><figcaption><span>在《長髮女孩》這幅作品中，一名女子背對鏡頭，側目而視，神情倔強。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Long hair is seen in China as a sacred gift from one’s parents, representing health and devotion to family. Sheung often used hair as both texture and symbol. In “The Gaze,” a woman’s eye peers into the camera out of a nest of hair wrapped around her face.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，長髮被視為父母賜予的神聖禮物，象徵著健康和對家庭的忠誠。常惠珍經常將頭髮作為一種質感元素，又作為一種象徵。在《凝視》(The Gaze)中，一個女人的眼睛通過纏繞在臉龐的一團髮絲凝視著鏡頭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“She was very intentional and artistic,” Tiffany Wai-Ying Beres, Sheung’s granddaughter and a curator in California, said in an interview. “These were not documentary photographs. They were art photographs of her own making.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「她非常有主見，而且很有藝術氣質，」常惠珍的孫女、加州策展人龐惠英(Tiffany Wai-Ying Beres)在採訪中說。「這些不是紀實攝影。它們是她自己創作的藝術攝影作品。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="在《凝視》及其他照片中，常惠珍將頭髮既作為一種質感，也作為一種象徵。" data-src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-08-wcjg-print2/28Overlooked-Sheung-08-wcjg-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-08-wcjg-print2/28Overlooked-Sheung-08-wcjg-jumbo.jpg"/></div><figcaption><span>在《凝視》及其他照片中，常惠珍將頭髮既作為一種質感，也作為一種象徵。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sheung Wai Chun was born on Oct. 4, 1915, in Suzhou, China, near Shanghai. She later adopted the name Nancy, which she used in her travels and international photography submissions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1915年10月4日，常惠珍出生於中國上海附近的蘇州。她後來使用Nancy這個英文名字，在旅行和向國際攝影比賽投稿時使用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Details about her childhood are sparse. Records give her mother’s name as Kwok Chat; her father’s name is unknown. Girls had limited access to formal education, so Sheung funded her own schooling.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於她童年的細節很少。記錄顯示她母親的名字是郭芝（音）；她父親的名字不詳。當時女孩接受正規教育的機會有限，因此常惠珍靠自己籌措學費完成學業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She later moved to Guangzhou, where she met Pong Koon Wah, a coal and gas merchant. The couple was married, and settled in Hong Kong in the mid-1930s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後來她搬到廣州，在那裡遇到煤炭和煤氣商人龐冠華。兩人結為夫妻，並於20世紀30年代中期定居香港。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="《香港之巔》是常惠珍於1960年代拍攝的作品。她曾遊歷東亞各地進行攝影創作；多幅作品曾參展並獲獎。" data-src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-qphk/28Overlooked-Sheung-qphk-master1050.jpg" src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-qphk/28Overlooked-Sheung-qphk-master1050.jpg"/></div><figcaption><span>《香港之巔》是常惠珍於1960年代拍攝的作品。她曾遊歷東亞各地進行攝影創作；多幅作品曾參展並獲獎。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sheung had six children but seemed determined not to disappear into domestic life. Instead — aided by the privilege of having a household staff — she immersed herself in Hong Kong’s cosmopolitan social circles, throwing mahjong gatherings that stretched from sunrise to sundown and cultivating a glamorous, fast-moving life.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">常惠珍育有六個孩子，但她似乎下定決心不讓自己消失在家庭生活中。得益於擁有家政人員的優渥條件，她全身心地投入到香港這座國際化都市的社交圈中，舉辦從早到晚的麻將聚會，過著一種光鮮亮麗的快節奏生活。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She saw opportunity in the city’s postwar building boom and started her own construction and architecture firm, Wai Foong Construction, despite having no formal education in the field; she ended up becoming the family’s breadwinner. But by the late 1950s, Hong Kong’s economy had slowed, and many construction projects were halted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她在戰後這座城市的建築熱潮中看到了機遇，儘管沒有受過該領域的正規教育，她還是創辦了自己的建築工程公司——惠珍建築，最終成為家庭的經濟支柱。但到了20世紀50年代末，香港經濟放緩，許多建築項目陷入停滯。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="常惠珍，攝於60年代初。她在40多歲時買下了人生中第一台相機——一台祿來福來。" data-src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-04-wcjg-print3/28Overlooked-Sheung-04-wcjg-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/01/multimedia/28Overlooked-Sheung-04-wcjg-print3/28Overlooked-Sheung-04-wcjg-jumbo.jpg"/></div><figcaption><span>常惠珍，攝於60年代初。她在40多歲時買下了人生中第一台相機——一台祿來福來。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Around that time, Sheung attended a luncheon at the Hong Kong Club, where European art photography was on display. In those black-and-white prints, she saw how reality could be captured through the lens of a camera. She had to try it for herself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大約在那個時候，常惠珍參加了香港會的一場午餐會，那裡正在展出歐洲的藝術攝影作品。在那些黑白照片中，她看到了現實如何通過相機鏡頭被捕捉下來。她決心親自嘗試一下。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 1960, Sheung, well into her 40s, purchased her first camera, a Rolleiflex. She apprenticed with a local photographer and taught herself how to develop photos and master techniques like dodging and burning, which are used to manipulate select areas of a print. She later converted a bathroom in her home into a darkroom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1960年，當時已年過40的常惠珍買下了她的第一台相機——一台祿來福來(Rolleiflex)。她拜當地一位攝影師為師，自學沖洗照片，並掌握了減光和加光等用來處理照片局部區域的技巧。後來，她將家裡的一個浴室改造成了暗房。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her experience with architecture helped her identify striking frames.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她在建築領域的經驗幫助她發現了引人注目的構圖。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="常惠珍經常拍攝樓梯——這是香港高密度建築的標誌性特徵，正如這張名為《氣球》的照片所示。" data-src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-wvgf/28Overlooked-Sheung-wvgf-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-wvgf/28Overlooked-Sheung-wvgf-jumbo.jpg"/></div><figcaption><span>常惠珍經常拍攝樓梯——這是香港高密度建築的標誌性特徵，正如這張名為《氣球》的照片所示。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She often photographed stairways, a defining feature of densely-built Hong Kong, where steep hills and cramped apartments pushed life upward. For many residents, especially children, the stairs became gathering places and playgrounds. In “Balloons,” a young boy and girl play against a sliver of open sky above the viewer. The image captures a fleeting moment of childhood wonder.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她經常拍攝樓梯，這是建築密集的香港的一個標誌性特徵，陡峭的山丘和擁擠的公寓迫使人們的生活向上延伸。對於許多居民，尤其是孩子們來說，樓梯成了聚會場所和玩耍的地方。在《氣球》(Balloons)中，一個小男孩和一個小女孩在觀者上方的一線開闊天空下玩耍。這張圖片捕捉到了轉瞬即逝的童年奇妙時刻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of Sheung’s best-known works, “The Pigtail,” features her daughter Annie Pong, who was then 15. Annie poses, wearing a striped shirt, in front of a striped backdrop. A long, black braid tied with a bow is draped over a ledge (also striped), on which she rests her chin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">常惠珍最著名的作品之一《辮子》(The Pigtail)，主角是她當時15歲的女兒安妮·龐。安妮穿著條紋襯衫，在條紋背景前擺好姿勢。一條系著蝴蝶結的黑色長辮子搭在一個同樣滿是條紋的壁架上，她將下巴擱在上面。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLK1jMmA75QDFfu2ywEdS28A-g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/obits_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The photograph appears composed and serene, but the process behind it was anything but.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這張照片看起來構圖精妙、氛圍寧靜，但其背後的拍攝過程卻非如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I didn’t know what I got myself into,” Pong said in an interview. “It was a very long ordeal. I just remember being miserable because it was so hot. My mother said, ‘It will be over soon, then we’ll get lunch.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我當時不知道自己參與了什麼，」安妮·龐在接受採訪時說。「那是一次非常漫長的煎熬。我只記得因為天氣太熱，我非常難受。媽媽說，『馬上就拍完了，然後就吃午飯。』」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sheung joined the Photographic Society of Hong Kong in 1965 and became its vice president in 1970. She took photographs across East Asia; a number of them won prizes and were exhibited around the world, including at the Royal Photographic Society in England.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">常惠珍於1965年加入香港攝影學會，並於1970年成為該學會副會長。她曾遍訪東亞各地進行拍攝，許多作品屢獲殊榮，並在世界各地展出，包括英國皇家攝影學會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As her artistic career expanded, she relied on live-in workers like nannies, a housekeeper and a chef to free up time for photography. In 1971, when she won an award for one of her photos, a newspaper reporter asked her if she felt like she was neglecting her family in her travels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著藝術事業的擴展，她依靠保姆、管家和廚師等住家幫傭來騰出時間進行攝影創作。1971年，當她憑藉一張照片獲獎時，一位報社記者問她，是否覺得自己四處奔波，冷落了家人。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1960年代末，常惠珍站在香港展覽現場，身旁是她的作品。" data-src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-Subb-kmqh/28Overlooked-Sheung-Subb-kmqh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-Subb-kmqh/28Overlooked-Sheung-Subb-kmqh-master1050.jpg"/></div><figcaption><span>1960年代末，常惠珍站在香港展覽現場，身旁是她的作品。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I don’t think so,” she responded. “Household chores are usually taken care of by others, so I don’t need to be involved. I can say that none of my daughters were ever embraced more than 10 times when they were young.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我不這麼覺得，」她回答說。「家務活平時有其他人照料，所以我不需要參與。可以說，我女兒們小的時候，我抱她們都沒有超過10次。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sheung died of a heart attack on Jan. 17, 1979, while working in her darkroom in her Hong Kong home. She was 64.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1979年1月17日，常惠珍在香港家中暗房工作時突發心臟病去世，享年64歲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Her photographs have achieved new prominence in recent years as curators have increasingly recognized underappreciated female artists. In 2015, Lumenvisum, a nonprofit in Hong Kong, organized the retrospective “Rare Encounters: Nancy Sheung’s Portraits of Women in the 1960s.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，隨著策展人越來越認可那些被低估的女性藝術家，她的攝影作品獲得了新的矚目。2015年，香港非營利組織光影作坊組織了回顧展《珍影集：常惠珍鏡頭下的1960年代香港女性》。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="常惠珍於1970年拍攝的《陰影》。她在建築領域的經驗幫助她找到了引人注目的構圖。" data-src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-07-wcjg/28Overlooked-Sheung-07-wcjg-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/28/multimedia/28Overlooked-Sheung-07-wcjg/28Overlooked-Sheung-07-wcjg-jumbo.jpg"/></div><figcaption><span>常惠珍於1970年拍攝的《陰影》。她在建築領域的經驗幫助她找到了引人注目的構圖。</span> <cite>The Nancy Sheung Trust</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Nancy Sheung was an absolute perfectionist, which can be easily discerned from the selections of subjects, the compositions and tonal controls in her photographs,” the exhibition’s curator, Edwin K. Lai, wrote. “She was always meticulous and articulate, and strived hard to obtain the best and most beautiful results.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「論攝影風格常惠珍絕對是唯美主義者：無論是選擇題材、畫面經營、色調調控等各方面，」該展覽的策展人黎健強寫道。「她都非常嚴格一絲不苟、力求盡善盡美。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the renewed attention to Sheung’s work can be traced to Beres, her granddaughter, who has helped preserve and reintroduce her photographs to curators and institutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對常惠珍作品的重新關注很大程度上要歸功於她的孫女龐惠英，她一直幫助保存這些照片，並將其重新介紹給策展人和藝術機構。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIHljMmA75QDFZuwywEdHc0oEw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/obits_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There really aren’t many heroines in Chinese art,” Beres said in an interview. “Even though she didn’t get the notoriety I think she desired when she was living, to be able to come back and give her a place in this pantheon of great photographers is humbling.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國藝術中真的沒有很多女性英雄，」龐惠英在接受採訪時說。「儘管她生前未能獲得我認為她所渴望的聲名，但如今能夠重新回來，為她在偉大的攝影家殿堂中贏得一席之地，這讓我深感榮幸。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Stella Raine Chu是時報的一名新聞助理，為編輯室各部門報導各種主題的新聞。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/obits/20260604/nancy-sheung-overlooked/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

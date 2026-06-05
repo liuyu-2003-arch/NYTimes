@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川普執政以來美國參與的軍事行動 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">川普執政以來美國參與的軍事行動</h1>
+    <h2 class="en-headline">The Wars, Raids and Airstrikes Under Trump</h2>
+    <div class="meta-line">HELENE COOPER <span style="margin: 0 8px;">•</span> 2026-06-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="美國軍人在特拉華州多佛空軍基地轉移兩名在敘利亞陣亡的愛荷華州國民警衛隊員的遺體。" height="700" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-07-qzkh/00dc-military-trump-07-qzkh-master1050.jpg" width="1050"/><figcaption><span>美國軍人在特拉華州多佛空軍基地轉移兩名在敘利亞陣亡的愛荷華州國民警衛隊員的遺體。</span> <cite>Tierney L. Cross/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During his first term, President Trump sharply criticized the wars launched by his predecessors as a waste of American resources, and he promised not to get involved in any long military entanglements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其第一個總統任期內，川普曾強烈批評前任們發動的戰爭是在浪費美國的資源，並承諾不捲入任何長期的軍事糾葛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Great nations do not fight endless wars,” Mr. Trump said in 2019 during his State of the Union speech.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在2019年的國情咨文演講中曾表示：「偉大的國家不打無休止的戰爭。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As he campaigned for a second term, Mr. Trump even described himself as “the candidate of peace.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在為第二任期競選期間，川普甚至將自己形容為「和平的候選人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the reality has been quite different.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，現實卻截然不同。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIiS5rSA75QDFdHw0gQdqcgKxA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since Mr. Trump’s return to office, the United States has been involved in nearly a dozen military operations around the world, including the conflict against Iran and a raid that resulted in the arrest of Venezuela’s president.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自川普重返白宮以來，美國已參與了全球十幾項軍事行動，其中包括針對伊朗的衝突，以及一場導致委內瑞拉總統被捕的突襲行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s a look.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是具體回顧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">February 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年2月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Somalia</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>索馬利亞</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，索馬利亞國民軍在摩加迪沙北部的一個訓練設施內。對聖戰分子捲土重來的擔憂正在加劇。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-01-qzkh/00dc-military-trump-01-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-01-qzkh/00dc-military-trump-01-qzkh-master1050.jpg"/></div><figcaption><span>去年，索馬利亞國民軍在摩加迪沙北部的一個訓練設施內。對聖戰分子捲土重來的擔憂正在加劇。</span> <cite>Ed Ram/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Feb. 1, 2025, soon after his inauguration, Mr. Trump ordered a series of airstrikes targeting Islamic State operatives and recruits in northern Somalia. His administration hailed it as the beginning of ramped-up counterterrorism operations in the Horn of Africa.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年2月1日，在就職後不久，川普下令進行了一系列空襲，目標是索馬利亞北部的「伊斯蘭國」行動人員和新兵。他的政府稱讚這是在非洲之角加大反恐行動力度的開始。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2025, the U.S. military conducted more than 100 strikes against ISIS and Al Shabab, an extremist group affiliated with Al Qaeda.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年，美國軍隊針對「伊斯蘭國」和「青年黨」——一個隸屬於基地組織的極端組織——實施了100多次打擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The United States has continued to strike the groups this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：美國今年仍在對這些組織實施打擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">March 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年3月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iraq</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>伊拉克</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2023年從伊拉克陸軍直升機上看到的巴格達。" data-src="https://static01.nyt.com/images/2026/05/22/multimedia/00dc-military-trump-iraq-jglf/00dc-military-trump-iraq-jglf-master1050.jpg" src="https://static01.nyt.com/images/2026/05/22/multimedia/00dc-military-trump-iraq-jglf/00dc-military-trump-iraq-jglf-master1050.jpg"/></div><figcaption><span>2023年從伊拉克陸軍直升機上看到的巴格達。</span> <cite>Joao Silva/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a joint operation on March 13, 2025, the United States and Iraq killed a senior Islamic State leader believed to be the head of the group in Iraq and Syria.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2025年3月13日的一次聯合行動中，美國和伊拉克擊斃了一名「伊斯蘭國」高級領導人，據信此人是該組織在伊拉克和敘利亞的負責人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The Islamic State still operates in Iraq but has not controlled territory for several years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：「伊斯蘭國」仍在伊拉克活動，但已有數年未控制任何領土。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">March 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年3月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yemen</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>葉門</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2025年3月，葉門薩阿德市一家醫院，在美軍空襲中受傷的男子。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-02-qzkh/00dc-military-trump-02-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-02-qzkh/00dc-military-trump-02-qzkh-master1050.jpg"/></div><figcaption><span>2025年3月，葉門薩阿德市一家醫院，在美軍空襲中受傷的男子。</span> <cite>Naif Rahma/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March 2025, the U.S. military began Operation Rough Rider against the Iranian-backed Houthi militia in Yemen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年3月，美國軍隊對葉門境內受伊朗支持的胡塞武裝發起了「粗魯騎手行動」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. strikes burned through weapons and munitions at a rate of about $1 billion in the first month alone. The Houthis shot down several American MQ-9 Reaper drones and continued to fire at naval ships in the Red Sea, including an American aircraft carrier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">僅在第一個月，美國的武器和彈藥消耗就達到了約10億美元。胡塞武裝擊落了數架美國MQ-9「死神」無人機，並繼續向紅海的軍艦開火，其中包括一艘美國航空母艦。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLmn5rSA75QDFQTL0gQdixgayA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then two $67 million F/A-18 Super Hornets from America’s flagship aircraft carrier tasked with conducting strikes against the Houthis accidentally tumbled off the carrier into the sea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後，美國旗艦航空母艦的兩架價值6700萬美元的F/A-18「超級大黃蜂」戰鬥機受命執行打擊胡塞的任務，卻意外從航母上墜入海中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On May 5, 2025, the White House ordered U.S. Central Command to “pause” offensive operations. Mr. Trump said he had reached an agreement with the Houthis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年5月5日，白宮命令美國中央司令部「暫停」進攻。川普表示，他已與胡塞武裝達成協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We hit them very hard and they had a great ability to withstand punishment,” Mr. Trump said. “You could say there was a lot of bravery there.” He added that “they gave us their word that they wouldn’t be shooting at ships anymore, and we honor that.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們對他們進行了沉重打擊，而他們承受懲罰的能力驚人，」川普說。「你可以說這其中有很大的勇氣。」他補充道，「他們向我們保證，不會再向船隻開火了，我們尊重這一點。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The Houthis have attacked fewer ships transiting the Red Sea, but many commercial vessels continue to steer clear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：胡塞武裝襲擊過境紅海船隻的次數有所減少，但許多商船仍繼續繞道行駛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">June 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年6月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>伊朗</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="衛星圖像顯示2025年6月美軍空襲後的伊朗福爾多核濃縮設施。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-sub-vzlk/00dc-military-trump-sub-vzlk-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-sub-vzlk/00dc-military-trump-sub-vzlk-master1050.jpg"/></div><figcaption><span>衛星圖像顯示2025年6月美軍空襲後的伊朗福爾多核濃縮設施。</span> <cite>Maxar Technologies, via Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After several days of Israeli strikes on Iran, Mr. Trump launched Operation Midnight Hammer on June 22, deploying B-2 stealth bombers to drop bunker-buster bombs on the nuclear facilities Fordo and Natanz, while a submarine launched strikes at the nuclear facility at Isfahan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在以色列對伊朗進行數日襲擊之後，川普於6月22日發起了「子夜重鎚行動」，出動B-2隱形轟炸機對福爾多和納坦茲的核設施投下鑽地彈，同時一艘潛艇對伊斯法罕的核設施發動了襲擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump said the strikes “obliterated” Iran’s nuclear enrichment facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普表示，這些襲擊「徹底摧毀了」伊朗的核濃縮設施。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO-t5rSA75QDFbfX0gQdCSYiuA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The Trump administration and Iran remain locked in a dispute over Iran’s refusal to give up its nuclear program.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：由於伊朗拒絕放棄其核計劃，川普政府與伊朗仍陷入爭端之中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">September 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年9月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Venezuela</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>委內瑞拉</b></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="國防部長髮布的影片截圖顯示美軍在加勒比海對一艘船隻實施了空襲。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-02-cvzm/00dc-military-trump-02-cvzm-jumbo.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-02-cvzm/00dc-military-trump-02-cvzm-jumbo.jpg"/></div><figcaption><span>國防部長髮布的影片截圖顯示美軍在加勒比海對一艘船隻實施了空襲。</span> <cite>Secretary of Defense, via Agence France-Presse</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sept. 2, the U.S. military began attacking boats in the Caribbean and the eastern Pacific that the Trump administration says were smuggling drugs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">9月2日，美國軍隊開始對加勒比海和東太平洋的船隻發起攻擊，川普政府稱這些船隻涉嫌走私毒品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far 59 boats have been bombed, killing more than 200 people. Legal specialists say the strikes are illegal extrajudicial killings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到目前為止，已有59艘船隻遭到轟炸，造成200多人死亡。法律專家表示，這些襲擊屬於非法的法外處決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The Trump administration has not provided evidence that the boats that have been attacked were involved in drug smuggling. But the strikes continue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：川普政府尚未提供證據證明遭到襲擊的船隻參與了毒品走私。但打擊仍在繼續。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK7l5rSA75QDFUrN0gQdAncQsQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">December 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年12月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Syria</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>敘利亞</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="美國軍人在特拉華州多佛空軍基地轉移兩名在敘利亞陣亡的愛荷華州國民警衛隊員的遺體。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-07-qzkh/00dc-military-trump-07-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-07-qzkh/00dc-military-trump-07-qzkh-master1050.jpg"/></div><figcaption><span>美國軍人在特拉華州多佛空軍基地轉移兩名在敘利亞陣亡的愛荷華州國民警衛隊員的遺體。</span> <cite>Tierney L. Cross/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States carried out major airstrikes against the Islamic State in Syria on Dec. 19 to avenge the deaths of two U.S. Army soldiers and a civilian interpreter killed in an ISIS attack a week earlier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">12月19日，美國對敘利亞境內的「伊斯蘭國」實施了大規模空襲，以報復一週前在「伊斯蘭國」襲擊中喪生的兩名美國陸軍士兵和一名平民譯員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American fighter jets, attack helicopters and artillery fired more than 100 munitions at over 70 suspected Islamic State targets across central Syria. The Pentagon said Jordanian warplanes assisted in the operation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的戰鬥機、攻擊直升機和火炮向敘利亞中部的70多個涉嫌「伊斯蘭國」的目標發射了100多枚彈藥。五角大廈表示，約旦戰機協助了此次行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The next month, in January, the U.S. military launched additional attacks on ISIS targets in Syria.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接下來的一個月，即1月份，美國軍隊對敘利亞境內的「伊斯蘭國」目標實施了更多打擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The United States completed a handover of its major military bases in Syria in April, winding down a more than decade-long presence in the country. U.S. military officials say American troops will train, advise and assist some Syrian security forces in combating ISIS, as the U.S. relationship with Syria changes after the ouster of the country’s longtime dictator, Bashar al-Assad, in late 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：美國已於4月完成了對敘利亞境內主要軍事基地的交接，結束了在該國長達十多年的軍事存在。美國軍事官員表示，隨著敘利亞長期獨裁者巴沙爾·阿薩德在2024年底被推翻後美國與敘利亞關係發生變化，美軍將對部分敘利亞安全部隊進行培訓、指導和協助，以打擊「伊斯蘭國」。</div></div></div></div></div><div class="big_ad" data-google-query-id="COuM57SA75QDFZLY0gQd2QcwTQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">December 2025</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2025年12月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nigeria</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>奈及利亞</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年12月美軍在奈及利亞奧法市實施空襲後的景象。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-08-qzkh/00dc-military-trump-08-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-08-qzkh/00dc-military-trump-08-qzkh-master1050.jpg"/></div><figcaption><span>去年12月美軍在奈及利亞奧法市實施空襲後的景象。</span> <cite>Abiodun Jamiu/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Christmas Day 2025, the United States launched strikes in northwestern Nigeria against Islamic State militants, who Mr. Trump asserted had been slaughtering Christians.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2025年聖誕節當天，美國在奈及利亞西北部對「伊斯蘭國」武裝分子發動了襲擊，川普斷言這些武裝分子一直在屠殺基督徒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nigerian officials and military experts say the Islamic State in Nigeria has killed thousands of Muslims as well.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奈及利亞官員和軍事專家表示，「伊斯蘭國」在奈及利亞還殺害了成千上萬的穆斯林。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> This fight continues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：這場戰鬥仍在繼續。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">January 2026</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2026年1月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Venezuela</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>委內瑞拉</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="委內瑞拉前總統尼古拉斯·馬杜羅於1月被抓捕並帶往美國。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-05-qzkh/00dc-military-trump-05-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-05-qzkh/00dc-military-trump-05-qzkh-master1050.jpg"/></div><figcaption><span>委內瑞拉前總統尼古拉斯·馬杜羅於1月被抓捕並帶往美國。</span> <cite>Vincent Alban/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Jan. 3, U.S. Special Operations troops launched a raid in Venezuela’s capital targeting President Nicolás Maduro. They killed dozens of Mr. Maduro’s guards and extracted the Venezuelan leader and his wife, transporting them to New York to face charges of narco-terrorism and conspiracy to import cocaine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1月3日，美國特種部隊在委內瑞拉首都發起突襲，目標直指總統尼古拉斯·馬杜羅。他們擊斃了馬杜羅的數十名衛兵，將這位委內瑞拉領導人及其妻子抓獲並押解至紐約，以面對毒品恐怖主義和密謀進口古柯鹼的指控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both pleaded not guilty.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩人均辯稱無罪。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> The trial is months, possibly years, away. Mr. Maduro’s vice president, Delcy Rodríguez, is now president.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：距離開庭審理還有數月、甚至數年的時間。馬杜羅的副總統德爾茜·羅德里格斯現任總統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">February 2026</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2026年2月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>伊朗</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="4月，伊朗政府支持者在德黑蘭舉行示威活動。" data-src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-03-qzkh/00dc-military-trump-03-qzkh-master1050.jpg" src="https://static01.nyt.com/images/2026/05/21/multimedia/00dc-military-trump-03-qzkh/00dc-military-trump-03-qzkh-master1050.jpg"/></div><figcaption><span>4月，伊朗政府支持者在德黑蘭舉行示威活動。</span> <cite>Arash Khamooshi/Polaris for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Feb. 28, U.S. and Israeli forces launched a new war against Iran that has killed hundreds of people (Iran says more than 2,000), including many high-ranking Iranian officials, the country’s supreme leader and 13 U.S. troops.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2月28日，美軍和以色列軍隊對伊朗發動了新一輪戰爭，已導致數百人死亡（伊朗稱超過2000人），其中包括許多伊朗高級官員、該國最高領袖以及13名美軍士兵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war, which the Pentagon calls Operation Epic Fury, has shuttered the Strait of Hormuz, sending gas prices around the world soaring.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場被五角大廈稱為「史詩憤怒行動」的戰爭導致霍爾木茲海峽關閉，引發全球油價暴漲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran retaliated by launching drones and ballistic missiles at Israel and at U.S. allies and American bases in the Middle East, setting off a regional conflict.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗實施了報復，向以色列、美國的盟友以及美國在中東的基地發射了無人機和彈道導彈，引發了地區衝突。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation:</strong> Mr. Trump declared a cease-fire in April, launching sporadic negotiations. The United States is enforcing a naval blockade to prevent Iran from getting its oil out of the Strait of Hormuz, while the threat of Iranian fire has shuttered commercial shipping through the narrow waterway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：川普於4月宣布停火，並展開了零星的談判。美國正在實施海上封鎖，以阻止伊朗將石油運出霍爾木茲海峽，而伊朗火力的威脅已導致商業航運無法通過這一狹窄的水道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent days, the two sides have exchanged strikes, threatening the fragile truce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近日來，雙方互相進行了襲擊，威脅到了脆弱的停戰狀態。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">May 2026</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2026年5月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nigeria</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>奈及利亞</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="人們聚集在奈及利亞西北部村莊賈博·加林·邁加里的一處美軍空襲現場。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-04-cvzm/00dc-military-trump-04-cvzm-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-04-cvzm/00dc-military-trump-04-cvzm-master1050.jpg"/></div><figcaption><span>人們聚集在奈及利亞西北部村莊賈博·加林·邁加里的一處美軍空襲現場。</span> <cite>Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This month, Mr. Trump authorized a joint U.S.-Nigerian commando raid that killed Abu Bilal al-Minuki, a high-ranking ISIS leader. Days later, the United States launched airstrikes targeting ISIS fighters in the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，川普批准了一次美尼聯合突擊隊突襲，擊斃了「伊斯蘭國」高級領導人阿布·比拉勒·阿爾-米努基。幾天後，美國發動空襲，目標直指該國境內的「伊斯蘭國」武裝分子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation: </strong>Scores of militants have been killed in the recent military actions, according to U.S. and Nigerian estimates. The New York Times could not verify whether civilians were among the dead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：根據美國和奈及利亞的估計，在最近的軍事行動中已有數十名武裝分子被擊斃。《紐約時報》無法核實死者中是否包含平民。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">May 2026</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2026年5月</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cuba</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>古巴</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="菲德爾·卡斯楚的肖像掛在古巴聖地亞哥的一間辦公室裡。" data-src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-03-cvzm/00dc-military-trump-03-cvzm-master1050.jpg" src="https://static01.nyt.com/images/2026/05/29/multimedia/00dc-military-trump-03-cvzm/00dc-military-trump-03-cvzm-master1050.jpg"/></div><figcaption><span>菲德爾·卡斯楚的肖像掛在古巴聖地亞哥的一間辦公室裡。</span> <cite>Lisette Poole González for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The aircraft carrier Nimitz and its escort warships arrived in the southern Caribbean Sea this month, on the same day the Justice Department announced charges against Raúl Castro, Cuba’s former president.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尼米茲號航空母艦及其護航軍艦於本月抵達加勒比海南部，就在同一天，司法部宣布了對古巴前總統勞爾·卡斯楚的指控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Current situation: </strong>Keep an eye out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現狀：保持關注。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Helene Cooper是一名五角大廈記者。她此前曾任職編輯、外交記者和白宮記者。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260602/trumps-military-wars/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

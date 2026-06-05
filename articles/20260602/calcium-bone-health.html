@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>喝牛奶真的能讓骨骼更強壯嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">喝牛奶真的能讓骨骼更強壯嗎？</h1>
+    <h2 class="en-headline">Does Drinking Milk Actually Make Your Bones Stronger?</h2>
+    <div class="meta-line">SIMAR BAJAJ <span style="margin: 0 8px;">•</span> 2026-06-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/08/12/multimedia/12-WELL-ASK-MILK-BONES-vgcz/12-WELL-ASK-MILK-BONES-vgcz-jumbo.jpg" width="684"/><figcaption><span></span> <cite>Joyce Lee for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Q: I’ve always heard that you need to drink milk to keep your bones healthy. Is that true?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>問：我經常聽說要喝牛奶來保持骨骼健康。這是真的嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For generations, Americans have been told — through school nutrition programs and advertising campaigns — that milk is an essential part of a healthy diet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾代人以來，美國人通過學校營養項目和廣告宣傳得知，牛奶是健康飲食中必不可少的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Key to that narrative was that milk builds strong bones. Your bones are made of calcium, and one cup of whole milk contains about 300 milligrams of this nutrient. So drinking three cups per day, the thinking went, must make them resilient. But that message was built on short-term studies and pushed by the dairy industry, said Dr. Walter Willett, a professor of epidemiology and nutrition at the Harvard T.H. Chan School of Public Health.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種說法的核心是牛奶能強健骨骼。骨骼由鈣構成，而一杯全脂牛奶含有約300毫克的鈣。因此，人們認為每天喝三杯牛奶一定能讓骨骼更堅韌。但哈佛大學陳曾熙公共衛生學院的流行病學與營養學教授沃爾特·威利特博士表示，這種說法基於短期研究，且由乳製品行業推動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With over a third of people in the United States having trouble digesting lactose, nobody <i>needs</i> to drink cow’s milk, said Christopher Gardner, a nutrition scientist and professor of medicine at Stanford University. Getting enough calcium is still important, especially for some high-risk groups, but there may be better sources.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學醫學教授、營養學家克里斯托弗·加德納稱，美國有超過三分之一的人存在乳糖消化困難問題，其實沒人非喝牛奶不可。攝入足夠的鈣仍然很重要，尤其是對一些高風險人群，但或許存在更好的鈣來源。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK_kh86A75QDFffN0gQdoV8E1Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What does milk do to bones?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>牛奶對骨骼有什麼作用？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Calcium is an essential nutrient, critical for nerve, muscle and heart function, as well as bone and tooth health. However, as with most nutrients, your body needs only a certain amount. The U.S. dietary guidelines recommend that adults consume 1,000 to 1,200 milligrams of calcium per day, but this threshold is debated among experts — and other countries, like the United Kingdom, recommend only 700 milligrams.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鈣是一種人體必需的營養素，對神經、肌肉和心臟功能以及骨骼和牙齒健康至關重要。然而，和大多數營養素一樣，人體所需的鈣量是有限的。美國膳食指南建議成年人每天攝入1000至1200毫克鈣，但這一標準在專家中存在爭議——像英國等其他國家，推薦量僅為700毫克。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Past clinical trials have found that when children and adults who weren’t eating enough calcium increased their consumption, whether via dairy foods or supplements, their bone densities increased by up to 3 percent. But those gains were too small to meaningfully reduce fracture risk, Dr. Willett said. And other studies have found that people must consume extra calcium every day to maintain those gains, which may not be worth the investment, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去的臨床試驗發現，當鈣攝入不足的兒童和成人增加攝入量（無論是通過乳製品還是補充劑），其骨密度最多增加3%。但威利特表示，這種提升幅度太小，不足以顯著降低骨折風險。他還說，其他研究還發現，人們必須每天額外攝入鈣才能維持這種提升效果，而這可能並不值得。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The idea that we need lot of calcium is based primarily on very short-term studies looking at calcium balance over a few weeks,” Dr. Willett said. And an analysis of 79 milk papers published between 1999 and 2003 found that over a third received funding from the dairy industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們需要大量鈣的觀點主要基於對幾週內鈣平衡進行觀察的極短期研究，」威利特說。此外，對1999年至2003年間發表的79篇牛奶相關論文進行的一項分析發現，超過三分之一的論文獲得了乳製品行業的資助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There’s even evidence that people can have strong bones without drinking milk. According to one review published in 2020, people who live in countries with the lowest rates of hip fractures also tend to drink the least milk. And analyses of multiple studies have found that drinking more milk was not associated with lower fracture risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">甚至有證據表明，不喝牛奶也能擁有強健的骨骼。根據2020年發表的一篇綜述，髖部骨折發生率最低國家的居民往往也是牛奶攝入量最少的群體。對多項研究的分析也顯示，增加牛奶攝入量與降低骨折風險並無關聯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of course, studies like these can’t prove any link between milk consumption and bone health, said Dr. René Rizzoli, the former head of the bone diseases department at the University Hospitals of Geneva. To show that milk consumption prevents fractures, for instance, you would need clinical trials on the topic, which have not been done.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，日內瓦大學醫院骨病科前主任勒內·裡佐利博士表示，像這樣的觀察性研究並不能證明牛奶消費與骨骼健康之間存在任何關聯。例如，要證明喝牛奶能預防骨折，就需要針對該主題進行臨床試驗，而目前這類試驗尚未進行。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ-liM6A75QDFTj20gQdDnAQFw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, your exercise and broader diet may have more influence over your bone health. So don’t count on milk alone to eliminate your fracture risk, Dr. Rizzoli said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歸根結底，鍛煉和更廣泛的飲食習慣可能對骨骼健康影響更大。因此，裡佐利表示，不要指望單靠牛奶就能消除骨折風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Do some people need milk more than others?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>有些人比其他人更需要牛奶嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts say that children ages 9 to 18 need more calcium than any other age group to support their growth; as do older adults, since bone density tends to decrease after age 50.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，九至18歲兒童比其他任何年齡段都需要攝入更多鈣來支持生長發育；老年人也是如此，因為骨密度在50歲以後往往會下降。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When a person’s calcium levels are low, the body can adapt by pulling more calcium from food and rejecting less as waste, Dr. Gardner said. But these mechanisms decline with age, and when the body isn’t getting enough, it pulls more calcium from bones, he added, weakening them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加德納博士指出，當人體的鈣水平較低時，身體可以通過從食物中吸收更多鈣，並減少鈣的排泄來適應。但他還說，這些機制會隨著年齡的增長而衰退，當身體無法獲得足夠的鈣，就會從骨骼中提取更多的鈣，從而導致骨骼變脆弱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a 2021 clinical trial, researchers assigned more than 7,000 older adults living in assisted care facilities in Australia to either maintain their usual two servings of dairy per day or increase their consumption to 3.5 servings per day.<strong> </strong>Over the two-year study, the higher-dairy group had an 11 percent reduced risk of falls and a 33 percent reduced risk of fractures. The researchers also found that they maintained more weight, muscle mass and bone density than the lower-dairy group, though the team couldn’t determine whether their lower risk of falls and fractures were because of stronger bones or something else, said Sandra Iuliano, a nutritionist at the University of Melbourne.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2021年的一項臨床試驗中，研究人員將7000多名居住在澳洲輔助護理機構的老年人分組，一組維持每天攝入兩份乳製品的習慣，另一組則將攝入量增加到每天3.5份。在為期兩年的研究中，高乳製品攝入組跌倒的風險降低了11%，骨折的風險降低了33%。墨爾本大學的營養學家桑德拉·尤利亞諾表示，研究人員還發現，與低乳製品攝入組相比，高乳製品攝入組在體重、肌肉量和骨密度保持方面情況更好，儘管研究團隊無法確定跌倒和骨折風險的降低究竟是因為骨骼更強健還是出於其他原因。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Regardless, milk can be one of the most convenient sources of calcium, along with other nutrients like protein, potassium and phosphorus, said Jeri Nieves, a nutritional epidemiologist at the Hospital for Special Surgery in New York City. Other foods — like tofu, bony fish, leafy vegetables and fortified orange juice or plant-based milks — are good sources too, Dr. Nieves said, even if they have less calcium per serving.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約市特殊外科醫院的營養流行病學家傑裡·尼夫斯說，無論如何，牛奶都是最便捷的鈣質來源之一，同時還能提供蛋白質、鉀和磷等其他營養物質。尼夫斯表示，其他食物——如豆腐、帶骨魚、綠葉蔬菜以及強化橙汁或植物奶——也是很好的鈣來源，儘管它們每份的含鈣量相對較低。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNPSiM6A75QDFSXL0gQde9wPTg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The best option for calcium, however, might be fermented dairy products like yogurt and cheese. They support the gut microbiome, tend to be better tolerated by people sensitive to lactose and are more strongly tied to lower fracture risk than milk, Dr. Rizzoli said. They’re also packed with calcium — a 1.5-ounce serving of Cheddar cheese, for example, has the same amount as a cup of whole milk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，獲取鈣的最佳選擇可能是酸奶和奶酪等發酵乳製品。裡佐利說，它們有助於支持腸道微生物群，往往更容易被乳糖敏感人群耐受，而且與牛奶相比，它們同降低骨折風險的關聯更為密切。它們也富含鈣——例如，約40克的切達奶酪與一杯全脂牛奶所含的鈣量相同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you like milk, drink it. If you don’t like milk, or if you can’t tolerate it, use some other source,” Dr. Nieves said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果喜歡牛奶，那就喝。如果不喜歡牛奶或者無法耐受，那就選擇其他來源，」尼夫斯說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Simar Bajaj報導健康和健康生活方式。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260602/calcium-bone-health/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
