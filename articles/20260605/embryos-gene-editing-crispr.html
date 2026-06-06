@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科學家首次精確編輯人類胚胎基因 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">科學家首次精確編輯人類胚胎基因</h1>
+    <h2 class="en-headline">In a First, Scientists Precisely Edit Human Embryo Genes</h2>
+    <div class="meta-line">CARL ZIMMER <span style="margin: 0 8px;">•</span> 2026-06-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="研究人員修改了影響血液中低密度脂蛋白膽固醇和血紅蛋白水平的基因。" height="700" src="https://static01.nyt.com/images/2026/06/05/science/05sci-embryos/05sci-embryos-master1050.jpg" width="1050"/><figcaption><span>研究人員修改了影響血液中低密度脂蛋白膽固醇和血紅蛋白水平的基因。</span> <cite>Claude Cortier/Science Source</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scientists at Columbia University have edited the DNA of early human embryos with unprecedented accuracy, an achievement that could open the way to babies engineered with particular characteristics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哥倫比亞大學科學家以前所未有的精確度編輯了早期人類胚胎的DNA，這一成果可能為培育具有特定特徵的「定製嬰兒」打開大門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The prospect has fueled controversy for years. On the one hand, the technology might one day enable parents to safely repair disease-causing mutations in embryos. But it might also be used to select desired traits — a practice that some ethicists have argued is nothing short of eugenics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一前景多年來一直存有爭議。一方面，該技術未來可能讓父母安全修復胚胎中導致疾病的突變；但另一方面，它也可能被用於選擇理想特徵，一些倫理學家認為這種做法無異於優生學。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dieter Egli, a geneticist at Columbia University who led the research, called for a public conversation about the pros and cons of altering embryonic DNA. “As a scientist, you can provide the data for discussion, but then essentially there you stop and let others take over,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">領導這項研究的哥倫比亞大學遺傳學家迪特爾·埃利呼籲就修改胚胎DNA的利弊展開公眾討論。「作為科學家，我可以提供討論所需的數據，但之後基本上就該停下來，讓其他人接手，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With a newer technology called base editing, Dr. Egli and his colleagues were able to meticulously replace individual genetic letters in sequences of DNA without causing the damage often observed with an earlier form of gene editing, CRISPR.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃利及其同事使用一種被稱為鹼基編輯的新技術對DNA序列中的單個遺傳字母進行精確替換<span>，不會造成早期基因編輯技術CRISPR常</span>有的那種損傷。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMqIqorA8ZQDFW4sHAAd0bsCPg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Egli cautioned that the research left unanswered many questions about harmful side effects. “We’re not saying this is going to be used tomorrow in the clinics,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃利警告稱，該研究仍有很多關於有害副作用的問題尚未解答。「我們並不是說這項技術明天就能用於臨床，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Egli and his colleagues posted their study online. The research is under review for publication in a scientific journal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>埃利及其同事已將研究論文發布在網上。該研究目前正在接受科學期刊的同行評審。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The possibility of editing the DNA of human embryos became a matter of serious debate more than a decade ago, after the invention of CRISPR.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">編輯人類胚胎DNA的可能性在CRISPR技術發明十多年前就已成為嚴肅辯論的話題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2012, scientists discovered how to create customized molecules that could snip out a targeted segment of DNA. CRISPR quickly became a standard tool for scientists — a cheap, easy way to discover how genes function by tweaking the genome.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2012年，科學家發現可以製造定製分子來切除DNA中特定的片段。CRISPR迅速成為科學家的標準工具——一種廉價、簡便的通過修改基因組來研究基因功能的方法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A number of medical companies sprang up, seeking to use the technology to treat hereditary diseases. In 2023, the Food and Drug Administration approved a CRISPR-based treatment for sickle cell anemia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>多家醫療公司應運而生，試圖利用該技術治療遺傳性疾病。2023年，美國食品和藥物管理局批准了一種基於CRISPR的療法，用於治療鐮狀細胞貧血。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But scientists knew it was not perfect. In some cells, CRISPR molecules failed to find their targets in DNA, or sometimes snipped out the wrong genetic bits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但科學家們知道它並不完美。在某些細胞中，CRISPR分子無法找到目標DNA，有時還會切錯遺傳片段。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK6-qorA8ZQDFYqaFwcddl4S1Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those concerns did not stop a Chinese scientist, He Jiankui, from using CRISPR to alter the DNA of human embryos in 2018.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些擔憂並未阻止中國科學家賀建奎在2018年使用CRISPR修改人類胚胎DNA。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. He later said his goal was to give children a genetic resistance to H.I.V. infection. But experts condemned his work as reckless, and Chinese authorities imprisoned him for three years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賀建奎後來表示，他的目標是讓兒童獲得對HIV感染的遺傳抵抗力。但專家譴責他的工作過於魯莽，中國當局判處他三年監禁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. He’s experiment led to three “healthy, beautiful babies,” he claimed in a January interview with The New York Times. But the status of the children has never been independently evaluated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>賀建奎聲稱他的實驗誕生了三個「健康、漂亮的嬰兒」，他在今年1月接受《紐約時報》採訪時如此表示。但這些兒童的狀況從未經過獨立評估。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="賀建奎去年秋天在北京的家中。此前，他因製造了基因編輯嬰兒入獄服刑三年。" data-src="https://static01.nyt.com/images/2026/06/05/multimedia/05sci-embryos-03-zqwj/05sci-embryos-03-zqwj-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/05/multimedia/05sci-embryos-03-zqwj/05sci-embryos-03-zqwj-jumbo.jpg"/></div><figcaption><span>賀建奎去年秋天在北京的家中。此前，他因製造了基因編輯嬰兒入獄服刑三年。</span> <cite>Chang W. Lee/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2020, Dr. Egli and his colleagues carried out an experiment to see how CRISPR behaves in human embryos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2020年，埃利及其同事進行了一項實驗，觀察CRISPR在人類胚胎中的表現。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They obtained donated sperm from men with a mutation in a gene called EYS causing hereditary blindness. The researchers used the sperm to fertilize healthy eggs, producing human embryos with one working copy of EYS and one defective copy. The researchers used CRISPR to cut out the mutant region of EYS.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們從攜帶EYS基因突變（會導致遺傳性失明）的男性那裡獲得捐贈精子，用這些精子使健康卵子受精，產生具有一個正常EYS拷貝和一個缺陷拷貝的人類胚胎。研究人員使用CRISPR切除EYS的突變區域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Previous studies suggested that the embryo might repair the gene by using the healthy version as a guide. Only some embryos did so, ending up with two working copies of EYS.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">先前研究表明，胚胎可能會以健康版本為模板修復該基因。但只有部分胚胎成功，最終擁有兩個正常EYS拷貝。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNfUqorA8ZQDFYwSHAAd9zckMA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the repair failed in about half of them. Some chopped off long stretches of DNA. Some destroyed the entire chromosome on which the EYS gene is located.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但約一半胚胎修復失敗。有些切除了大段DNA，有些則破壞了EYS基因所在的整個染色體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It had absolutely catastrophic consequences,” Dr. Egli said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「後果絕對是災難性的，」埃利說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many scientists and bioethicists saw these results as further evidence that editing human embryos was far too risky to even consider — at least, for the time being.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多科學家和生物倫理學家認為，這些結果進一步證明編輯人類胚胎風險極高，至少在目前不值得考慮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in 2016, David Liu, a geneticist at Harvard University, and colleagues combined one of the CRISPR molecules with other compounds to create base editing, a new method for editing genes. Rather than chop out a segment of DNA, base editors made a tiny nick in one strand. They could then guide the cell to fix the mutation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在2016年，哈佛大學遺傳學家劉如謙(David Liu)及其同事將CRISPR分子與其他化合物結合，創造了鹼基編輯技術。這是一種新的基因編輯方法。它不再切除DNA片段，而是在其中一條鏈上製造一個微小的切口，然後引導細胞修復突變。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Base editing has proved to be often superior to earlier CRISPR methods. Last year, a baby was cured of a potentially lethal genetic disorder after receiving a customized set of base editing molecules.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鹼基編輯已被證明往往<span>優於早期的CRISPR方法。去年，在接受定製鹼基編輯分子治療後，一名患有可能致命的遺傳疾病的嬰兒被治癒。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Egli decided to try it on human embryos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃利決定在人類胚胎上嘗試這項技術。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPfqqorA8ZQDFX4tHAAdI-AjmQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the new experiments, he and his colleagues set out to alter two genes. One, called PCSK9, can carry mutations that raise levels of LDL in the blood — and the risk of heart disease. The other gene, HBG, directs hemoglobin production in fetuses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在這項新實驗中，他和同事試圖修改兩個基因。一個是PCSK9基因，其突變會導致血液中LDL（低密度脂蛋白）水平升高，從而增加心臟病風險。另一個是HBG基因，負責胎兒期血紅蛋白的產生。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Egli and his colleagues delivered their base editors into fertilized eggs and into two-cell embryos donated by parents. The researchers didn’t find any of the extensive damage associated with CRISPR.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃利及其同事將鹼基編輯器導入受精卵和父母捐贈的雙細胞期胚胎。研究人員沒有發現與CRISPR相關的大範圍損傷。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="哥倫比亞大學遺傳學家迪特爾·埃利是該研究負責人。" data-src="https://static01.nyt.com/images/2026/06/05/science/05sci-embryos-02/05sci-embryos-02-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/05/science/05sci-embryos-02/05sci-embryos-02-jumbo.jpg"/></div><figcaption><span>哥倫比亞大學遺傳學家迪特爾·埃利是該研究負責人。</span> <cite>Roy Rochlin/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead, the researchers were able to successfully change both the PCSK9 and HBG genes. In some experiments, they simultaneously changed both genes in the same embryo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相反，研究人員成功修改了PCSK9和HBG兩個基因。在部分實驗中，他們在同一個胚胎中同時修改了兩個基因。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the edits were still not perfect. Sometimes the base editing molecules failed to find their target DNA. As a result, some cells in the embryos retained the original versions of the genes, while others were altered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但編輯仍不完美。有時鹼基編輯分子無法找到目標DNA，導致胚胎中部分細胞保留原始基因版本，部分細胞被修改。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those embryos became genetic mixtures, so-called mosaics. Having cells with different versions of the same gene could have led to medical problems had the embryos developed into babies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些胚胎成為基因混合體，即所謂的「鑲嵌」(mosaics)。如果胚胎髮育成嬰兒，不同細胞擁有不同基因版本可能導致醫療問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite those failures, the new results were strong enough that Dr. Paula Amato, a fertility expert at Oregon Health &amp; Science University who was not involved in the study, thought the method was “promising.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管存在這些失敗，未參與該研究的奧勒岡健康與科學大學生育專家葆拉·阿馬托博士仍認為該方法「很有前景」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIGPq4rA8ZQDFYuTFwcduqISLA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, she said it would be important to examine the final results when they’re published in a journal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過她表示，待論文正式發表後，仔細審閱最終結果非常重要。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ana Iltis, a bioethicist at Wake Forest University, worried that assessing the safety of base-edited embryos will require far more scrutiny than simply looking for damaged chromosomes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維克森林大學生物倫理學家安娜·伊爾蒂斯認為，要評估鹼基編輯胚胎的安全性，單純檢查染色體損傷是遠遠不夠的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is possible that some of the potentially harmful effects would not be evident until after birth,” she warned.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些潛在有害影響可能要到出生後才會顯現，」她警告說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nathan Treff, the chief clinical officer of Nucleus Genomics and a co-author of the new study, said that the ability to fix disease-causing mutations in embryos could be a boon to those using I.V.F., allowing them to implant embryos that they otherwise would have discarded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Nucleus Genomics首席臨床官、新研究合著者內森·特雷夫博士表示，能夠修復胚胎中致病突變的技術對接受體外受精的人來說可能是一大福音，讓他們能夠植入原本會被丟棄的胚胎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s still work to do before getting to that point, but this research gets us closer,” Dr. Treff said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「要達到那個階段還有很多工作要做，但這項研究讓我們離目標更近了，」特雷夫說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nucleus Genomics will support the next stage of Dr. Egli’s research. (The federal government does not fund studies on human embryos for research purposes.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Nucleus Genomics將支持埃利研究的下一階段。（聯邦政府不資助以研究為目的人類胚胎研究。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some upcoming studies will look for ways to avoid mosaic embryos. The researchers will also test base editing on embryos that contain about 100 cells. Fertility clinics typically freeze and test embryos at that stage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即將進行的研究將尋找避免鑲嵌胚胎的方法。研究人員還將在包含約100個細胞的胚胎上測試鹼基編輯。生育診所通常會在這個階段冷凍和檢測胚胎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nucleus Genomics, founded in 2021, screens I.V.F. embryos for thousands of genetic disorders. The company also makes predictions about an embryo’s risks for conditions such as heart disease and diabetes. And it looks at genes linked to traits such as height and intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成立於2021年的Nucleus Genomics可篩查IVF胚胎數千種遺傳疾病。該公司還會預測胚胎患心臟病、糖尿病等疾病的風險，並查看與身高、智力等特徵相關的基因。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="一家試管嬰兒診所內，裝有捐贈精子的皮氏培養皿。科學家們表示，如果能修復胚胎中致病的突變，就能有更多胚胎得以植入，而不是被廢棄。" data-src="https://static01.nyt.com/images/2026/06/05/multimedia/05sci-embryos-04-kwcg/05sci-embryos-04-kwcg-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/05/multimedia/05sci-embryos-04-kwcg/05sci-embryos-04-kwcg-jumbo.jpg"/></div><figcaption><span>一家試管嬰兒診所內，裝有捐贈精子的皮氏培養皿。科學家們表示，如果能修復胚胎中致病的突變，就能有更多胚胎得以植入，而不是被廢棄。</span> <cite>Jackie Molloy for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In November, the firm stirred controversy when it plastered ads on New York City subways telling commuters to “have your best baby.” Geneticists have criticized the predictions Nucleus Genomics makes for traits, such as IQ, as having low accuracy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>去年11月，該公司在紐約地鐵投放廣告，告訴通勤者「生出你最好的寶寶」，引發爭議。遺傳學家批評Nucleus Genomics對智商等特徵的預測準確性較低。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And critics have accused the company of promoting a biotech spin on eugenics — a charge the company rejects.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>批評者指責該公司在推廣一種生物技術版的優生學——公司對此予以否認。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We see ourselves as a natural pathway for eventually bringing technologies like this into clinical care as part of a broader genetics platform — a full ‘Genetic Optimization’ stack,” Kaitlyn Gallacher, head of communications at Nucleus Genomics, wrote in an email.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Nucleus Genomics傳播主管凱特琳·加拉赫在郵件中寫道：「我們將自己視為最終將此類技術引入臨床護理的自然途徑，這是一個更廣泛的遺傳學平台——完整的『遺傳優化』體系。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fyodor Urnov, a geneticist at the University of California, Berkeley, who was not involved in the study, said the results were in line with earlier studies of base editing in living cells.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">未參與該研究的加州大學柏克萊分校遺傳學家費奧多爾·烏爾諾夫表示，這些結果與此前在活細胞中進行鹼基編輯的研究一致。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the prospect of using the method on embryos was both novel and risky, Dr. Urnov said. In regular I.V.F., embryos are screened for genetic abnormalities. That made much more sense, he argued, than resorting to a new technique with so many open questions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他認為，將該方法用於胚胎的可能性具有新意，但也充滿風險。他主張，在常規IVF中篩查胚胎遺傳異常的做法更合理，而不是採用一項仍有許多未知風險的新技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Do we do what we’ve done safely and effectively 15 million times since 1978, or do we instead try something that we can never truly de-risk, and where the risks are clear?” he asked.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們是繼續做自1978年以來已經安全有效地做了1500萬次的事，還是去嘗試一種我們永遠無法完全排除風險、且風險已然清晰的技術？」他問道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Urnov speculated that the new method, once perfected, would appeal to people who don’t merely want to address inherited diseases, but to enhance traits by engineering embryos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏爾諾夫推測，一旦這項新技術完善，它將吸引那些不僅想解決遺傳疾病，還想通過胚胎改造來提升特徵的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What they are really doing is providing the ‘baby improvers’ with a how-to manual for forays beyond the ethical pale,” Dr. Urnov wrote in an email.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們真正做的是為『嬰兒改進者』提供一本越過倫理底線的教程，」烏爾諾夫在郵件中寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether anyone could actually alter babies in this way is not yet settled, though. Many human traits are influenced by hundreds, or thousands, of genes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，目前尚不確定是否真的有人能以這種方式改變嬰兒。因為許多人類特徵受數百甚至數千個基因影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Egli noted that the more genes in a single embryo that scientists try to rewrite, the higher the risk that they will fail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃利指出，科學家在單個胚胎中試圖修改的基因越多，失敗風險就越高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think you can probably combine three or four, maybe even five, but I think there’s a limit,” he said. “Where that limit is remains to be determined.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我認為大概可以組合三到四個，也許五個，但肯定存在極限，」他說。「這個極限在哪裡，還有待確定。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Carl Zimmer為時報報導科學新聞，並撰寫「Origins」專欄。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/science/20260605/embryos-gene-editing-crispr/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
