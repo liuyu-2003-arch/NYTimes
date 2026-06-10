@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>習近平與金正恩會面 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">習近平與金正恩會面</h1>
+    <h2 class="en-headline">China Reasserts Itself, to Contain North Korea’s Tilt Toward Russia</h2>
+    <div class="meta-line">DAVID PIERSON, CHOE SANG-HUN <span style="margin: 0 8px;">•</span> 2026-06-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一，北京的一塊巨型螢幕播放了中國國家主席習近平與朝鮮領導人金正恩在朝鮮會晤的新聞畫面。" height="700" src="https://static01.nyt.com/images/2026/06/08/multimedia/08nkorea-china-01-lcfm/08nkorea-china-01-lcfm-master1050.jpg" width="1050"/><figcaption><span>週一，北京的一塊巨型螢幕播放了中國國家主席習近平與朝鮮領導人金正恩在朝鮮會晤的新聞畫面。</span> <cite>Pedro Pardo/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s top leader, Xi Jinping, arrived in North Korea on Monday and delivered what analysts said was a subtle reminder to the country’s newly emboldened dictator, Kim Jong-un, that China is his most important benefactor, economic partner and bulwark against the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國最高領導人習近平於週一抵達朝鮮。分析人士稱，此行向朝鮮近來日益大膽的獨裁者金正恩發出了微妙的提醒：中國是他最重要的援助國、經濟夥伴以及對抗美國的屏障。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to an official summary of the leaders’ talks released by Chinese state media, Mr. Xi called for “close strategic communication” with Mr. Kim and for strengthening exchanges “at all levels and in all fields.” He said he was willing to deepen relations with Mr. Kim in “the new era,” a phrase Mr. Xi has used to project China’s growing strength on the world stage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據中國官方媒體發布的領導人會談官方通報，習近平呼籲與金正恩進行「密切戰略溝通」，並加強「各層級各領域」的交流。他表示願意在「新時代」深化與金正恩的關係，「新時代」是習近平用來彰顯中國在世界舞台上實力日益增強的詞彙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In many ways, Mr. Xi’s two-day trip to Pyongyang, North Korea’s capital, is an effort to balance influence from Russia, which signed a mutual defense pact with North Korea two years ago. That deal has helped revive North Korea’s economy, by allowing Mr. Kim to trade weapons and troops with Russia for badly needed oil, food and weapons technology, and given him a stronger hand in talks with Mr. Xi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在許多方面，習近平對朝鮮首都平壤為期兩天的訪問旨在平衡俄羅斯的影響力，兩年前，俄羅斯與朝鮮簽署了共同防禦協定。該協定允許金正恩以武器和軍隊換取急需的石油、糧食和武器技術，這幫助朝鮮復甦了經濟，並使金正恩在與習近平的會談中擁有了更多籌碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi was received by Mr. Kim and his wife, Ri Sol-ju, when he landed in Pyongyang, his first trip there in seven years. His motorcade was greeted by a military honor guard and throngs of citizens waving both national flags, with children dancing and clutching bright balloons. North Korea gave Mr. Xi a similar welcome the last time he visited Pyongyang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平抵達平壤時，受到了金正恩及其夫人李雪主的迎接，這是習近平七年來首次訪問平壤。他的車隊受到儀仗隊的歡迎，大批市民揮舞著兩國國旗，孩子們手持鮮艷的氣球起舞。上次習近平訪問平壤時，朝鮮也給予了類似的歡迎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At a meeting at the Kumsusan Guest House, Mr. Xi pledged to cooperate with Mr. Kim in trade, agriculture, science, tourism and health care.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在錦繡山迎賓館舉行的會談中，習近平承諾將在貿易、農業、科學、旅遊和醫療保健領域與金正恩開展合作。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週一，平壤的一條街道上懸掛著朝鮮和中國的國旗。" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08nkorea-china-02-lcfm/08nkorea-china-02-lcfm-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08nkorea-china-02-lcfm/08nkorea-china-02-lcfm-master1050.jpg"/></div><figcaption><span>週一，平壤的一條街道上懸掛著朝鮮和中國的國旗。</span> <cite>Kim Won Jin/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">North Korea had not released a statement about the meeting by late Monday. Mr. Kim was expected to press Mr. Xi for more economic support and possibly a greater acceptance of North Korea’s nuclear weapons program.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至週一晚間，朝鮮尚未發布有關此次會晤的聲明。預計金正恩將敦促習近平提供更多經濟支持，並可能要求中方對朝鮮的核武器計劃給予更大程度的認可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s summary made no mention of the nuclear program, instead stressing that the two countries should “jointly safeguard regional peace and development.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中方的通報沒有提及核計劃，而是強調兩國應「共同為地區和世界的和平繁榮作出貢獻」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMv2woXJ-5QDFcy7fwQdtTULgw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s long held position is that it opposes a nuclear North Korean state, largely over concerns about driving U.S. allies like South Korea to seek nuclear weapons. Statements about working toward ending the program used to be standard for the two sides during diplomatic engagements, but they have been omitted since last September, when Mr. Kim visited Beijing to attend a military parade.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國長期以來的立場是反對朝鮮成為核國家，主要是擔心這樣會促使韓國等美國盟友尋求核武器。在過去的外交接觸中，關於致力於終止該計劃的聲明是雙方慣常的表述，但自去年9月金正恩訪問北京參加閱兵式以來，此類表述已被抹去。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China’s approach to North Korea has shifted markedly over the past seven years, from the role of a mediator for North Korea–U.S. denuclearization talks to that of a strong strategic partner in countering the United States,” said Hong Min, an expert on North Korea at the Korea Institute for National Unification, a research institute based in Seoul.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「過去七年來，中國對朝鮮的做法發生了顯著轉變，從朝美無核化談判的調停者變成了對抗美國的強大戰略夥伴，」總部位於首爾的研究機構韓國統一研究院的朝鮮問題專家洪珉說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The change may reflect China’s desire to placate North Korea. But it could also suggest that the Chinese government believes that a nuclear-armed North Korea would provide leverage over the United States and South Korea, analysts said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士表示，這一轉變可能反映了中國安撫朝鮮的願望。但也可能表明，中國政府認為，一個擁有核武器的朝鮮能為應對美國和韓國提供籌碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi evoked the two countries’ history fighting the United States together in the Korean War, reminding Mr. Kim that their “traditional friendship” had been “forged in blood.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平提到兩國在朝鮮戰爭中共同抗擊美國的歷史，提醒金正恩，兩國的「傳統友誼」是「用鮮血凝成的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The overall message that Beijing wants to project through this summit is the unity and the unbreakable bonds between the two countries,” said William Yang, a senior analyst for the International Crisis Group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「通過這次峰會，北京希望傳遞的總體信息是兩國的團結和牢不可破的紐帶，」國際危機組織高級分析師威廉·楊（音）表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a letter published Monday in North Korea’s main state-run newspaper, Rodong Sinmun, Mr. Xi declared that relations between China and North Korea were at a “new historical starting point.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週一發表於朝鮮主要官方報紙《勞動新聞》的公開信中，習近平宣布中朝關係處於「新的歷史起點」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He called on the two countries to “oppose hegemonism and power politics,” an oblique reference to the United States. In a veiled swipe at Japan, with which China has been in a monthslong feud, Mr. Xi wrote that they should also oppose “any scheme or action aimed at reviving militarism and undermining regional security and stability.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他呼籲兩國「反對霸權主義和強權政治」，這是對美國的含蓄指代。針對與中國已有數月爭端的日本，習近平隱晦抨擊道，中朝兩國還應反對「一切復活軍國主義、危害地區安全穩定的圖謀和行徑」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMS1w4XJ-5QDFeRaLQQdxS4eyQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As with Russia and Iran, Mr. Xi has cast North Korea as a close partner in a new world order free of what China sees as U.S. dominance and meddling.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如同對待俄羅斯和伊朗一樣，習近平將朝鮮描繪成新世界秩序中的親密夥伴，而中國認為這一新秩序應擺脫美國的霸權和干涉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Kim has said North Korea should boost trade with China to further stimulate its economy and generate hard currency. Yet all its top exports — coal, iron ore, fish and textiles — remain prohibited under United Nations sanctions, creating a huge trade deficit with China that has threatened to drain its foreign currency reserves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金正恩曾表示，朝鮮應增加與中國的貿易，以進一步刺激經濟並賺取硬通貨。然而，朝鮮的所有主要出口產品——煤炭、鐵礦石、海鮮和紡織品——仍受聯合國制裁的禁止，這導致了對華的巨額貿易逆差，並使朝鮮面臨耗盡外匯儲備的危險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi’s offers on trade and tourism could change that, but it is not clear whether it is possible to do so without violating U.N. sanctions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平在貿易和旅遊方面的提議可能會改變這一現狀，但目前尚不清楚是否可以在不違反聯合國制裁的情況下實現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both China and Russia have grown increasingly reluctant to enforce those sanctions in recent years, as tensions with the United States have worsened. In a joint statement issued last month, Mr. Xi and President Vladimir V. Putin of Russia declared their opposition to “the use of diplomatic isolation, economic sanctions, force and pressure” against North Korea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著與美國的緊張局勢加劇，近年來中國和俄羅斯越來越不願意執行這些制裁。在上個月發表的聯合聲明中，習近平和俄羅斯總統普丁宣布反對對朝鮮「利用外交孤立、經濟制裁、武力施壓等手段」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such backing has emboldened Mr. Kim to hold on to his nuclear arsenal and insist on being​ treated as a nuclear-armed state. In the days preceding Mr. Xi’s arrival, he visited a missile factory and a newly operational weapons-grade uranium enrichment facility, vowing to “beef up our state’s nuclear forces at an exponential rate.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種支持使金正恩更加有恃無恐，堅持保留其核武庫，並堅持要求被視為擁核國家來對待。在習近平抵達的前幾天，他視察了一家導彈工廠和一個新投產的武器級濃縮鈾設施，誓言要「以指數級速度增強我國核力量」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">David Pierson報導中國外交政策和中國與世界的經濟與文化交互。他從事新聞工作已超過20年。</p><p class="cn-p">Choe Sang-Hun是時報駐首爾首席記者，報導韓國和朝鮮新聞。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260609/xi-kim-china-north-korea-summit/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

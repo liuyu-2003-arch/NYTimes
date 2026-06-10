@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桃子有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">桃子有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Peaches?</h2>
+    <div class="meta-line">ISOBEL WHITCOMB <span style="margin: 0 8px;">•</span> 2026-06-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/07/02/well/WELL-HEALTHY-PEACHES1/WELL-HEALTHY-PEACHES1-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There’s a reason you need a napkin when you bite into a ripe summer peach — the fruit is nearly 90 percent water.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要吃熟透的夏桃，總是離不開餐巾紙——這種水果將近90%都是水分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In addition to helping you stay hydrated, peaches contain nutrients that keep your eyes healthy and may reduce chronic disease risk. Here are some of their biggest benefits, plus some recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了幫你補水，桃子還富含有助眼睛健康，並可能降低慢性病風險的營養物質。以下是桃子的主要益處，以及來自《紐約時報》烹飪版的幾道食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Their potassium is helpful on summer days.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>桃子所含的鉀元素在夏日大有裨益</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Getting fluids from fruit and other food sources is just as good as drinking a glass of water, said Diane Stadler, the director of the graduate programs in human nutrition at Oregon Health &amp; Science University. In addition to their high water content, peaches contain a modest dose of the electrolyte potassium, which you sweat out during exercise and on hot days, she said. Electrolytes like potassium help your muscles contract, your heart pump and your neurons fire.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧勒岡健康與科學大學人類營養學研究生項目主任黛安·斯塔德勒表示，從水果和其他食物來源獲取水分與喝一杯水同樣有益。她說，除了高含水量外，桃子還含有適量的電解質鉀，而在運動和炎熱的天氣裡，人體會通過出汗流失鉀。鉀等電解質有助於肌肉收縮、心臟泵血和神經元傳導。</div></div></div></div></div><div class="big_ad" data-google-query-id="CImUto_J-5QDFfw6rAAdOnIICA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One small peach contains around 180 milligrams of potassium, which is about five percent of the recommended daily amount. (By comparison, one Nuun electrolyte tablet contains 125 milligrams.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個小桃子約含180毫克鉀，大約是每日推薦攝入量的5%。（相比之下，一片Nuun電解質片含有125毫克鉀。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re rich in flavonoids and carotenoids.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>桃子富含類黃酮和類胡蘿蔔素</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Peaches combine two groups of pigments that you don’t often see together in other fruits and vegetables,” said Mary Ann Lila, a distinguished professor in the Plants for Human Health Institute at North Carolina State University. Their signature sunset colors come from flavonoids and carotenoids — chemicals plants produce as a defense mechanism against insects and the harmful effects of sunlight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「桃子結合了兩種在其他水果和蔬菜中很少同時出現的色素，」北卡羅萊納州立大學人類健康植物研究所特聘教授瑪麗·安·萊拉說。桃子標誌性的夕陽色彩來自類黃酮和類胡蘿蔔素——這是植物為抵禦昆蟲和陽光的有害影響而產生的防禦性化學物質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Research suggests that people who eat a diet rich in flavonoids, which produce peaches’ red and pink shades, tend to have a lower risk of heart disease.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究表明，飲食中類黃酮豐富的人患心臟病的風險往往較低。類黃酮正是讓桃子呈現紅色和粉色的物質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Flavonoids can also help keep memory and cognition sharp, Dr. Lila said. After gut bacteria break them down, they release chemicals into the bloodstream that can cross into the brain. Dr. Lila has studied flavonoids (using wild blueberry powder, not peaches), and her research has found that a diet rich in them may improve reaction times, motor skills and information processing in older adults.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊拉表示，類黃酮還有助人類保持敏銳的記憶力和認知能力。在腸道細菌將其分解後，會釋放出能進入血液並穿過血腦屏障的化學物質。萊拉曾對類黃酮進行過研究（使用的是野生藍莓粉，而非桃子），她的研究發現，富含類黃酮的飲食可以改善老年人的反應時間、運動技能和信息處理能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Carotenoids, responsible for peaches’ orange tones, are powerful antioxidants, added Beth Olson, an associate professor of nutrition at the University of Wisconsin-Madison<strong>. </strong>Antioxidants help reduce disease risk by binding to free radicals, molecules that can cause damage to our tissues and trigger inflammation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">威斯康辛大學麥迪遜分校營養學副教授貝絲·奧爾森說，讓桃子呈現橙色調的類胡蘿蔔素是強效的抗氧化劑。抗氧化劑與自由基（可能對人體組織造成損傷並引發炎症的分子）結合，能夠降低患病風險。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNa7to_J-5QDFUAirAAdW8ERrw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They provide a modest amount of vitamin A.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>桃子提供適量的維生素A</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Carotenoids have a second benefit: The body can convert them into vitamin A. A small peach contains the equivalent of 35 micrograms of vitamin A, around four percent of the recommended daily amount.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">類胡蘿蔔素還有第二個好處：人體可以將它們轉化為維生素A。一個小桃子含有相當於35微克的維生素 A，大約是每日推薦攝入量的4%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vitamin A is best known for its role in eye health and vision. That’s because it’s a key building block in the retina, the part of the eye that converts light into information that it sends to the brain, Dr. Lila said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維生素A最廣為人知的作用是維護眼部健康和視力。萊拉指出，這是因為維生素A是視網膜（將光線轉化為信息並發送到大腦的眼部結構）的關鍵組成部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s also crucial for cell division, Dr. Olson said, including those cells that need to replace themselves frequently, like immune and skin cells.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧爾森表示，維生素A對細胞分裂也至關重要，包括那些需要頻繁自我更新的細胞，比如免疫細胞和皮膚細胞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the best way to eat peaches?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>吃桃子的最佳方式是什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To maximize the nutritional benefits, don’t peel them, Dr. Lila said: “Most of the good stuff is in the skin.” That includes much of the vitamin A and polyphenols, plus a few grams of heart- and gut-healthy fiber.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊拉說，為了使營養效益最大化，不要去皮，「大部分好東西都在果皮裡。」 這其中包括大部分的維生素A和多酚，外加幾克對心臟和腸道有益的膳食纖維。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJHFto_J-5QDFeYjlgkdRBMCBg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before you tuck into that peach, run it under cold water and dry it with a paper towel; that should be enough to remove pesticides and potentially harmful bacteria, Dr. Stadler said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯塔德勒建議，在享用桃子之前，先用冷水沖洗，然後用紙巾擦乾；這通常足以去除農藥和潛在的有害細菌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While nothing beats a fresh peach, frozen or canned varieties are also nutritious, as long as there is no added sugar, Dr. Olson said. Just keep in mind that you won’t get the health benefits of the skin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧爾森表示，雖然新鮮桃子無可替代，但只要不額外添加糖，冷凍或罐裝的桃子同樣營養豐富。不過要記住，這樣就無法獲得果皮帶來的健康益處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Lila recommends cooking peaches without exposing them to too much heat, since that can degrade some important nutrients, like vitamin A. Her favorite method is to cut peaches in half, brush them with olive oil and grill them. Here are some other ideas to try from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊拉建議，烹飪桃子時不要用過高的溫度，因為這會破壞一些重要的營養物質，比如維生素A。她最喜歡的方法是把桃子切成兩半，刷上橄欖油，然後烤制。以下是一些來自《紐約時報》烹飪版的其他點子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Joojeh Kabab ba Holu (Saffron Chicken Kababs With Peaches)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 藏紅花雞肉串配桃子</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-saffron-chicken-kababs-kpjf/14WELL-HEALTHY-PEACHES-saffron-chicken-kababs-kpjf-master1050.jpg" src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-saffron-chicken-kababs-kpjf/14WELL-HEALTHY-PEACHES-saffron-chicken-kababs-kpjf-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Skewered peaches and cherry tomatoes are a summery accompaniment to saffron-marinated chicken.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">串起來的桃子和櫻桃番茄是藏紅花醃製雞肉的絕佳夏日配菜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Joojeh Kabab ba Holu (Saffron Chicken Kababs With Peaches)</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：藏紅花雞肉串配桃子</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Green Peach Salad With Simple Lime Dressing</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 青桃沙拉佐簡易青檸汁</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-green-peach-salad-with-simple-lime-dressing-fwzh/14WELL-HEALTHY-PEACHES-green-peach-salad-with-simple-lime-dressing-fwzh-master1050.jpg" src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-green-peach-salad-with-simple-lime-dressing-fwzh/14WELL-HEALTHY-PEACHES-green-peach-salad-with-simple-lime-dressing-fwzh-master1050.jpg"/></div><figcaption><span></span> <cite>Melina Hammer for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hard, unripe peaches soften and turn savory when tossed with lime juice, salt and minced Serrano chiles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">未成熟的脆桃與青檸汁、鹽和切碎的塞拉諾辣椒拌勻，桃子會變軟且風味十足。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Green Peach Salad With Simple Lime Dressing</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：青桃沙拉佐簡易青檸汁</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Skillet Meatballs With Peaches, Basil and Lime</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 平底鍋煎肉丸搭配蜜桃羅勒青檸</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-Pork-Meatballs-with-Peaches-wpgh/14WELL-HEALTHY-PEACHES-Pork-Meatballs-with-Peaches-wpgh-master1050.jpg" src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-Pork-Meatballs-with-Peaches-wpgh/14WELL-HEALTHY-PEACHES-Pork-Meatballs-with-Peaches-wpgh-master1050.jpg"/></div><figcaption><span></span> <cite>Bryan Gardner for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ripe — or better yet, overripe — peaches make a syrupy sauce for gingery meatballs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成熟的桃子（熟過頭一點更理想）可以製作出糖漿般的濃郁醬汁，正好搭配帶姜味的肉丸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Skillet Meatballs With Peaches, Basil and Lime</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：平底鍋煎肉丸搭配蜜桃羅勒青檸</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Creamy Peach Sorbet With Raspberries</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 奶油蜜桃覆盆子雪葩</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-Frozen-Peach-Sorbet-hbcv/14WELL-HEALTHY-PEACHES-Frozen-Peach-Sorbet-hbcv-master1050.jpg" src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-Frozen-Peach-Sorbet-hbcv/14WELL-HEALTHY-PEACHES-Frozen-Peach-Sorbet-hbcv-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Blending soft peaches with plain yogurt and a touch of gelatin helps them set into creamy sorbet in the freezer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將柔軟的桃子與原味酸奶和少許明膠混合，冷藏後便能凝固成奶油般的雪葩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Creamy Peach Sorbet With Raspberries</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：平底鍋煎肉丸搭配蜜桃羅勒青檸</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Cold Tofu Salad With Tomatoes and Peaches</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 番茄蜜桃涼拌豆腐</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-cold-tofu-salad-gmtk/14WELL-HEALTHY-PEACHES-cold-tofu-salad-gmtk-master1050.jpg" src="https://static01.nyt.com/images/2025/07/14/multimedia/14WELL-HEALTHY-PEACHES-cold-tofu-salad-gmtk/14WELL-HEALTHY-PEACHES-cold-tofu-salad-gmtk-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Hadas Smirnoff.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peaches, tomatoes and silken tofu are tossed with a balsamic-soy vinaigrette, rich with toasted sesame oil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將桃子、番茄和內酯豆腐與摻有烤芝麻油的香醋醬油汁攪拌均勻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Cold Tofu Salad With Tomatoes and Peaches</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：番茄蜜桃涼拌豆腐</div></div></div></div></div><div class="big_ad" data-google-query-id="CMLqto_J-5QDFTgNrAAd8wk58w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2025年7月14日。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260609/peaches-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生育率為何下降？也許與你的手機有關係 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">生育率為何下降？也許與你的手機有關係</h1>
+    <h2 class="en-headline">Why Are Birthrates Down? Two New Studies Point to Phones.</h2>
+    <div class="meta-line">SABRINA TAVERNISE <span style="margin: 0 8px;">•</span> 2026-06-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="生育率下降並非只發生在美國。這一謎團如今已幾乎成為全球性現象。" height="700" src="https://static01.nyt.com/images/2026/06/08/multimedia/08nat-birthrate-smartphone-lchb/08nat-birthrate-smartphone-lchb-master1050.jpg" width="1050"/><figcaption><span>生育率下降並非只發生在美國。這一謎團如今已幾乎成為全球性現象。</span> <cite>Colin Clark for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The enduring mystery of the fertility decline has a new culprit: the smartphone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">生育率下降這個長期未解之謎如今又出現了一個新的罪魁禍首：智慧型手機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts have long wondered if phones played a role in the birthrate decline — which began in 2007, the same year that Apple introduced the iPhone — but until now there had not been hard evidence to prove it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，專家們一直懷疑手機可能在出生率下降中發揮了作用——因為出生率下降恰好始於2007年，這一年正是蘋果推出iPhone的年份，但此前一直缺乏能夠證明這一點的確鑿證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two new papers, one published Monday and the other in May, are the first academic endeavors that test whether the smartphone was a cause.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年5月和本週一相繼發表的兩篇新論文是首批嘗試檢驗智慧型手機是否為原因之一的學術研究。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They are the most recent efforts to explain the sweeping fertility rate decline in the United States and other countries over the past 20 years. Researchers have already looked at contraception use, abortion rates, rising levels of female education and even the popular television show “16 and Pregnant.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是研究人員近年來為解釋過去20年美國及其他國家生育率全面下降所做的最新嘗試。此前，他們已經考察過避孕措施使用情況、墮胎率、女性受教育程度提高，甚至連熱門真人秀《少女媽媽》都被納入研究範圍。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK-VlIzJ-5QDFVuPfwQd3PgVjw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Proving phones caused the decline is a tricky endeavor. There were a number of major events in those years, including the Great Recession, and isolating smartphone use is difficult.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要證明手機導致生育率下降並非易事。包括全球金融危機在內，那些年發生了許多重大事件，將智慧型手機的使用單獨剝離出來加以分析難度相當之大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The gold standard for scientific evidence is known as random assignment. It compares outcomes for people randomly chosen to receive a treatment (like getting a smartphone) with people who are not.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科學證據的黃金標準是隨機試驗，也就是將隨機選出的接受某種干預（如獲得智慧型手機）的人群與未接受干預的人群的結果進行比較。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But that is not possible when it comes to ferreting out reasons for declining fertility.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在追尋生育率下滑的原因時，這種方法並不適用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So researchers sought out data about smartphones that introduced randomness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">於是，研究人員轉而尋找與智慧型手機相關、能夠引入隨機性的數據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Caitlin Myers, an economist at Middlebury College, and Ezekiel Hooper, her student, used the spotty early rollout of the iPhone as a way to isolate the effects of the phone on fertility. The first iPhone was released in June 2007, they wrote, and was available only on the AT&amp;T network until February 2011. The study compared fertility rates in U.S. counties that had near-universal AT&amp;T coverage with counties that had little or none.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明德學院的經濟學家凱特琳·邁爾斯和她的學生以西結·胡珀利用iPhone早期推廣覆蓋面的參差不齊剝離出手機對生育率的影響。他們在論文中寫道，第一代iPhone於2007年6月發布，直至2011年2月前只能使用AT&amp;T網路。研究比較了AT&amp;T信號幾乎全面覆蓋的美國縣與幾乎沒有覆蓋地區的生育率變化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their paper, published in the National Bureau of Economic Research, found that the iPhone caused as much as half of the fertility decline between 2007 and 2011. The most pronounced effects were among young people aged 15 to 24.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們發表於國家經濟研究局(NBER)的論文發現，iPhone造成了2007年至2011年間生育率下降的一半左右。其中影響最明顯的是15至24歲的年輕群體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What happened in the counties with iPhones? One theory, Professor Myers said, is that young people began to socialize more on their phones and less in person, and consequently were less likely to have sex and become pregnant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那麼，在iPhone普及的地區究竟發生了什麼？邁爾斯教授說，一種理論認為，年輕人開始更多地通過手機進行社交，減少了面對面交往，因此發生性行為和懷孕的可能性也隨之降低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Professor Myers said iPhones may also have made pornography more accessible, which led young people to substitute it for sex, or young people may have used them to obtain better information on avoiding pregnancy, including contraception and abortion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">邁爾斯教授表示，iPhone可能也讓色情內容更容易獲取，導致年輕人用它替代了性行為，也可能因為年輕人能夠通過手機獲得了更多避免懷孕的信息，包括避孕措施和墮胎。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMGulIzJ-5QDFWxZLQQdzvMn0g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers not involved in the study said the results were persuasive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些未參與該研究的學者認為，這些結果頗具說服力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Phillip B. Levine, an economist at Wellesley College, said he was “a little jealous” of the Middlebury data, which he said provided a real insight into a potential driver of a major social change.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">韋爾斯利學院的經濟學家菲利普·萊文表示，他對明德學院使用的數據「有點嫉妒」，認為這些數據為理解一項重大社會變遷的潛在驅動因素提供了真實洞見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said some variation in the AT&amp;T data could throw off the final finding. For example, the company may have set up in counties that were wealthier, or more densely populated, introducing a pattern “that’s not likely to be random anymore,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過他也指出，AT&amp;T覆蓋數據中存在某些差異，可能會影響最終結論。例如，該公司可能優先進入那些更富裕或人口更密集的地區，從而形成一種「不再具有隨機性」的模式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said that Professor Myers tried to account for those variations, and that her findings made sense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，邁爾斯教授已嘗試對上述差異加以修正，而且研究結果是合理的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But, he cautioned: “You shouldn’t take the result so literally and say: Oh, it’s the iPhone’s fault. It’s an example of the kinds of social influences that have led to the decline in birth rate.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他同時提醒說：「你不應該過於從字面理解這個結果，然後說：『哦，都是iPhone的錯。』這只是導致出生率下降的諸多社會影響的一個例子。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dropping birthrates, once a feature of rich societies, are now a near-global phenomenon. The sweep of the decline has researchers looking for common drivers. The authors of the second study also decided to look at smartphones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出生率下降曾經是富裕社會的特徵，現在已近乎成為全球現象。這種下降的廣泛性促使研究人員尋找共同的驅動因素。第二項研究的作者也將目光投向了智慧型手機。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMCRlYzJ-5QDFUq3fwQdcqEr0w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Countries with very different health care systems, welfare regimes, abortion laws, religious traditions, recessions and demographic trends all saw similar breaks in the same window,” wrote the authors, Hernan Moscoso Boedo, an economics professor at the University of Cincinnati and Nathan Hudson, a Ph.D. student.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">來自辛辛那提大學的經濟學教授埃爾南·莫斯科索·博埃多和博士生內森·哈德森寫道：「醫療體系、福利制度、墮胎法律、宗教傳統、經濟衰退情況以及人口結構都截然不同的國家卻在同一時間段經歷了類似的生育率斷崖式變化。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Whatever caused it was something global — something that arrived in roughly the same form in all of these places at roughly the same time,” they wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「因此，導致這一現象的原因很可能是一種全球性的因素——某種幾乎同時以相同形式出現在世界各地的東西。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They analyzed World Bank data measuring smartphone prevalence and teenage fertility rates in 128 countries. In countries as varied as Iran, Costa Rica, Guatemala, Chile, Mexico and Turkey, they found that teenage fertility declines accelerated once smartphones became a mass phenomenon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們分析了世界銀行關於128個國家的智慧型手機普及率和青少年生育率的數據。他們發現，在伊朗、哥斯達黎加、瓜地馬拉、智利、墨西哥和土耳其等差異巨大的國家，一旦智慧型手機成為一種大眾現象，青少年生育率的下降就會加速。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They tested their technology theory in the United States using data on wired broadband and 4G high-speed mobile networks. They looked at where access was better and worse and found a substantial effect: that fertility rates for teenagers declined fastest in counties with more high-speed access.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們還利用美國有線寬帶網路和4G高速移動網路的數據對這一技術假說加以驗證。通過比較網路接入條件優劣不同的地區，結果發現了顯著影響：高速網路接入更為普及的縣域，青少年生育率下降最為迅速。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Theodore Joyce, an economist at Baruch College, said he was skeptical of both studies. Teenage births have been falling since the 1990s, he said, long before technology came on the scene. Professor Myers’s paper, he said, examined a short period before smartphones had fully taken hold.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巴魯克學院經濟學家西奧多·喬伊斯表示，他對兩項研究均持懷疑態度。他指出，青少年生育率自1990年代起便已持續走低，遠早於智慧型手機時代的到來。他還說，邁爾斯教授的論文所考察的時間段較短，當時智慧型手機尚未全面普及。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The hypothesis, he said, could be correct but “remains speculative.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這種假說或許是正確的，但「目前仍然屬於推測」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Sabrina Tavernise是《紐約時報》資深撰稿人，主要關注美國的政治生活以及美國人如何看待華盛頓的變化。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260609/iphone-birthrate-decline-studies/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
