@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川普對華政策轉向 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">川普對華政策轉向</h1>
+    <h2 class="en-headline">Trump’s Sharp Turn on China: Embracing It as a Peer Power</h2>
+    <div class="meta-line">黃安偉 <span style="margin: 0 8px;">•</span> 2026-06-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt='上個月，美國總統川普在北京與中國領導人習近平會晤期間，美中兩國政府提出了一個新說法——"建設性戰略穩定關係"。' height="700" src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-jwbh/09dc-trump-china-jwbh-master1050.jpg" width="1050"/><figcaption><span>上個月，美國總統川普在北京與中國領導人習近平會晤期間，美中兩國政府提出了一個新說法——"建設性戰略穩定關係"。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After meeting with China’s top diplomat in Malaysia last summer, Secretary of State Marco Rubio uttered a line that made few waves at the time but would later help pave the way for an abrupt change.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年夏天在馬來西亞會見中國最高外交官後，國務卿魯比奧說了一句話，當時未引起太大動靜，但這句話後來為突如其來的政策轉變鋪平了道路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States and China, Mr. Rubio said, had an “opportunity here to achieve some strategic stability” and find areas of cooperation. He used the phrase again in February while talking about China in the Caribbean, also to little notice.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">魯比奧表示，美中兩國「在此有機會實現某種戰略穩定」，並找到合作領域。今年2月在加勒比地區談論中國問題時，他又一次使用了這個說法，同樣未引起多少關注。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials picked up on Mr. Rubio’s remarks and suggested to their U.S. counterparts even rosier language to describe ties between the two nations, according to two people with knowledge of the previously unreported diplomacy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據兩名知情人士透露，中方官員注意到了魯比奧的言論，並向美方對口官員提出了用更積極的措辭來描述兩國關係的建議。這一外交動向此前未曾被報導過。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new phrase — “constructive strategic stability” — was rolled out by both governments during President Trump’s meeting in Beijing last month with the leader of China, Xi Jinping.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統上月在北京與中國領導人習近平會晤期間，兩國政府共同正式推出了一個新表述——「建設性戰略穩定關係」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI_ww66N_pQDFQigpgQdpd41sw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although the language sounds stiff and somewhat vague, such diplomatic terms serve as important guideposts. The new catchphrase signals to agencies in both nations, and to other powers, that the United States and China — the world’s two largest economies and most powerful militaries — are looking to work together or limit hostilities, notably on trade and Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管這一表述聽來生硬、略顯模糊，但此類外交術語往往具有重要的指向意義。這個新口號向兩國政府機構及其他大國傳遞出一個信號：美中兩國——世界最大的兩個經濟體和最強軍事力量——正尋求合作或控制對抗，尤其是在貿易和台灣問題上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s new policy with Beijing has stirred questions and anxieties across Asia, from Taipei to Delhi to Manila, sending officials in the region scrambling to recalibrate their own approaches to the United States and China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普對華政策的新走向在亞洲各地引發了疑慮與不安，從台北到新德里，再到馬尼拉，各國官員紛紛忙於重新校準本國對美國和中國的策略。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The signals from the Americans became sharper over a series of official visits to Asia in recent weeks: Mr. Trump and his top aides to Beijing; Mr. Rubio to India; and Pete Hegseth, the defense secretary, to Singapore.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去幾週，隨著一系列高層訪問——川普及其高級幕僚訪問北京、魯比奧訪問印度、國防部長海格塞斯訪問新加坡，美方發出的信號變得更加明確。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At an annual military forum, Mr. Hegseth said there was “rightful alarm” in Asia about China’s military buildup and activities, but he also declared, “We respect their ambitions.” He did not mention Taiwan, making him the first defense secretary in more than a decade not to do so at the forum.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一個年度軍事論壇上，海格塞思表示，亞洲各國對於中國的軍事擴張和軍事行動產生了「合理的擔憂」，但他同時也宣稱：「我們尊重他們的抱負。」他沒有提及台灣問題，這使他成為十多年來首位在該論壇上未談及台灣的美國國防部長。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年早些時候，國防部長海格塞斯（左）在新加坡舉行的一個論壇上與韓國國防部長官安圭伯（右）及日本防衛大臣小泉進次郎交談。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-hfkl/09dc-trump-china-hfkl-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-hfkl/09dc-trump-china-hfkl-master1050.jpg"/></div><figcaption><span>今年早些時候，國防部長海格塞斯（左）在新加坡舉行的一個論壇上與韓國國防部長官安圭伯（右）及日本防衛大臣小泉進次郎交談。</span> <cite>Mohd Rasfan/Agence France-Presse via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After his meetings in China, Mr. Trump effusively praised Mr. Xi, calling him a towering leader out of “central casting.” But more important, Mr. Trump said he was holding “in abeyance” arms sales to Taiwan as a “negotiating chip” with China, and that the United States and China were forming a “G2” of equal superpowers. “It’s the two great countries,” he told Fox News.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在結束訪華行程後，川普對習近平大加讚賞，稱他是那種教科書般的強勢領導人。但更為重要的是，川普表示他正將對台軍售「暫時擱置」，以此作為與中國談判的「籌碼」，並稱美中兩國正在形成一個由平起平坐的超級大國構成的「G2」。「這是兩個偉大的國家，」他在接受福克斯新聞採訪時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Current and former officials in the United States and Asia say the message is clear: Mr. Trump intends to accommodate China, and other countries should fall in line.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國及亞洲地區的現任和前任官員表示，川普傳遞的信息很明確：他打算與中國協調相處，其他國家也應順勢而為。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPKRxK6N_pQDFSmOpgQdUpgUkw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new policy is a sharp departure from Mr. Trump’s aggressive approach during his first term. It comes after China’s retaliation during a trade war last year forced Mr. Trump to retreat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一新政策與川普第一任期內的對華強硬路線大相逕庭。這是在去年貿易戰中中國的反制迫使川普收手之後出現的轉變。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For now at least, the perspective of the Chinese government is that their relationship with the Trump administration is better than they had ever expected,” said Yun Sun, a China scholar at the Stimson Center, a foreign policy research group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「至少就目前而言，中國政府的看法是，他們與川普政府的關係比此前預想的要好得多，」外交政策研究機構史汀生中心研究中國問題的學者孫韻表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They see Trump as an opportunity to cultivate a positive view of China,” said Ms. Sun, who was in Beijing during the summit. “They think maybe they can use the next two and a half years to show people that China isn’t as bad as everyone thinks it is.” She added that Chinese officials are especially keen to sway opinions in foreign policy and national security circles in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們把川普視為一個塑造中國正面形象的機會，」峰會期間人在北京的孫韻說。「他們認為，也許可以利用未來兩年半的時間向外界證明，中國並不像很多人想像的那麼糟糕。」她還補充說，中國官員尤其希望影響華盛頓外交政策和國家安全圈子的看法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The White House insists that the new “constructive relationship of strategic stability” is linked to “fairness and reciprocity.” In a sign that some competition will continue, the Pentagon on Monday added several large Chinese technology companies and an electric carmaker to a list of enterprises linked to China’s military, an effort to limit their global trade.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">白宮堅稱，新的「建設性戰略穩定關係」與「公平和互惠」掛鈎。作為某種競爭仍將持續的信號，五角大廈週一將數家中國大型科技公司和一家電動汽車製造商列入與中國軍方有關聯的企業名單，試圖限制它們的全球貿易活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China has not adopted the Trump administration’s framing of the new phrase. The Chinese government has stressed that the language prioritizes cooperation. “It should be constant stability where differences are manageable, and the relationship should not be like a roller coaster,” the Chinese Embassy in Washington said in a statement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國並未完全接受川普政府對這一新表述的解讀。中國政府指出，這一措辭首先強調的是合作。中國駐華盛頓大使館在聲明中表示：「應該是分歧可控的常態穩定，不能像過山車一樣起伏不定。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上個月，習近平在北京歡迎川普總統。川普表示，訪華期間兩人「非常深入地」討論了台灣問題和對台軍售問題。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-tbvc/09dc-trump-china-tbvc-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-tbvc/09dc-trump-china-tbvc-master1050.jpg"/></div><figcaption><span>上個月，習近平在北京歡迎川普總統。川普表示，訪華期間兩人「非常深入地」討論了台灣問題和對台軍售問題。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has been even bolder. In a speech during the summit, he told Mr. Trump that “great changes unseen in a century are accelerating” — a phrase he has used before to describe the decline of American power. Mr. Xi also urged Mr. Trump to try to avoid the “Thucydides Trap,” the theory that a rising power and an established power are likely to go to war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平的表態則更加大膽。在峰會期間的一次講話中，他告訴川普，「世界百年未有之大變局正在加速演進」——這是他過去用來描述美國實力衰落的一種說法。習近平還敦促川普避免落入「修昔底德陷阱」，即新興強國與既有強國容易走向戰爭的理論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has acknowledged Mr. Xi’s assertion of superpower equality. In a social media post, he wrote that Mr. Xi had “very elegantly” mentioned U.S. decline, but argued that was a reference to the Biden era.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普承認了習近平關於超級大國平等地位的說法。他在社群媒體上寫道，習近平「非常巧妙地」提到了美國的衰落，但他辯稱，那指的是拜登執政時期。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPbXxK6N_pQDFVekpgQdOi0eGQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been pressing the United States to formally recognize it as a peer power for years. Mr. Xi tried to get President Barack Obama to officially state that the two nations had “a new type of great power relations.” Mr. Obama resisted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，中國一直在推動美國正式承認其對等大國地位。習近平曾試圖說服歐巴馬總統正式確認兩國之間已經形成了「新型大國關係」，但遭到歐巴馬的拒絕。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Trump has given China an opening.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普卻給了中國一個機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It seems the president now only sees China as an economic competitor and is trying to come to a modus vivendi with China,” said Shivshankar Menon, a former foreign secretary of India and ambassador to China, using a term that refers to a peaceful coexistence. “It doesn’t seem like this U.S. administration is interested in the broader geostrategic issues in Asia.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「（川普）總統現在似乎只將中國視為經濟競爭對手，並正試圖與中國達成一種可行的共存安排，」印度前外交秘書、前駐華大使希夫山卡·梅農表示。「本屆美國政府似乎對亞洲更廣泛的地緣戰略問題不感興趣。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most obvious — and to many, most concerning — shift by Mr. Trump has come on Taiwan. Early this year, to avoid angering Beijing before the summit, the White House ordered the State Department not to move forward with a large package of weapons for Taiwan that Congress had already approved, The New York Times reported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普最明顯——在許多人看來也是最令人擔憂——的轉變是在台灣問題上。據《紐約時報》報導，今年早些時候，為避免在峰會前激怒北京，白宮下令國務院暫停推進國會已批准的一項對台大型軍售計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi repeatedly warned Mr. Trump about such sales after the administration announced an $11 billion package in December.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年12月，美國政府宣布了這項價值110億美元的對台軍售方案後，習近平曾多次就此向川普發出警告。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration’s new stance appears to violate a longstanding U.S.-Taiwan diplomatic agreement called the “Six Assurances” and the Taiwan Relations Act of 1979. Lawmakers from both parties questioned Mr. Rubio last week about Taiwan, but he insisted the policy had not changed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府的新立場似乎違背了美台之間長期遵循的「六項保證」及1979年的《台灣關係法》。來自兩黨的議員上週就台灣問題對魯比奧進行了質詢，但他堅稱政策並未改變。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNH1xK6N_pQDFd-7pgQdJFUPog" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re not withholding,” he said of the frozen $14 billion arms package. “It’s just under review.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">談到被凍結的140億美元軍售案時，他說：「我們並非扣下，只是仍在審議中。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Perhaps just as worrying for the Taiwanese government and its supporters is Mr. Trump’s language on Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對台灣政府及其支持者而言，或許同樣令人憂慮的是川普在台灣問題上的表述。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="英偉達首席執行官黃仁勛上個月在北京出席活動。川普此前決定，允許英偉達向中國企業銷售高性能晶片。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-zpql/09dc-trump-china-zpql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-zpql/09dc-trump-china-zpql-master1050.jpg"/></div><figcaption><span>英偉達首席執行官黃仁勛上個月在北京出席活動。川普此前決定，允許英偉達向中國企業銷售高性能晶片。</span> <cite>Pool photo by Go Nakamura</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has long considered China to be much more important than Taiwan, the democratic, self-governing island that the Chinese Communist Party aims to absorb, and around which the Chinese military is conducting aggressive air and sea activities. After his Beijing bromance with Mr. Xi, Mr. Trump appeared to blame Taiwan for helping set the stage for potential war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，他一直認為中國遠比台灣重要。台灣是一個民主自治的島嶼，是中共力圖并吞的目標，中國軍方在台灣周邊開展了越來越強勢的海空軍事活動。在與習近平上演北京兄弟情之後，川普似乎將潛在戰爭風險的形成部分歸咎於台灣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’m not looking to have somebody go independent, and you know, we’re supposed to travel 9,500 miles to fight a war,” he said. “I’m not looking for that. I want them to cool down. I want China to cool down.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我不希望有人走向獨立，而且要知道，我們得跑9500英里去打一場戰爭，」他說。「我不想看到這種情況。我希望他們都冷靜下來。我希望中國冷靜下來。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump said that he and Mr. Xi had discussed Taiwan and arms sales to the island “in great detail.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普表示，他與習近平「非常深入地」討論了台灣問題和對台軍售問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Based on the sum total of what President Trump has said to the media, it seems like he has absorbed a great deal of Xi Jinping’s thinking on Taiwan,” said Bonnie S. Glaser, the managing director of the Indo-Pacific program at the German Marshall Fund. “People are anxious.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從川普總統對媒體所說的整體內容來看，他似乎已經很大程度上接受了習近平在台灣問題上的看法，」德國馬歇爾基金會印太項目執行主任葛來儀(Bonnie S. Glaser)表示。「人們對此感到擔憂。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJiPxa6N_pQDFem6pgQdpQgujw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In another significant act, Mr. Trump recently decided to allow Nvidia, the American technology company, to sell powerful chips to Chinese companies. That move has drawn some criticism from lawmakers and former officials of both parties who had endorsed the Biden administration’s export controls on advanced chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一項意義重大的舉措是，川普最近期決定允許美國科技公司英偉達向中國企業出售高性能晶片。此舉引發了兩黨部分議員和前官員的批評，他們此前曾支持拜登政府對先進晶片實施出口管制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has not immediately approved the imports. But in recent weeks, Chinese executives have sensed a potential easing by Beijing and sought ways to buy the chips, Ms. Sun said. Jensen Huang, the chief executive of Nvidia, hitched a ride on Air Force One to fly to China with Mr. Trump when the plane stopped to refuel in Alaska.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國尚未立即批准相關進口。但孫韻表示，最近幾週，中國企業高管已經察覺到北京方面可能正在放鬆態度，並開始尋求購買這些晶片的途徑。<span>英偉達首席執行官黃仁勛在「空軍一號」於阿拉斯加停靠加油時登機，與川普一同飛往中國。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials across Asia are trying to discern where their nations fit into Mr. Trump’s strategic shift. Mr. Rubio’s trip to Delhi after the Beijing summit was aimed at reassuring Indian leaders after a tumultuous year and a half of policies and statements by Mr. Trump that have been widely perceived as against India.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">亞洲各國官員都在試圖判斷，在川普戰略轉向之後，自己的國家將處於什麼位置。北京峰會結束後，魯比奧前往新德里訪問，安撫印度領導人——此前一年半間，川普的一系列政策和言論被廣泛認為對印度不友好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But little of substance came from the trip, which included tourism and a gala hosted by the U.S. Embassy alongside a meeting with the top diplomats from Australia, India and Japan, the other members of a group known as the Quad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這次訪問幾乎沒有取得什麼實質成果，魯比奧的行程包括觀光活動、美國駐印使館舉辦的招待會，以及與澳洲、印度和日本三國外長的會面——這三個國家與美國共同組成了「四方安全對話」機制。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上個月在新德里舉行的會晤中，從左至右依次為：澳洲外長黃英賢、印度外長蘇傑生、日本外務大臣茂木敏充以及美國國務卿魯比奧。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-tcqb/09dc-trump-china-tcqb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/09dc-trump-china-tcqb/09dc-trump-china-tcqb-master1050.jpg"/></div><figcaption><span>上個月在新德里舉行的會晤中，從左至右依次為：澳洲外長黃英賢、印度外長蘇傑生、日本外務大臣茂木敏充以及美國國務卿魯比奧。</span> <cite>Pool photo by Julia Demaree Nikhinson</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some officials and analysts see Mr. Trump’s warming toward Beijing as leading to an inevitable move away from shared goals with India and other Asian countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些官員和分析人士認為，川普對北京態度轉暖，意味著美國勢必會逐漸偏離與印度及其他亞洲國家共同追求的戰略目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The strategic convergence on China was the glue that held U.S.-India policy together,” said Milan Vaishnav, the director of the South Asia program at the Carnegie Endowment for International Peace. “Now there’s an absence of that.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡內基國際和平基金會南亞項目主任米蘭·瓦什納夫表示：「對華戰略共識曾是維繫美印政策的粘合劑，現在這種共識已經不存在了。」  </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the forum in Singapore, some analysts said Mr. Hegseth’s speech sidestepped the region’s main concerns and failed to address how the United States planned to recover from the war that it and Israel started with Iran, which has depleted stockpiles of U.S. weapons and compelled the American military to move resources out of Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些分析人士認為，在新加坡舉行的論壇上，海格塞思的講話迴避了該地區最關心的問題，也未能說明美國計劃如何從與以色列共同對伊朗發動的戰爭中恢復過來。這場戰爭已經消耗了大量美國武器庫存，並迫使美軍將部分資源從亞洲調往其他地區。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some American officials and analysts argue that the United States is not backing away from Asia. U.S. Indo-Pacific Command is creating a new logistics and refueling hub on the Pacific island of Palau. Training exercises across the region led by the United States have been growing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分美國官員和分析人士認為，美國並未從亞洲收縮。美國印太司令部正在太平洋島國帛琉新建一處後勤和加油樞紐，美國主導的地區聯合軍事演習規模也在持續擴大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exercise Balikatan, the annual joint military drills between the Philippines and the United States, brought together 17,000 troops from seven countries in April and May. During the exercise, Japanese combat troops were active in the Philippines for the first time since World War II, and the United States tested the Typhon missile system, widely seen as a deterrent against Chinese forces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">菲美年度聯合軍演「肩並肩」於今年4月至5月舉行，共有來自七個國家的1.7萬名軍人參加。演習期間，日本作戰部隊自第二次世界大戰結束以來首次在菲律賓開展軍事活動，美國則測試了「堤豐」導彈系統，該系統被廣泛視為針對中國軍隊的一種威懾力量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This was being done as a clear show of force, a demonstration that the United States and its allies could defend against a P.L.A. amphibious assault,” Matt Turpin, a White House national security official in the first Trump administration, wrote afterward, referring to the People’s Liberation Army of the People’s Republic of China. “I feel confident that the Trump administration is taking the military threat from the P.R.C. seriously.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「此次演習是一次明確的武力展示，旨在表明美國及其盟友有能力抵禦中國人民解放軍的兩棲登陸，」川普第一任期內的白宮國家安全官員馬特·特平事後撰文寫道。「我有信心，川普政府正在認真對待來自中國的軍事威脅。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Damien Cave自新加坡對本文有報導貢獻。</p><p class="cn-p">黃安偉(Edward Wong)為《紐約時報》報導全球事務、美國外交政策和國務院新聞。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260610/trump-china-taiwan/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
