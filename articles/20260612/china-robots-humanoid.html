@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>為什麼人形機器人離不開中國零部件 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">為什麼人形機器人離不開中國零部件</h1>
+    <h2 class="en-headline">Why It’s Nearly Impossible to Build a Robot Without China</h2>
+    <div class="meta-line">MEAGHAN TOBIN, KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-06-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-video-glfk/Biz-China-Robots-video-glfk-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Japan led the world in robotics for decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾十年來，日本在機器人領域一直引領世界。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 50 years ago, Japanese researchers captured imaginations with the first robot capable of grasping objects and walking on two legs. In 1984, a team in Japan built one that could read sheet music and play the piano. When Honda unveiled its first humanoid in 2000, it seemed to cement the country’s lead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五十多年前，日本研究人員推出了全球首台能夠抓取物體並用雙腿行走的機器人，令人嘖嘖稱奇。1984年，日本的一個團隊製造出一台能夠識讀樂譜並彈奏鋼琴的機器人。2000年，本田推出其首款人形機器人，似乎鞏固了日本的領先地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But now, just as tech investors, start-up founders and government officials around the world are betting that artificial intelligence will spur growth for robots, that lead no longer belongs to Japan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但如今，就在世界各地的科技投資者、初創公司創始人和政府官員都押注人工智慧將推動機器人增長之際，這一領先地位已不再屬於日本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It belongs to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>它屬於中國。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CK2IibXOgJUDFfPU4wcdneYM-A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month at the Humanoids Summit, a robotics conference in Tokyo, what could have been a victory lap for an industry built on decades of development and investment instead centered on a different topic: how Japanese companies can break through in a market increasingly dominated by Chinese rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月在東京舉行的人形機器人峰會本應成為這個建立在數十年發展和投資基礎上的產業的勝利慶典，但峰會<span>聚焦的卻是另一個主題：日本企業如何在日益被中國競爭對手主導的市場中突圍。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors urged Japanese companies to find niches where they could compete even if they couldn’t match Chinese firms on price. A dancing robot from China’s Unitree Robotics drew the largest crowds. Two Japanese firms also used Unitree robots to demonstrate their software.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資者敦促日本企業尋找能夠與中國競爭的利基市場，儘管它們無法在價格上與中國企業匹敵。一款來自中國企業宇樹科技的舞蹈機器人吸引了最多的觀眾。兩家日本公司還使用宇樹的機器人來展示自己的軟體。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國企業如今主導著人形機器人的供應鏈。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-01-zhbv/Biz-China-Robots-01-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-01-zhbv/Biz-China-Robots-01-zhbv-master1050.jpg"/></div><figcaption><span>中國企業如今主導著人形機器人的供應鏈。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="在深圳，技術人員正在組裝讓機器人能「看見」的傳感器。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-09-zhbv/Biz-China-Robots-09-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-09-zhbv/Biz-China-Robots-09-zhbv-master1050.jpg"/></div><figcaption><span>在深圳，技術人員正在組裝讓機器人能「看見」的傳感器。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese manufacturers dominate the humanoid robot supply chain. Start-ups like Unitree are producing thousands of humanoids that sell for less than $5,000 each, a pace and price that competitors in Japan and elsewhere struggle to match. Chinese robots once depended on Japanese and other foreign suppliers for components such as sensors and joints. But these days, those parts are made in China, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國製造商主導了人形機器人供應鏈。宇樹等初創公司正在生產數千台人形機器人，每台售價</span>不到5000美元，這種速度和價格讓日本及其他地區的競爭對手難以匹敵。中國機器人曾經依賴日本和其他外國供應商提供傳感器和關節等零部件。但如今，這些零部件也已在中國製造。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has become nearly impossible to build a humanoid robot without parts from Chinese companies, said Ming Hsun Lee, the head of greater China autos and industrials at BofA Global Research, a unit of Bank of America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國銀行旗下的美銀全球研究大中華區汽車與工業研究主管李明勛表示，如今幾乎不可能在不使用中國產零部件的情況下製造出一台人形機器人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The component cost in China has gone down way too fast — other countries can’t compete,” Mr. Lee said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國的零部件成本下降得實在太快了——其他國家無法競爭，」李明勛說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But making humanoid robots has proved easier to achieve than finding a purpose for them. Even robotics executives acknowledge that today’s models are far from performing the types of jobs that have fueled the industry’s excitement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但事實證明，製造人形機器人比為它們找到用途更容易。即使是機器人行業高管也承認，目前的模型還遠不能完成那些可以激發產業興趣的工作。</div></div></div></div></div><div class="big_ad" data-google-query-id="CODcibXOgJUDFVG3rgUdcZ0v-Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And though the promise of humanoids remains unfulfilled, China has established a commanding lead in a segment of the robotics industry that is economically useful: factory automation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然人形機器人的承諾尚未兌現，但中國已在機器人行業中一個具有經濟價值的細分領域——工廠自動化——確立了壓倒性領先地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been making and installing factory robots at a pace unmatched by any other country. In 2024, more than two million robots were operating in Chinese factories, and another 300,000 were installed — more than in the rest of the world combined. Industrial robot installations declined in each of the next largest markets: Japan, the United States, South Korea and Germany.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國製造和安裝工廠機器人的速度是其他任何國家都無法比擬的。2024年，中國工廠有超過200萬台機器人在運行，另外還新裝了30萬台——比世界其他地區安裝量總和還要多。在接下來的幾個最大市場——日本、美國、韓國和德國，工業機器人安裝量均出現下降。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="包括宇樹科技在內的中國機器人公司仍嚴重依賴英偉達的仿真軟體來訓練機器人在現實世界中感知、推理和行動。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-03-zhbv/Biz-China-Robots-03-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-03-zhbv/Biz-China-Robots-03-zhbv-master1050.jpg"/></div><figcaption><span>包括宇樹科技在內的中國機器人公司仍嚴重依賴英偉達的仿真軟體來訓練機器人在現實世界中感知、推理和行動。</span> <cite>Chang W. Lee/The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="深圳的電子市場越來越多地展示著該市不斷發展的機器人產業所需的零部件。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-04-zhbv/Biz-China-Robots-04-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-04-zhbv/Biz-China-Robots-04-zhbv-master1050.jpg"/></div><figcaption><span>深圳的電子市場越來越多地展示著該市不斷發展的機器人產業所需的零部件。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earlier this month, Chinese regulators announced a campaign to encourage local governments and state-owned firms to identify industrial use cases for humanoid robots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月早些時候，中國監管機構宣布了一項行動，鼓勵地方政府和國有企業為人形機器人尋找工業應用場景。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s lead in the race to build robots that move and act like humans is closely tied to the rise of its electric vehicle industry. China has become the largest E.V. exporter through decades of government investment and a strategy focused on producing nearly every component domestically, from screws to lithium-ion batteries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在製造舉手投足如同人類的機器人方面領先與其電動汽車產業的崛起密切相關。通過數十年的政府投資，以及專注於從螺絲到鋰離子電池幾乎所有零部件都實現本土生產的戰略，中國已成為最大的電動汽車出口國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, many companies that manufacture parts for electric vehicles are supplying robot makers, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，許多生產電動汽車零部件的公司也在為機器人製造商供貨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If a company can make auto components, then probably it can also do humanoids,” Mr. Lee said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果一家公司能製造汽車零部件，那麼它很可能也能做人形機器人，」李明勛說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPfPibXOgJUDFRnllAkdErAS5w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tesla, the American electric car company, kicked off China’s E.V. boom with its giant factory in Shanghai. The supplier network that grew around Tesla also serves the company’s robotics business.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國電動汽車公司特斯拉在上海的大型工廠開啟了中國電動汽車的繁榮。圍繞特斯拉發展起來的供應商網路也服務於該公司的機器人業務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although Tesla had pushed to build a separate supply chain for customers outside China, it still relies on Chinese manufacturers for at least 70 percent of its components, Mr. Lee said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然特斯拉曾推動為中國以外的客戶建立獨立的供應鏈，但李明勛表示，它仍依賴中國製造商提供至少70%的零部件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The factory floors of China’s electric vehicle makers, including BYD and Xiaomi, have also become among the first places to deploy humanoid robots for simple tasks like carrying items.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國電動汽車製造商——包括比亞迪和小米——的工廠車間也成為最早的一些部署人形機器人執行搬運物品等簡單任務的地方。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of those robots were built by UBTech. In Shenzhen, the center of China’s tech industry, the company is surrounded by suppliers, many of which once made parts for electric vehicles before moving into robotics. UBTech can source almost any part within hours, said Michael Tam, the company’s chief brand officer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一些機器人由優必選製造。在中國科技產業中心深圳，該公司周圍環繞著眾多供應商，其中許多此前生產電動汽車零部件，後來轉向機器人領域。優必選首席品牌官譚旻表示，公司可以在幾小時內採購到幾乎所有零部件。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在深圳優必選展區展示的機器人組件。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-08-zhbv/Biz-China-Robots-08-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-08-zhbv/Biz-China-Robots-08-zhbv-master1050.jpg"/></div><figcaption><span>在深圳優必選展區展示的機器人組件。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="深圳的優必選身處密集的供應商網路之中，像攝像頭、電池和螢幕這樣的組件只需數小時就能採購到位。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-06-zhbv/Biz-China-Robots-06-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-06-zhbv/Biz-China-Robots-06-zhbv-master1050.jpg"/></div><figcaption><span>深圳的優必選身處密集的供應商網路之中，像攝像頭、電池和螢幕這樣的組件只需數小時就能採購到位。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many parts are 3-D printed. “I can send a design map by 9 a.m. and get the printed components by noon,” Mr. Tam said. “If one supplier tells me they’re fully booked, I just call another.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多零部件採用3D打印。「我上午9點發設計圖，中午就能拿到打印好的零部件，」譚旻說。「如果一家供應商告訴我他們已經排滿，我就打給另一家。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 90 percent of the components in UBTech’s robots come from Chinese companies, Mr. Tam said. The main items it still imports are computer chips to control the robots’ movements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">譚旻表示，優必選機器人90%以上的零部件來自中國企業。它仍需進口的主要是用於控制機器人運動的計算機晶片。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKaIirXOgJUDFXHV4wcdwwUDYw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nearby in Shenzhen, RoboSense, a maker of light detection and ranging, or lidar, sensors for assisted-driving systems, started a robotics business in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在深圳附近，雷射雷達傳感器製造商速騰聚創於2024年啟動了機器人業務，該公司此前為輔助駕駛系統提供傳感器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yang Xiansheng, the company’s vice president of robotics, said RoboSense would have looked to Japanese firms in the past for parts for its automated production lines.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">速騰聚創機器人業務副總裁楊先聲表示，過去他們會找日本企業拿自動化生產線所需的零部件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That’s no longer the case,” Mr. Yang said. “Chinese suppliers now offer far more choices.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「現在情況不同了，」楊先聲說。「中國供應商現在提供了多得多的選擇。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese investors poured over $5 billion into humanoid robot start-ups in 2025, equaling the total amount over the previous five years. In the first five months of this year, investment in the industry exceeded last year’s total by nearly $1 billion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年，中國投資者向人形機器人初創公司投入超過50億美元，相當於此前五年的總和。今年前五個月，該行業的投資已比去年全年高出近10億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The surge underscores a growing belief that humanoid robots could become one of the most significant ways artificial intelligence takes physical form in the world. Dozens of Chinese start-ups are working to capitalize on that vision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一激增凸顯出一種日益增長的信念：人形機器人可能成為人工智慧在現實世界中最重要的實體存在形式之一。數十家中國初創公司正致力於抓住這一願景。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="深圳的一個電子市場，這裡可以租到人形機器人。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-07-zhbv/Biz-China-Robots-07-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-07-zhbv/Biz-China-Robots-07-zhbv-master1050.jpg"/></div><figcaption><span>深圳的一個電子市場，這裡可以租到人形機器人。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="在深圳的速騰聚創，一台機器人正在學習如何拆箱和摺疊紙箱。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-05-zhbv/Biz-China-Robots-05-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-05-zhbv/Biz-China-Robots-05-zhbv-master1050.jpg"/></div><figcaption><span>在深圳的速騰聚創，一台機器人正在學習如何拆箱和摺疊紙箱。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March, Unitree filed to go public in Shanghai. The company said last week that it had passed a regulatory review that could put it on track to start selling shares within weeks. The offering is expected to be one of China’s largest this year, and nearly 50 other robotics-related companies are waiting to list shares in Hong Kong.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年3月，宇樹向上海證券交易所提交了上市申請。該公司上週表示已通過監管審查，可能在數週內開始出售股份。此次發行預計將成為今年中國規模最大的IPO之一，另有近50家機器人相關公司正在等待在香港上市。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, UBTech produced 1,000 humanoids. This year, it intends to make 10 times as many.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，優必選生產了1000台人形機器人。今年，它計劃生產10倍於此的數量。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPSairXOgJUDFUrS4wcd2U01AA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Founders and investors envision humanoids handling dangerous tasks like monitoring factories for chemical leaks and carrying heavy loads.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">創始人和投資者設想人形機器人能承擔危險任務，例如監測工廠化學品洩漏和搬運重物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the robots currently struggle to adapt to the changing world around them. The humanoids that have drawn international attention for dancing in sync at events like China’s televised Lunar New Year special were following preprogrammed scripts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這些機器人目前仍難以適應周圍不斷變化的世界。那些在中國春節晚會等活動中同步舞蹈、吸引國際關注的人形機器人，實際上是在按照預編程的腳本做動作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies have also struggled to build software capable of simulating the real world well enough to train robots how to think and act. For that, many rely on simulation software from Nvidia, the American chip maker. Last month, Jensen Huang, its chief executive, announced a partnership with Unitree on a line of robots that will use Nvidia chips and software for reasoning and decision making. The robots are expected to be available in October.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國公司在構建足以模擬真實世界、從而訓練機器人思考和行動的軟體方面也面臨困難。為此，許多公司依賴美國晶片製造商英偉達的仿真軟體。上個月，英偉達首席執行官黃仁勛宣布與宇樹合作，推出一系列將使用英偉達晶片和軟體進行推理與決策的機器人。這些機器人預計將於10月上市。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most of the humanoids that Unitree has sold in the past two years have gone to universities, laboratories and other research settings, where developers are exploring how software interacts with robot hardware. Few are performing actual labor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去兩年宇樹銷售的大多數人形機器人主要流向大學、實驗室和其他研究機構，開發者在那裡探索軟體如何與機器人硬件交互。很少有機器人真正從事實際勞動。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2025年，中國投資者向人形機器人初創公司投入了超過50億美元，這相當於過去五年的總投資額。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-02-zhbv/Biz-China-Robots-02-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-02-zhbv/Biz-China-Robots-02-zhbv-master1050.jpg"/></div><figcaption><span>2025年，中國投資者向人形機器人初創公司投入了超過50億美元，這相當於過去五年的總投資額。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="陳小立是宇樹科技的一名總監，該公司生產的人形機器人售價最低不到5000美元。" data-src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-10-zhbv/Biz-China-Robots-10-zhbv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/09/multimedia/Biz-China-Robots-10-zhbv/Biz-China-Robots-10-zhbv-master1050.jpg"/></div><figcaption><span>陳小立是宇樹科技的一名總監，該公司生產的人形機器人售價最低不到5000美元。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some UBTech robots carry boxes and perform basic manual labor in electric vehicle factories. But they remain far less productive than humans. The robots, said Mr. Tam, the UBTech executive, are currently only about 30 percent as efficient as human workers, though the company hopes to raise that figure to 50 percent this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分優必選機器人在電動汽車工廠搬運箱子並從事基本體力勞動。但它們的生產效率仍遠低於人類。優必選高管譚旻表示，目前這些機器人的效率僅相當於人類工人的30%左右，不過公司希望今年提高到50%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the Humanoids Summit in Tokyo, Xiaoli Chen, a director at Unitree, said creating robots capable of complex decision making in rapidly changing settings remained a challenge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在東京的人形機器人峰會上，宇樹公司總監陳小立（音）表示，製造能夠在快速變化的環境中進行複雜決策的機器人仍然是一大挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Unitree has gotten a lot of attention and had a lot of events, but this is not productivity,” he said. “The long horizon of doing jobs in complicated environments is still not solved yet.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「宇樹獲得了很多關注，也舉辦了很多活動，但這不是生產力，」他說。「在複雜環境中從事長期工作的難題仍未解決。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Xinyun Wu和Ruoxin Zhang對本文有研究貢獻。</p><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p><p class="cn-p"><span>Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</span></p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260612/china-robots-humanoid/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

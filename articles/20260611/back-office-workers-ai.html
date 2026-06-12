@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哪些人最容易被人工智慧「搶飯碗」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">哪些人最容易被人工智慧「搶飯碗」</h1>
+    <h2 class="en-headline">The Hidden Workers Most Threatened by A.I.</h2>
+    <div class="meta-line">BEN CASSELMAN <span style="margin: 0 8px;">•</span> 2026-06-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/06/10/business/00back-office-sub2/00back-office-sub2-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Timo Lenzen</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If artificial intelligence disrupts the job market, which workers will be most vulnerable?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果人工智慧顛覆了就業市場，哪些勞動者最容易受到衝擊？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The obvious answer, and the one that has dominated public debate over A.I. job loss in recent months, is that the workers most at risk are programmers, software engineers and other tech industry employees. They have borne the brunt of the mass layoffs by Meta, Block and other Silicon Valley companies. Their skills are the ones that A.I. systems have mastered first.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">顯而易見的答案是程序員、軟體工程師和其他科技行業的員工，這也是近幾個月來關於人工智慧導致失業這一公眾話題中的主導觀點——這個群體承受了Meta、Block等矽谷公司大規模裁員的最大衝擊。他們的技能正是人工智慧系統最先掌握的技能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But many economists are more concerned about a different, larger group of white-collar workers: customer service representatives, bookkeepers, payroll clerks and human resources specialists who fly under the radar but collectively account for tens of millions of jobs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但許多經濟學家更擔心的是另一個更龐大的白領群體：客戶服務代表、記賬員、薪酬職員和人力資源專家。他們雖然不那麼引人注目，但總共佔據了數以千萬計的工作崗位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of these workers have college degrees. Many do not. They are spread across the country and throughout the economy, working in every industry, in big cities and small towns, at major corporations and mom-and-pop businesses. They are disproportionately — overwhelmingly, in some occupations — women.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中部分員工擁有大學學歷，許多人則沒有。他們遍布全國各地和整個經濟體系，在各行各業工作，身處大城市和小城鎮，就職於大型企業和個體商戶。這個群體當中女性的比例極高——在某些職業中甚至佔據壓倒性多數。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPOhtbjOgJUDFbf40gQd-BQ60w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These jobs typically offer a middle-class salary or a pathway to achieving one — much as manufacturing jobs did for men before decades of globalization and automation wiped many of them away.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些工作通常能提供中產階級的薪資水平，或是提供了一條達到中產階級收入的途徑——就像幾十年前全球化和自動化浪潮吞噬大量製造業崗位之前，製造業工作曾為男性提供的機會一樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I worry that A.I. will be to high-school-educated women what deindustrialization was to high-school-educated men,” said Molly Kinder, a former researcher at the Brookings Institution who is starting an organization focused on A.I.’s impact on workers and the economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我擔心人工智慧對高中學歷女性的影響，就像去工業化對高中學歷男性的影響一樣，」前布魯金斯學會研究員莫莉·金德說。她目前正在創立一個專注於人工智能對勞動者和經濟影響的組織。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For now, such an outcome is a fear, not a forecast. Despite high-profile layoffs in tech and finance, there is little firm evidence that A.I. has hurt the labor market as a whole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就目前而言，這種結果只是一種擔憂，而非預測。儘管科技和金融行業出現了備受矚目的裁員，但幾乎沒有確鑿證據表明人工智慧從整體上對勞動力市場造成了損害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists have become increasingly convinced that disruptions are likely, but they say it is too early to know where or how widespread they will be. They remain broadly skeptical of claims that the technology will lead to mass unemployment in the near future. Some A.I. industry leaders have walked back such predictions in recent weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經濟學家日益確信，顛覆性影響很可能發生，但他們表示，現在判斷顛覆會發生在哪些領域以及範圍有多廣還為時過早。對於該技術將在不久的將來導致大規模失業的說法，他們普遍持懷疑態度。最近幾週，一些人工智慧行業的領軍人物已經收回了此類預測。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But given the extraordinary pace at which companies are adopting A.I. — and at which the technology is improving — economists say policymakers need to consider the potential effects on the labor market. And they say they are concerned that the public debate has focused too much on software engineers and a relative handful of other high-status careers — lawyers, consultants, economists — rather than the workers who could be most vulnerable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但考慮到企業採用人工智慧的驚人速度——以及該技術進步的速度——經濟學家表示，政策制定者需要考慮其對勞動力市場的潛在影響。他們還表示，令人擔憂的是，公眾討論過多集中於軟體工程師，以及相對少數的其他高地位職業（如律師、顧問、經濟學家），而忽視了那些可能最易受衝擊的勞動者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Back-office jobs deserve more attention in the A.I. discussion, said Mark Muro, an economist at Brookings who has studied the impact of the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會研究該技術影響的經濟學家馬克·穆羅表示，後台支持崗位在有關人工智慧的討論中理應得到更多關注。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKvqtbjOgJUDFSjN0gQdCuEzpg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These are the kind of anchor jobs for families and households,” he said. “We really need to keep our eye on what is occurring across the entire labor market and in all of these occupations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這些是維持家庭和住戶生計的支柱性工作，」他說。「我們確實需要密切關注整個勞動力市場，以及所有這些職業領域正在發生的變化。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Good Jobs at Risk</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>面臨風險的好工作</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Software engineers have dominated the public discussion of A.I. partly because they have been the first to adopt it in their work. Measures of A.I. exposure that are based on how people are using the technology, therefore, inevitably show programming jobs as among the most at risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">軟體工程師之所以在人工智慧相關的公眾討論中佔據主導地位，部分原因在於這個群體是最早在工作中採用該技術的人。因此，基於人們如何使用該技術來衡量人工智慧影響的指標，不可避免地將編程類工作列為風險最高的職業之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But as the technology spreads through the economy, a broader set of roles could be affected. For companies, the promise of A.I. is that it will save them money, and back-office jobs are an obvious place to look to cut costs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但隨著該技術在整個經濟體中的普及，更廣泛的職業類別可能會受到影響。對企業而言，人工智慧的前景在於能幫助節省成本，而後台崗位顯然是削減成本的首選。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you think about the back office, that’s not the main function of the company, so they might think of it as a cost center,” said Jung Ho Choi, an accounting professor at Stanford.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學會計學教授崔正浩（音）表示：「如果提到後台部門，那並非公司的核心職能，因此企業可能會將其視為成本中心。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists at Northwestern University recently recalculated measures of A.I. exposure based on the makeup of the total work force, not just the people using the technology. Administrative and frontline roles, such as customer service representatives, rose to the top of the list.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西北大學的經濟學家最近重新計算了人工智慧影響的評估指標，其依據是整個勞動力的構成，而不僅僅是技術使用者。根據該評估，行政和客服代表等一線崗位躍升至榜首。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN2UtrjOgJUDFWrK0gQdRdwwOg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The most affected jobs are secretaries, are routine clerks,” said Michelle Yin, one of the working paper’s authors. “They’re not computer scientists or data scientists at all.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「受影響最大的工作是秘書和從事常規文書工作的職員，」該工作論文的作者之一米歇爾·殷（音）說。「他們根本不是計算機科學家或數據科學家。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Widely cited measures of A.I. exposure, she added, “give the wrong impression” about who will be most affected — and, in particular, tend to understate the impact on people without college degrees, older workers and people of color.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她還說，被廣泛引用的人工智慧影響程度指標，在何種群體受影響最大方面「給出了錯誤的印象」——特別是低估了對無大學學位群體、年長工人和有色人種的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Kinder gave the example of medical records specialists, a job that pays about $50,000 a year and typically doesn’t require a college degree. More than 90 percent of the jobs are held by women, many of whom work from home, making it an ideal role for many mothers with young children.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金德舉病歷專員崗位為例，這份工作年薪約5萬美元，通常不需要大學學位。超過90%的職位由女性擔任，其中許多人居家辦公，這使它成為許多育幼母親的理想工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other examples include billing and payroll clerks, and customer service representatives — jobs that pay at or near middle-class salaries without requiring a college degree. All of them are dominated by women. And all of them are, by various measures, vulnerable to substitution with A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他例子包括帳單和薪酬職員，以及客戶服務代表——這些工作都能提供達到或接近中產階級的薪水，且不需要大學學位。所有這些崗位都以女性為主。而且根據各種指標，這些崗位都很容易被人工智慧取代。。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My worry is that the lesson from deindustrialization is that many of these women will be able to get another job, but it might be a much worse job,” Ms. Kinder said. “It might be more precarious.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我擔心的是，根據去工業化的教訓，這些女性中的許多人雖然能夠找到另一份工作，但那可能會是一份條件差得多的的工作，」金德說。「那份工作可能會更不穩定。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Vanishing Options</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>消失的選項</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CI-ntrjOgJUDFWTg0gQdfh4xBw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such workers are also more vulnerable in another way: They will have a harder time recovering if they do lose their jobs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這類勞動者在另一方面也更脆弱：一旦失業，他們更難重新站穩腳跟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent paper, researchers at GovAI, a nonprofit focused on A.I. policy, sorted occupations into categories based on not only how exposed they were to A.I. displacement but also their ability to adapt to a job loss, using factors like age, education and income.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最近的一篇論文中，專注於人工智能政策的非營利組織GovAI的研究人員將職業進行了分類，其依據不僅是職業受人工智慧替代的風險程度，還包括它們適應失業的能力（結合年齡、教育和收入等因素考量）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The good news: Many of the workers most exposed to A.I. right now are relatively well positioned to adjust. They tend to be younger, giving them more time to shift directions in their career. They generally have more education and live in cities with more job opportunities. And they are more likely to have higher incomes, giving them the resources to sustain them through a job search.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">好消息是：目前受人工智慧影響最嚴重的許多勞動者其實具備相對良好的適應條件。他們通常較為年輕，有更多時間調整職業方向。他們通常受教育程度更高，並且居住在有更多就業機會的城市。而且他們更有可能擁有較高的收入，這為他們度過求職期提供了經濟保障。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The workers to be most concerned about, the authors argue, are the ones who are both at high risk of displacement and have little capacity to adapt: customer service agents, secretaries and other back-office workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">論文作者認為，最令人擔憂的勞動者是那些既面臨高替代風險、又缺乏適應能力的群體：客服人員、秘書和其他後台工作人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If A.I. does lead to displacement, then these are the folks that you might want to consider paying special attention to,” said Sam Manning, one of the authors. Policymakers, he said, should “think about what sort of additional support they might need to manage a job transition, compared to the managing partner at a consulting firm or a lawyer or software engineer who’s similarly exposed, but if they lose their job, they have lots of things that might make them better positioned to find a new one.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果人工智慧確實導致了崗位替代，那麼這些人就是可能需要考慮給予特別關注的群體，」該論文作者之一薩姆·曼寧說。他表示，政策制定者應該「思考這些人可能需要什麼樣的額外支持來應對職業過渡，要知道，諮詢公司的管理合伙人、律師或軟體工程師儘管面臨類似的風險，但如果他們失去工作，往往擁有諸多優勢，使他們更容易找到新工作」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Fewer Rungs on the Ladder</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>晉陞階梯減少</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CPa_trjOgJUDFRfv0gQd_Y4oPw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Back-office workers are hardly strangers to technological disruptions. Word processors displaced typists; spreadsheet programs and accounting software displaced bookkeepers; online booking sites displaced travel agents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後台工作人員對技術顛覆並不陌生。文字處理軟體取代了打字員；電子表格程序和會計軟體取代了記賬員；在線預訂網站取代了旅行社代理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those changes came gradually, however, giving workers a chance to adapt. Women, in particular, responded to the disappearance of many secretarial jobs in the 1980s and 1990s by attending college in record numbers, opening pathways to better-paying careers. U.S. businesses employ far fewer secretaries than they did 50 years ago, but the jobs that remain are more complex and better paid than they used to be.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這些變化是漸進的，給了勞動者適應的機會。特別是女性，面對20世紀80年代和90年代大量秘書崗位的消失，她們以前所未有的規模走進大學校園，由此踏上了通往高薪職業的道路。如今美國企業僱用的秘書數量比50年前少得多，但現存的職位比過去更複雜，薪水也更高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Women who didn’t attend college, however, have been pushed into retail, hospitality and health care — sectors where jobs tend to be physically demanding and poorly paid, with few opportunities for advancement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但未接受大學教育的女性被推向零售、酒店和醫療保健行業——這些行業的工作通常對體力要求很高、薪酬微薄，且幾乎沒有晉陞機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“College-educated women are the ones who came out on top from this,” said Eliza Forsythe, an economist at the University of Illinois who has studied earlier waves of white-collar automation. “They’re the ones who experienced the employment gains without the wage declines. Everyone else are the ones who didn’t do as well from this technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊利諾大學研究過早期白領自動化浪潮的經濟學家伊麗莎·福賽斯說：「受過大學教育的女性是從中獲益最多的群體。她們既享受了就業增長的紅利，又沒有遭遇工資下降。而其他群體都沒能從這項技術中獲得同樣的收益。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The risk with A.I. is that it will move too quickly for workers to adapt — and that, this time, a college degree won’t protect against displacement. Indeed, many of the jobs that women transitioned to during the computer revolution of the 1980s and 1990s, like accounting and human resources, are now vulnerable to A.I. displacement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧的風險在於，它的發展速度可能快到讓勞動者來不及適應——而且，這一次，大學文憑也無法成為免遭替代的護身符。事實上，在20世紀80年代和90年代的計算機革命期間，女性轉行的許多工作（如會計和人力資源），現在都很容易受到人工智慧的衝擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Forsythe said A.I. was also likely to create new jobs, as did earlier technological revolutions. And it is too soon to know to what degree A.I. will displace workers rather than make them more productive, potentially allowing them to earn more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">福賽斯表示，與早期的技術革命一樣，人工智慧也可能會創造新的工作崗位。目前還無法確定人工智慧究竟會在多大程度上取代勞動者，還是會提高生產力，從而可能讓勞動者獲得更高的收入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I would be cautious about just focusing on what are we losing as opposed to what are we going to gain on the other side,” Ms. Forsythe said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們不能只盯著自己會失去什麼，也要看看在另一端將得到什麼，這一點要特別慎重，」福賽斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if A.I. doesn’t destroy jobs, there could be lasting consequences for workers caught in the transition. Mr. Muro, the Brookings economist, has studied how A.I. threatens jobs that have traditionally served as “gateways” between low-paying, entry-level work and more sustainable careers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即使人工智慧沒有摧毀工作崗位，陷入這種過渡期的工人也可能面臨持久的後果。布魯金斯學會的經濟學家穆羅研究了人工智慧如何威脅到那些傳統上作為低薪入門級工作與更穩定職業之間「跳板」的崗位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Someone who starts as a receptionist, for example, might move into a customer service job that pays only modestly better but offers a chance to move into a much better job in human resources or even management. If A.I. eliminates that middle step, it could be harder for workers to move up the career ladder, said Justin Heck, a coauthor on a recent article with Mr. Muro.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，一個從前台接待做起的人，可能會轉到客戶服務崗位，儘管薪水只高了一點點，但它提供了轉入人力資源甚至管理層等更好職位的機會。近期與穆羅先生合著一篇文章的賈斯汀·赫克表示，如果人工智慧消滅了這一中間環節，勞動者將更難在職業階梯上晉陞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What happens if we’re no longer building those skills on the job? Where is there available to move up?” Mr. Heck asked. “What are the ramifications three years from now, when workers remain stranded in low-wage work, and employers are struggling to fill high-wage roles because we’ve carved out the middle?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果我們不再通過工作培養這些技能，會發生什麼？還有哪裡能提供晉陞的機會呢？」赫克問道。「三年後會有什麼樣的後果？屆時，工人被困在低薪工作中，而僱主因為中間層被削弱從而難以填補高薪職位。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Ben Casselman是《紐約時報》首席經濟記者，從事經濟報導近20年。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260611/back-office-workers-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

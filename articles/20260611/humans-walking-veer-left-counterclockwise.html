@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人人走路都「左傾」？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人人走路都「左傾」？</h1>
+    <h2 class="en-headline">Nearly Everyone, Everywhere, Veers Left When Walking</h2>
+    <div class="meta-line">RACHEL NUWER <span style="margin: 0 8px;">•</span> 2026-06-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="788" src="https://static01.nyt.com/images/2026/06/10/10SCI-WALKING-LEFT-02-tjzp-cover/10SCI-WALKING-LEFT-02-tjzp-cover-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Echeverría-Huarte et al.</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iñaki Echeverría-Huarte, an applied physicist at the University of Navarra in Spain, was studying whether people maintain a certain distance between one another while walking when he noticed something strange. Across some 40 experiments, most of his participants spontaneously veered to the left.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在研究人們行走時是否會彼此保持一定距離時，西班牙納瓦拉大學的應用物理學家伊尼亞基·埃切韋裡亞-瓦爾特注意到了一些奇怪的現象。在大約40個實驗中，大多數參與者會不自覺地向左偏轉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although this observation had nothing to do with his original research, it piqued his curiosity. “This was the first signal that something weird was happening,” Dr. Echeverría-Huarte said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管這一觀察結果與他最初的研究無關，卻激起了他的好奇心。「這是第一個信號，表明有些奇怪的事情正在發生，」埃切韋裡亞-瓦爾特博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He and his colleagues assumed there must be a straightforward explanation. Perhaps the layout of the room, for example, was subtly directing people to list to the left. They began what they thought would be a simple investigation to find the answer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他和同事們起初認為，這背後必定有一個簡單明了的解釋。例如，許是房間布局在不知不覺中引導人們向左傾斜。他們開始著手調查，並認為這會是一項很容易找到答案的研究。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Five years later, Dr. Echeverría-Huarte and his colleagues have exhausted most of their hypotheses and are no closer to solving the mystery. But what they have found, as reported on Wednesday in the journal Nature Communications, is a striking, innate tendency for people across demographics, cultures and conditions to veer in a counterclockwise direction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五年過去了，埃切維裡亞-瓦爾特博士和同事們已窮盡了大多數假設，卻仍未解開這個謎團。不過，正如他們週三在《自然·通訊》期刊上發表的論文所報告的那樣，他們發現了一個引人注目的現象：不同人口群體、不同文化背景、不同實驗條件下的人都表現出逆時針運動的天然傾向。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKT-h7rOgJUDFZDB0gQdnsEqPQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In principle, there is no reason for the fact that people prefer rotating counterclockwise,” said Iker Zuriguel, an applied physicist at the University of Navarra and a co-author of the study. Yet it’s clear they do.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「原則上，沒有理由認為人們會偏好逆時針旋轉，」該研究的共同作者、納瓦拉大學應用物理學家伊克爾·蘇裡格爾說。然而事實擺在眼前，人們確實如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Zuriguel and Dr. Echeverría-Huarte first searched in the scientific literature for an explanation as to why this might be so. They found a study showing that people who are lost usually wander in circles — but it did not specify the direction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘇裡格爾博士和埃切韋裡亞-瓦爾特博士首先在科學文獻中尋找對此現象可能存在的解釋。他們發現了一項研究，顯示迷路的人通常會繞圈走——但並未指明方向。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They found another paper showing that when people encounter a wall, those who are right-handed tend to turn left, while those who are left-handed do the opposite. Most of the participants in the original study were right-handed, so “the moment we saw that, we said, ‘OK, we have an answer,’” Dr. Zuriguel said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們還找到另一篇論文，表明當人們遇到牆壁時，慣用右手的人傾向於向左轉，慣用左手的人則相反。由於原始研究的大多數參與者是右撇子，所以「當我們看到那一點時，我們說，『好了，有答案了，』」蘇裡格爾博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To check, they ran their own trial. They separated participants according to whether they turned left or right when directed to approach a wall. They then asked the participants to walk around a small arena. To the researchers’ surprise, regardless of the wall-turning preferences or handedness, most chose left.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了驗證這一點，他們進行了自己的實驗。他們根據參與者在接近牆壁時選擇向左轉還是向右轉進行分組，然後要求他們在一個小型場地內行走。令研究人員驚訝的是，無論參與者的轉向偏好或慣用手如何，大多數人都選擇了向左移動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This baffling finding prompted them to undertake five additional experiments, each targeting a different hypothesis and involving a total of 573 participants. Yet again and again, they found the same result. In an open schoolyard, for example, the researchers instructed participants to roam at will while a drone recorded their movements. Within seconds, 80 percent of people were moving in a counterclockwise direction. “It’s not a gradual drift but rather a bias that emerges almost immediately,” Dr. Echeverría-Huarte said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這個令人困惑的發現促使他們進行了另外五項實驗，每項實驗針對一個不同的假設，總共涉及573名參與者。然而，他們一次又一次地得到了相同的結果。例如，在一個開放的校園操場上，研究人員讓參與者隨意走動，同時用無人機記錄他們的行動軌跡。幾秒鐘內，80%的人開始沿逆時針方向移動。「這不是逐漸的偏移，而是一種幾乎立刻顯現出來的傾向，」埃切韋裡亞-瓦爾特博士說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/10/10SCI-WALKING-LEFT-01-tjzp-cover/10SCI-WALKING-LEFT-01-tjzp-cover-master1050.jpg" src="https://static01.nyt.com/images/2026/06/10/10SCI-WALKING-LEFT-01-tjzp-cover/10SCI-WALKING-LEFT-01-tjzp-cover-master1050.jpg"/></div><figcaption><span></span> <cite>Echeverría-Huarte et al.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Echeverría-Huarte and his colleagues wondered if the behavior might be emerging collectively, similar to how pedestrians split into two opposite-moving lanes on crowded sidewalks. But when they tested participants alone, 75 percent still moved counterclockwise, suggesting that the tendency is individual.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃切維裡亞-瓦爾特博士和同事們懷疑，這種行為是否是一種集體效應，就像擁擠人行道上的行人會自動分成兩個相反方向流動的隊列一樣。但當他們讓參與者單獨進行測試時，仍有75%的人朝逆時針方向移動，表明這一傾向屬於個體行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Were there cultural factors behind that preference? Pedestrians, for example, typically walk on the same side as cars drive on in their country, and pedestrians also typically move in that direction if they encounter an obstacle. So the team ran experiments in Japan, where pedestrian lanes form on the left. Despite being convinced they would see the opposite pattern to the one in Spain, the researchers yet again observed participants moving counterclockwise, ruling cultural norms off the list.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種偏好背後會不會存在文化因素呢？例如，行人通常會按照本國車輛行駛方向相同的一側行走，在遇到障礙物時也往往會朝那個方向移動。因此，研究團隊在日本進行了實驗，因為日本的人行通道通常靠左通行。儘管研究人員原本確信會看到與西班牙完全相反的模式，但他們再次觀察到參與者朝逆時針方向移動，從而將文化習慣排除在可能原因之外。</div></div></div></div></div><div class="big_ad" data-google-query-id="CL6jiLrOgJUDFV3X0gQduT8gHg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Finally, they wondered if some unacknowledged social convention drilled into adults, but not yet present in children, might be at play. They reached out to researchers who had conducted a prior study in a Japanese kindergarten in which 52 children moved at random while music played. The Japanese researchers shared their videos of the children for analysis — revealing that most of them also moved counterclockwise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最後，他們想知道，是否某種在成年人身上根深蒂固、但尚未在兒童身上出現的未被察覺的社會慣例在起作用。他們聯繫了此前在一所日本幼稚園進行過一項研究的研究人員，在那項研究中，52名兒童伴隨著音樂隨機走動。日本研究人員分享了他們拍攝的影片以供分析——結果顯示，大多數兒童也是逆時針移動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Enrico Ronchi, who models emergency evacuations at Lund University in Sweden and was not involved in the research, said the findings “open up many new, interesting avenues in the field of crowd dynamics.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">瑞典隆德大學研究緊急疏散模型的學者恩裡科·龍基表示（他未參與這項研究），這些發現「為群體動力學領域開闢了許多全新而有趣的研究方向」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He would be interested to see, for example, whether the counterclockwise bias holds up among people with disabilities, or in emergency evacuations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，很想知道逆時針偏向在殘障人士或緊急疏散情境下是否依然成立。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Karol Bacik, an applied mathematician at M.I.T. who was also not involved in the research, said the new finding challenges our understanding of human locomotion. “The counterclockwise bias may have far-reaching consequences for everyday pedestrian traffic, but we simply have not looked for them yet,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣未參與該研究的麻省理工學院應用數學家卡羅爾·巴齊克表示，這一新發現挑戰了我們對人類運動方式的理解。「逆時針偏向可能對日常行人交通產生深遠影響，只是我們此前從未留意過，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Zuriguel and Dr. Echeverría-Huarte next plan to investigate new hypotheses about the counterclockwise bias using biomechanics, virtual reality, neuroscience or even animal behavior. “Fish are the canonical animal that move in circles,” Dr. Zuriguel said. “But whether they prefer rotating in one direction or the other, I don’t know.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">接下來，蘇裡格爾博士和埃切維裡亞-瓦爾特博士計劃從生物力學、虛擬現實、神經科學，甚至動物行為學等角度，繼續探索關於這種逆時針偏好的新假說。「魚類是典型的繞圈運動動物。」蘇裡格爾博士說，「但它們是否偏好某一方向，我還真不知道。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/science/20260611/humans-walking-veer-left-counterclockwise/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
