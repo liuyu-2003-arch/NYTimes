@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漫長而血腥的衝突 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">漫長而血腥的衝突</h1>
+    <h2 class="en-headline">The War in Ukraine Has Now Gone On Longer Than World War I</h2>
+    <div class="meta-line">CONSTANT MÉHEUT <span style="margin: 0 8px;">•</span> 2026-06-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2025年1月，一名烏克蘭士兵在飽受無人機戰爭摧殘的城市康斯坦丁尼夫卡。" height="700" src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-kjvg/11int-ukraine-wwi-kjvg-master1050.jpg" width="1050"/><figcaption><span>2025年1月，一名烏克蘭士兵在飽受無人機戰爭摧殘的城市康斯坦丁尼夫卡。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war in Ukraine has often been compared to World War I for its brutal infantry assaults and heavy casualties. Yet the idea that it could, by any measure, surpass a conflict so long and bloody that French soldiers hoped it would be “the last of the last” once seemed unthinkable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭戰爭常被拿來與第一次世界大戰相提並論，兩者都有殘酷的步兵衝鋒和慘重的人員傷亡。然而，人們曾一度認為，無論從哪個角度衡量，這場戰爭都不可能超過第一次世界大戰——那場衝突如此漫長而血腥，以至於法國士兵曾希望它會成為「最後一場戰爭中的最後一場」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is just what happened on Thursday. The war in Ukraine — which reached 1,569 days, or more than four years and three months — has now outlasted World War I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但就在週四，這成為了現實。截至當天，烏克蘭戰爭已持續1569天，即四年零三個多月，其時長已超過第一次世界大戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When President Vladimir V. Putin of Russia sent his troops into Ukraine in February 2022, he believed the country would fall within days. After Ukraine pushed the Russians back and the conflict settled into a war of attrition, even many of those fighting could not imagine it would last this long.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年2月，俄羅斯總統普丁下令出兵烏克蘭，以為數日之內便可將其拿下。烏克蘭將俄軍擊退、衝突演變為消耗戰之後，即使是許多參戰者也無法想像戰爭會持續這麼久。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I thought maybe two or three years, and then politicians will find some kind of consensus,” said a Ukrainian soldier who, for security reasons, gave only his call sign, France, a nod to his time in the French Foreign Legion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我以為也許兩三年，政客們就會找到某種共識，」一名烏克蘭士兵說——出於安全考量，他只透露了自己的呼號「法蘭西」，這個名字源於他曾在法國外籍軍團服役的經歷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the war has raged on, and, with peace talks stalled, it shows no sign of ending soon. Polls suggest that about half of Ukrainians believe it will not end before next year, which would push it closer to another threshold: the duration of World War II, which lasted six years. And there are many Ukrainians who would argue that the current war really began in 2014 when Russian troops seized Crimea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而戰火持續燃燒，和談陷入僵局，絲毫沒有即將結束的跡象。民調顯示，約半數烏克蘭民眾認為戰爭在明年之前不會結束，這將使其時長逼近另一個門檻：歷時六年的第二次世界大戰。而許多烏克蘭人會說，這場戰爭實際上早在2014年俄軍佔領克里米亞時便已開始。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2022年2月25日，烏克蘭戰爭爆發後第二天，哈爾科夫的烏克蘭士兵。" data-src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-qgpz/11int-ukraine-wwi-qgpz-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-qgpz/11int-ukraine-wwi-qgpz-master1050.jpg"/></div><figcaption><span>2022年2月25日，烏克蘭戰爭爆發後第二天，哈爾科夫的烏克蘭士兵。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Historians caution that drawing parallels with the two world wars has limits. The global scale of those conflicts, involving many theaters and armies, makes comparisons about casualties and firepower difficult. Ukraine did not exist as a country during World War I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歷史學家提醒說，將烏克蘭戰爭與兩次世界大戰進行比較存在局限性。那兩場戰爭橫跨多個戰場、席捲眾多國家，在傷亡規模和火力對比上難以直接比較。而且第一次世界大戰期間，烏克蘭尚不是一個獨立國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, the war in Ukraine, like World War I, is likely to rank among the most consequential conflicts in modern European history, said Yaroslav Hrytsak, a Ukrainian historian. Both wars transformed Europe’s geopolitics by reshaping military alliances and driving a defense buildup not seen in decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，烏克蘭歷史學家雅羅斯拉夫·赫裡察克認為，烏克蘭戰爭與第一次世界大戰一樣，很可能躋身現代歐洲史上影響最為深遠的衝突之列。兩場戰爭都通過重塑軍事聯盟、推動數十年來罕見的大規模軍備擴張，從根本上改變了歐洲的地緣政治格局。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNScoeqOg5UDFXADTwgdyH4c9A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Military analysts also note that both conflicts reshaped the nature of warfare through the introduction of new technologies — planes and tanks a century ago; drones across the air, sea and land today. In both cases, the advances made war only more brutal for humans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">軍事分析人士還指出，兩場衝突都藉助新技術的引入重塑了戰爭形態——一個世紀前是飛機和坦克，如今則是穿梭於海陸空的無人機。而在這兩種情形下，技術進步都讓戰爭對人類而言變得更加殘酷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In many respects, this war in Ukraine is the one that most closely resembles World War I,” said Michel Goya, a former French colonel and a military historian.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從許多方面來看，烏克蘭這場戰爭與第一次世界大戰最為相似，」法國前上校、軍事史專家米歇爾·戈亞說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1918年，百日攻勢期間的英國坦克。坦克是第一次世界大戰中的重大技術突破之一。" data-src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-anfoa/11int-ukraine-wwi-anfoa-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-anfoa/11int-ukraine-wwi-anfoa-master1050.jpg"/></div><figcaption><span>1918年，百日攻勢期間的英國坦克。坦克是第一次世界大戰中的重大技術突破之一。</span> <cite>Henry Guttmann Collection/Hulton Archive, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The comparison begins with the opening phase of both wars. In 1914, the Germans launched a rapid offensive toward Paris in the hope of securing a swift victory. Russian forces had the same objective when they raced toward Kyiv, Ukraine’s capital, in 2022. In both cases, the attackers came close to their target but were ultimately driven back.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種比較首先體現在兩場戰爭的開局階段。1914年，德國向巴黎發動閃電戰，希望速戰速決。2022年，俄軍如出一轍，同樣以迅雷之勢直撲烏克蘭首都基輔。在這兩種情況下，進攻方都一度逼近目標，但最終被擊退。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Eventually, both wars settled into mostly static fighting along a largely frozen front. When soldiers on the Ukrainian battlefield hunkered down in trenches and bunkers in late 2022, historians described it as a return to World War I-style trench warfare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，兩場戰爭都演變為沿著基本沒有變化的戰線展開的陣地戰。2022年底，當烏克蘭戰場上的士兵蜷縮在戰壕和掩體中時，歷史學家將其描述為第一次世界大戰式塹壕戰的重現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scenes from the trenches of eastern Ukraine closely echoed those in northern France a century earlier. Ukrainian and Russian troops were often separated by just a few hundred yards, sometimes close enough to see one another. Assaults began with artillery barrages to pin down the opponent, followed by the storming of enemy trenches by infantry squads.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭東部戰壕裡的場景與一個世紀前法國北部的場景如出一轍。烏軍與俄軍士兵常常只相隔幾百米，有時近到能看見對方。進攻以炮火壓制開始，隨後步兵小分隊衝擊敵方戰壕。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In general, when the front freezes, you’re back to World War I,” Mr. Goya said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「總體而言，戰線一旦堅持不動，你就回到了第一次世界大戰，」戈亞說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1916年11月，被英軍攻佔後，皮卡第地區法國村莊博蒙阿梅爾的廢墟。
+" data-src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-akfpaf/11int-ukraine-wwi-akfpaf-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-akfpaf/11int-ukraine-wwi-akfpaf-master1050.jpg"/></div><figcaption><span>1916年11月，被英軍攻佔後，皮卡第地區法國村莊博蒙阿梅爾的廢墟。 </span><cite>Lt. Ernest Brooks, British Army photographer/Imperial War Museums, via Getty Images</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="2024年，俄佔城市頓涅茨克郊區緩衝區內一座被摧毀的村莊。" data-src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-jzbm/11int-ukraine-wwi-jzbm-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-jzbm/11int-ukraine-wwi-jzbm-master1050.jpg"/></div><figcaption><span>2024年，俄佔城市頓涅茨克郊區緩衝區內一座被摧毀的村莊。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In both wars, he added, it was the intensity of firepower, mainly artillery, that forced armies to turn to trenches. “You bury yourself to protect yourself,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他補充道，在兩場戰爭中，迫使軍隊鑽進戰壕的原因都是火力強度，尤其是炮兵火力。「你把自己埋起來是為了保護自己，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That calculus later changed in Ukraine with the introduction of a new class of weapon: drones. Networks of open trenches were rendered unsafe as drones monitored the battlefield around the clock and struck with greater precision than artillery shells.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而在烏克蘭，隨著一類新式武器——無人機——的登場，這種戰場邏輯發生了改變。開放式戰壕網路變得極不安全，因為無人機能夠全天候監視戰場，打擊精度遠超炮彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, Ukrainian soldiers say, survival depends on going smaller and deeper. Instead of sprawling trench systems, troops shelter in dugouts housing no more than a handful of soldiers. Such bunkers are small enough to be difficult to spot from the sky and deep enough to withstand strikes. A soldier operating on his own will often dig a position barely larger than a foxhole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭士兵現在說，要想生存就必須把掩體建得更小、更深。與其修建綿延的大型戰壕系統，士兵們更傾向於躲藏在只能容納幾個人的小型地下掩體中。這些掩體足夠小，難以從空中發現；同時又足夠深，可以承受打擊。單兵作戰時，往往只挖一個略大於散兵坑的藏身之處。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2024年，烏克蘭托列茨克附近，一名烏克蘭士兵正在為一架武裝無人機做準備。無人機改變了戰爭形態，迫使士兵轉入地下深處，並限制了前線周邊數英里範圍內的行動。" data-src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-gzhv/11int-ukraine-wwi-gzhv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-gzhv/11int-ukraine-wwi-gzhv-master1050.jpg"/></div><figcaption><span>2024年，烏克蘭托列茨克附近，一名烏克蘭士兵正在為一架武裝無人機做準備。無人機改變了戰爭形態，迫使士兵轉入地下深處，並限制了前線周邊數英里範圍內的行動。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent interview near Ukraine’s southern front, a Ukrainian commander, who also only gave his call sign, Sour, for security reasons, recalled how his troops had to storm a well-fortified Russian dugout four times before forcing the soldier inside to surrender. The dugout had right-angled corners reinforced with metal sheets designed to absorb an explosive shock wave, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近期在烏克蘭南部戰線附近的一次採訪中，一名烏克蘭指揮官（同樣出於安全原因只透露了呼號「酸」）回憶起他的部隊四度強攻一處工事堅固的俄軍掩體，才逼得裡面的士兵投降。他說，那處掩體設有直角轉折結構，並以金屬板加固，專門用於吸收爆炸衝擊波。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The commander, who leads the 5th Center of the International Legion, part of Ukraine’s military intelligence forces, said he took the captured Russian soldier to his unit’s training ground and asked him to dig a similar position so he could study how it was built.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這名隸屬於烏克蘭軍事情報部隊國際軍團第五中心的指揮官表示，他將被俘的俄羅斯士兵帶到訓練場，讓其挖掘一處同樣的掩體，以便研究構造。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNHEoeqOg5UDFVO50QQduh8L8g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In this environment, the people who dig survive longer and stay safer,” France, the Ukrainian soldier, said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在這種環境下，會挖掩體的人活得更久，也更安全，」那名呼號為「法蘭西」的烏克蘭士兵說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As drones have come to dominate the battlefield, World War I-style opposing trench networks, separated by a narrow buffer zone, have given way to a miles-wide contested combat area scattered with dugouts. In this “kill zone,” any movement is quickly targeted by drones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著無人機主宰戰場，一戰時期那種由狹窄緩衝區隔開的兩軍對壘戰壕網路已讓位於縱深數英里、遍布分散掩體的爭奪區域。在這片「死亡地帶」，任何移動都會迅速遭到無人機鎖定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Large-scale troop assaults of the kind seen a century ago have become all but impossible under the constant gaze of drones. Such assaults have been replaced with attacks by just one or two soldiers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在無人機的持續監視下，一個世紀前那種大規模步兵衝鋒幾乎已成歷史，取而代之的是一兩名士兵組成的小規模襲擊行動。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1916年，索姆河戰役期間，法國博蒙阿梅爾附近的英國士兵。" data-src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-avub/11int-ukraine-wwi-avub-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/world/11int-ukraine-wwi-avub/11int-ukraine-wwi-avub-master1050.jpg"/></div><figcaption><span>1916年，索姆河戰役期間，法國博蒙阿梅爾附近的英國士兵。</span> <cite>Lt. Ernest Brooks, British Army photographer/Imperial War Museums, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tanks, first introduced in 1916, were still a feared weapon in the first years of the war in Ukraine. They are rarely used now because their size makes them easy targets for drones, though some tanks have been retrofitted with protective metal cages that turn them into “Mad Max”-style vehicles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1916年首次亮相的坦克在烏克蘭戰爭初期仍是令人膽寒的武器，如今卻鮮少使用——龐大的體積使其極易成為無人機的靶子，儘管部分坦克已加裝金屬防護籠，搖身變為「瘋狂麥克斯」式的戰車。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the battlefield today bears less and less resemblance to that of a century ago, the scale of the destruction looks remarkably similar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然今天的戰場與一個世紀前的相似之處越來越少，但破壞的規模卻驚人地相似。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Ukrainian command posts near the front, live footage from reconnaissance drones shows scenes reminiscent of World War I battlefields: splintered trees, ruined houses and fields pockmarked by shell craters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在靠近前線的烏克蘭指揮所內，偵察無人機傳回的實時畫面呈現出與第一次世界大戰戰場如出一轍的景象：東倒西歪的樹樁、毀壞的房屋，以及布滿彈坑的田野。</div></div></div></div></div><div class="big_ad" data-google-query-id="CL3hoeqOg5UDFeUCTwgdFFoY0A" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Casualties are difficult to compare, given the difference in scale between the two wars. A century ago, millions of soldiers were sent into battle across multiple fronts in Europe. Today, the forces involved number in the hundreds of thousands. Roughly nine million to 11 million soldiers died in World War I, compared with about half a million in Ukraine so far.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鑒於兩場戰爭的規模不同，傷亡數字難以直接比較。一個世紀前，數百萬士兵被派往歐洲多個戰場作戰。今天，參戰兵力在數十萬左右。一戰中約有900萬至1100萬士兵死亡，而到目前為止，烏克蘭戰爭約有50萬人死亡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, military analysts and officials, including Adm. Pierre Vandier, who holds the post of Supreme Allied Commander Transformation in NATO, say drones have made the Ukrainian battlefield lethal at levels comparable to World War I. Admiral Vandier made the comparison after a study trip to Ukraine this spring.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，包括北約盟軍轉型最高司令部司令皮埃爾·旺迪耶上將在內的軍事分析人士和官員認為，無人機已經讓烏克蘭戰場的致命程度達到與第一次世界大戰相當的水平。旺迪耶上將在今春赴烏克蘭實地考察後作出了這一評價。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，在烏克蘭東部，醫護人員正在救治一名被俄軍無人機炸傷的烏克蘭士兵。" data-src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-kwlg/11int-ukraine-wwi-kwlg-master1050.jpg" src="https://static01.nyt.com/images/2026/06/11/multimedia/11int-ukraine-wwi-kwlg/11int-ukraine-wwi-kwlg-master1050.jpg"/></div><figcaption><span>去年，在烏克蘭東部，醫護人員正在救治一名被俄軍無人機炸傷的烏克蘭士兵。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So grinding is the fighting in Ukraine that Russian advances have at times been slower than those in some of World War I’s most deadlocked battles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭的戰事如此膠著，以至於俄軍的推進速度有時甚至慢於第一次世界大戰中若干最為僵持的戰役。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia’s offensive on Pokrovsk, an eastern Ukrainian city it recently fully captured, progressed at an average pace of about 75 yards per day, slower than in the bloody Battle of the Somme during World War I, according to an analysis by the Center for Strategic and International Studies, a Washington-based think tank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據位於華盛頓的戰略與國際研究中心的分析，俄羅斯最近完全佔領烏克蘭東部城市波克羅夫斯克的攻勢，平均推進速度約為每天70米，比「一戰」中血腥慘烈的索姆河戰役還要慢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The question now is whether either side can break the deadlock.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">眼下的問題是，哪一方能夠打破僵局。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In World War I, the Allies prevailed by combining economic pressure on Germany through a tight naval blockade with military pressure through relentless offensives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在第一次世界大戰中，協約國憑藉嚴密的海上封鎖對德國施加經濟壓力，同時以不間斷的軍事攻勢形成雙重擠壓，最終贏得勝利。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO3_oeqOg5UDFfq20QQd-KsCgw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine’s strategy to end the war carries some echoes of that approach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭當前結束戰爭的戰略也帶有這種思路的影子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Drone strikes on Russia’s oil assets, the backbone of its economy, are designed to curb Moscow’s ability to finance its war effort. Kyiv lacks the manpower to replicate the offensives of World War I, but it has flooded the battlefield with small attack drones in the hope of inflicting unsustainable losses on the Russian Army.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過無人機打擊俄羅斯經濟的支柱——石油資產，烏克蘭旨在削弱莫斯科為其戰爭機器提供資金的能力。基輔缺乏複製一戰中那種攻勢的人力，但它在戰場上大量投放小型攻擊無人機，希望以此給俄軍造成難以承受的持續損耗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is World War I, but with drones,” Mr. Hrytsak, the historian, said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這就是第一次世界大戰，只不過加上了無人機，」歷史學家赫裡察克說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2024年，托列茨克附近的前線。" data-src="https://static01.nyt.com/images/2024/10/29/multimedia/11int-ukraine-wwi-angoa/00Ukraine-Frontline-Photos-flhj-master1050.jpg" src="https://static01.nyt.com/images/2024/10/29/multimedia/11int-ukraine-wwi-angoa/00Ukraine-Frontline-Photos-flhj-master1050.jpg"/></div><figcaption><span>2024年，托列茨克附近的前線。</span> <cite></cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eew3afz0" data-poster=""><div class="" data-poster=""><p class="cn-p">Constant Méheut是《紐約時報》記者，報導烏克蘭戰爭。</p><p class="cn-p">翻譯：杜然</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260612/ukraine-russia-world-war-i/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
