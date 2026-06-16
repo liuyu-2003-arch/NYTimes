@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國和俄羅斯為誤判付出高昂代價 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國和俄羅斯為誤判付出高昂代價</h1>
+    <h2 class="en-headline">Deadlocked Wars: How Major Powers Misread the Regions They Attacked</h2>
+    <div class="meta-line">NEIL MACFARQUHAR <span style="margin: 0 8px;">•</span> 2026-06-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="烏克蘭持續遭受轟炸的康斯坦丁尼夫卡市郊區，攝於今年早些時候。" height="700" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-05-hwfb/14int-iran-ukraine-deadlock-05-hwfb-master1050.jpg" width="1050"/><figcaption><span>烏克蘭持續遭受轟炸的康斯坦丁尼夫卡市郊區，攝於今年早些時候。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump and his Russian counterpart, Vladimir V. Putin, both resist the idea that ostensibly weaker powers fought them to a stalemate, with the two leaders leaning on negotiations to win the capitulation that they failed to secure in battle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普與俄羅斯總統普丁都不願承認，看似更弱小的對手將他們拖入了僵局。這兩位領導人都試圖通過談判獲得他們未能在戰場上贏得的屈服。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran and Ukraine have pushed back robustly against this “might makes right” mentality, with top officials adopting an even more defiant tone in recent days.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗和烏克蘭則強硬抵制這種「強權即公理」的思維方式，兩國高層官員近期的語氣甚至更為強硬。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an open letter to Mr. Putin this month, President Volodymyr Zelensky of Ukraine derided Mr. Putin for clinging to power as he aged. “You did not expect full-scale resistance from Ukraine, and you did not foresee that things would go this far,” Mr. Zelensky wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在本月致普丁的一封公開信中，烏克蘭總統澤連斯基嘲諷普丁年事漸高卻仍戀棧不去。澤連斯基寫道：「你沒有預料到烏克蘭會進行全面抵抗，你也沒有預見到事情會發展到這個地步。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After Iran unleashed a missile barrage against Israel last week in retaliation for attacks against Hezbollah in Lebanon, Mohammad Bagher Ghalibaf, the speaker of Parliament and Iran’s top negotiator, threatened more. “Until there is a sincere commitment to restoring trust, Iran’s response will not change,” he wrote on X.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在伊朗上週為報復黎巴嫩真主黨遭襲向以色列發射多枚導彈之後，伊朗議會議長、首席談判代表穆罕默德·巴格爾·加利巴夫發出了進一步威脅。他在X平台上寫道：「除非各方真心誠意致力於恢復互信，否則伊朗的回應不會改變。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="空襲警報響起後，以色列民眾躲避來襲的伊朗導彈，上週攝於拉馬特甘。" data-src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-plzv/14int-iran-ukraine-deadlock-plzv-master1050.jpg" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-plzv/14int-iran-ukraine-deadlock-plzv-master1050.jpg"/></div><figcaption><span>空襲警報響起後，以色列民眾躲避來襲的伊朗導彈，上週攝於拉馬特甘。</span> <cite>Oded Balilty/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their recalcitrance reflects the reality of two wars in stasis, with a profound lack of trust all around stymying progress.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們這種不妥協的態度反映了兩場戰爭陷入僵局的現實，各方之間嚴重缺乏信任，阻礙了局勢的推進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Talks to find peace in Ukraine hit an impasse right before the Iran war started, with Ukraine demanding more robust security guarantees for ceding territory than Russia was willing to accept. Diplomacy has mostly produced prisoner swaps between the sides. The United States, once trying to play the main mediator, has shifted its focus to Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在伊朗戰爭爆發前夕，烏克蘭和平談判已陷入僵局。烏克蘭方面要求，若要以放棄領土為代價，必須獲得比俄羅斯願意接受的更為強有力的安全保障。迄今為止，外交努力主要只促成了雙方交換戰俘。曾試圖充當主要調解人的美國如今已將注意力轉向伊朗問題。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMqLpbDYipUDFepOCAQd1C8V7g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American and Iranian officials now say a peace deal with Iran could be at hand. But it appears that it will initially consist of a framework for negotiations that will push the thorniest issues, like Iran’s nuclear program and sanctions relief, down the road. It is expected to allow for at least the temporary reopening of the Strait of Hormuz to shipping.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美伊官員目前均表示，與伊朗的和平協議可能即將達成。但初步看來，協議可能首先是一個談判框架，將伊朗核計劃、解除制裁等最棘手的問題留待以後解決。預計該協議至少將允許暫時重開霍爾木茲海峽的航運。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Both conflicts have produced a similar outcome: a weaker power has trapped a stronger one in a costly confrontation,” Fiona Hill, who ran Russian and European affairs at the National Security Council during the first Trump administration, wrote in a policy paper for the Brookings Institution this week. “Like Putin, Trump did not have a plan for what would happen next.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「兩場衝突產生了相似的結果：一個較弱的國家將一個較強的國家拖入了一場代價高昂的對抗，」曾在川普首屆政府擔任國家安全委員會俄羅斯與歐洲事務主任的菲奧娜·希爾在本週為布魯金斯學會撰寫的一篇政策論文中寫道。「和普丁一樣，川普也沒有為接下來會發生什麼做好計劃。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The root of the issue is that both presidents sparked wars with limited understanding of the opposing side, Ms. Hill said in an interview. “Both projected their own centralized views of their own roles onto Iran and Ukraine, so they thought if they could decapitate the system it would fall,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希爾在接受採訪時表示，問題的根源在於，兩位總統在對對方缺乏深入了解的情況下就貿然挑起戰爭。「他們都將自己高度集中的權力觀投射到伊朗和烏克蘭身上，認為只要能夠將體系斬首，它就會崩潰。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Putin did not anticipate fierce Ukrainian resistance, for example; Mr. Trump ignored admonitions that Iran could shut the Strait of Hormuz, and appeared to underestimate Iran’s capacity to retaliate and inflict damage on America’s allies in the region. Nor did the Iranian people rise up against their authoritarian leaders, as Israel and the United States had urged them to do.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，普丁沒有預料到烏克蘭會進行頑強抵抗；川普則無視了有關伊朗可能關閉霍爾木茲海峽的警告，而且似乎低估了伊朗實施報復並對美國地區盟友造成損害的能力。伊朗人民也沒有像以色列和美國所敦促的那樣起來反抗他們的威權領導人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the bombing campaigns of the United States and Russia have had devastating effects, analysts noted, air power alone has not proved decisive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士指出，儘管美國和俄羅斯的轟炸行動產生了毀滅性影響，但單靠空中力量始終未能取得決定性勝利。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="烏克蘭某地，烏克蘭士兵準備向俄羅斯境內的目標發射「龍」式無人機，攝於上月。" data-src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-04-hwfb/14int-iran-ukraine-deadlock-04-hwfb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-04-hwfb/14int-iran-ukraine-deadlock-04-hwfb-master1050.jpg"/></div><figcaption><span>烏克蘭某地，烏克蘭士兵準備向俄羅斯境內的目標發射「龍」式無人機，攝於上月。</span> <cite>Brendan Hoffman for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Although Russia’s aggressive invasion of its neighbor differs from Washington’s goal of reining in Iran’s expansionist threat, both states are finding it equally hard to align their end goals with the means available to achieve them,” James F. Jeffrey, a fellow at the Washington Institute and a former Middle East envoy, wrote in Foreign Affairs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「儘管俄羅斯侵略鄰國與華盛頓遏制伊朗擴張性威脅的目標性質迥異，兩國卻同樣難以將各自的終極目標與手中可用的手段有效對接，」華盛頓研究所研究員、前中東特使詹姆斯·傑弗里在《外交事務》雜誌上寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine managed to halt Russian troop advances in part by producing next-generation drones, changing the face of modern warfare, while the United States has shown no desire to deploy troops inside Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烏克蘭通過研發新一代無人機成功遏制了俄軍的推進，並改變了現代戰爭的面貌；美國則完全沒有表現出向伊朗境內部署地面部隊的意願。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK27pbDYipUDFdOsOgUdAnMZsw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lack of compromise has prolonged both wars. The United States and Russia have presented extensive demands to the other side, but the list of what their adversaries get in return is short. Mr. Putin, in particular, has not budged from his maximalist demands, which include taking land his army has been unable to capture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">缺乏妥協延長了這兩場戰爭。美國和俄羅斯都向對方提出了長長的要求清單，但給予對手的回報卻很少。尤其是普丁，他從未放棄自己的最大化要求，其中包括索取俄軍至今未能佔領的土地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has also repeatedly revised terms already agreed with the mediators, frustrating the Iranians.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普也多次推翻與調解方已達成的條款，令伊朗不滿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States harmed the process “with contradictory messages, frequent changes in positions and demands, as well as repeated violations of the cease-fire,” Esmail Baghaei, the spokesman for Iran’s Foreign Ministry, said last week after fighting sputtered back to life.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗外交部發言人伊斯梅爾·巴加埃上週在戰火重新燃起後表示，「通過相互矛盾的信息、頻繁改變立場和要求，以及一再違反停火協議」，美國損害了談判進程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Each revision erodes a little more of Iran’s confidence that Mr. Trump will stick to an eventual deal, analysts said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士稱，每一次反覆都進一步蠶食伊朗對川普會遵守最終協議的信心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet Mr. Trump has repeatedly declared that a resolution is just around the corner, as he did Thursday after calling off yet another offensive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普卻一再宣稱解決方案已經近在眼前。在上週四取消了又一次軍事行動後，他再次作出了這樣的表態。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="伊朗民眾在毀於襲擊的公寓樓前，4月攝於卡拉季。" data-src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-02-hwfb/14int-iran-ukraine-deadlock-02-hwfb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-02-hwfb/14int-iran-ukraine-deadlock-02-hwfb-master1050.jpg"/></div><figcaption><span>伊朗民眾在毀於襲擊的公寓樓前，4月攝於卡拉季。</span> <cite>Arash Khamooshi/Polaris for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">None of the shifting set of goals that he predicted at the beginning of the conflict — which he said would take only a few weeks to achieve — has been realized.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在衝突開始時預測的各種不斷變化的目標——他曾說只需幾週就能實現——沒有一個實現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The same is true for Mr. Putin. Invading Ukraine, the Kremlin had expected it would quickly seize Kyiv, install a pliant regime and be welcomed by the Ukrainian people. That was more than four years ago. Despite a death toll estimated at more than 350,000 soldiers, Moscow has not fully occupied three of the four Ukrainian provinces that it now claims.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普丁也是如此。入侵烏克蘭時，克里姆林宮原本預計能夠迅速攻克基輔，扶植一個傀儡政權，並受到烏克蘭民眾歡迎。那已經是四年多以前的事了。儘管已有超過35萬名士兵死亡，莫斯科至今仍未完全佔領它如今聲稱擁有主權的四個烏克蘭州中的三個。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLO2pbDYipUDFapVCAQdu7Ioyg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked last week about Mr. Zelensky’s latest overture for peace, Mr. Putin declared that “military operations” — he still avoids calling it a war — “will end when we achieve our goals.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週被問及澤連斯基最新的和平提議時，普丁宣稱，「軍事行動將在我們實現目標後結束。」他仍然避免稱此為戰爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In reality, both Washington and Moscow “have been defeated in the pursuit of the goals that they had,” Ms. Hill said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而現實是，華盛頓和莫斯科「都在追求各自目標的過程中遭遇了失敗」，希爾表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The circumstances of the two wars do not entirely match. Ukraine had not threatened Russia, while Iran had confronted the United States ever since its 1979 Islamic revolution through terrorist attacks, proxy wars and other assaults on American interests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩場戰爭的背景並不完全相同。烏克蘭此前並未威脅俄羅斯，而伊朗自1979年伊斯蘭革命以來一直通過恐怖襲擊、代理人戰爭以及其他針對美國利益的行動持續與美國對抗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States did not have territorial designs on Iran, while Mr. Putin has occupied almost 20 percent of Ukraine. Militarily, Russia began destabilizing Ukraine by annexing Crimea and fueling a separatist movement starting in 2014. The United States largely avoided a war with Iran until its 12-day bombing campaign last June undertaken with Israel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國並無佔領伊朗領土的野心，普丁卻已吞併烏克蘭近20%的領土。在軍事層面，俄羅斯早在2014年便通過吞併克里米亞、扶植分裂主義運動開始破壞烏克蘭的穩定。而美國在很大程度上避免與伊朗正面開戰，直到去年6月與以色列一起進行了為期12天的轟炸行動。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="烏克蘭一條覆蓋了防無人機網的馬路，1月攝於康斯坦丁尼夫卡。" data-src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-01-hwfb/14int-iran-ukraine-deadlock-01-hwfb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-01-hwfb/14int-iran-ukraine-deadlock-01-hwfb-master1050.jpg"/></div><figcaption><span>烏克蘭一條覆蓋了防無人機網的馬路，1月攝於康斯坦丁尼夫卡。</span> <cite>Tyler Hicks/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran is more inclined than Ukraine to make a deal because it faces more dire economic conditions and receives almost no outside support, said Vali R. Nasr, a professor of international affairs at the Johns Hopkins School of Advanced International Studies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">約翰斯·霍普金斯大學國際問題高級研究學院國際事務教授瓦利·納斯爾表示，伊朗比烏克蘭更傾向於達成協議，因為它面臨更嚴峻的經濟狀況，並且幾乎得不到外部支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, he added, the United States and Israel failed in their strategic objectives in two consecutive wars, in June and February. “So the Iranians want the United States, basically, to come to the table with the realization that they’re not defeated, and the military conquest of Iran is not in the cards,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但與此同時，他補充道，美國和以色列在今年2月和6月連續兩場戰爭中都未能實現戰略目標。「因此，伊朗人希望美國基本上能帶著『他們沒有被打敗，軍事征服伊朗是不可能的』這種認識來到談判桌前。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CO3npbDYipUDFZNSCAQdPN0dJQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The main American and Israeli priority is for Iran to abandon its nuclear program, including surrendering its highly enriched uranium, so it can never develop a nuclear weapon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國和以色列的主要優先事項是伊朗放棄核計劃，包括交出高濃縮鈾，從而永久封堵其發展核武器的可能性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran has resisted making those concessions, and any resolution on that issue could come months or years down the road. Iran is also asking for longtime American economic sanctions lifted, along with the current naval blockade, and the release of $24 billion in frozen assets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗一直拒絕做出這些讓步，關於這個問題的任何解決方案都可能需要數月或數年的時間。伊朗還要求解除美國的長期經濟制裁以及當前的海上封鎖，並放行240億美元的凍結資產。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran wants to use the framework under discussion to test whether Mr. Trump will really implement an accord, Mr. Nasr said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">納斯爾表示，伊朗希望利用正在討論的框架來檢驗川普是否會真正履行協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They want to see whether he actually will lift the blockade,” he said. “They want to see whether he can maintain cease-fire in Lebanon, and they want to see whether he will deliver some of their money.” If all that happens, they would be willing to negotiate something bigger, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們想看看他是否真的會解除封鎖，」他說。「他們想看看他能否維持黎巴嫩的停火，還想看看他能否兌現還給他們部分資金的承諾。」他補充說，如果所有這些都實現了，他們才願意就更大的問題進行談判。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="本月，黎巴嫩納巴提耶附近，以色列的一次空襲擊中了博福特城堡前的區域。" data-src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-03-hwfb/14int-iran-ukraine-deadlock-03-hwfb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/14/multimedia/14int-iran-ukraine-deadlock-03-hwfb/14int-iran-ukraine-deadlock-03-hwfb-master1050.jpg"/></div><figcaption><span>本月，黎巴嫩納巴提耶附近，以色列的一次空襲擊中了博福特城堡前的區域。</span> <cite>Daniel Berehulak/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Ukraine, Russia wants at a minimum that Ukraine withdraw from the strategically important sliver of Donetsk province from which it has been unable to dislodge them, with Russia even losing some ground in recent weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在烏克蘭問題上，俄羅斯至少希望烏克蘭撤出頓涅茨克州具有重要戰略價值的一小塊區域——俄羅斯一直未能將烏軍從那裡趕走，最近幾週甚至失去了一些地盤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In both wars, Mr. Trump has dented American credibility, Ms. Hill said. He failed to fulfill his vow to negotiate a peace settlement in Ukraine while undermining NATO in the process, and he did not achieve his main goals in Iran, or protect Gulf allies from Iranian retaliation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希爾表示，在這兩場戰爭中，川普都削弱了美國的信譽。他既未兌現迅速結束烏克蘭戰爭的承諾，還在此過程中削弱了北約；同時也未能在伊朗實現他的主要目標，或保護海灣盟友免遭伊朗報復。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNvipbDYipUDFaFMCAQdc74lsQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Moscow and Kyiv had each hoped that Mr. Trump might persuade the other to agree to terms, but now both sides know that they need to look elsewhere for a solution, she said. Mr. Zelensky wrote as much in his letter to Mr. Putin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，莫斯科和基輔原本都希望川普能夠說服對方接受條件，但如今雙方都明白，必須另尋解決辦法。澤連斯基在給普丁的信中也表達了類似的意思。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, analysts said, the lack of a resolution makes both the United States and Russia appear weak, and could hasten a more decentralized international order.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士認為，最終，持續無法解決的僵局會讓美國和俄羅斯都顯得軟弱，並可能加速一個更加分散化的國際秩序的到來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Deadlock in Ukraine discredits Russia as a global military force,” Ms. Hill wrote in her policy paper. “It corrodes Putin’s patina of indestructibility, in the same way that the stalemate in the Persian Gulf undermines the United States and Trump.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希爾在她的政策論文中寫道：「烏克蘭戰爭的僵局削弱了俄羅斯作為全球軍事強國的聲譽。它侵蝕了普丁堅不可摧的光環；波斯灣的僵局則以同樣的方式削弱了美國和川普。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Sheelagh McNeill和Shirin Hakim對本文有研究貢獻。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260615/us-iran-russia-ukraine/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

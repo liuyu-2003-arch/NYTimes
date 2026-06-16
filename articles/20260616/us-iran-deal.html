@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詳解美伊停火協議 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">詳解美伊停火協議</h1>
+    <h2 class="en-headline">What to Know About the U.S.-Iran Framework Agreement</h2>
+    <div class="meta-line">LEO SANDS <span style="margin: 0 8px;">•</span> 2026-06-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="兩名德黑蘭女子從一幅描繪伊朗導彈襲擊美國船隻的壁畫前走過。
+
+" height="700" src="https://static01.nyt.com/images/2026/06/15/multimedia/15mideast-wwk-01-kzjt/15mideast-wwk-01-kzjt-master1050.jpg" width="1050"/><figcaption><span>兩名德黑蘭女子從一幅描繪伊朗導彈襲擊美國船隻的壁畫前走過。 </span><cite>Arash Khamooshi/Polaris for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States and Iran have reached a preliminary agreement to cease hostilities for 60 days and reopen the Strait of Hormuz, paving the way to future talks that could ultimately end their monthslong war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國和伊朗已達成初步協議，暫停敵對行動60天並重開霍爾木茲海峽，為未來可能最終結束這場已持續數月戰爭的談判鋪平了道路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The full text of the agreement has not been published. But emerging details suggested that some of the most difficult issues, including the fate of Iran’s nuclear program, have been deferred to future rounds of negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">協議全文尚未公布。但目前披露出來的細節顯示，包括伊朗核計劃命運在內的一些最棘手問題已被推遲到後續談判中解決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The framework commits the United States to begin dismantling its naval blockade of Iran, while Iran will clear mines in the Strait of Hormuz and reopen the vital waterway to shipping, according to officials briefed on the document. In effect, that would return the situation to the status quo in late February, when the war began.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據已獲悉協議內容的官員透露，該框架要求美國開始解除對伊朗的海上封鎖，伊朗則將清除霍爾木茲海峽的水雷，重新開放這條至關重要的航運通道。實際上，這將使局勢回到今年2月底戰爭爆發前的狀態。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what to know.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是需要了解的內容。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLiTzq7YipUDFeA8RAgdBH8fYA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Who announced the agreement?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>誰宣布了這項協議？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States and Iran, alongside Pakistan, which has been playing the role of mediator, all said on Sunday that an agreement had been reached, although they used varying language to describe it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國、伊朗以及一直擔任調解方的巴基斯坦都在週日表示協議已經達成，不過各方使用的表述有所不同。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump said in a post on social media that “This Great Deal will bring Peace and Security to the whole Region.” Iran’s Supreme National Security Council described the agreement as a “memorandum of understanding.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統在社群媒體上發文稱，「這項偉大的協議將為整個地區帶來和平與安全。」伊朗最高國家安全委員會則將該協議稱為「諒解備忘錄」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Shehbaz Sharif of Pakistan said that the United States and Iran had committed to an “immediate and permanent termination of military operations on all fronts, including in Lebanon,” a point that was also emphasized by Iranian officials. Fighting erupted in Lebanon between Israel and Hezbollah, the Iran-backed militia, soon after the U.S.-Israeli war on Iran began in late February, and has been a key sticking point in the U.S.-Iran talks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巴基斯坦總理謝里夫表示，美國和伊朗已承諾「立即永久停止包括黎巴嫩在內所有戰線的軍事行動」——伊朗官員也強調了這一點。自2月底美以對伊戰爭爆發後不久，以色列與伊朗支持的民兵組織真主黨之間就在黎巴嫩爆發了戰鬥，並成為美伊談判的主要障礙之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Neither Israel nor Hezbollah, the warring sides in Lebanon, is a party to the agreement between the United States and Iran. It is unclear how the new deal will affect the fighting there, although Israeli officials on Monday rejected the prospect of any military withdrawal from Lebanon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黎巴嫩的交戰雙方——以色列和真主黨——均不是美伊協議的締約方。目前尚不清楚新協議將對黎巴嫩戰局造成怎樣的影響，不過以色列官員週一已明確拒絕從黎巴嫩撤軍的可能性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is the timeline?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>時間表是如何安排的？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States and Iran have agreed to a multistage framework involving lengthier negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美伊兩國已同意一個涉及更長談判週期的多階段框架協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran’s deputy foreign minister, Kazem Gharibabadi, told state television that Iran’s commitments under the agreement — which he did not detail in full — would begin on Friday, when the deal is scheduled to be formally signed in Geneva.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗副外長加里巴巴迪在接受國家電視台採訪時表示，伊朗在該協議框架下承擔的義務（他未全部披露）將於週五在日內瓦正式簽署協議時啟動。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPypzq7YipUDFaUtRAgd28wx4g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After that, the United States and Iran will cease hostilities for at least 60 days to allow for negotiations to resolve outstanding issues. Mr. Sharif said that mediators will “lay the foundations for the technical talks” in a series of discussions this week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，美伊雙方將停止敵對行動至少60天，以便通過談判解決未決問題。謝里夫表示，調解方將在本週的一系列討論中「為技術性談判奠定基礎」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Gharibabadi said that Iran’s nuclear program — a critical, unresolved issue — will be among the issues to be discussed in the next round of negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加里巴巴迪表示，伊朗核計劃——一個關鍵的未決問題——將列入下一輪談判的議程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What about the Strait of Hormuz?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>霍爾木茲海峽將如何處理？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the war, around one-fifth of the world’s oil supply transited through the Strait of Hormuz, which was in effect shut down by Iran during the fighting, leading to a spike in global energy prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">戰爭爆發前，全球約五分之一的石油供應都經由霍爾木茲海峽運輸。戰爭期間，伊朗實際上關閉了該海峽，導致全球能源價格飆升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump said on social media Sunday that the strait would reopen to commercial shipping on Friday, suggesting that Iran would first remove mines from the crucial waterway. He also said that he had ordered an immediate end to the U.S. naval blockade of Iranian ports, which began in mid-April in an effort to block the flow of Iranian oil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普週日在社群媒體上表示，該海峽將於週五重新向商業航運開放，這意味著伊朗首先需要清除這條關鍵航道中的水雷。他還表示，自己已下令立即結束美國對伊朗港口的海上封鎖。該封鎖始於4月中旬，目的是阻止伊朗石油出口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview with The New York Times, the president said that the strait would be “permanently toll-free” under the framework agreement, restoring the status before the war began.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在接受《紐約時報》採訪時，川普表示，根據框架協議，海峽將實現「永久免費通行」，恢復至戰前狀態。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNnGzq7YipUDFVuG7gEdtBQwFQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s announcement about the strait prompted the price of Brent crude, the global benchmark for oil, to fall nearly 5 percent to around $83 a barrel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的話促使國際油價基準布倫特原油下跌近5%，至每桶83美元左右。。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iranian officials have not commented on the specifics of the agreement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗官員尚未就協議的具體內容發表評論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What happens to Iran’s nuclear program?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>伊朗核計劃將何去何從？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The preliminary agreement leaves the question of Iran’s nuclear program unresolved. Mr. Gharibabadi, Iran’s deputy foreign minister, said that “nuclear matters” would be among the issues discussed during the next round of negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項初步協議並未解決伊朗核計劃的問題。伊朗副外長加里巴巴迪表示，「核問題」將成為下一輪談判的討論議題之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to earlier comments by U.S. officials and diplomats, there are four major points of negotiation for those discussions: how long Iran may suspend uranium enrichment, the future of Iran’s current stockpile of enriched uranium, the fate of Iran’s nuclear sites and future inspections of Iran’s nuclear program.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據美國官員和外交人士此前的表態，下一階段談判將圍繞四個核心議題展開：伊朗暫停鈾濃縮活動的期限、伊朗現有濃縮鈾庫存的處置、伊朗核設施的未來安排，以及今後對伊朗核計劃的核查機制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has long said that Iran must give up its stockpile of highly enriched uranium, which the United States and Israel fear could be used to build a nuclear weapon. Iran’s leadership has maintained for years that it has no intentions to build an atomic weapon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普長期以來一直表示，伊朗必須放棄其高濃縮鈾庫存——美國和以色列擔心這些庫存可能被用於製造核武器。伊朗領導層多年來一直堅稱，它無意製造核武器。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMvYzq7YipUDFWY4RAgdy-ETVw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the interview with The Times, Mr. Trump conceded that no consensus had been reached. He said the United States and Iran were negotiating over the length of time for which Iran would commit to suspending its enrichment of uranium. Under the agreement being sought, he said, Iran would be limited to enriching uranium for “nonmilitary purposes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在接受《紐約時報》採訪時，川普承認雙方尚未達成共識。他表示，美國和伊朗目前正在就伊朗暫停鈾濃縮活動的期限進行談判。按照尋求達成的協議，伊朗未來將僅被允許出於「非軍事目的」進行鈾濃縮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What will happen to Iran’s frozen assets?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>如何處理伊朗被凍結的資產？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fate of billions of dollars of frozen Iranian assets, around $25 billion of which are locked in overseas accounts by longstanding international sanctions, was also deferred.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於被凍結的伊朗資產——其中約250億美元因長期國際制裁被凍結在海外帳戶——其命運同樣被推遲到未來的談判予以解決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to Mr. Gharibabadi, the lifting of sanctions will be addressed in future negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據加里巴巴迪稱，解除制裁的問題將在未來的談判中處理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the interview on Sunday, Mr. Trump repeated his insistence that Tehran would not secure the release of its frozen assets or receive any relief from sanctions until it delivered on its commitments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週日的採訪中，川普再次強調，德黑蘭只有在履行承諾後，才能解凍被凍結的資產或獲得任何制裁的豁免。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Will the agreement end the fighting in Lebanon?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>該協議會結束黎巴嫩的戰鬥嗎？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CIH3zq7YipUDFY8Y7wIdJHMMLw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran has insisted that any peace agreement encompass Lebanon, while Prime Minister Benjamin Netanyahu of Israel has sought to disentangle the two conflicts and retain the latitude to attack Hezbollah.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗一直堅持，任何和平協議都必須涵蓋黎巴嫩問題；而以色列總理納坦尼雅胡則力圖將兩場衝突分開處理，保留打擊真主黨的自主權。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran and Pakistan said that the preliminary agreement announced Sunday included a commitment to end military operations on all fronts, including Lebanon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗和巴基斯坦均表示，週日宣布的初步協議包含停止所有戰線軍事行動的承諾，其中也包括黎巴嫩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But since neither Hezbollah nor Israel is party to the agreement, so enforcing that commitment would depend on the United States’ ability to compel Israel to wind down its military campaign and Iran’s cooperation in restraining Hezbollah. The extent to which Iran and the United States expect Israel to scale back its military operations was also unclear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但由於真主黨和以色列都不是協議簽署方，因此這一承諾能否落實，取決於美國迫使以色列逐步縮減軍事行動的能力，以及伊朗是否願意約束真主黨。伊朗和美國期望以色列在多大程度上縮減其軍事行動也不得而知。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Monday, Israel’s defense minister, Israel Katz, said in a statement that Israeli forces will remain in the swath of Lebanese territory they have seized and occupied since the war began.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一，以色列國防部長卡茨在一份聲明中表示，以色列軍隊將留在自戰爭爆發以來奪取並佔領的黎巴嫩領土。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-16kgnvc eew3afz0" data-poster=""><div class="" data-poster=""><p class="cn-p">Leo Sands是《紐約時報》突發新聞中心的記者，常駐倫敦。</p><p class="cn-p">翻譯：杜然</p></div></div></div><div class="css-12sfz4w" data-poster=""><div class="css-qcneuq" data-poster=""></div><div class="css-10i3hc" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260616/us-iran-deal/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
