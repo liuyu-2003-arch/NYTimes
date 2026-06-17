@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一場展示美國衰落的奇觀 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">一場展示美國衰落的奇觀</h1>
+    <h2 class="en-headline">A Garish Spectacle of American Decline</h2>
+    <div class="meta-line">MICHELLE GOLDBERG <span style="margin: 0 8px;">•</span> 2026-06-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/06/15/multimedia/15goldberg-pzkm/15goldberg-pzkm-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Mark Peterson/Redux, for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Only the hackiest screenwriter imaginable would script America’s decline this way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">只有最蹩腳的編劇才會如此編排美國的衰落。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Think of it: On the 250th anniversary of our country’s founding, America’s increasingly senescent president turned the White House lawn into a tacky, bloody gladiatorial arena while capitulating to Iran. Mike Judge came close to imagining some elements of our debasement in his 2006 satire “Idiocracy,” which depicts a United States led by a professional wrestler whose middle name is Mountain Dew. But if “Idiocracy” captured something of the vibe of Donald Trump’s reign, it was both too early and too lighthearted to nail the sordid specifics, which on Sunday included the fighter Josh Hokit, standing in an octagonal cage wrapped in crypto ads, calling the former first lady Michelle Obama a man.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">試想一下：在建國250週年之際，美國的這位日益衰老的總統將白宮草坪變成了一個俗氣且血腥的角斗場，與此同時還在向伊朗投降。邁克·賈吉在2006年的諷刺喜劇《蠢蛋進化論》(Idiocracy)中近乎預見到了我們墮落的一些元素——該片描繪的美國由一位中間名為「激浪」(Mountain Dew)的職業摔跤手領導。如果說《蠢蛋進化論》捕捉到了唐納德·川普統治時期的某種氛圍，那它也既過於超前，又過於輕鬆，未能精準擊中那些骯髒的細節。而在週日，這些細節包括了格鬥選手喬什·霍基特站在貼滿加密貨幣廣告的八角籠裡，稱前第一夫人米歇爾·歐巴馬是個男人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is, to be sure, a good thing that the war in Iran appears to be over. Once Trump had dragged America into a quagmire, there was no prospect of ending the debacle on beneficial terms. Contrary to the caterwauling of Iran hawks, the deal Trump reached isn’t the problem — it’s simply a tacit acknowledgment of a defeat that was already baked in. Still, it marks a moment of American ignominy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">誠然，伊朗戰爭看似結束了，這是件好事。一旦川普將美國拖入泥潭，就不可能指望以有利的條件收場。與那些伊朗鷹派的大聲哀嚎相反，川普達成的協議本身不是問題——它不過是對一場早已註定的失敗的無聲承認。儘管如此，這依然標誌著美國的一個恥辱時刻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The fact that the strongest, the mightiest military power in the world, in cooperation with the mightiest intelligence agency in the world — Israel’s — were not able to achieve any of their strategic objectives against a third-rate regional power is quite stunning,” said Ali Vaez, Iran project director at the International Crisis Group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「世界上最強大、最具威懾力的軍事力量與世界上最強大的情報機構——以色列摩薩德——合作，卻未能對一個三流地區強國實現任何戰略目標，這簡直令人震驚，」國際危機組織伊朗項目主任阿里·瓦埃茲如是說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPPy1L6ZjZUDFXYeRAgd0nsgLQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Details of the “memorandum of understanding” between the United States and Iran are still emerging; the White House has said the text will be released in a day or two. But it appears that its main accomplishment will be to open the Strait of Hormuz, which of course was open before the war. There’s been no nuclear agreement. Reports suggest Iran has not had to give up its ballistic missile program or its support for proxies like Hezbollah. The beleaguered Iranian people have not, perhaps needless to say, been freed from their awful rulers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美伊之間這份「諒解備忘錄」的細節仍在浮出水面；白宮表示文本將在一兩天內公布。但它主要的成果似乎將是重新開放霍爾木茲海峽——而該海峽在戰前本來就是暢通的。雙方並沒有達成核協議。報導顯示，伊朗無需放棄其彈道導彈計劃，也無需停止對真主黨等代理人的支持。不用說，飽受壓迫的伊朗人民也沒有從他們糟糕的統治者的魔掌下獲得解放。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though Vice President JD Vance has said Iran could have access to a $300 billion reconstruction fund, it’s not clear what that will look like, or whether Iran might use its control of the Strait to collect some sort of toll. But by demonstrating its power to withstand American bombing while putting a chokehold on the global economy, it’s achieved a level of deterrence it previously lacked. “Iran is not likely to take seriously that the U.S. would return to war, certainly before the U.S. midterms,” wrote Daniel Shapiro, Barack Obama’s ambassador to Israel, on social media. “So that means we will be conducting diplomacy without a credible threat of force.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管副總統JD·萬斯表示伊朗可以獲得3000億美元的重建基金，但目前尚不清楚這筆資金的具體形式，也不清楚伊朗是否會利用其對霍爾木茲海峽的控制來收取某種過路費。但是，通過展示其在承受美國轟炸的同時扼住全球經濟咽喉的能力，伊朗獲得了此前缺乏的威懾力。「在期中選舉之前，伊朗不太可能認真對待美國重返戰爭的可能性，」貝拉克·歐巴馬政府的駐以色列大使丹尼爾·夏皮羅在社群媒體上寫道。「這意味著我們將在沒有可信武力威脅的情況下進行外交。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It probably wasn’t a coincidence that the memorandum of understanding was finalized while Ultimate Fighting Championship cage matches were fought at the White House. In addition to marking the nation’s quarter of a millennium, the U.F.C. extravaganza was meant to celebrate Trump’s 80th birthday. Both Iran and some Democrats suspected he wanted to get the Iran deal done in time for the occasion. And Trump might have hoped that the event — which at one point had a Marine Corps honor guard onstage with ring girls in sparkly red hot pants and a human-size Monster Energy Drink can — would help lure back some of the young men disillusioned by both his war and his mishandling of the economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份諒解備忘錄在終極格鬥冠軍賽(UFC)<span>於白宮舉行籠斗比賽期間敲定，恐怕並非巧合。除了慶祝建國250週年，這場UFC盛會也是為了慶祝川普的80歲生日。伊朗和一些民主黨人都懷疑，他想趕在此時完成伊朗協議。而川普或許希望，這場盛會——舞台上一度</span>同時站著海軍陸戰隊儀仗隊、穿著亮片紅色熱褲的舉牌女郎，還有一個真人大小的魔爪能量飲料罐——能幫助贏回那些因戰爭和經濟亂局而感到幻滅的年輕男性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maybe it will work. Joe Rogan, the podcast host who has been increasingly critical of Trump in recent months, agreed to serve as an announcer. The Wall Street Journal reported on one excited fan who drove seven hours in the hope of seeing Trump’s pageant and said, “It’s like the Colosseum in real life.” To America’s founders, the fall of the Roman Republic and the rise of the Roman Empire was a cautionary tale. To parts of MAGA, it’s apparently aspirational.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>也許這會奏效。近幾個月來對川普批評越來越多的播客主持人喬·羅根同意擔任解說員。《華爾街日報》報導了一位興奮的粉絲，他開了七個小時的車希望能看到川普的這場盛典，並說：「這就像現實生活中的羅馬斗獸場。」對於美國的開國元勛們而言，羅馬共和國的衰落和羅馬帝國的崛起是一個警世故事。而對於MAGA陣營的一部分人來說，這顯然是一種嚮往。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But to everyone else, the confluence of America’s failure in Iran and Trump’s Temu colosseum should paint a clear picture of decadence, rot and weakness trying to conceal itself behind macho kitsch. This is an administration capable of immense, epic destruction, but unable to create much besides spectacle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對於其他人來說，美國在伊朗的失敗與川普那Temu版斗獸場的結合應當清晰地勾勒出一幅畫面：腐朽與軟弱正試圖躲在充滿男子氣概的刻奇背後自我掩飾。這屆政府有能力製造巨大的、史詩般的破壞，但除了奇觀之外，卻幾乎創造不出任何東西。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The conservative writer Marc Thiessen tried to depict Trump’s lurid festival as a sign of his demotic spirit, opening the White House to the sort of people who go to motocross rallies and monster truck shows. “If you’re offended by that, you may be an elitist snob,” he wrote. Put aside, for a moment, the fact that Thiessen once clucked that Barack Obama was failing to maintain “presidential dignity.” By this standard — that U.F.C. brawls, which John McCain once called “human cockfighting,” belong in the White House because lots of Americans like them — there can be no standards. Like Ultimate Fighting, porn is extremely popular, but I somehow doubt Thiessen would defend a Democratic president who invited a bunch of OnlyFans creators to the Oval Office while he was losing a war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>保守派作家馬克·蒂森試圖將川普這場聳人聽聞的節日描繪為他親民精神的體現，稱其將白宮向那些喜歡摩托車越野賽和怪獸卡車秀的人群開放了。「如果你對此感到反感，你可能就是個精英主義的勢利小人，」他寫道。暫且不論蒂森曾對</span>貝<span>拉克·歐巴馬未能維持「總統尊嚴」而喋喋不休這一事實。按這個標準——即約翰·馬侃曾稱之為「人類鬥雞」的UFC鬥毆之所以該進白宮，僅僅是因為很多美國人喜歡——那就意味著沒有任何標準可言。和終極格鬥一樣，色情片也非常流行，但我很難相信，如果一位民主黨總統在輸掉一場戰爭的同時，邀請一群OnlyFans的創作者進橢圓形辦公室，蒂森會為其辯護。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJSg1b6ZjZUDFVoPRAgdonQXUg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s tempting to mention bread and circuses here, except there’s no bread. On the contrary, Trump and his allies monetized Sunday’s program. In March, Trump obtained shares in the U.F.C.’s parent company. And to watch the show, members of the public needed a subscription to Paramount+, controlled by the Trump ally David Ellison, who bought CBS and then made it friendlier to the administration. Rather than a gift to his restive base, the event was another example of the administration selling America for parts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這裡很容易讓人聯想到「麵包與馬戲」，但問題是根本沒有麵包。恰恰相反，川普及其盟友將週日的節目變現了。今年3月，川普獲得了UFC母公司的股份。而公眾想要觀看這場演出，需要訂閱由川普盟友大衛·埃里森控制的Paramount+，此人收購了CBS並使其對現政府更加友好。這場活動非但不是給他躁動的基本盤的一份禮物，反而是本屆政府將美國拆零出售的又一例證。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the lead-up to the fight, the U.F.C.’s Derrick Lewis — who’d later be knocked out by Hokit — told The Journal he felt that he was participating in something historic. “This is one of the events they’ll be talking about 100 years from now,” he said. He could be right, but not in the way he thinks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在比賽前夕，UFC選手德里克·劉易斯——他後來被霍基特擊倒——告訴《華爾街日報》，他覺得自己正在參與一個歷史性事件。「這是100年後人們還會談論的事件之一，」他說。他可能是對的，但絕非以他所想的方式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Someday, someone might write — or, more likely, film — an American version of Edward Gibbon’s “The History of the Decline and Fall of the Roman Empire.” Its maker will want to include a scene of the 92-foot steel claw towering over the White House while somewhere inside the building, people scrambled to figure out how to sell a foreign policy disaster as a great victory.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將來某一天，有人或許會撰寫——或者更有可能拍攝——一部愛德華·吉本的《羅馬帝國衰亡史》的美國版。創作者一定會想要納入這樣一個場景：28米的鋼鐵巨爪聳立在白宮之上，而在大樓內的某個角落，人們正手忙腳亂地試圖將一場外交政策災難包裝成偉大的勝利兜售出去。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Michelle Goldberg自2017年起擔任時報專欄作者。她著有多本關於政治、宗教和女性權利的書籍，也是2018年因報導工作場所性騷擾問題而獲得普立茲公共服務獎的團隊成員的之一。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260616/ufc-freedom-250-fight/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
