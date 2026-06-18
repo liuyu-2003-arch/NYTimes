@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玉米有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">玉米有多健康？</h1>
+    <h2 class="en-headline">How Healthy Is Sweet Corn?</h2>
+    <div class="meta-line">CAROLINE HOPKINS <span style="margin: 0 8px;">•</span> 2026-06-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2024/07/30/multimedia/WELL-HEALTHY-CORN1-hbcf/WELL-HEALTHY-CORN1-hbcf-jumbo.jpg" width="683"/><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Corn sometimes gets a bad rap on the health front. (It gives us high-fructose corn syrup, after all.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在健康方面，玉米有時名聲不佳。（畢竟，它給我們帶來了高果糖玉米糖漿。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But sweet yellow corn has little in common with processed corn byproducts, said Dr. Ana Baylin, an associate professor of nutritional sciences at the University of Michigan. It’s a pretty healthy vegetable, whether it’s fresh off the cob in summer, or canned or frozen the rest of the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但密西根大學營養科學副教授安娜·貝林博士表示，黃色甜玉米與加工過的玉米副產品幾乎沒有共同之處。它是一種非常健康的蔬菜，無論是夏天剛從玉米棒上掰下來的新鮮玉米，還是其他季節的罐裝或冷凍玉米。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what nutrition experts had to say about sweet corn, and recipes from New York Times Cooking to help you enjoy it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是營養專家對玉米的看法，以及《紐約時報》烹飪版幫助您享用玉米的食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It promotes digestion.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它能促進消化</b></div></div></div></div></div><div class="big_ad" data-google-query-id="COP9mf3aj5UDFSGFWgUd3KEvww" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One cup of sweet corn contains about three grams of fiber. The bottom of the kernel and its outer shell are particularly high in insoluble fiber, said Dr. Rui Hai Liu, a professor of food science at Cornell University. Because your stomach and small intestine can’t break down insoluble fiber, it remains intact as it moves through your digestive system. This helps keep you regular.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一杯玉米含有約三克纖維。康乃爾大學食品科學教授劉瑞海（音）博士說，玉米粒底部和外殼的不可溶性膳食纖維含量特別高。由於胃和小腸無法分解不可溶性膳食纖維，它在穿過消化系統時會保持完整。這有助於保持規律排便。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Insoluble fiber can help bulk the stool and ease constipation,” said Candice Schreiber, a clinical dietitian at the Ohio State University Comprehensive Cancer Center. It’s normal to see undigested kernels in stool if you happen to swallow a few without chewing them, she said. Even though our bodies don’t break down insoluble fiber, good bacteria in the colon — key players in a healthy gut microbiome — still feed on the undigested material.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不可溶性膳食纖維可以幫助增加糞便體積，緩解便秘，」俄亥俄州立大學綜合癌症中心的臨床營養師坎迪斯·施萊伯說。她說，如果不經嚼碎就吞下幾粒玉米，在糞便中看到未消化的玉米粒是正常的。儘管人體無法分解不可溶性膳食纖維，結腸中的有益細菌（健康腸道微生物群的關鍵成分）仍然會以這些未消化的物質為食。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Getting enough fiber may help lower your colon cancer risk, Ms. Schreiber said. And it’s been shown to reduce the risk of diabetes and coronary heart disease. While recommendations vary depending on age and sex, most people should try to eat at least 21 to 38 grams of fiber daily.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">施萊伯說，攝入足夠的膳食纖維可能有助於降低患結腸癌的風險。並且有證據表明它可以降低患糖尿病和冠心病的風險。雖然建議攝入量因年齡和性別而異，但大多數人每天應盡量攝入至少21到38克膳食纖維。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s a good source of energy.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它是良好的能量來源</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When it’s harvested early on, while its kernels are still tender and juicy, corn is considered a starchy vegetable. (Corn used for popcorn, corn flour and cornflakes is harvested later, once its kernels dry out, and is considered a grain.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當玉米在早期被收穫、玉米粒還很鮮嫩多汁時，它被視為一種澱粉類蔬菜。（用於製作爆米花、玉米粉和玉米片的玉米是在後期收穫的，玉米粒已經變乾，被視為一種穀物。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Starchy vegetables — think potatoes and peas, along with corn — generally contain more carbohydrates and calories than non-starchy vegetables like leafy greens, carrots and peppers, Ms. Schreiber said. One cup of corn has about 27 grams of carbohydrates and 125 calories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">施萊伯說，馬鈴薯、豌豆以及玉米等澱粉類蔬菜通常比綠葉蔬菜、胡蘿蔔和甜椒等非澱粉類蔬菜含有更多的碳水化合物和卡路里。一杯玉米含有約27克碳水化合物和125卡路里。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPXLmv3aj5UDFeqcWgUdWhMHIQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Baylin said that starchy vegetables can be a healthier source of carbs and calories than those coming from sugar or ultra-processed foods. What’s more, some of the starch in corn is resistant starch, which supports a healthy microbiome and helps your body regulate blood sugar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">貝林表示，與糖或超加工食品相比，澱粉類蔬菜是更健康的碳水化合物和卡路里來源。此外，玉米中的一些澱粉屬於抗性澱粉，有助於維持健康的腸道菌群，並幫助身體調節血糖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It contains a wide range of vitamins and minerals.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它含有多種維生素和礦物質</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts said sweet corn doesn’t have especially high levels of any one vitamin or mineral. But taken together, corn’s micronutrients can help your body function and keep you healthy. For instance, Ms. Schreiber said corn contains respectable amounts of vitamins A and C, which promote bone and immune-system health. One cup of corn also contains 934 micrograms of lutein and zeaxanthin (less than peas, but more than carrots), which may support your eyesight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，玉米中沒有任何一種特定的維生素或礦物質含量特別高。但綜合來看，玉米中的微量營養素可以幫助身體正常運作並保持健康。例如，施萊伯說，玉米含有數量可觀的維生素A和維生素C，能夠促進骨骼和免疫系統的健康。一杯玉米還含有 934微克的葉黃素和玉米黃質（低於豌豆，但高於胡蘿蔔），這可能有助於保護視力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Corn is also a good source of the heart-healthy mineral magnesium, Dr. Liu said. Studies suggest that people who don’t get enough magnesium could be at greater risk of developing heart disease.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">劉瑞海說，玉米也是有益心臟健康的礦物質鎂的良好來源。研究表明，鎂攝入不足者患心臟病的風險可能更高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Here’s how to enjoy it.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>如何享用</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The experts said that fresh, frozen and canned corn all have the same nutritional benefits. If you opt for canned, Ms. Schreiber recommended choosing a no- or low-sodium variety. Rinsing canned corn with water can also help remove some sodium.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，新鮮、冷凍和罐裝玉米都具有相同的營養益處。如果選擇罐裝玉米，施萊伯建議選擇無鈉或低鈉的產品。用水沖洗罐裝玉米也有助於去除部分鈉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLjMmv3aj5UDFSmoWgUdhEIlUg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With fresh corn, Dr. Baylin said she herself wouldn’t worry too much about buying organic, since the kernels are shielded beneath a thick husk as they grow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於新鮮玉米，貝林博表示，她自己不會太在意是否購買有機產品，因為玉米粒在生長過程中被厚厚的玉米皮保護在下面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Steaming or grilling corn — as opposed to boiling it — can help ensure its kernels retain micronutrients, Ms. Schreiber said; boiling can cause vegetables to lose some vitamins, such as vitamin C.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">施萊伯說，與水煮玉米相比，蒸玉米或烤玉米有助於確保玉米粒保留微量營養素；水煮會導致蔬菜流失部分維生素，例如維生素C。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And when a simple ear isn’t enough, try these recipes from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果單吃一根玉米還不夠，不妨嘗試一下《紐約時報》烹飪版的食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Oven-Roasted Corn on the Cob</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 烤箱烤玉米棒</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Health-Corn-Roasted-Cob-lkpt/24Well-Health-Corn-Roasted-Cob-lkpt-master1050.jpg" src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Health-Corn-Roasted-Cob-lkpt/24Well-Health-Corn-Roasted-Cob-lkpt-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why choose between the tenderness of steamed corn and the char of grilled corn when you can get both in the oven? Garlicky parsley butter infuses the ears with richness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">既然用烤箱就能同時兼得蒸玉米的軟嫩和烤玉米的焦香，何必二選其一？蒜香歐芹黃油可玉米棒增添濃郁風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Oven-Roasted Corn on the Cob</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：烤箱烤玉米棒</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Corn Salad With Tomatoes, Basil and Cilantro</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 番茄羅勒香菜玉米沙拉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Health-Corn-Salad-wvht/24Well-Health-Corn-Salad-wvht-master1050.jpg" src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Health-Corn-Salad-wvht/24Well-Health-Corn-Salad-wvht-master1050.jpg"/></div><figcaption><span></span> <cite>Bobbi Lin for The New York Times. Food Stylist: Eugene Jho. Prop Stylist: Christina Lane.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this simple side, the natural sweetness of summer corn is heightened with lime juice and fresh herbs. Zapping the corn in the microwave first makes it easy to slip off the husks and silks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一道簡單的配菜，青檸汁和新鮮香草烘托出夏季玉米的天然甜味。先用微波爐加熱玉米，可輕鬆去除玉米皮和玉米須。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Corn Salad With Tomatoes, Basil and Cilantro</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">·	食譜：番茄羅勒香菜玉米沙拉</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Charred Corn and Chickpea Salad With Lime Crema</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 煎烤玉米鷹嘴豆沙拉配青檸酸奶油</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Charred-Salad-gqfj/24Well-Healthy-Corn-Charred-Salad-gqfj-master1050.jpg" src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Charred-Salad-gqfj/24Well-Healthy-Corn-Charred-Salad-gqfj-master1050.jpg"/></div><figcaption><span></span> <cite>Bryan Gardner for The New York Times. Food Stylist: Greg Lofts.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You don’t need a grill to get the smokiness of charred corn. Here, kernels are seared in a pan and seasoned with smoked paprika. Hearty enough to be a light meal, this salad is also a great side dish.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無需烤架也能獲得炭烤玉米的煙熏味。將玉米粒在平底鍋中煎烤，並用煙熏紅甜椒粉調味。這款沙拉分量十足，既可作為簡餐，也是絕佳配菜。。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Charred Corn and Chickpea Salad With Lime Crema</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：煎烤玉米鷹嘴豆沙拉配青檸酸奶油</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Creamy Corn Soup With Basil</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 羅勒玉米濃湯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Soup-vclw/24Well-Healthy-Corn-Soup-vclw-master1050.jpg" src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Soup-vclw/24Well-Healthy-Corn-Soup-vclw-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not dairy that gives this soup its silky richness. Corn kernels and sautéed onion become creamy when simmered in broth and puréed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這道湯的絲滑濃郁口感並非來自乳製品。玉米粒和炒洋蔥在肉湯中燉煮並打成泥後，便呈現出奶油般的質感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Creamy Corn Soup With Basil</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：羅勒玉米濃湯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Pasta With Corn, Mint and Red Onions</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 玉米薄荷紅洋蔥義麵</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Pasta-fwqh/24Well-Healthy-Corn-Pasta-fwqh-master1050.jpg" src="https://static01.nyt.com/images/2024/07/24/multimedia/24Well-Healthy-Corn-Pasta-fwqh/24Well-Healthy-Corn-Pasta-fwqh-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just as good warm as it is cold or room temperature, this plant-based pasta dish works at any summer party. And if you’re lucky enough to have leftovers, you’ll have the best desk lunch there is.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這道純素義麵無論在溫熱、冷食還是室溫下享用都同樣美味，適合任何夏季派對。如果你走運，還能剩下一些，它將成為最完美的辦公桌午餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Pasta With Corn, Mint and Red Onions</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：玉米薄荷紅洋蔥義麵</div></div></div></div></div><div class="big_ad" data-google-query-id="CMuSm_3aj5UDFdaMWgUd59Q30Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2024年7月24日。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260617/corn-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
