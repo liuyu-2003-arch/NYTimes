@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美伊協議細節公開 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美伊協議細節公開</h1>
+    <h2 class="en-headline">Trump Defends Deal to End the War With Iran as Details Emerge</h2>
+    <div class="meta-line">ERICA L. GREEN, ZOLAN KANNO-YOUNGS, FARNAZ FASSIHI, MICHAEL LEVENSON <span style="margin: 0 8px;">•</span> 2026-06-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週三，在法國埃維昂萊班舉行的七國集團峰會上，川普總統和其他美國官員出席了新聞發布會。" height="700" src="https://static01.nyt.com/images/2026/06/17/multimedia/17int-iran-ledeall-1-qzcl/17int-iran-ledeall-1-qzcl-master1050.jpg" width="1050"/><figcaption><span>週三，在法國埃維昂萊班舉行的七國集團峰會上，川普總統和其他美國官員出席了新聞發布會。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump on Wednesday issued a fiery defense of his deal with Iran, lashing out at critics who have said the agreement achieves even less than the one President Barack Obama negotiated, and threatening to bomb Iran again if it doesn’t adhere to the agreement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統週三為他與伊朗達成的協議做了激烈的辯護，抨擊那些聲稱該協議成果甚至不如歐巴馬總統談判達成協議的批評者。他還威脅稱，如果伊朗不遵守該協議，將再次對其進行轟炸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Appearing at the Group of 7 summit of global leaders in Évian-les-Bains, France, Mr. Trump denied that the United States was, in effect, paying Iran to agree to the recently negotiated peace deal. And in an expletive-laden rant, he proclaimed that his deal was better than the one Mr. Obama signed with Tehran in 2015.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在法國埃維昂萊班舉行的七國集團全球領導人峰會上，川普否認美國實際上是在付錢給伊朗，換取伊朗同意最近談判達成的和平協議。在一通夾雜粗口的怒斥中，他宣稱他的協議比歐巴馬2015年與德黑蘭簽署的協議更好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“And you know what the Iranians did? They laughed at Obama, and they said, ‘He’s a stupid son of a bitch,’” Mr. Trump said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你們知道伊朗人做了什麼嗎？他們嘲笑歐巴馬，他們說，『他是個愚貨、渾蛋，』」川普說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokeswoman for Mr. Obama said he would not be commenting on Wednesday, but referred to his remarks from an interview with ABC’s “Good Morning America” over the weekend. In it, he said that he doubted that the new deal would be “significantly different or a significant improvement” from the one his administration negotiated. He said that it was a reminder that the United States cannot just “bully our way or bomb our way to solutions.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐巴馬的一位發言人表示，歐巴馬不會在週三發表評論，但提到了歐巴馬週末接受ABC《早安美國》節目採訪時的講話。在採訪中，歐巴馬表示，他懷疑新協議與他的政府通過談判所達成的協議相比，可能未有「顯著不同或重大改進」。他說，這提醒人們，美國不能只是依靠「霸凌或轟炸來解決問題」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIeNh_KikpUDFcxPCAQdbdUq-A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s remarks came as a senior U.S. official disclosed what the official said was the full text of the deal. The official read it aloud on a conference call with reporters on Wednesday, speaking on condition of anonymity under ground rules set by the White House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普發表上述言論之際，一名美國高級官員披露了該官員稱為協議全文的內容。週三，該官員在與記者的電話會議中宣讀了該文本，根據白宮制定的基本規則，他要求匿名發言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The deal would, among other things, reopen the Strait of Hormuz, outline a $300 billon plan for Iran’s reconstruction and at least temporarily lift restrictions on the country’s oil exports, according to the official. But it would push talks about Iran’s nuclear program — the central reason given for the U.S.-Israeli attacks that began in February — into a 60-day negotiation period.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該官員透露，該協議內容包括重新開放霍爾木茲海峽，制定一項3000億美元的伊朗重建計劃，並至少暫時取消對伊朗石油出口的限制。但該協議將把關於伊朗核計劃的談判推入為期60天的談判期，核問題是始於2月的美以襲擊的核心理由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump had denied reports that the deal included U.S. investment in the reconstruction fund or any immediate sanctions relief, two of the points that have drawn the most attention. But the $300 billion fund it outlines could provide Iran with much more money than the deal Mr. Obama negotiated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普曾否認該協議將包括美國對重建基金的投資或立即解除制裁的報導，這兩點備受關注。但該協議所述的3000億美元基金可能為伊朗提供的資金遠超歐巴馬談判達成的協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The deal says the United States will work with regional partners to “develop a definitive, mutually agreed plan with at least” $300 billion for the reconstruction and economic development of Iran. The fund will go into effect once a final deal is reached within 60 days, the agreement states.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該協議稱，美國將與地區合作夥伴共同努力，「制定一項明確的、雙方同意的計劃，至少提供」3000億美元用於伊朗的重建和經濟發展。協議規定，一旦在60天內達成最終協議，該基金將生效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump left open the possibility that Persian Gulf states could provide the money for the fund. Mr. Trump has railed against Mr. Obama for providing $1.7 billion in cash to Iran after the 2015 nuclear agreement was signed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普對波斯灣國家可能為該基金提供資金的可能性持開放態度。川普曾猛烈抨擊歐巴馬在2015年核協議簽署後向伊朗提供了17億美元現金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But he said on Wednesday that the U.S. military had so badly damaged Iran during the war that the country needed help.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他週三表示，美國軍隊在戰爭期間對伊朗造成了嚴重破壞，以至於伊朗需要幫助。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIrWh_KikpUDFTxMCAQdJ2QXcA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Unlike Barack Hussein Obama, who sent Iran pallets of cash, any relief they receive under this deal, they’ll have to get based on merit — and it won’t be from us,” he said. “We don’t have to give them anything. But some people may want to invest.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不像貝拉克·侯賽因·歐巴馬那樣用托盤給伊朗送去一盤一盤的現金，根據這項協議，他們要想獲得救濟，就必須憑著自己的表現來爭取——而且援助不是我們來給，」他說。「我們不需要給他們任何東西。但是有些人可能願意投資。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A diplomat said that work on the fund was already underway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名外交官表示，該基金的籌備工作已經開始。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Commitments amounting to half of the $300 billion figure have already been made, including from companies in the United States, the Middle East, Asia, South America and Africa, said the diplomat, who spoke on condition of anonymity to discuss sensitive negotiations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這名要求匿名以討論敏感談判的外交官表示，目前已獲得相當於3000億美元半數金額的承諾，來自美國、中東、亞洲、南美和非洲的公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fund would be a conduit for private investment, not a reconstruction or reparations program, the diplomat said. Details about the funding pledges were initially reported by Reuters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該外交官表示，該基金將作為私人投資管道，而非重建或賠償計劃。有關資金承諾的細節最初由路透社報導。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump and Vice President JD Vance have already electronically signed a framework agreement on the deal, along with the speaker of Iran’s Parliament, Mohammad Bagher Ghalibaf, who led that country’s negotiating team, a senior U.S. official said. American and Iranian leaders are expected to formally sign the agreement in Switzerland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名美國高級官員表示，川普和副總統萬斯已經以電子方式簽署了關於該協議的框架協議，伊朗議會議長、領導該國談判團隊的穆罕默德·巴蓋爾·卡利巴夫也是如此。預計美伊領導人將在瑞士正式簽署該協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once the agreement is formally signed, the United States will issue waivers allowing Iran to export its crude oil. Critics have said that relief for the Iranian oil industry rewards Tehran merely for reopening the Strait of Hormuz, the critical oil shipping route that was open before Iran effectively closed it at the start of the war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一旦協議正式簽署，美國將發布豁免，允許伊朗出口其原油。批評人士指出，對伊朗石油工業的制裁豁免無非是對德黑蘭重新開放霍爾木茲海峽的獎勵，這條關鍵的石油運輸航線在戰爭開始時被伊朗實際封鎖，此前一直是開放暢通的。</div></div></div></div></div><div class="big_ad" data-google-query-id="COfrh_KikpUDFcRNCAQdZrQS7g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an effort to resolve the fate of Iran’s stockpile of highly enriched uranium, which could be used to build at least 10 bombs, experts say, the deal requires Iran to weaken it by “down-blending” it — or effectively diluting it — on site, under the supervision of international atomic inspectors. It does not require Iran to give up that material and ship it out of the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為解決伊朗高濃縮鈾庫存的處置問題——專家稱，這些鈾可用於製造至少10枚核彈——該協議要求伊朗在國際原子能檢查員的監督下在現場通過「向下混合」（實質上的稀釋）來降低其濃度。協議並未要求伊朗放棄該物質並將其運出境外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agreement says the United States will also lift sanctions on Iran “in an agreed-upon schedule as part of the final deal” that the two sides would negotiate within 60 days. Relief from crushing economic sanctions may be the ultimate lever that can persuade Iran to abandon its nuclear program. The 2015 Iran nuclear deal brokered by Mr. Obama traded sanctions relief for strict caps on Tehran’s nuclear activity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">協議稱，作為雙方將在60天談判中達成的「最終協議的一部分」，美國還將「按照商定的時間表」解除對伊朗的制裁。解除毀滅性的經濟制裁可能是說服伊朗放棄其核計劃的最終槓桿。歐巴馬促成的2015年伊朗核協議正是以解除制裁換取對德黑蘭核活動的嚴格限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new deal calls on Iran to allow commercial ships to pass through the Strait of Hormuz safely and “with no charge for 60 days only.” After that, it indicates, Iran and Oman will work out a deal to administer ship traffic in the strait in consultation with other Gulf nations. Mr. Trump has said the passageway must be “permanently toll-free.” But Iran has said it plans to charge “fees” in exchange for unspecified “services” it provides there.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新協議要求伊朗允許商船安全通過霍爾木茲海峽，並且「僅在60天內不收通行費」。協議表明，在此之後，伊朗和阿曼將與其他海灣國家協商，就海峽船舶交通的管理達成協議。川普曾表示，該通道必須「永久免收通行費」。但伊朗表示，計劃收取「費用」，以換取該國在那裡提供的未具體說明的「服務」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The deal also seeks to end the war between Israel and Hezbollah, the Iranian-backed militia in Lebanon, by committing the United States, Iran and their allies to immediately stopping military operations on “all fronts, including in Lebanon.” Neither Israel nor Hezbollah have signed on to the deal, and both have indicated that they will not be bound by it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該協議還試圖結束以色列與黎巴嫩境內伊朗支持的民兵組織真主黨之間的戰爭，承諾美國、伊朗及其盟友立即停止在「包括黎巴嫩在內的所有戰線」的軍事行動。以色列和真主黨都未簽署該協議，且雙方均已表示不會受其約束。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Israel has said it has no plans to withdraw its troops from southern Lebanon, and it reported more attacks by Hezbollah on Israeli soldiers there on Wednesday. The group has fired rockets and drones into Israel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以色列表示不打算從黎巴嫩南部撤軍，並報告稱週三真主黨對駐紮在那裡的以色列士兵發動了更多襲擊。該組織曾向以色列境內發射火箭彈和無人機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some Republicans expressed concerns about the emerging details of the deal. Senator Thom Tillis, Republican of North Carolina, said the 14 points of the agreement made public on Wednesday were “not sufficient for me to say it’s a good deal.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些共和黨人對逐漸浮出水面的協議細節表示擔憂。北卡羅萊納州共和黨參議員湯姆·蒂利斯表示，週三公布的協議中的14點內容「不足以讓我說這是一項好協議」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ6KiPKikpUDFZBYCAQdSpYVlA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Tillis said he and other senators needed to receive “a detailed, secure briefing” from Trump administration officials. “It would be irresponsible of any member to just accept at face value what we know about it,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蒂利斯表示，他和其他參議員需要聽取川普政府官員「詳細、安全的簡報」。「任何議員如果僅僅憑表面信息就接受我們目前所了解的內容，那將是不負責任的，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Trump said of the preliminary agreement: “It’s very strong. Most people seem to be very happy.” He added, referring to a surge in stocks in recent days, “Who’s really happy is the market.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但川普在談到這份初步協議時表示：「它很強。大多數人好像都很高興。」在提到最近幾天股市飆升時，他還說：「真正高興的是市場。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even so, he warned that he would order more attacks if he decided that Tehran was violating the terms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，他警告說，如果他認定德黑蘭違反了條款，他將下令發動更多襲擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If I don’t like it, if they don’t behave, we’ll go right back to dropping bombs right smack in the middle of their head,” he said while speaking to reporters alongside President Abdel Fattah el-Sisi of Egypt.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果我不滿意，如果他們不守規矩，我們就直接回去，把炸彈直接砸在他們腦袋正中間，」他在與埃及總統阿卜杜勒-法塔赫·塞西共同接受記者採訪時說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Anton Troianovski、Luke Broadwater、David E. Sanger、Michael Crowley、Tyler Pager、Leo Sands、Jeanna Smialek和Max Bearak對本文有報導貢獻。</p><p class="cn-p">Erica L. Green是時報白宮記者，報導川普總統及其政府。</p><p class="cn-p">Zolan Kanno-Youngs是時報白宮記者，報導川普總統及其政府。</p><p class="cn-p">Farnaz Fassihi是時報聯合國分社社長，領導對該組織的報導。她還報導伊朗問題，從事中東衝突報導長達15年。</p><p class="cn-p">Michael Levenson為時報報導突發新聞，常駐紐約。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260618/trump-iran-deal-obama/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
