@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram為何在世界各地都遇到麻煩 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">Telegram為何在世界各地都遇到麻煩</h1>
+    <h2 class="en-headline">Why Is Telegram Getting Into Trouble Around the World?</h2>
+    <div class="meta-line">JOHN YOON <span style="margin: 0 8px;">•</span> 2026-06-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/07/17/multimedia/17xp-telegram-fbjv/17xp-telegram-fbjv-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Sasha Maslov for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Telegram, a popular messaging app known for its resistance to government scrutiny, has been used widely by protesters and news organizations evading authoritarian control. However, it has also been accused of enabling terrorism, crime and disinformation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>Telegram是一款以抵抗政府審查而聞名的流行消息應用，廣泛被抗議者和新聞機構用來規避威權控制。然而，它也被指責助長恐怖主義、犯罪和虛假信息。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Governments around the world have tried to limit Telegram through bans, restrictions and criminal investigations, including in France, where its creator has faced criminal charges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">世界各國政府已試圖通過禁令、限制措施和刑事調查來限制Telegram，其中法國對其創始人發起了刑事指控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The app was banned by Russia, where it had been used for political dissent; restricted from government-issued devices in Ukraine over national security reasons; and temporarily suspended in Brazil for what the authorities said was its failure to curb illicit activities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該應用在俄羅斯被禁止（此前Telegram常被用於政治異見活動）；在烏克蘭，它因國家安全原因被禁止在政府發放的設備上使用；巴西一度對其進行臨時封禁，當局稱是因為它未能遏制非法活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the latest example, India this week banned the app until June 22 after finding that it had been used in a fraudulent effort to sell what users claimed to be leaked pages from an upcoming national medical college entrance exam.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最新事例是，由於發現其被用於欺詐活動——兜售被用戶認為是即將舉行的全國醫學院入學考試洩漏試卷的材料，印度本週禁止該應用至6月22日。</div></div></div></div></div><div class="big_ad" data-google-query-id="COvinY_jmZUDFeincgAdJu0lyA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s a partial list of places where Telegram has faced regulatory hurdles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是Telegram面臨監管障礙的部分國家和地區列表。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">India</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>印度</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">India, among Telegram’s largest markets with over 150 million users, temporarily banned Telegram over what the government called a last-ditch attempt to halt an effort to defraud students preparing for the entrance exam for medical colleges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印度是Telegram最大的市場之一，擁有超過1.5億用戶。該國臨時禁止Telegram，政府稱這是為防止醫學院入學考試考生遭欺詐不得已而為之。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Millions of candidates took the test in May. But India’s National Testing Agency said on Tuesday that Telegram channels had sold what they called leaked exam questions to candidates and their families that turned out to be fake. It also scrapped the scores from the exam and scheduled a retest for Sunday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數百萬考生在5月參加了考試。但印度國家考試局週二表示，Telegram頻道向考生及其家人出售所謂洩漏的考題，結果這些考題是假的。該機構還取消了本次考試的成績，並安排週日進行重考。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上週在孟買享受海灘的學生們。由於發現Telegram被用於一場協同欺詐行動，兜售被用戶認為是即將舉行的全國醫學院入學考試洩漏試卷的材料，印度政府週二禁止該應用約一週時間。
+
+" data-src="https://static01.nyt.com/images/2026/06/17/multimedia/17xp-telegram-fmbt/17xp-telegram-fmbt-master1050.jpg" src="https://static01.nyt.com/images/2026/06/17/multimedia/17xp-telegram-fmbt/17xp-telegram-fmbt-master1050.jpg"/></div><figcaption><span>上週在孟買享受海灘的學生們。由於發現Telegram被用於一場協同欺詐行動，兜售被用戶認為是即將舉行的全國醫學院入學考試洩漏試卷的材料，印度政府週二禁止該應用約一週時間。 </span><cite>Elke Scholiers/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The move has fueled dissatisfaction and protests among young people who accuse the government of mismanaging the exam system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此舉引發了年輕人的不滿和抗議，他們指責政府對考試系統管理不善。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pavel Durov, the founder of Telegram, criticized the ban, writing on X that it punished ordinary Telegram users and not the people defrauding exam takers. He added that Telegram had removed hundreds of channels related to exam materials and related scams in India.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Telegram創始人帕維爾·杜羅夫批評了這一禁令，他在X上發文稱，此舉懲罰了普通Telegram用戶，而不是那些欺詐考生的人。他補充說，Telegram已移除印度數百個與考試材料和相關詐騙有關的頻道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>俄羅斯</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia, where Mr. Durov was born, has also banned Telegram. In 2018, a Russian court allowed the government to block Telegram after the app refused to give Russian security services access to users’ encrypted messages. Mr. Durov, who had fled the country in 2014, said that the app’s encryption systems made it impossible for the company to comply with the government’s demands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>杜羅夫的出生地俄羅斯也已禁止Telegram。2018年，一家俄羅斯法院允許政府封鎖Telegram，因為該應用拒絕向俄羅斯安全部門提供用戶加密消息的訪問權限。2014年逃離俄羅斯的杜羅夫表示，應用的加密系統使得公司無法遵守政府的要求。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The move faced technical hurdles. It also put the Kremlin in an awkward position because Telegram was widely used by Russian government agencies. By 2020, Russia lifted its ban saying Telegram had agreed to step up efforts to block extremist content, among other demands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>封鎖行動遇到了技術障礙，也讓克里姆林宮陷入尷尬，因為俄羅斯政府機構廣泛使用Telegram。2020年俄羅斯解除禁令，稱</span>Telegram已同意加強封鎖極端主義內容等要求。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2018年在莫斯科舉行的一場反對Telegram禁令的集會上，抗議者放飛紙飛機——這是該消息應用的標誌。
+
+" data-src="https://static01.nyt.com/images/2026/07/17/multimedia/17xp-telegram-durov-russia-wklt/17xp-telegram-durov-russia-wklt-master1050.jpg" src="https://static01.nyt.com/images/2026/07/17/multimedia/17xp-telegram-durov-russia-wklt/17xp-telegram-durov-russia-wklt-master1050.jpg"/></div><figcaption><span>2018年在莫斯科舉行的一場反對Telegram禁令的集會上，抗議者放飛紙飛機——這是該消息應用的標誌。 </span><cite>Tatyana Makeyeva/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earlier this year, the Russian government tried again to block Telegram as part of a wider crackdown on free speech on the internet during the war against Ukraine. Russia’s communications regulator accused Telegram of failing to combat fraud, protect personal data and prevent the app from being used by terrorists and criminals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年早些時候，俄羅斯政府在烏克蘭戰爭期間作為打擊互聯網自由言論的廣泛行動的<span>一部分，再次試圖封鎖Telegram。俄羅史東信監管機構指責</span>Telegram未能打擊欺詐、保護個人數據，並防止該應用被恐怖分子和犯罪分子使用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Durov pushed back, saying that the government was restricting Telegram access to force Russians to switch to a state-controlled app he said had been “built for surveillance and political censorship.” Telegram is now effectively blocked in the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">杜羅夫反擊稱，政府限制Telegram訪問是為了迫使俄羅斯人轉向一個由國家控制的應用，他說該應用「專為監控和政治審查而建」。Telegram目前在該國實際上已被封鎖。</div></div></div></div></div><div class="big_ad" data-google-query-id="COTznY_jmZUDFT2YcgAdxw8Fuw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>烏克蘭</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During Russia’s war on Ukraine, Telegram has been a lifeline for millions of Ukrainians seeking information about impending Russian attacks or looking for food and medical aid. But Ukrainian officials have also expressed concern that the platform was enabling Russian disinformation and spying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在俄羅斯對烏克蘭的戰爭期間，Telegram成為數百萬烏克蘭人生活不可或缺的一部分，被用於獲取即將到來的俄羅斯襲擊的信息，<span>或尋找食物和醫療援助。但烏克蘭官員也對該平台助長俄羅斯虛假信息和間諜活動表示擔憂。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Ukrainian authorities in 2024 banned military and government officials, along with people working on critical infrastructure, from using Telegram on their work phones out of security concerns. Some officials proposed rules requiring Telegram to disclose who is behind large anonymous channels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，烏克蘭當局出於安全考慮，禁止軍事人員、政府官員以及關鍵基礎設施工作人員在工作手機上使用Telegram。一些官員提議制定規則，要求Telegram披露大型匿名頻道背後的運營者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Europe</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>歐洲</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Telegram has run into hurdles in other European nations. In 2023, Norway’s justice minister said in an official notice that state officials should not have Telegram or TikTok on their work devices because the government saw the apps as threats to national security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Telegram在其他歐洲國家也遇到障礙。2023年，挪威司法部長在一份正式通知中表示，國家官員的工作設備上不應安裝Telegram或TikTok，因為政府視這些應用為國家安全威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In France, the authorities arrested Mr. Durov when he landed there in 2024, and charged him with a wide range of crimes for failing to prevent illicit activity on the app. He was also barred from leaving the country. Telegram played a role in multiple criminal cases in France tied to child sexual abuse, drug trafficking and online hate crimes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在法國，當局於2024年在杜羅夫落地時逮捕了他，並以未能防止應用上的非法活動為由，對他提出多項犯罪指控。他還被禁止離開該國。Telegram在法國多起涉及兒童性虐待、毒品走私和網路仇恨犯罪的刑事案件中扮演了角色。</span></div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="2024年，杜羅夫抵達巴黎法院參加聽證會。
+
+" data-src="https://static01.nyt.com/images/2026/07/17/multimedia/17xp-telegram-durov/17xp-telegram-durov-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/17/multimedia/17xp-telegram-durov/17xp-telegram-durov-jumbo.jpg"/></div><figcaption><span>2024年，杜羅夫抵達巴黎法院參加聽證會。 </span><cite>Thomas Samson/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Telegram said at the time that it abided by European Union laws, and that it was absurd to claim that a platform or its owner was responsible for abuse of that platform.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Telegram當時表示，它遵守歐盟法律，並稱將平台或其所有者視為平台濫用的責任方是荒謬的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Durov was temporarily allowed to leave France last year. He said at the time that he had returned home to Dubai.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>杜羅夫去年被臨時允許離開法國。他當時表示已返回杜拜的家。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CJeZno_jmZUDFYaupgQdsHIlZg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brazil</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>巴西</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brazil’s Supreme Court banned Telegram nationwide in 2022 ahead of a presidential election. It said that the app had failed to comply with orders to remove accounts tied to a supporter of former President Jair Bolsonaro who was being investigated for spreading disinformation and threatening Supreme Court judges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2022年巴西總統選舉前，巴西最高法院在全國範圍內禁止Telegram。法院稱，該應用未能遵守命令，刪除與前總統</span>雅伊爾·博爾索納羅的支持者相關的帳戶，該支持者正因散布虛假信息和威脅最高法院法官而接受調查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Durov said in an apology at the time that Telegram hadn’t always responded to the Brazilian Supreme Court because the company had missed the court’s emails.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">杜羅夫當時道歉稱，Telegram未能及時回覆巴西最高法院，因為公司錯過了法院的郵件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ban was lifted when Telegram complied with court orders. Another Brazilian judge in 2023 ordered that Telegram be blocked nationwide after it failed to comply with court orders demanding complete user data from neo-Nazi group chats. Telegram told the police at the time that the groups had been deleted and that it could not recover the data.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在Telegram<span>遵守法院命令後，禁令被解除。2023年，另一名巴西法官下令在全國封鎖Telegram，因為它未能遵守要求提供新納粹群聊完整用戶數據的法院命令。Telegram當時告訴警方，這些群組已被刪除，且無法恢複數據。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An appeals court later lifted that suspension but upheld a hefty fine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上訴法院後來取消了該暫停措施，但維持了高額罰款的裁決。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="en-p">Hari Kumar contributed reporting.</p><p class="cn-p">John Yoon是時報駐首爾記者，報導突發新聞和熱門新聞。</p><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260622/telegram-ban-india/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
