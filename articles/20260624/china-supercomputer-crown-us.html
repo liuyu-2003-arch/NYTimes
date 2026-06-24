@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「靈晟」登頂全球超算榜 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「靈晟」登頂全球超算榜</h1>
+    <h2 class="en-headline">China Takes Supercomputer Crown From U.S. for First Time Since 2017</h2>
+    <div class="meta-line">DON CLARK <span style="margin: 0 8px;">•</span> 2026-06-24</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2020年，中國國家超級計算無錫中心。位於深圳的「靈晟」已被宣布為世界上最快的超級計算機。" height="717" src="https://static01.nyt.com/images/2026/06/23/business/23biz-china-supercomputer-wuxi/23biz-china-supercomputer-wuxi-master1050.jpg" width="1050"/><figcaption><span>2020年，中國國家超級計算無錫中心。位於深圳的「靈晟」已被宣布為世界上最快的超級計算機。</span> <cite>Xu Congjun/VCG, via Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China took back a coveted computing crown from the United States on Tuesday, ratcheting up a fierce technological competition that has implications for science, national security and geopolitics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，中國從美國手中奪回了令人垂涎的計算桂冠，令<span>這場對科學、國家安全及地緣政治均具深遠影響的技術競賽</span>愈演愈烈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">LineShine, a massive computing system in Shenzhen, China, was declared the world’s fastest by a group of researchers using a set of standard tests for supercomputers. Besides raw speed, the system stood out because it uses only standard microprocessors and not the special-purpose chips called graphics processing units, which most high-end supercomputers rely on for heavy number crunching.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個對超級計算機進行標準測試的研究團隊宣布，位於中國深圳的大型計算系統「靈晟」(LineShine)是全球最快計算機。除了絕對速度外，該系統的一大亮點是僅使用了標準微處理器，而沒有依賴大多數高端超級計算機用於繁重數值計算的專用晶片——圖形處理器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That underlying design could point to a better way to blend artificial intelligence with traditional scientific tasks, said Jack Dongarra, an organizer of the so-called Top500 list of the world’s most powerful supercomputers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>田納西大學計算機科學與電氣工程教授、全球超級計算機「TOP500榜單」組織者之一傑克·唐加拉表示，這一底層設計可能</span>指出了一條將人工智慧與傳統科學任務更好地融合的新路徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Dongarra, a professor of computer science and electrical engineering at the University of Tennessee, recently inspected the new machine, at the Shenzhen Cloud Computing Center. LineShine’s test results were more than 20 percent faster than those of El Capitan, a system at Lawrence Livermore National Laboratory in California that has topped a twice-yearly ranking of supercomputer performance since November 2024. China had not placed a machine at the top of the list since 2017.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐加拉近期查驗了位於深圳雲計算中心的新機器。靈晟的測試結果比美國加州勞倫斯利弗莫爾國家實驗室的「酋長岩」(El Capitan)快了20%以上；自2024年11月以來，「酋長岩」一直佔據著這份每半年更新一次的超級計算機性能排名榜首。自2017年以來，中國尚無系統登頂該榜單。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="位於加利福尼亞州勞倫斯利弗莫爾國家實驗室的「酋長岩」超級計算機。「靈晟」的測試結果比此前位居榜首的「酋長岩」快20%以上。" data-src="https://static01.nyt.com/images/2026/06/23/multimedia/23biz-china-supercomputer-livermore-qglj/23biz-china-supercomputer-livermore-qglj-master1050.jpg" src="https://static01.nyt.com/images/2026/06/23/multimedia/23biz-china-supercomputer-livermore-qglj/23biz-china-supercomputer-livermore-qglj-master1050.jpg"/></div><figcaption><span>位於加利福尼亞州勞倫斯利弗莫爾國家實驗室的「酋長岩」超級計算機。「靈晟」的測試結果比此前位居榜首的「酋長岩」快20%以上。</span> <cite>Spencer Lowell</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s an impressive system,” Dr. Dongarra said of LineShine. “They upped us by developing a system that is not reliant on GPUs.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一套令人印象深刻的系統，」唐加拉在談及靈晟時說。「他們通過開發不依賴GPU的系統超越了我們。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new supercomputer adds to the race between China and the United States for technological supremacy. U.S. tech giants like OpenAI, Anthropic and Google have developed leading A.I. models, while another American company, Nvidia, has become the world’s dominant supplier of A.I. chips. China has tried to innovate in different ways, with the Chinese start-up DeepSeek releasing a cutting-edge A.I. model last year using just a tiny fraction of specialized A.I. chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這台新的超級計算機加劇了中美之間爭奪技術霸權的競賽。美國的科技巨頭如OpenAI、Anthropic和谷歌已開發出領先的AI模型，而另一家美國公司英偉達則已成為全球AI晶片的主導供應商。中國試圖通過不同的方式創新，例如中國初創公司深度求索去年僅使用了極小部分的專用AI晶片，便發布了尖端AI模型。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CPGd--_hnpUDFUlHCAQdZQog6w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To prevent China from catching up, President Trump has imposed tariffs and at times placed limits on A.I. chip exports. But China’s use of standard microprocessors, which are known as CPUs, rather than GPUs to create an ultrafast supercomputer suggests a potential way to get around those roadblocks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為防止中國趕上，川普總統已加徵關稅，並不時對AI晶片出口設限。但中國使用被稱為CPU的標準微處理器（而非GPU）打造超快超級計算機，表明了一種繞過這些壁壘的潛在途徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. government should have stronger controls on the export and manufacturing of CPUs for the China market,” said Jimmy Goodrich, a senior fellow at the University of California Institute on Global Conflict and Cooperation. “It is a loophole in the current regulations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學全球衝突與合作研究所高級研究員吉米·古德里奇表示：「美國政府應該對面向中國市場的CPU出口和製造實施更嚴格的管控，這是現行法規中的一個漏洞。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Supercomputers, a term for the largest machines dedicated to science, have been used since the 1960s for tasks like creating climate models, cracking codes and designing nuclear weapons. They typically use high-precision mathematics, expressing numbers with 64 bits of data.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>超級計算機</span>——用於科學研究的巨型機器——自20世紀60年代以來一直被用於創建氣候模型、破譯密碼和設計核武器等任務。它們通常使用高精度數學運算，即用64位數據來表示數字。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Commercial A.I. systems from companies like Google and OpenAI, by contrast, can be even faster. They can use approximations for tasks such as identifying images or selecting the next word in a sentence, relying on what are known as four-bit and eight-bit numbers that allow the systems to make many simpler calculations at once.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比之下，谷歌和OpenAI等公司的商用AI系統甚至可以更快。它們可以使用近似值來完成識別圖像或選擇句子中下一個單詞等任務，依靠所謂的四位和八位數字使系統能夠同時進行更多更簡單的計算。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is notable and impressive what China has done here, but they can’t hold a candle to these massive A.I. supercomputers that have been built by American A.I. labs” and others, Mr. Goodrich said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">古德里奇說：「中國在此方面的成就值得注意且令人印象深刻，但他們無法與美國AI實驗室及其他機構建造的這些大規模AI超級計算機相提並論。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. national labs, which are the main buyers of some of the largest supercomputers, are eager to use A.I. to accelerate aspects of their scientific work. So they are adopting more of these less precise calculations, along with the 64-bit variety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為部分最大超級計算機主要買家的美國國家實驗室迫切希望利用AI加速其科學工作的各個方面。因此它們正在採用更多這種精度較低的運算方式，同時也保留64位運算。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ72--_hnpUDFfhGCAQd70YdMQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though U.S. companies have historically dominated the ranks of the very largest supercomputers, foreign systems have sometimes vaulted to the top. A system in Japan, for example, ranked No. 1 on the list from 2020 to 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管美國公司歷來在最大的<span>超級計算機的排名中佔據主導地位，但外國系統有時也會躍居榜首。例如，日本的一個系統在2020年至2022年間曾排名第一。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s a lot of talk that America is the only country capable of these systems,” said Addison Snell, an analyst at Intersect360 Research, a firm tracking the sector. “Then you find that other companies have capabilities, too.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">追蹤該行業的Intersect360 Research分析師艾迪森·斯內爾表示：「很多人都說只有美國才有能力建造這些系統，但你會發現其他國家也有這樣的能力。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Powerful systems from China and Japan have regularly spurred the Department of Energy and other U.S. agencies to push for more funding for supercomputers. In November, the Trump administration started the Genesis Mission, which aims to exploit supercomputers at U.S. national labs, along with private companies, to supercharge A.I. and scientific research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國和日本的強大系統經常刺激能源部和其他美國機構爭取更多超級計算機資金。今年11月，川普政府啟動了「創世紀計劃」，旨在利用美國國家實驗室及私營公司的超級計算機來強力助推AI與科學研究。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">GPUs, primarily developed by Nvidia and Advanced Micro Devices, have been a critical weapon in the recent supercomputer race. These chips excel in doing many chores simultaneously, including so-called vector calculations used in science and matrix multiplication at the heart of many A.I. tasks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">主要由英偉達和AMD開發的GPU是近期超級計算機競賽中的關鍵武器。這些晶片擅長同時處理多項任務，包括科學中使用的所謂向量計算，以及作為許多AI任務核心的矩陣乘法運算。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When U.S. officials limited China’s access to GPUs and other powerful chips, as well as restricting exports of some machines for manufacturing the most advanced semiconductors, that caused it “to invest in developing architectures and technology to effectively have supercomputers that are at the same level as the U.S.’s highest-performing systems,” Dr. Dongarra said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐加拉說，當美國官員限制中國獲取GPU及其他高性能晶片，並限制出口用於製造最先進半導體的部分機器時，中國轉而「投資開發架構和技術，以有效打造出與美國最高性能系統處於同一水平的超級計算機」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s LineShine system does not separate the traditional jobs of microprocessors and GPUs, as most high-end systems do. Instead, it builds in GPU-style tasks with specialized circuitry that accelerates matrix and vector calculations. That ability is embedded in chips that have a total of nearly 14 million computing cores, or tiny electronic brains, installed in 90 hardware cabinets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的靈晟系統不像大多數高端系統那樣有微處理器和GPU的傳統分工。相反，它通過專用電路將GPU式的任務集成在內，加速了矩陣和向量計算。這種能力嵌入在總計擁有近1400萬個計算核心（即微型電子大腦）的晶片中，這些晶片安裝在90個硬件機櫃裡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPT3--_hnpUDFVJYCAQd8LEiUw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These chips are an original design based on a set of instructions licensed by Arm Holdings, a British company that is controlled by the Japanese conglomerate SoftBank. Arm’s technology is best known for powering smartphones but has lately been adapted by Nvidia, Amazon, Qualcomm and others for use in data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些晶片是基於軟銀集團旗下的英國公司Arm Holdings授權的指令集進行的原創設計。Arm的技術以驅動智慧型手機而聞名，但近來已被英偉達、亞馬遜、高通等公司改造用於數據中心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Arm has long operated in China. “Arm operates globally, including in China, in compliance with applicable export control laws and regulations,” a company spokeswoman said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Arm在中國運營已久。該公司一位發言人表示：「Arm在全球範圍內（包括中國）開展業務，均遵守適用的出口管制法律法規。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="「靈晟」系統使用的晶片基於英國公司Arm授權的一套指令集。" data-src="https://static01.nyt.com/images/2026/06/23/multimedia/23biz-china-supercomputer-arm-kfzb/23biz-china-supercomputer-arm-kfzb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/23/multimedia/23biz-china-supercomputer-arm-kfzb/23biz-china-supercomputer-arm-kfzb-master1050.jpg"/></div><figcaption><span>「靈晟」系統使用的晶片基於英國公司Arm授權的一套指令集。</span> <cite>Max A. Cherney/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">LineShine’s designers, who are supercomputer veterans in China, have not disclosed details about which company manufactured the chips or the level of chip production technology used, Dr. Dongarra said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐加拉表示，靈晟的設計者是中國超算資深人士，他們尚未披露晶片由哪家公司製造，也未披露所使用的晶片生產工藝水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He and other experts have long thought that China had systems capable of a No. 1 ranking, but laboratories there had not recently submitted test results.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他和其他專家長期以來一直認為中國擁有具備奪冠實力的系統，但那裡的實驗室近期並未提交測試結果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It doesn’t surprise me that there is a Chinese machine capable of being No. 1,” Mr. Snell said. “The surprise is that they wanted the acknowledgment.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯內爾說：「中國有實力奪冠的系統並不讓我驚訝，令人驚訝的是他們想要這份認可。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Dongarra, who wrote a detailed report on the new system, was told while visiting China that the system had been made without government funding, so the designers felt it was permissible to submit tests for the Top500 ranking, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐加拉撰寫了一份關於該新系統的詳細報告。他表示，訪華期間有人告訴他，該系統是在沒有政府資助的情況下建造的，因此設計者認為可以用測試結果申請TOP500排名。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKSx_O_hnpUDFW5XCAQdyC0KZw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Shenzhen scientists have also sought recognition for the new machine through 14 submissions for the Gordon Bell Prize, which promotes solving sophisticated problems in science, Dr. Dongarra said. Three systems are finalists for that award, and three for a related prize in climate science.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唐加拉<span>說，深圳的科學家們還通過提交14份申請角逐旨在促進解決複雜科學問題的「戈登·貝爾獎」，以尋求對新機器的認可。目前有三個系統入圍該獎項，另有三個系統入圍相關的氣候科學獎項。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">LineShine has been used for projects like a sophisticated simulation of Earth, including atmosphere, ocean, land and ice components, as well as a complex simulation of the human brain, according to Dr. Dongarra’s report.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據唐加拉的報告，靈晟已被用於諸如地球（包括大氣、海洋、陸地和冰層組成部分）的精密模擬，以及人腦的複雜模擬等項目。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260624/china-supercomputer-crown-us/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

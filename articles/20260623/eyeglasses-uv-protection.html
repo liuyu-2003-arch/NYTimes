@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨鏡真的是出門必備品嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">墨鏡真的是出門必備品嗎？</h1>
+    <h2 class="en-headline">Do I Really Need to Wear Sunglasses Every Time I Go Outside?</h2>
+    <div class="meta-line">KARA MCGRATH <span style="margin: 0 8px;">•</span> 2026-06-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1210" src="https://static01.nyt.com/images/2026/06/23/multimedia/16WELL-ASK-SUNGLASSES2-lvph/16WELL-ASK-SUNGLASSES2-lvph-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Eric Helgas for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Q: I wear prescription eyeglasses, so I never use sunglasses when I’m outside (it’s annoying to carry two pairs). Is this bad for my eyes?</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>問：我戴近視眼鏡，所以出門從來不戴墨鏡（帶兩副眼鏡太麻煩了）。這樣會傷眼睛嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shielding your eyes from sun exposure is, as far as experts are concerned, not up for debate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">保護眼睛免受陽光傷害在眼科專家看來是毋庸置疑的事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Sunglasses are sunscreen for your eyes,” said Laura Di Meglio, an assistant professor of ophthalmology at the Wilmer Eye Institute at Johns Hopkins Medicine. “They help protect your eyelids, the skin around your eyes and the surface of the eyes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「墨鏡相當於眼睛的防晒霜，」約翰斯·霍普金斯大學威爾默眼科研究所眼科學助理教授勞拉·迪梅利奧表示，「它們能夠保護眼瞼、眼周皮膚和眼球表面。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But do people who wear eyeglasses need a pair of sunnies, too? It depends, said Dr. Sheri Rowen, a board-certified ophthalmologist and cataract surgeon. People assume that they need tinted lenses, she explained, but some of your bases are covered if you wear prescription frames.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但戴近視眼鏡的人還需要另外準備一副墨鏡嗎？這要視情況而定。眼科專科醫師、白內障外科醫生謝裡·羅文博士說，很多人以為必須佩戴有色鏡片，但如果你戴的是處方眼鏡，其實已經有一定防護作用了。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJDWwPjhnpUDFb5CCAQdTvMTrg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; display: inline-block; width: 300px; height: 50px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="1" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="50" id="google_ads_iframe_/29390238/cnnyt/health_1" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://d795aebe7806ac954670b1878249f7fc.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We asked doctors what you should know about keeping your eyes safe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於保護眼睛你需要了解的事項，我們請教了眼科醫生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What does the sun do to your eyes?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>陽光對眼睛有什麼影響？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sunlight contains three types of ultraviolet radiation — UVA, UVB and UVC — but only the first two reach the Earth’s atmosphere. UVB radiation is believed to be more dangerous for your eyes than UVA. However, both are present whether it’s sunny or not, and both can increase your risk for conditions that affect your eyesight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">陽光中包含三種紫外線輻射——UVA、UVB和UVC，但真正能夠到達地球大氣層的只有前兩種。一般認為，UVB對眼睛的危害比UVA更大。無論晴天與否，兩者都存在，並且都會增加患眼疾的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For example, cataracts, a protein buildup that clouds the lens of the eye, can occur naturally as we age. But UV radiation can cause cataracts to form earlier, said Bryce St. Clair, an assistant professor of ophthalmology at the Wilmer Eye Institute. The sun’s UV rays can also worsen macular degeneration, a progressive eye disease that can cause vision loss.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，白內障（眼球晶狀體蛋白質堆積導致混濁）會隨著年齡增長自然發生。但威爾默眼科研究所眼科學助理教授布萊斯·聖克萊爾表示，紫外線輻射會使白內障提前形成。太陽的紫外線還會加重黃斑變性，這是一種可導致視力喪失的進行性眼病。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Leaving your eyes unprotected can also cause two types of growths, pterygium and pinguecula. Pinguecula is typically more minor, appearing as a small yellow spot or a raised bump on the whites of your eyes. It can cause discomfort but doesn’t usually affect your vision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果眼睛長期暴露在陽光下而缺乏保護，還可能引發兩種眼部增生組織：翼狀胬肉和瞼裂斑。瞼裂斑通常較輕微，表現為眼白上的黃色小斑點或輕微隆起。雖然可能造成不適，但一般不會影響視力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pterygium, however, can be more serious: “A pterygium is something that actually grows into your cornea,” Dr. Di Meglio said. “If those get bad enough, they can affect your vision,” and in some cases, they may require surgery, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">翼狀胬肉則可能更嚴重：「翼狀胬肉是會侵入角膜的增生，」迪梅利奧博士說。「如果發展得比較嚴重，就可能影響視力。」在某些情況下甚至需要手術治療。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKbjuvjhnpUDFbtMCAQdNUEWZA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The area around your eyes is vulnerable, too. Five to 10 percent of skin cancers in the United States develop on the eyelid. “Almost every cell type is found within and around the eye,” said Dr. Dagny Zhu, a cornea, cataract and refractive eye surgeon based in California. “Any of those can mutate when exposed to too much UV.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">眼周區域也很脆弱。美國5%到10%的皮膚癌發生在眼瞼上。「眼內及眼周幾乎存在所有類型的細胞，」加利福尼亞州的角膜、白內障和屈光手術眼科醫生達格尼·朱博士說。「暴露於過多紫外線時，其中任何一種細胞都可能發生突變。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Finally, there are the aesthetic concerns. Even if you’re protected from UV rays, which can accelerate signs of aging, bright light can make you squint, which contributes to wrinkles. “Squinting is your body’s natural way of saying, ‘I’m experiencing too much light,’” Dr. St. Clair said. “Wearing sunglasses helps relax your eye muscles, which prevents things like crow’s-feet.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，還有美觀方面的顧慮。即使你免受紫外線（它會加速衰老跡象）的傷害，強光仍會讓人眯眼，而頻繁眯眼會促進皺紋形成。「眯眼其實是身體在告訴你：『光線太強了。』」聖克萊爾博士說，「戴太陽鏡有助於放鬆眼部肌肉，從而減少魚尾紋等問題的發生。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>So do you need two pairs of glasses?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>那麼，你需要兩副眼鏡嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Your clear prescription frames “can have as much protection as a dark lens,” Dr. St. Clair explained, and most reputable retailers offer them as a standard part of a clear lens.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聖克萊爾博士解釋說：透明的處方眼鏡「可以提供與深色鏡片相當的防護」，而且大多數正規眼鏡店出售的鏡片都會將紫外線防護作為透明鏡片的標準配置。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Modern eyeglass lenses are often made from polycarbonate, which has UV protection built in. And nonpolycarbonate lenses often come with a special coating that provides UV protection.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現代眼鏡鏡片通常由聚碳酸酯製成，本身就內置了紫外線防護功能。而非聚碳酸酯鏡片通常帶有特殊的紫外線防護鍍膜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you want to be certain that your glasses have sun protection, you can bring them to a local optical shop to have them checked, said Dr. Emily M. Schehlein, a Michigan-based ophthalmologist and spokeswoman for the American Academy of Ophthalmology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根州眼科醫生、美國眼科學會發言人艾米麗·舍萊因博士說，如果你想確認自己的眼鏡是否有防晒功能，可以拿到附近的眼鏡店檢測一下。</div></div></div></div></div><div class="big_ad" data-google-query-id="COKGu_jhnpUDFQ9PCAQdYzQrcw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But if carrying a second pair annoys you, don’t worry too much — unless sunlight irritates your eyes, Dr. Rowen said. Brightness alone doesn’t increase your risk of cancer or other eye growths, but excessive amounts can cause uncomfortable side effects, like eye fatigue, dry eye, headaches and visual discomfort, she explained. Tinted frames reduce that visible light, so they can help.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但羅文博士表示，如果帶兩副眼鏡讓你覺得麻煩，也不必太擔心——除非陽光刺激到你的眼睛。她解釋說，光線本身並不會增加癌症或眼部增生的風險，但過強的光線會引起不適，如眼疲勞、乾眼、頭痛和視覺不適。有色鏡片可以減少可見光，所以會有幫助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, tinted or not, glasses cover only a fraction of your face, so Dr. Rowen recommends adding a hat and sunscreen for more UV protection, especially on days when you’ll be spending hours outdoors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，無論鏡片是否有色，眼鏡能夠遮擋的面部面積都非常有限。因此，羅文博士建議，在長時間戶外活動時，最好搭配帽子和防晒霜，以獲得更全面的紫外線防護。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And whether you’re shopping for sunglasses or eyeglasses, look for a label that says “UV400” or “100 percent UVA/UVB protection.” These terms are essentially synonymous; they mean the lenses block 99 to 100 percent of ultraviolet light.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論選購墨鏡還是普通眼鏡，都應留意「UV400」或「100%防UVA/UVB」的標識。這兩種表述實際上是一個意思，意味著鏡片能阻隔99%至100%的紫外線。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sunglasses are regulated by the Food and Drug Administration, so it’s illegal to label a pair of UV400 if it doesn’t actually have that protection. But all the experts warned against using those $3 sunglasses you might snag on the boardwalk. Extremely dark lenses that don’t have UV protection can actually damage your eyes: “All they do is make your pupil open up and absorb more light,” Dr. Rowen said. “If you have no UV protection and your pupil is big, you’re going to get straight-on UV exposure,” she explained.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">墨鏡受美國食品藥品監督管理局監管，給不具備相關功能的產品標註「UV400」屬於違法行為。不過，所有專家都提醒，不要貪圖便宜購買那些海邊小攤上幾美元一副的廉價太陽鏡。如果鏡片顏色很深卻沒有紫外線防護功能，反而會傷害眼睛。「這種鏡片唯一的作用就是讓瞳孔張得更大，從而吸收更多光線。」羅文博士說。「如果沒有紫外線防護，而瞳孔又處於放大狀態，那麼紫外線就會更加直接地進入眼睛。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, whether or not you bring two pairs of glasses is a matter of personal comfort, as long as you’re avoiding situations where direct sunlight has an unobstructed path to your retina. “We need light, we need sun, we need to be outside,” Dr. Rowen said. “We don’t need UV hitting our eyes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歸根結底，是否要隨身攜帶兩副眼鏡主要取決於個人舒適度。只要避免讓強烈陽光毫無遮擋地直射視網膜，其實問題不大。「我們需要光線，需要陽光，也需要戶外活動。」羅文博士說。「但我們不需要讓紫外線直接照射到眼睛裡。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2026年6月16日。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260623/eyeglasses-uv-protection/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
