@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新竹：台灣人工智慧熱潮催生的繁華之城 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">新竹：台灣人工智慧熱潮催生的繁華之城</h1>
+    <h2 class="en-headline">Welcome to the Luxury City Built by Taiwan’s A.I. Boom</h2>
+    <div class="meta-line">AMY CHANG CHIEN, MEAGHAN TOBIN <span style="margin: 0 8px;">•</span> 2026-06-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="新竹這家名為巨城的購物中心是台灣頂尖的零售中心之一。" height="700" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-01-hlbw/00Biz-Taiwan-Boomtown-01-hlbw-master1050.jpg" width="1050"/><figcaption><span>新竹這家名為巨城的購物中心是台灣頂尖的零售中心之一。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">April Lo remembers when the most coveted real estate in Taiwan was farmland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅君儀還記得，現在台灣最搶手的地產當年是一片農田。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When she moved to the area 16 years ago, there were no department stores, office parks or fine-dining restaurants.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">16年前她搬到這個地區時，這裡沒有百貨商店，沒有辦公園區，也沒有高級餐廳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was very desolate,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「很荒涼，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, nothing could be further from the truth. The rice fields have given way to Hsinchu, home to Taiwan Semiconductor Manufacturing Company and ground zero for an industry driving the global economy: the production of the advanced computer chips powering the artificial intelligence boom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，情況已截然不同。稻田已經讓位給了新竹，這裡是台積電的所在地，也是驅動全球經濟發展的產業的中心：生產推動人工智慧熱潮的先進計算機晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Taiwan’s semiconductor industry took off, TSMC made chips that drive virtually every kind of electronic device. That includes the sought-after A.I. accelerators designed by Nvidia, the world’s most valuable company. Farmers were gradually priced out of the area by factories, offices and luxury high-rises. The high-speed rail linking Taiwan’s largest cities now carries 80 million people a year through Ms. Lo’s backyard.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著台灣半導體產業的騰飛，台積電製造的晶片幾乎驅動著所有類型的電子設備。其中包括由全球市值最高公司英偉達設計的、備受追捧的人工智慧加速器。由於工廠、辦公樓和豪華高層建築的興起，農民逐漸因物價高漲而被擠出這一地區。連接台灣各大城市的高速鐵路穿行於羅君儀家的後院，每年運送8000萬人次。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="新竹市的一個富裕地區。該地區是台積電的所在地，該公司生產的先進計算機晶片正推動著人工智慧熱潮的發展。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-04-hlbw/00Biz-Taiwan-Boomtown-04-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-04-hlbw/00Biz-Taiwan-Boomtown-04-hlbw-master1050.jpg"/></div><figcaption><span>新竹市的一個富裕地區。該地區是台積電的所在地，該公司生產的先進計算機晶片正推動著人工智慧熱潮的發展。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="建築工地上的一所學校。與台灣大部分地區不同，新竹正面臨著人口快速增長導致的學校擁擠問題。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-05-hlbw/00Biz-Taiwan-Boomtown-05-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-05-hlbw/00Biz-Taiwan-Boomtown-05-hlbw-master1050.jpg"/></div><figcaption><span>建築工地上的一所學校。與台灣大部分地區不同，新竹正面臨著人口快速增長導致的學校擁擠問題。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="隨著台積電和新竹科學園區附近的居住需求日益增長，竹北的房價已大幅上漲。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-03-hlbw/00Biz-Taiwan-Boomtown-03-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-03-hlbw/00Biz-Taiwan-Boomtown-03-hlbw-master1050.jpg"/></div><figcaption><span>隨著台積電和新竹科學園區附近的居住需求日益增長，竹北的房價已大幅上漲。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In northern Hsinchu, an area known as Zhubei, real estate prices have skyrocketed as buyers compete for spots on yearslong waiting lists for new apartments near Hsinchu Science Park, where TSMC has headquarters. Plastic surgery clinics, upscale restaurants and boutique fitness studios have sprung up to serve tech workers flush with A.I. riches.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在新竹北部一個名為竹北的地區，隨著買家爭相加入等候時間長達數年的輪候名單，搶購台積電總部所在地新竹科學園區附近的新公寓，房地產價格已經暴漲。整形診所、高檔餐廳和精品健身房如雨後春筍般湧現，為那些因人工智慧獲取財富的科技工作者服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past six years, households near Hsinchu Science Park have reported some of the highest incomes in Taiwan. In one neighborhood, average household incomes exceeded $146,000 in 2023 — about five times Taiwan’s average.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去六年來，新竹科學園區周邊家庭的收入一直位列台灣前列。在其中一個裡，2023年的家庭綜合所得總額平均達460萬台幣（約合98萬人民幣）以上——大約是台灣平均水平的五倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The prosperity has given rise to the so-called Zhuke Mama: a woman whose husband works in the lucrative semiconductor industry, allowing her time for pursuits like going to Pilates classes, shopping for vacation homes in Thailand and managing their children’s academic advancement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種繁榮催生了所謂的「竹科媽媽」：她們的丈夫在利潤豐厚的半導體行業工作，這讓她們有時間去上皮拉提斯課、在泰國購買度假屋，管理孩子們的學業發展。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="16年前，當羅君儀搬到這一帶時，這裡大多還是農田，開發程度很低。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-02-hlbw/00Biz-Taiwan-Boomtown-02-hlbw-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-02-hlbw/00Biz-Taiwan-Boomtown-02-hlbw-jumbo.jpg"/></div><figcaption><span>16年前，當羅君儀搬到這一帶時，這裡大多還是農田，開發程度很低。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the rest of Taiwan and much of East Asia are grappling with a sharp population decline, so many children have been born in Hsinchu in recent years that the schools cannot keep up. Public high schools in the area now admit only students with sufficiently high test scores, a practice that Ms. Lo and a group of mothers have protested. Those who do not make the cut must commute to another school district.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當台灣其他地區和東亞大部分地區都在努力應對人口急劇下降的問題時，新竹近年來的出生人口卻多到學校都無法滿足需求。該地區的公立高中現在只招收考試成績足夠高的學生，羅君儀和一群母親對這一做法表示抗議。那些未能達到分數線的學生必須通勤到其他學區上學。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The population exploded,” Ms. Lo said. “It became very competitive.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「人口爆炸式增長，」羅君儀說。「競爭變得非常激烈。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CLjql_bmo5UDFWrI5wMdgzIing" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, Hsinchu is home to more than one million people, and those without ties to the technology industry have largely been priced out. The wealth generated by semiconductors has not translated to wage gains in other industries. While chips are driving record exports, the headline numbers mask a widening divide between those connected to the industry and everyone else.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，新竹有超過100萬人口，那些與科技行業無關的人在很大程度上已經因為高昂的物價被迫遷離。半導體產生的財富並未轉化為其他行業的工資增長。雖然晶片正在推動創紀錄的出口，但這些亮眼的數字掩蓋了產業相關人士與其他人群之間日益擴大的鴻溝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The local shopping mall, Big City, now ranks among Taiwan’s top-performing retail centers. During its big sale last December, it generated more than $100 million in just 12 days, a 6 percent increase from the year before, according to Alex Ro, a general manager.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當地的大型購物中心巨城現在躋身台灣業績最好的零售中心之列。據總經理羅仕清稱，在去年12月的大促銷期間，商城在短短12天內就創造了超過台幣32億元（約6.8億人民幣）的銷售額，比前一年增長了6%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The mall is a temple catering to Hsinchu’s nouveau riche, with a Tesla showroom on the first floor, feet away from an Apple Store. At Brooks Brothers, some suits cost nearly $1,500 — more than the monthly salary of most retail workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這家商場堪稱迎合新竹新貴的聖殿，一樓設有特斯拉展廳，幾步之外就是一家蘋果商店。在布克兄弟專賣店，一些西裝售價將近1500美元——超過了大多數零售員工的月薪。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="巨城購物中心堪稱專為新竹新貴打造的聖殿，一樓設有一家特斯拉展廳。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-06-hlbw/00Biz-Taiwan-Boomtown-06-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-06-hlbw/00Biz-Taiwan-Boomtown-06-hlbw-master1050.jpg"/></div><figcaption><span>巨城購物中心堪稱專為新竹新貴打造的聖殿，一樓設有一家特斯拉展廳。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="在該購物中心的高端店鋪中，有布克兄弟專賣店，那裡有些西裝的價格接近1500美元——比大多數零售業員工的月薪還要高。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-07-hlbw/00Biz-Taiwan-Boomtown-07-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-07-hlbw/00Biz-Taiwan-Boomtown-07-hlbw-master1050.jpg"/></div><figcaption><span>在該購物中心的高端店鋪中，有布克兄弟專賣店，那裡有些西裝的價格接近1500美元——比大多數零售業員工的月薪還要高。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="居住在新竹科學園區周邊的人們家庭收入位居台灣前列。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-08-hlbw/00Biz-Taiwan-Boomtown-08-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-08-hlbw/00Biz-Taiwan-Boomtown-08-hlbw-master1050.jpg"/></div><figcaption><span>居住在新竹科學園區周邊的人們家庭收入位居台灣前列。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Several times a year, chip company engineers receive bonuses worth several months’ pay. That’s when they show up at Lin Ping-yang’s real estate office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">晶片公司的工程師每年都會獲得幾次相當於數個月工資的分紅。這時，他們就會出現在林品揚的不動產辦公室裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My clients often tell me they don’t know what to do with their bonuses,” Mr. Lin said. “So they either buy a new car or use the money as a down payment on a house.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「客戶時常在講說，有時分紅分下來也不知道幹嘛，」林品揚說。「拿去要麼直接買全新的車子，要麼直接當房子的頭期款。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past 10 years, home prices in Zhubei have doubled, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，在過去10年裡，竹北的房價翻了一番。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The success of Hu Han-yen’s family mirrors the transformation of Hsinchu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡漢龑家族的成功反映了新竹的轉型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Forty years ago, his father’s construction crane company, Chi Deh Crane Engineering, helped build some of the earliest factories in Hsinchu Science Park, including TSMC’s first manufacturing plant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">40年前，他父親的建築起重機公司——啟德機械起重工程公司——協助建造了新竹科學園區最早的一批工廠，其中包括台積電的第一家製造廠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the time, Taiwan’s semiconductor industry was little more than a government-funded experiment. Companies that needed chips had to bear the enormous cost of manufacturing them, requiring constant investment in new technology. But TSMC transformed the industry by offering a different model: Customers would design the chips, and TSMC would manufacture them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當時，台灣的半導體產業只不過是一項由政府資助的實驗。需要晶片的公司必須承擔製造晶片的巨額成本，這需要對新技術進行不斷投資。但是，台積電通過提供一種不同的模式改變了該行業：客戶設計晶片，而台積電負責製造。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="胡漢龑在辦公室裡。他的公司曾參與建設台灣一些最重要的晶片工廠。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-09-hlbw/00Biz-Taiwan-Boomtown-09-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-09-hlbw/00Biz-Taiwan-Boomtown-09-hlbw-master1050.jpg"/></div><figcaption><span>胡漢龑在辦公室裡。他的公司曾參與建設台灣一些最重要的晶片工廠。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="啟德機械起重工程公司的總部，這家公司是由胡漢龑的父親創辦的。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-10-hlbw/00Biz-Taiwan-Boomtown-10-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-10-hlbw/00Biz-Taiwan-Boomtown-10-hlbw-master1050.jpg"/></div><figcaption><span>啟德機械起重工程公司的總部，這家公司是由胡漢龑的父親創辦的。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="啟德目前負責運輸荷蘭公司阿斯麥的精密設備，這些設備對台灣的晶片產業至關重要。" data-src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-11-hlbw/00Biz-Taiwan-Boomtown-11-hlbw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/16/multimedia/00Biz-Taiwan-Boomtown-11-hlbw/00Biz-Taiwan-Boomtown-11-hlbw-master1050.jpg"/></div><figcaption><span>啟德目前負責運輸荷蘭公司阿斯麥的精密設備，這些設備對台灣的晶片產業至關重要。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hu bet that the fledgling industry would need far more than just a few factories. He invested his family’s savings to import massive cranes capable of building factories, airports and skyscrapers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡漢龑預見到這個羽翼未豐的行業需要的將遠不止幾家工廠。他投入了家族的積蓄，進口了能夠建造工廠、機場和摩天大樓的大型起重機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, Chi Deh is trusted to transport the complex, highly calibrated machines made by the Dutch company ASML that help give Taiwan its edge in chip manufacturing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，啟德公司備受信任，負責運輸由荷蘭公司艾斯摩爾製造的高度精密複雜機器，這些機器幫助台灣在晶片製造領域保持優勢。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLigmPbmo5UDFUoRdgYdnIMZnQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hu became known for his flamboyant style, wearing brightly patterned floral prints and posting photos of himself alongside his cranes on social media. To celebrate his success, he built his family business an elaborate office on the outskirts of Hsinchu. The building borrows from the colonnaded grandeur of Versailles, its stark white facade lending it an air of presidential authority. Inside, cabinets are filled with contemporary art and jeroboams of prized kaoliang, a Taiwanese sorghum liquor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡漢龑以其張揚的風格而聞名，他穿著圖案鮮艷的印花服裝，並在社群媒體上發布自己與起重機的合影。為了慶祝自己的成功，他在新竹郊區為家族企業建造了一座精心設計的辦公樓。這座建築借鑒了凡爾賽宮柱廊的宏偉氣勢，純白色的外牆賦予它一種總統般的權威感。在室內，陳列櫃裡擺滿了當代藝術品和大瓶裝的台灣特產名貴高粱酒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This place used to be a desolate wasteland,” Mr. Hu said. “It’s completely different now, a complete transformation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這邊以前荒涼一片，」胡漢龑說。「現在完全不一樣，360度大改觀了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Amy Chang Chien是《紐約時報》記者/研究員，常駐台北，報導台灣和中國新聞。</p><div class="" data-poster=""><span><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260625/taiwan-chips-boom/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
