@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西瓜有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">西瓜有多健康？</h1>
+    <h2 class="en-headline">How Healthy Is Watermelon?</h2>
+    <div class="meta-line">CAROLINE HOPKINS <span style="margin: 0 8px;">•</span> 2026-06-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2024/06/17/multimedia/HOW-HEALTHY-WATERMELON2-hzwv/HOW-HEALTHY-WATERMELON2-hzwv-jumbo.jpg" width="756"/><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Watermelon is the fruit of summer. In the United States, it’s more popular than cantaloupe, honeydew and all other melons combined.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>西瓜是夏天的水果。在美國，它比哈密瓜、白蘭瓜以及所有其他瓜類加起來還要受歡迎。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s good for your body, too, especially on a hot day. Here’s a rundown of watermelon’s healthiest qualities, plus some cool and delicious recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它對你的身體也很有好處，尤其是在炎熱的日子裡。以下概括了西瓜最健康的特性，以及一些<span>清涼美味的紐約時報烹飪(New York Times Cooking)食譜</span>。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s hydrating.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>它能補水。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Watermelon” is a fitting name, because it’s more than 91 percent water. When you eat an average-size wedge (10 ounces or so), you’re effectively drinking a full cup of water.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西瓜的英文名稱watermelon（直譯為「水瓜」——譯註）是一個恰如其名的稱呼，因為它的含水量超過91%。吃一塊中等大小的西瓜（280克左右）實際上等於喝下了一整杯水。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN_f16qnppUDFSesOgUdl2Mcmw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hydration keeps the body functioning as it should, from promoting blood flow to bowel regularity. The water in watermelon helps keep you hydrated, which can be extra beneficial in hot weather, when you lose more fluids through sweat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>補水能保持身體機能正常運轉，從促進血液流動到維持正常的排便習慣。西瓜中的水分有助於保持身體水分，這在炎熱的天氣裡可能格外有益，因為此時你通過排汗流失了更多的體液。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Our bodies recognize and utilize water molecules regardless of the source,” said Dr. Tamara Hew-Butler, a sports medicine scientist at Wayne State University. “Moist foods like fruit, vegetables and soups are considered water sources.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「無論來源如何，我們的身體都能識別並利用水分子，」韋恩州立大學的運動醫學科學家塔瑪拉·休-巴特勒博士說。「像水果、蔬菜和湯這樣的含水食物都被視作水源。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Older people, in particular, may find it easier and more enjoyable to get some of their fluids through fruit, said Amy Ellis, a dietitian and associate professor of nutrition at the University of Alabama. They tend to feel less thirsty and therefore drink less — one of the reasons they’re at a higher risk for dehydration and heat-related illness during a heat wave.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿拉巴馬大學營養學副教授兼註冊營養師艾米·埃利斯表示，老年人尤其可能覺得通過水果攝入部分體液更容易、也更令人愉悅。他們往往不容易感到口渴，因此喝水較少——這也是他們在高溫天氣出現<span>脫水和熱相關疾病的風險更高</span>的原因之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s not as sugary as you might think.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>它的含糖量沒有你想像的那麼高。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because watermelon is mostly water, it’s also low in calories — a one-cup serving has just 46.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因為西瓜大部分是水，所以熱量也很低——一份一杯分量的西瓜只有46卡路里。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some people think it’s sky-high in sugar because it tastes so sweet, but really it’s very moderate,” Dr. Ellis said. One cup of diced watermelon contains about 9.5 grams of sugar, which is less than the 13 grams in a cup of chopped apples or the nearly 15 grams in a cup of blueberries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些人認為西瓜含糖量高得驚人，因為嘗起來太甜了，但實際上非常適中，」埃利斯說。一杯切丁的西瓜含有大約9.5克的糖，這少於一杯切碎的蘋果中所含的13克糖，或一杯藍莓所含的近15克糖。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLab2KqnppUDFdROCAQdneocwg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s little enough that the fruit likely won’t cause spikes in blood sugar, added Joanne Slavin, a dietitian and professor of food science and nutrition at the University of Minnesota.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明尼蘇達大學食品科學與營養學教授兼註冊營養師喬安·斯拉溫補充說，這是很低的含糖量，因此這種水果很可能不會引起血糖飆升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Calories are energy, though, so watermelon alone won’t sufficiently fuel your body, said Samantha Dieras, a dietitian and the director of ambulatory nutrition services at Mount Sinai Hospital. But when you eat watermelon as part of a balanced diet, the water content and sweet flavor could help you feel satiated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西奈山醫院門診營養服務主任兼註冊營養師薩曼莎·迪拉斯表示，不過熱量即是能量，因此單靠西瓜無法為你的身體提供足夠的動力。但當你把西瓜作為平衡飲食的一部分來食用時，其水分含量和甜味可以幫助你獲得飽腹感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s heart healthy, to some degree.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>它對心臟健康有</b></span><b>一定助益</b><span><b>。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Watermelon is fat- and sodium-free, which is good for your heart. But the jury is still out as to whether watermelon plays an active role in lowering heart disease risk, Dr. Slavin said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西瓜不含脂肪和鈉，這對你的心臟很有好處。但斯拉溫說，關於西瓜是否在降低心臟病風險方面發揮積極作用，目前仍無定論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Slavin, Dr. Ellis and Dr. Dieras all suggested that the amino acid L-citrulline and the micronutrient lycopene — both abundant in watermelon — could improve heart health. There’s a rationale for these ideas, Dr. Slavin said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯拉溫、埃利斯和迪拉斯都表示，L-瓜氨酸和微量營養素番茄紅素——這兩者在西瓜中都很豐富——可以改善心臟健康。斯拉溫說，這些觀點是有依據的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scientists know that the kidneys convert L-citrulline into nitric oxide, which can relax your artery walls and lower blood pressure. And lycopene, a chemical found in certain plants, can reduce inflammation, which is linked to heart disease. People tend to associate lycopene with tomatoes, but watermelon has more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科學家知道，腎臟會將L-瓜<span>氨酸轉化為一氧化氮，從而可以舒張你的動脈壁並降低血壓。番茄紅素這種在某些植物中發現的化學物質可以減輕炎症，而炎症與心臟病密切相關。人們往往將番茄紅素與番茄聯繫在一起，但西瓜中的含量更多。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CMSm2KqnppUDFRtXCAQdWIQVRQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, independently funded human studies directly examining watermelon’s effect on heart health have not shown measurable improvements. “Watermelon is not a magic bullet,” said Dr. Ellis, who led one of the studies. “It’s not going to displace blood pressure medication or anything like that. But if it’s incorporated into a diet with nutrient-dense foods, it may be a good thing for vascular health.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>儘管如此，直接檢測西瓜對心臟健康影響的獨立資助人體研究並未顯示出可測量的改善。「西瓜並不是靈丹妙藥，」主導了其中一項研究的埃利斯說。「它不會取代降壓藥或諸如此類的任何藥物。但如果將它納入富含營養成分食物的飲食中，可能對血管健康是一件好事。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Here’s how to make the most of it.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>以下是如何最大程度利用它。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Watermelon doesn’t lend itself well to canning, drying or freezing, Dr. Slavin said, so it’s harder to enjoy out of season. She thinks this is one reason the fruit is so loved.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯拉溫說，西瓜不適合做成罐頭、烘乾或冷凍，因此很難在反季節時享用。她認為這也是這種水果如此受人喜愛的原因之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Watermelon is summer and happiness,” she said. “When someone cuts open a fresh watermelon and hands you a hunk, that’s when it’s best.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「西瓜代表著夏天和快樂，」她說。「當有人切開一個新鮮的西瓜並遞給你一大塊時，那就是它最美味的時候。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s also delicious in a dinner salad, soup or fizzy drink. Here are some recipes from NYT Cooking to get you started.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>它在晚餐沙拉、湯或起泡飲料中也非常美味。以下是一些來自紐約時報烹飪(NYT Cooking)的食譜，可以作為你的嘗試開始。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Farro and Watermelon Salad</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>1. 法羅麥西瓜沙拉</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2014/05/12/dining/01WELL-HEALTHY-WATERMELON-Farro/01WELL-HEALTHY-WATERMELON-Farro-master1050-v2.jpg" src="https://static01.nyt.com/images/2014/05/12/dining/01WELL-HEALTHY-WATERMELON-Farro/01WELL-HEALTHY-WATERMELON-Farro-master1050-v2.jpg"/></div><figcaption><span></span> <cite>Sam Kaplan for The New York Times. Food stylist: Suzanne Lenzer. Prop stylist: Randi Brookman Harris</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this satisfying grain bowl, watermelon is paired with farro, cheese, herbs and red onion. You can substitute quicker-cooking rice or quinoa for the farro.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這個讓人產生飽腹感的穀物碗中，西瓜與法羅麥、奶酪、草本香料和紅洋蔥搭配在一起。你可以用煮得更快的米飯或藜麥來代替法羅麥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Farro and Watermelon Salad</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>- 食譜：<span><b>法羅麥西瓜沙拉</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Tomato-Watermelon Gazpacho With Avocado</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>2. 酪梨番茄西瓜冷湯</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMELON-Gazpacho-hmcq/01WELL-HEALTHY-WATERMELON-Gazpacho-hmcq-master1050.jpg" src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMELON-Gazpacho-hmcq/01WELL-HEALTHY-WATERMELON-Gazpacho-hmcq-master1050.jpg"/></div><figcaption><span></span> <cite>Francesco Tonelli for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Keep a pitcher of this chilled soup in the refrigerator for an instant meal on sweltering days. Watermelon tempers the sweetness of overripe summer tomatoes in the blended mix.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在冰箱裡備上一壺這種冰鎮冷湯，酷熱的日子裡就能隨時享用。混合攪拌後，西瓜緩和了過熟的夏季番茄的甜味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Tomato-Watermelon Gazpacho With Avocado</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>- 食譜：<b>酪梨</b><span><b>番茄西瓜冷湯</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Country Panzanella With Watermelon Dressing</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>3. 配西瓜醬的鄉村麵包沙拉</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMLEON-PANZANELLA-cbjm/01WELL-HEALTHY-WATERMLEON-PANZANELLA-cbjm-master1050.jpg" src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMLEON-PANZANELLA-cbjm/01WELL-HEALTHY-WATERMLEON-PANZANELLA-cbjm-master1050.jpg"/></div><figcaption><span></span> <cite>Ryan Liebe for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Juicy with chunks of watermelon, tomatoes and cucumber, this ultimate summer salad becomes even more refreshing with a watermelon dressing. Toasted ciabatta and crumbled feta make it filling enough to be a meal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款終極夏季沙拉鮮嫩多汁：大塊的西瓜、番茄和黃瓜，搭配西瓜醬後變得更加清爽。烤夏巴塔麵包和碎菲達奶酪使其分量充足，足以作為一頓正餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Country Panzanella With Watermelon Dressing</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>- 食譜：<span><b>配西瓜醬的鄉村麵包沙拉</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Watermelon Chaat</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>4. 西瓜恰特</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMLEON-CHAAT-mpvl/01WELL-HEALTHY-WATERMLEON-CHAAT-mpvl-master1050.jpg" src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMLEON-CHAAT-mpvl/01WELL-HEALTHY-WATERMLEON-CHAAT-mpvl-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This savory fruit dish tossed with spicy cumin-citrus dressing could work with any fruit, but is especially good with watermelon. It’s tasty as a stand-alone snack or as a side dish.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款與辣味孜然柑橘醬攪拌在一起的風味水果菜肴可以搭配任何水果，但與西瓜搭配尤為出色。作為單獨的小吃或作為配菜都很美味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Watermelon Chaat</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>- 食譜：<span><b>西瓜恰特</b><b></b></span></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Watermelon Ginger Beer</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>5. 西瓜薑汁啤酒</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMELON-GINGERBEER-lfpb/01WELL-HEALTHY-WATERMELON-GINGERBEER-lfpb-master1050.jpg" src="https://static01.nyt.com/images/2024/07/01/multimedia/01WELL-HEALTHY-WATERMELON-GINGERBEER-lfpb/01WELL-HEALTHY-WATERMELON-GINGERBEER-lfpb-master1050.jpg"/></div><figcaption><span></span> <cite>Kelly Marshall for The New York Times. Food Stylist: Roscoe Betsill. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Blitzing watermelon into juice is a brilliant move all summer long. Topping it off with fizzy ginger beer for a nonalcoholic spritz? Genius.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將西瓜榨成汁是夏日裡的妙招。在上面倒入起泡的薑汁啤酒，做成一杯無酒精汽水？簡直天才。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Watermelon Ginger Beer</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>- 食譜：<span><b>西瓜薑汁啤酒</b><b></b></span></span></div></div></div></div></div><div class="big_ad" data-google-query-id="COnb2KqnppUDFa5OCAQddo0inw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2024年7月1日。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260626/watermelon-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國AI模型與Anthropic、OpenAI性能差距縮小 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國AI模型與Anthropic、OpenAI性能差距縮小</h1>
+    <h2 class="en-headline">Chinese A.I. Models Close the Gap With Anthropic and OpenAI</h2>
+    <div class="meta-line">CADE METZ, KAREN WEISE, MEAGHAN TOBIN <span style="margin: 0 8px;">•</span> 2026-06-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/06/24/24visualUploader-87422-cover/24visualUploader-87422-cover-jumbo.jpg" width="576"/><figcaption><span></span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two weeks ago, the artificial intelligence company Anthropic shut down its two most powerful A.I. systems after an unexpected demand from the U.S. government to cut access to it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩週前，在美國政府突然要求對其兩款最強大的人工智慧系統訪問權限設限後，人工智慧公司Anthropic關閉了這兩個系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Days later, a Chinese start-up, Z.ai, released an A.I. model that is nearly as powerful as Anthropic’s models, Fable and Mythos. But Z.ai’s new technology costs much less to use, and no one in the United States was putting restrictions on it. It quickly landed on a closely watched leaderboard of the world’s 10 most popular models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾天後，中國初創公司智譜發布了一款人工智慧模型，性能幾乎與Anthropic的Fable和Mythos模型相當。不過，智譜這款新技術的使用成本要低得多，且在美國不受任何限制。它很快便登上了全球最受關注的人工智慧模型排行榜前十。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai is on the cutting edge of a wave of powerful but inexpensive A.I. from China that is challenging the lock that OpenAI, Anthropic and Google have had on the industry. Six of the models now on the A.I. leaderboard were developed in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智譜站在中國新一波高性能、低成本人工智慧浪潮的最前沿，這股浪潮正在挑戰OpenAI、Anthropic和谷歌長期以來對行業的主導地位。目前，全球人工智慧模型排行榜中有六款來自中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai’s new model, GLM-5.2, arrived just as U.S. businesses realized that they had to find ways to cut down on how much they were spending on A.I. It also landed when executives in Silicon Valley were becoming worried that the Trump administration was leaning toward regulating the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智譜的新模型GLM-5.2發布之際，美國企業已意識到必須壓縮人工智慧開支。與此同時，矽谷高管們也越來越擔心，川普政府正傾向於加強對人工智慧行業的監管。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIvcm6enppUDFaBGCAQd9I4riw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“With Fable restricted, the gap between the U.S. and China is very slim,” said Rehaan Ahmad, a co-founder of the Silicon Valley start-up alphaXiv, who has been using Z.ai’s new model for more than a week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「隨著Fable受到限制，美中之間的差距已經微乎其微，」矽谷初創公司alphaXiv聯合創始人裡漢·艾哈邁德說道。過去一週多來，他一直在使用智譜的新模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese models still face two big hurdles to widespread use in the United States: concerns about their ties to the Chinese government and complaints that Chinese companies have unfairly used American technology to build these cheaper models. But their low cost is winning converts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，中國模型在美國廣泛普及仍面臨兩大障礙：一是人們擔心它們與中國政府關係密切；二是有人指責中國企業利用美國技術、以不公平的方式開發出這些成本更低的模型。但它們低廉的價格仍不斷吸引新的用戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">About 18 months ago, the Chinese start-up DeepSeek shocked Silicon Valley when it demonstrated that it could build effective A.I. far more affordably than many of its American counterparts. Z.ai is doing something similar. When performing certain tasks, GLM-5.2 costs about an eighth as much as Anthropic’s Claude Opus 4.8, which came out shortly before Fable and Mythos, according to OpenRouter, a start-up that runs the A.I. leaderboard.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大約一年半前，中國初創公司DeepSeek令矽谷大為震驚，它證明自己能夠以遠低於許多美國同行的成本構建高性能的人工智慧系統。如今，智譜正在做類似的事情。根據運營人工智慧排行榜的初創公司OpenRouter的數據，在處理某些任務時，GLM-5.2的使用成本僅為Anthropic此前推出的Claude Opus 4.8的約八分之一。Claude Opus 4.8的發布時間略早於Fable和Mythos。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like most top-performing Chinese models, GLM-5.2 is open source software, which means anyone can use and modify it for free. That makes it much cheaper to use, even if it is not quite as powerful as what American companies have created.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與大多數頂級中國模型一樣，GLM-5.2頁是開源軟體，這意味著任何人均可免費使用和修改。這使得其使用成本大大降低，即使其性能可能不如美國公司的產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Do you need to drive a Ferrari everywhere?” asked Vivek Ramaswami, a start-up investor at Madrona Venture Group. “Probably not.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你有必要去哪兒都開法拉利嗎？」麥德羅納風險投資集團的創業投資人初創投資人維韋克·拉馬斯瓦米問道。「恐怕不會吧。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai did not respond to requests for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智譜未回應置評請求。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="ArenaAI的首席執行官阿納斯塔西奧斯·安傑洛普洛斯表示，智譜的技術尤其受從事人工智慧代理開發人員的歡迎。" data-src="https://static01.nyt.com/images/2026/06/24/multimedia/00BIZ-CHINA-AI-Angelopoulos-ctkp/00BIZ-CHINA-AI-Angelopoulos-ctkp-jumbo.jpg" src="https://static01.nyt.com/images/2026/06/24/multimedia/00BIZ-CHINA-AI-Angelopoulos-ctkp/00BIZ-CHINA-AI-Angelopoulos-ctkp-jumbo.jpg"/></div><figcaption><span>ArenaAI的首席執行官阿納斯塔西奧斯·安傑洛普洛斯表示，智譜的技術尤其受從事人工智慧代理開發人員的歡迎。</span> <cite>Brennan Smart for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">GLM-5.2 is particularly good at generating computer code and powering A.I. agents, digital assistants that can use other software to perform tasks. Z.ai’s technology is now the third most widely used in the world for A.I. tasks, said Anastasios Angelopoulos, chief executive of ArenaAI, which tracks millions of A.I. users.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">GLM-5.2在生成計算機代碼和驅動人工智慧代理（能夠調用其他軟體執行任務的數字助手）方面尤為出色。ArenaAI首席執行官阿納斯塔西奧斯·安傑洛普洛斯表示，智譜的技術目前在全球人工智慧任務使用量中排名第三。ArenaAI追蹤數百萬人工智慧用戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The largest cloud computing providers, including Microsoft and Amazon, already offer access to some systems from Z.ai, DeepSeek, MiniMax and other Chinese start-ups. Microsoft has also considered adding the latest DeepSeek model as an option to power one of its own products, which now runs on technology from Anthropic and OpenAI, two people familiar with the deliberations said, speaking on the condition of anonymity because they were not authorized to discuss them publicly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括微軟和亞馬遜在內的大型雲計算提供商已在提供對智譜、DeepSeek、MiniMax等中國初創企業旗下部分系統的訪問服務。兩名不便具名的知情人士還透露，微軟也在考慮將DeepSeek最新模型加入自家某款產品，作為Anthropic和OpenAI技術之外的另一種選擇。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPSQnKenppUDFUZPCAQd664OnQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The talks were reported earlier by Axios.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Axios此前率先報導了這一消息</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Microsoft, Anthropic and OpenAI declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微軟、Anthropic和OpenAI均拒絕置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some software developers are reluctant to use the A.I. system that Z.ai offers from computers in China, because they worry about sharing data with the company or with the Chinese government. They are also wary of China’s efforts to censor its A.I. systems or running afoul of U.S. export restrictions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些軟體開發人員不願使用智譜在中國境內計算機上提供的人工智慧系統，因為他們擔心與該公司或中國政府共享數據。此外，他們也顧慮中國對人工智慧內容的審查，以及可能觸犯美國出口管制規定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai was added to the Commerce Department’s trade blacklist in 2025. Corporate filings show that several of the company’s shareholders are controlled by a Chinese government agency that supervises the country’s defense industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年，美國商務部將智譜列入實體清單。公司文件顯示，該公司數名股東受中國一家監管國防工業的政府機構控制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Companies can still use the model without sending data back to China in violation of U.S. export rules, as long as they are careful about how they set up their systems, said Wei Chen, chief legal officer at Infoblox, a network security company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網路安全公司Infoblox首席法務官陳瑋（音）表示，只要在系統設置上謹慎操作，企業仍可在不將數據傳回中國、不違反美國出口法規的前提下使用這一模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Chinese models do not have the same restrictions if you host them yourself or you go through another provider,” Mr. Ahmad of alphaXiv said. “Right now, there are more restrictions on models from Anthropic.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">初創公司alphaXiv的艾哈邁德說：「如果你自己部署這些中國模型，或者通過第三方服務商使用它們，它們就沒有那些限制。現在，反倒是Anthropic的模型受到更多限制。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After DeepSeek’s release in 2025, governments around the world passed regulations limiting its use because of data security concerns. But so far, GLM-5.2 has not raised similar alarms, Ms. Chen said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在DeepSeek於2025年發布後，世界各國出於數據安全擔憂出台了限制其使用的法規。但陳瑋表示，到目前為止，GLM-5.2尚未引發類似的擔憂。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="DeepSeek的人工智慧助手性能曾震驚矽谷。" data-src="https://static01.nyt.com/images/2026/06/24/multimedia/00BIZ-CHINA-AI-bqtc/00BIZ-CHINA-AI-bqtc-master1050.jpg" src="https://static01.nyt.com/images/2026/06/24/multimedia/00BIZ-CHINA-AI-bqtc/00BIZ-CHINA-AI-bqtc-master1050.jpg"/></div><figcaption><span>DeepSeek的人工智慧助手性能曾震驚矽谷。</span> <cite>Kelsey McClellan for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic and OpenAI have accused Chinese companies of improperly harvesting data from their A.I. systems to accelerate the development of the Chinese technology. On Wednesday, Anthropic sent a letter, viewed by The New York Times, to Senators Tim Scott, Republican of South Carolina, and Elizabeth Warren, Democrat of Massachusetts, accusing the Chinese tech giant Alibaba of “brazenly” and “illicitly” trying to copy its technology through 24,000 fraudulent accounts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic和OpenAI均指控中國企業不當收集其人工智慧系統的數據，以加速中國技術的發展。週三，Anthropic致信南卡羅來納州共和黨參議員蒂姆·史考特和麻薩諸塞州民主党參議員伊麗莎白·沃倫（《紐約時報》已看到了這封信），指控中國科技巨頭阿里巴巴通過2.4萬個虛假帳戶「肆無忌憚地」和「非法地」試圖複製其技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alibaba declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿里巴巴拒絕置評。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJypnKenppUDFcdYCAQdFW48SA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Mustafa Suleyman, the head of Microsoft’s A.I. lab, unveiled a suite of new models this month, he emphasized that they had been built from scratch on data that the company had commercially licensed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，微軟人工智慧實驗室負責人穆斯塔法·蘇雷曼在發一系列新模型時強調，這些模型是基於公司已獲得商業許可的數據從頭開始構建的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That means that you can put it into production in a very trustworthy way with complete confidence,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這意味著你可以完全放心地、以值得信賴的方式將其投入生產，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The Times has sued OpenAI and its partner, Microsoft, accusing them of copyright infringement of news content related to A.I. systems. They have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已起訴OpenAI及其合作夥伴微軟，指控二者未經授權使用新聞內容訓練人工智慧系統。兩家公司均否認這些指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Using data from one system to train another — a process called distillation — is common in A.I. development. But the Anthropic and OpenAI terms of service forbid anyone to surreptitiously harvest data for distillation. It is not clear whether Z.ai used distillation in the development of its technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">利用一個系統的數據訓練另一個系統——即所謂的"蒸餾"——在人工智慧開發領域頗為常見。但Anthropic和OpenAI的服務條款明確禁止任何人私自收集數據用於蒸餾。目前尚不清楚智譜在開發其技術時是否使用了蒸餾手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But distillation alone cannot build a top A.I. system. That requires several other complex techniques as well, said Charles O’Neill, head of model training at Baseten, a company that sells access to GLM-5.2.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提供GLM-5.2訪問服務的公司Baseten的模型訓練負責人查爾斯·奧尼爾表示，僅靠蒸餾並不足以打造出一流的人工智慧系統，還需要多種其他複雜技術的配合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This narrative that all of the capabilities of these models are coming from Anthropic is not as true as people say it is,” Mr. O’Neill said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧尼爾說：「那種認為這些模型的所有能力都源自Anthropic的說法並非人們所說的那樣屬實。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="Baseten公司的模型訓練負責人查爾斯·奧尼爾表示，開發智譜這樣的頂級人工智慧系統需要多種複雜技術的配合。
+
+" data-src="https://static01.nyt.com/images/2026/06/24/multimedia/CHINA-AI-Charlie-2-cmlj/CHINA-AI-Charlie-2-cmlj-master1050.jpg" src="https://static01.nyt.com/images/2026/06/24/multimedia/CHINA-AI-Charlie-2-cmlj/CHINA-AI-Charlie-2-cmlj-master1050.jpg"/></div><figcaption><span>Baseten公司的模型訓練負責人查爾斯·奧尼爾表示，開發智譜這樣的頂級人工智慧系統需要多種複雜技術的配合。 </span><cite>Justin T. Gellerson for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. start-ups can offer their models as an open-source technology at far lower prices in part because the industry has benefited from years of support from the Chinese government, which views A.I. as a critical engine of economic growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧初創企業之所以能以遠低於其他行業的價格提供開源技術模型，部分原因是該行業多年來受益於中國政府的支持，中國政府將人工智慧視為推動經濟增長的關鍵引擎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many executives have said U.S. companies should not open-source their technology because it could be used in harmful situations. But other experts argue that if regulators stifle open-source technology in the United States, China will gain a significant edge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多高管表示，美國公司不應將技術開源，因為這可能被用於有害用途。但另一些專家認為，若監管機構在美國壓制開源技術，中國將因此獲得巨大的競爭優勢。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIHbnKenppUDFb9XCAQdcNkHhA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because China produces most of the top-performing open-source systems, they say, U.S. developers will build their software atop those technologies. In the long run, that could put China at the heart of A.I. development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些專家指出，由於目前大多數性能領先的開源模型都來自中國，美國開發者未來很可能會建立在這些中國模型之上開發軟體。從長遠來看，這可能使中國成為全球人工智慧發展的核心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some argue that Chinese systems will always trail the top U.S. models because U.S. export controls limit the flow of the specialized computer chips needed to train A.I. technologies. Z.ai and other Chinese start-ups spend millions for access to chips in data centers outside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">也有人認為，由於美國出口管制限制了訓練人工智慧所需高端晶片的供應，中國模型始終會落後於美國最先進的模型。智譜和其他中國初創公司不得不花費巨資租用中國境外數據中心的晶片資源。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai’s filings in Hong Kong show that in the first half of 2025, the company spent more than seven times its revenue on expenses that essentially boiled down to fees for such computing services.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智譜在香港的備案文件顯示，2025年上半年，公司用於計算服務的支出超過營收的七倍，這些費用本質上就是支付給境外算力提供商的計算資源成本。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="智譜迅速在美國的軟體開發人員中流行開來。" data-src="https://static01.nyt.com/images/2026/06/24/business/00BIZ-CHINA-AI-2/00BIZ-CHINA-AI-2-master1050.jpg" src="https://static01.nyt.com/images/2026/06/24/business/00BIZ-CHINA-AI-2/00BIZ-CHINA-AI-2-master1050.jpg"/></div><figcaption><span>智譜迅速在美國的軟體開發人員中流行開來。</span> <cite>Raul Ariano/Bloomberg</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, experts estimate that China is just six months or less behind the American companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，專家估計中國落後美國公司的差距已經縮小到六個月甚至更少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There had been this speculation that the export controls would eventually bite and the gap would widen between American frontier models and their Chinese models, but GLM is pushing things in the other direction,” said Jeffrey Ding, an assistant professor at George Washington University who specializes in emerging technology and international relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「此前有種猜測認為，隨著出口管制逐漸發揮作用，美國前沿模型與中國模型之間的差距將持續擴大，但GLM正在將局面推向相反方向，」喬治華盛頓大學專門研究新興技術與國際關係的助理教授傑弗里·丁（音）表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And with Fable and Mythos sidelined, many businesses have realized the importance of having alternatives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著Fable和Mythos暫時退出市場，越來越多企業意識到替代方案的重要性。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP-GnaenppUDFcNOCAQdczcBUQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There is a bit of apprehension at large organizations about loyalty,” said Justin Summerville, who runs data analytics at OpenRouter. “Who knows what the top model will be in three weeks?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大型組織對『忠誠』多少有些顧慮，」OpenRouter的數據分析負責人賈斯汀·薩默維爾說，「誰知道三周後最好的模型會是哪個？」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Cade Metz撰寫有關人工智慧、無人駕駛汽車、機器人、虛擬現實和其他技術新興領域的新聞。</p><p class="cn-p">Karen Weise常駐西雅圖，為時報撰寫科技新聞。她主要關注美國兩大科技公司亞馬遜和微軟的新聞。</p><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260626/zai-china-artificial-intelligence-models/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
