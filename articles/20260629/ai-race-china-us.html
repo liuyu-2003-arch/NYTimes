@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國能避免出現「馬雲時刻」嗎 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國能避免出現「馬雲時刻」嗎</h1>
+    <h2 class="en-headline">Can America Avoid a Jack Ma Moment?</h2>
+    <div class="meta-line">DAN WANG, JULIAN GEWIRTZ <span style="margin: 0 8px;">•</span> 2026-06-29</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/06/28/opinion/28wang-gewirtz/28wang-gewirtz-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Kiersten Essenpreis</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A globally recognizable tech executive, high-spirited from preparing for a public offering, offers imprudent remarks criticizing the government. The state strikes back harder than anyone expects. Overnight, the bargain between a skyrocketing sector of the economy and the government is shattered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位在全球享有知名度的科技高管因籌備公開上市而情緒高昂，發表了批評政府的不審慎言論。國家隨即發起了超出所有人預期的強硬反擊。一夜之間，一個國家經濟中正在飛升的行業與政府之間的默契被徹底粉碎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you think this story could be about Anthropic, you’re only half right. In 2020, the Alibaba co-founder Jack Ma found himself in the doghouse after he publicly rebuked Chinese regulators. Citing regulatory concerns, the authorities canceled the public offering of Ant Group, another company Mr. Ma helped found, and subsequently unleashed a regulatory storm that left few Chinese tech companies untouched.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果你認為這個故事可能是關於Anthropic的，那你只說對了一半。2020年，阿里巴巴聯合創始人馬雲在公開指責中國監管機構後發現自己陷入了困境。官方以監管問題為由，取消了馬雲參與創辦的另一家公司螞蟻集團的上市，並隨後掀起<span>了一場監管風暴，幾乎沒有哪家中國科技公司能夠幸免於難。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government is skating close to its own Jack Ma moment, when a government wounds a tech leader seemingly out of spite. Self-destructive American actions, not Chinese competition, may be the most significant threat to the evolution of A.I. for years to come, long after the government and Anthropic resolve their current dispute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府正滑向其自身的「馬雲時刻」，即政府似乎出於私怨而傷害一位科技領袖。在未來數年內，自我毀滅式的美國行動——而非中國的競爭——可能才是人工智慧演進面臨的最重大威脅，其影響在政府與Anthropic解決目前的糾紛後仍將長期存在。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On June 9, Anthropic released its model Fable 5, an adapted version of its powerful Mythos model, which has incredible capacity to find vulnerabilities in software. Anthropic’s chief executive, Dario Amodei, even said that companies that used Mythos had called it a “superweapon.” Three days later, the U.S. government issued an export control directive blocking use of Fable 5 by foreigners and noncitizens — including some of Anthropic’s own employees — which prompted Anthropic to disable all access to the model. A tangle of explanations behind this directive have been reported, including the risk of “jailbreak” (when a model bypasses built-in safety guardrails) and the risk of access by foreign adversaries. On Friday, the government permitted Anthropic to restore some users’ access to a version of Mythos, though negotiations are still underway about Fable 5.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">6月9日，Anthropic推出Fable 5模型，這是其強大的Mythos模型的改編版本，具備尋找軟體中漏洞的驚人能力。Anthropic首席執行官達里奧·阿莫代甚至表示，使用過Mythos<span>的公司曾將其稱為「超級武器」。三天後，美國政府發布了一項出口控制指令，阻止外國人及非公民</span>（包括Anthropic自身的一些員工）使用Fable 5，這促使Anthropic禁用了對該模型的所有訪問權限。坊間對該指令有著各種錯綜複雜的解釋，包括存在「越獄」（即模型繞過內置安全防護欄）<span>以及被外國敵對勢力訪問的風險。週五，官方允許</span><span>Anthropic恢復</span>部分用戶對某一版本Mythos的訪問，不過關於Fable 5的談判仍在進行中。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNr-5pjurZUDFUodrAAdtOQVug" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past decade, the U.S. government has used export controls to deal sometimes crippling blows to Chinese technology champions. The action against Anthropic upended this logic by turning this policy instrument against American companies, purportedly to exert the U.S. government’s grip over increasingly slippery A.I. models. The challenges of regulating A.I. at the frontier have now reportedly moved the government to ask Anthropic’s chief competitor, OpenAI, to limit the users for its own next model.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去十年中，美國政府曾利用出口管制對中國科技領軍企業施加了有時是致命的打擊。針對Anthropic的行動顛覆了這一邏輯，將這一政策工具轉而對準了美國公司，表面上的理由是加強美國政府對日益難以掌控的人工智慧模型的控制。據報導，監管前沿人工智慧所面臨的挑戰目前已促使官方要求Anthropic的主要競爭對手OpenAI限制其下一個模型的使用者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We often think of A.I. as a race between the United States and China. Instead we are seeing the emergence of an even more acute form of competition, between the public power of governments and the private power of ambitious companies. Both countries are struggling to determine whether their frontier A.I. companies are national champions or national security threats. A.I. labs in both countries are also starting to realize how much their operations depend on the state’s sufferance. The U.S. government needs to strike a better balance between ambition and control, lest it irrevocably damage its relationship with these companies and America’s long-term technological edge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們經常將人工智慧看作是美國與中國之間的一場競賽。但我們現在看到的是一種甚至更加劇烈的競爭形式的浮現，即政府的公權力與有雄心的公司的私權力之間的競爭。兩國都在艱難地權衡其前沿人工智慧公司究竟是國家領軍企業還是國家安全威脅。兩國的人工智慧實驗室也開始意識到，他們的運營在多大程度上依賴於國家的容忍。美國政府需要在雄心與控制之間取得更好的平衡，以免不可逆轉地損害其與這些公司的關係，以及美國長期的技術優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The second Trump administration has careened from extreme to extreme on A.I. policy. It came into office de-emphasizing some A.I. safety concerns, downplaying harms to workers and preaching the virtues of a hands-off approach. Its stance shifted in March: The Pentagon designated Anthropic a supply chain risk after the company protested the use of its A.I. models in autonomous weapons and domestic mass surveillance. Reports about Mythos’s capabilities the following month appear to have shocked the administration into taking safety more seriously. The confrontation around Fable 5 has been the latest turn in a dance between a company that proclaims a desire for safeguards and an administration that wants unfettered control over these models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二屆川普政府在人工智慧政策上經歷了從一個極端到另一個極端的劇烈搖擺。它在執政之初淡化了一些對人工智慧安全的擔憂，低估了對勞動者的傷害，並宣揚不干涉方法的優點。其立場在3月發生了轉變：在Anthropic抗議將其人工智慧模型用於自主武器和國內大規模監控之後，五角大廈將該公司指定為供應鏈風險。次月，關於Mythos能力的報告似乎讓川普政府大受震動，從而開始更加嚴肅地對待安全問題。一方是宣稱渴望採取防護措施的公司，另一方是想要對這些模型進行全權控制的政府，圍繞Fable 5的對抗是雙方博弈的最新轉折。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government, meanwhile, has been overseeing its A.I. labs for considerably longer. It requires security assessments and tests models for their ability to anticipate Beijing’s sundry political sensitivities. The state has blocked Chinese companies from purchasing advanced Nvidia chips in an effort to favor the domestic chip industry, even after the Trump administration cleared these chips for sale to China. It has reportedly restricted overseas travel by certain A.I. researchers and told two of the founders of Manus, a popular A.I. agent that acts as a digital assistant, not to leave China while the government reviewed their company’s acquisition by Meta. The authorities soon after ordered the unwinding of the deal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>與此同時，中國政府對本國人工智慧實驗室的監管時間要長得多。它要求進行安全評估，並測試模型預測北京各種政治敏感性的能力。國家已阻止中國公司購買先進的英偉達晶片，以期扶持國內晶片產業，</span>儘管川普政府已經<span>批准將這些晶片銷往中國。據報導，官方已限制了某些人工智慧研究人員的因私出境，並通知Manus（一款作為數字助理使用的熱門人工智慧智能體）的兩位創始人</span>，在官方審查Meta對其公司的收購期間不要離開中國。此後不久，當局便下令取消了這筆交易。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike in the United States, in China no one questions who will ultimately win the struggle between state and corporate power. But the effects of the regulatory storm Beijing unleashed in 2020 remain evident. Alibaba’s stock has lost around two-thirds of its value since Mr. Ma’s speech and Ant Group has still not been able to go public. Venture capital funding in China collapsed and is only now rebounding. These days, nearly any conversation with Chinese A.I. labs includes bitter complaints about government overreach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與美國不同的是，在中國沒有人質疑在國家權力與企業權力的鬥爭中最終誰會獲勝。但北京在2020年引發的監管風暴的影響依然顯而易見。自馬雲發表演講以來，阿里巴巴的股票已經失去了大約三分之二的市值，而螞蟻集團至今仍未能上市。中國的風險投資資金遭遇挫折，目前才剛剛開始回升。如今，與中國人工智慧實驗室交談，幾乎總是免不了聽到對政府過度干預的抱怨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States, with its system of legal protections and its deep capital markets pouring money into A.I., is not likely to suffer to the same degree. The companies and government officials are likely to reach an understanding. But Washington and American A.I. labs need to treat each other with greater sincerity and seriousness going forward.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">擁有法律保護制度和向人工智慧注入大筆資金的深厚資本市場的美國不太可能出現如此程度的問題。公司與政府官員很可能會達成某種諒解。但展望未來，華盛頓和美國的人工智慧實驗室需要以更大的誠意和更嚴肅的態度對待彼此。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKyu55jurZUDFaIilgkdZswHaQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First, the heads of A.I. labs need to stop their doom trolling. It makes little sense to make panicked claims about the destructive potential of A.I. without a plan to work with the government to address those risks. The current administration makes such cooperation particularly difficult because of its demonstrated willingness to punish companies to assert dominance or satisfy a political constituency. But the labs still must take more care to address A.I.’s transformative impacts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>首先，人工智慧實驗室的負責人需要停止他們的毀滅預言渲染。在沒有與政府合作應對這些風險的計劃的情況下，對人工智慧的毀滅性潛力發出恐慌性的斷言是毫無意義的。由於目前的政府表現出通過懲罰公司來確立主導地位或滿足某一政治選民群體的意願，此類合作變得格外困難。但實驗室仍必須傾注更多心血來應對人工智慧的變革性影響。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Second, the U.S. government needs to realize that the stakes of A.I. are far too high to allow a breakdown of trust. Despite a recent executive order that established a voluntary review program of highly advanced models, Defense Secretary Pete Hegseth has seemingly delighted in celebrating Anthropic’s troubles with the government. The administration has imposed major restrictions on Anthropic without offering sufficient explanation. Even if the government is nettled by the attitude of A.I. chiefs, it is irresponsible to treat them with contempt. American allies are wondering if they can rely on American A.I. models, and talented foreign researchers in American labs are reconsidering their career plans — neither of which serves American interests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其次，美國政府需要意識到，人工智慧干係重大<span>，絕不能容許信任關係的破裂。儘管近期出台的一項行政令建立了一項針對高度先進模型的自願審查計劃，但國防部長彼特·海格塞斯似乎非常樂於</span>將Anthropic與政府之間的麻煩說成是好事。政府在未提供充分解釋的情況下就對Anthropic<span>施加了重大限制。即使政府對人工智慧負責人們的態度感到惱火，輕蔑地對待他們也是不負責任的。美國的盟友正懷疑他們是否可以信賴美國的人工智慧模型，而美國實驗室裡富有才華的外國研究人員也正重新考慮他們的職業規劃——這兩者都不符合美國的利益。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Third, America’s government and its A.I. labs need to update their understanding of Chinese A.I. Beijing’s pronouncements on A.I. are distinctly less apocalyptic than Anthropic’s; Chinese firms are less able to invest in data centers (for lack of American chips) and more interested in applying A.I. to physical technologies. By most appearances, China is pursuing a substantially different vision of the A.I. future. Frictions within China may present an opportunity for the United States to put further distance between Chinese entrepreneurs and the overbearing Chinese state — but that would require the administration to drop policies that seem hostile toward foreign talent, including Chinese citizens.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第三，美國的政府及其人工智慧實驗室需要更新他們對中國人工智慧的認知。北京方面對人工智慧的聲明顯然遠沒有Anthropic那樣具有末日色彩；中國企業投資數據中心的能力較弱（因為缺乏美國晶片），它們更感興趣的是將人工智慧應用於實體的技術。從外表來看，中國很大程度上<span>正在追求一種實質上不同的人工智慧未來願景。中國內部的摩擦</span>可能讓美國有機會進一步拉開中國企業家與專斷的中國政府的距離——但這需要川普政府放棄那些似乎對外國人才（包括中國公民）懷有敵意的政策。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The A.I. chaos of recent weeks is self-defeating. For the United States to win the A.I. future, it needs to do better at avoiding the missteps of Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近幾週的人工智慧亂局是在自我毀滅。為了讓美國贏取人工智慧的未來，華盛頓需要更好地避免重蹈北京的覆轍。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Dan Wang是史丹佛大學胡佛研究所研究員，也是《突破：中國探索構建未來》（Breakneck: China\'s Quest to Engineer the Future）一書的作者。</p><p class="cn-p">Julian Gewirtz是哥倫比亞大學高級研究員，曾任國家安全委員會中國和台灣事務高級主任，以及國務院中國事務副協調員。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260629/ai-race-china-us/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
