@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國加大對日本施壓力度 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國加大對日本施壓力度</h1>
+    <h2 class="en-headline">China Tightens the Screws on Japan</h2>
+    <div class="meta-line">郭莉莉, PEI-LIN WU, KIUKO NOTOYA <span style="margin: 0 8px;">•</span> 2026-07-01</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="4月，一艘中國海警船正駛離煙台碼頭前往執行巡邏任務。" height="700" src="https://static01.nyt.com/images/2026/06/30/multimedia/30int-china-japan-01-gwtp/30int-china-japan-01-gwtp-master1050.jpg" width="1050"/><figcaption><span>4月，一艘中國海警船正駛離煙台碼頭前往執行巡邏任務。</span> <cite>CFOTO/Future Publishing via Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is intensifying a campaign of pressure on Japan. In recent days, China has banned more Japanese companies from receiving Chinese exports. It and Russia flew bombers near southwest Japan. It has confirmed that two Japanese businessmen in northeastern China were detained.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國正在加緊對日本施壓。近日，中國禁止更多日本企業獲得<span>中國出口的商品，並與俄羅斯一同在日本西南部附近空域出動轟炸機。此外，中方已證實有兩名日本商人在中國東北地區被拘留。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The campaign started in November, when Prime Minister Sanae Takaichi of Japan said her country could help defend Taiwan — which China considers part of its territory — in the event of a Chinese invasion. China has since reduced flights and academic exchanges, and continued to ban imports of Japanese seafood.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這場施壓行動始於去年11月。當時，日本首相高市早苗表示，一旦中國</span>入侵台灣，日本<span>可能派兵協防</span>——中國將台灣視為其領土的一部分。自那時起，中國減少了民航班次和學術交流，並繼續禁止進口日本海鮮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now China is using its most powerful weapon: its control over rare earths, which are essential for manufacturing. Analysts say the scale and diversity of the measures is the worst in many years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國正在動用其最強大的武器：對製造業至關重要的稀土的控制權。分析人士表示，此次制裁措施的規模和多樣性是多年所未見的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The approach China is taking is truly comprehensive, and each tactic is interconnected,” said Shin Kawashima, a professor at the department of international relations at the University of Tokyo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國採取的方法確實是全方位的，每種策略都環環相扣，」東京大學國際關係學系教授川島真表示。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPruto2xsJUDFWESigMdfsMH8g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">De Facto Ban on Rare Earths Exports</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>變相禁止稀土出口</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s commerce ministry announced new controls on Monday that banned dozens of Japanese entities from importing any Chinese items that could have military applications. The entities included the state-run National Institute for Defense Studies and military affiliates of Mitsubishi Electric.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部週一宣布了新的管制措施，禁止數十家日本實體進口任何可能用于軍事用途的中國商品。這些實體包括國家機構防衛研究所以及三菱電機下屬的軍事企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The measure expanded a blacklist, first announced in February, that had targeted 20 Japanese entities. The ministry also added another 20 Japanese companies to an export watch list, subjecting them to more scrutiny.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該舉措擴大了今年2月首次公布、針對20家日本實體的黑名單。商務部還將另外20家日本企業列入出口觀察名單，對其進行更嚴格的審查。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="5月，在長崎三菱重工業造船廠，被稱為海上自衛隊的日本海軍成員站在的一艘隱身護衛艦前。" data-src="https://static01.nyt.com/images/2026/06/30/multimedia/30int-china-japan-03-gwtp/30int-china-japan-03-gwtp-master1050.jpg" src="https://static01.nyt.com/images/2026/06/30/multimedia/30int-china-japan-03-gwtp/30int-china-japan-03-gwtp-master1050.jpg"/></div><figcaption><span>5月，在長崎三菱重工業造船廠，被稱為海上自衛隊的日本海軍成員站在的一艘隱身護衛艦前。</span> <cite>Paul Miller/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the Japanese companies on China’s export control list, the move amounts to a de facto ban on Chinese rare earths, according to Yoshikiyo Shimamine, a senior fellow at the Dai-ichi Life Research Institute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第一生命經濟研究所高級研究員島峰義清表示，對於被列入中國出口管制名單的日本企業來說，此舉相當於變相禁止了對中國稀土的進口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese authorities, he said, “will likely spend a considerable amount of time reviewing whether it’s for military use, effectively reducing rare earth exports to almost zero.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他指出，中國官方「可能會花費相當長的時間來審查這些物資是否用于軍事用途，從而實際上將稀土出口量減至近乎為零」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has used this playbook before, in its trade war with the United States. By threatening to throttle the world’s supply of rare earths, Beijing was eventually able to strike a trade deal with Washington to avoid the worst of President Trump’s tariffs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>北京以前在與美國的貿易戰中就使用過這種手段。通過威脅要勒緊全球的稀土供應，北京最終得以與華盛頓達成貿易協議，從而避免了川普總統最嚴厲的關稅政策。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CKWRt42xsJUDFW3IdQkdBgAlkw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Chinese government perhaps believes that through continuous pressure, Japan may yield. Because China is a major country and with the U.S.-China trade war, Trump has continued to back down,” said Xing Yuqing, an economics professor at the National Graduate Institute for Policy Studies in Tokyo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國政府或許認為，通過持續施壓，日本可能會屈服。因為中國是一個大國，而且在中美貿易戰中，川普一直在退讓，」東京政策研究大學院大學經濟學教授邢予青表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Warnings of ‘New Militarism’</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>對「新軍國主義」的警告</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s government said it had imposed its latest sanctions in response to Tokyo’s “new militarism.” Beijing has criticized Japan’s decision to revise its laws to allow the export of lethal weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府表示，實施最新制裁是為了回應東京的「新軍國主義」。北京方面對日本修改法律以允許出口殺傷性武器的決定提出了批評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Takaichi is an outspoken critic of China and has promised to raise Japan’s military spending to 2 percent of gross domestic product. Japan believes that it must modernize its forces to keep up with China’s rising military clout in the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經常公開批評中國的高市早苗還承諾將日本的軍費開支提高到國內生產總值的2%。日本認為自己必須實現軍隊現代化，以跟上中國在該地區日益增強的軍事影響力。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="日本首相高市早苗去年10月抵達韓國，準備與中國國家主席習近平會面。她隨後表明日本有意在中國攻擊台灣時出兵協防。" data-src="https://static01.nyt.com/images/2026/06/30/multimedia/30int-china-japan-02-gwtp/30int-china-japan-02-gwtp-master1050.jpg" src="https://static01.nyt.com/images/2026/06/30/multimedia/30int-china-japan-02-gwtp/30int-china-japan-02-gwtp-master1050.jpg"/></div><figcaption><span>日本首相高市早苗去年10月抵達韓國，準備與中國國家主席習近平會面。她隨後表明日本有意在中國攻擊台灣時出兵協防。</span> <cite>VCG, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Also provocative to Beijing is Japan’s recent military cooperation with the Philippines, including Tokyo’s decision to send decommissioned warships to the Southeast Asian country and participate in joint parachute exercises this month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本近期與菲律賓的軍事合作同樣被北京認為是挑釁之舉，包括東京決定向這個東南亞國家贈送退役戰艦，並在本月參與聯合跳傘演習。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ships and Jets</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>艦船與戰機</b><b></b></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CK6ot42xsJUDFRkyigMdjC4toA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earlier this month, China’s coast guard patrolled the waters east of Taiwan, where China, Japan and Taiwan all have competing maritime claims. Beijing called it a ”maritime traffic enforcement operation,” in which it inspected vessels in the area.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月早些時候，中國海警在台灣以東海域進行了巡邏，中國大陸、日本和台灣在該海域均存在主權爭議。北京將其稱為海上「執法巡查」，並在該海域對船隻進行了檢查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese state media suggested that the presence of Chinese vessels there could become routine. China’s foreign ministry said the operation was in response to an announcement by Japan and the Philippines that the two countries would hold talks on their maritime ⁠boundaries, which would likely involve the waters near Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官方媒體表示中國船隻在該地區的存在可能會常態化。中國外交部表示，該行動是對日本和菲律賓宣布將就海上邊界舉行談判的回應，這極有可能涉及到台灣附近海域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China views each of these steps as a provocation to the reddest of red lines, which is Taiwan,” said William Yang, senior analyst for Northeast Asia at International Crisis Group. “So that’s why we are seeing this series of escalations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國將這些舉措中的每一步都視為對最紅的紅線——即台灣——的挑釁，」國際危機組織東北亞首席分析師威廉·楊（音）表示。「這就是為什麼我們看到這一系列升級舉動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Saturday, a joint Chinese-Russian bomber patrol of 15 planes passed over the Sea of Japan, prompting Tokyo to scramble fighter jets to meet them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>週六，由15架飛機組成的中俄轟炸機聯合巡邏隊飛越日本海，促使東京</span>的戰鬥機升空進行攔截。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Historical Enmity</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>歷史恩怨</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Relations between China and Japan have for decades been prone to flare-ups over territorial disputes and Japan’s brutal World War II occupation, for which Beijing believes Tokyo has never sufficiently apologized.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>幾十年來，由於領土爭端和日本在二戰期間的殘酷佔領，中日關係一直極易爆發衝突，北京認為東京從未</span>就那段歷史進行過充分的道歉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPi-t42xsJUDFfERigMdzSQkDQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The last time in recent history that relations between the two countries reached such a low point was in 2010, when two Japanese naval vessels collided with a Chinese trawler near uninhabited islands — known as Diaoyu in China and Senkaku in Japan — that Japan controls but China also claims. At the time, Beijing halted rare-earth exports to Japan for only two months.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在近代歷史上，兩國關係上一次達到如此低谷是在2010年。當時，兩艘日本海警船在無人居住的島嶼——中國稱釣魚島，日本稱尖閣諸島——<span>附近與一艘中國漁船發生碰撞，該島嶼由日本控制，但中國也宣稱擁有主權。當時，北京方面僅暫停向日本出口稀土兩個月。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the years since, China surpassed Japan to become the world’s second-largest economy and invested heavily to modernize its military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在隨後的幾年裡，中國超越日本成為全球第二大經濟體，並投入巨資實現軍事現代化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While Tokyo has not retaliated against China’s measures, Ms. Takaichi has also not recanted her comment from November, and is unlikely to do so. The incident may be cover for Beijing to pressure Japan at a time when Tokyo’s most important ally, the United States, is distracted in the Middle East.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管東京方面沒有對中國的措施進行報復，但高市也沒有收回她11月的言論，而且不太可能這樣做。這一事件或許為北京提供了一個藉口，在東京最重要的盟友美國因中東局勢分散注意力之際，對日本施加壓力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It would seem Beijing prefers antagonizing Tokyo. To what purpose? Perhaps simply to show that it can,” said Sheila A. Smith, a senior fellow at the Council on Foreign Relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「北京似乎更傾向於與東京對抗。其目的何在？或許只是為了展示自己有這個能力，」美國對外關係委員會高級研究員希拉·A·史密斯表示。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p><p class="cn-p">Pei-Lin Wu是《紐約時報》記者/研究員，報導台灣和中國新聞。</p><div class="" data-poster=""><span><p class="cn-p">Kiuko Notoya是一名常駐東京的記者/研究員，報導日本新聞。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260701/china-japan-rare-earths-patrols/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
