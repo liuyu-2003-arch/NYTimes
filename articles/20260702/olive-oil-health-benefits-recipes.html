@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>橄欖油有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">橄欖油有多健康？</h1>
+    <h2 class="en-headline">How Healthy Is Olive Oil?</h2>
+    <div class="meta-line">ALEXANDRA PATTILLO <span style="margin: 0 8px;">•</span> 2026-07-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/01/20/well/WELL-HEALTHY-OLIVEOIL1/WELL-HEALTHY-OLIVEOIL1-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the healthiest communities worldwide have something in common — diets rich in olive oil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球許多最健康的社區都有一個共同點——飲食中富含橄欖油。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ingredient, especially the extra-virgin variety, is full of fatty acids and health-promoting plant compounds called polyphenols that make it a potent anti-inflammatory with long-term benefits. Studies suggest that consuming olive oil may help lower your risk of heart disease, neurodegenerative disease and even premature death, especially when it’s eaten as part of a Mediterranean diet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種食材——尤其是特級初榨橄欖油——富含脂肪酸和被稱為多酚的有益健康植物化合物，使其成為有長期健康益處的強效抗炎劑。研究表明，食用橄欖油可能有助於降低患心臟病、神經退行性疾病甚至過早死亡的風險，特別是作為地中海飲食的一部分食用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Olive oil is one of the “key drivers” of the diet’s health benefits, said Catherine Itsiopoulos, a nutrition researcher at RMIT University in Melbourne, Australia, who studies olive oil. It is the “healthiest type of fat” to use in your diet, she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲墨爾本皇家理工大學研究橄欖油的營養學研究員凱瑟琳·伊齊奧普洛斯表示，橄欖油是地中海飲食健康益處的「關鍵驅動因素」之一。她補充說，這是飲食中「最健康的脂肪類型」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what to know, along with recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是您需要了解的內容，以及來自《紐約時報》烹飪頻道的食譜。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIe84OWstZUDFT-wOgUdL-Q10g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It helps keep your heart healthy.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它有助於保持心臟健康</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of all the plant-based oils, olive oil has among the highest concentrations of monounsaturated fats and polyphenols. These compounds, particularly one called oleic acid, work to balance cholesterol levels, lower blood pressure and keep the heart healthier over time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在所有植物油中，橄欖油的單不飽和脂肪和多酚濃度名列前茅。這些化合物——特別是其中一種叫做油酸的物質——能夠平衡膽固醇水平、降低血壓，隨著時間的推移，能夠令心臟更加健康。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a large 2018 clinical trial in Spain, people at high risk of cardiovascular disease who followed a Mediterranean diet supplemented with extra-virgin olive oil (at least four tablespoons per day) reduced their risk of heart attack, stroke and death from cardiovascular causes by 30 percent, compared with a group who followed a low-fat diet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2018年在西班牙進行的一項大型臨床試驗中，與遵循低脂飲食的對照組相比，遵循地中海飲食並補充特級初榨橄欖油（每天至少四湯匙）的高危心血管疾病患者心臟病發作、中風以及因心血管疾病導致的死亡風險降低了30%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“One single food cannot have the same effect as the whole Mediterranean cuisine,” Dr. Itsiopoulos said. “Still, even a few tablespoons of olive oil consumed per day can have a significant cardiovascular benefit.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「單靠一種食物無法達到完整的地中海飲食所帶來的效果，」伊齊奧普洛斯說。「不過，每天只需食用幾湯匙橄欖油，就能對心血管產生顯著的益處。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It can reduce inflammation.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它可以減輕炎症</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Along with its polyphenols, olive oil contains other antioxidants like vitamin E and squalene. These all help to reduce inflammation and oxidative stress, both of which can cause cell damage and disease, said Elena M. Yubero-Serrano, a research scientist at the Spanish National Research Council who studies the relationship between food and aging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了多酚，橄欖油還含有維生素E和角鯊烯等其他抗氧化劑。西班牙國家研究委員會研究食物與衰老關係的科研人員埃琳娜·尤貝羅-塞拉諾表示，這些成分都有助於減輕炎症和氧化應激，而這兩者都會導致細胞損傷和疾病。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKfk4OWstZUDFbOsOgUd2ww3aA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Olive oil may also benefit metabolic health by improving blood sugar control and potentially lowering the risk of Type 2 diabetes, Dr. Yubero-Serrano said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尤貝羅-塞拉諾指出，橄欖油還可以改善血糖控制，潛在降低2型糖尿病風險，從而有益於代謝健康。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>It’s good for your brain.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它對大腦有益</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The healthy fats and antioxidants in olive oil also help protect the brain and reduce the risk of cognitive decline, said Marta Guasch-Ferré, a nutrition researcher and associate professor at the University of Copenhagen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哥本哈根大學的營養學研究員兼副教授瑪塔·瓜施-費雷表示，橄欖油中的健康脂肪和抗氧化劑也有助於保護大腦並降低認知能力下降的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analyzing the health data of more than 90,000 U.S. adults over 28 years, Dr. Guasch-Ferré and her team found that those who consumed more than half a tablespoon of olive oil per day had a 28 percent lower risk of dying from dementia compared with those who never or rarely consumed olive oil. They also had a significantly lower risk of dying from cardiovascular disease, respiratory disease and cancer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過對9萬多名美國成年人長達28年的健康數據進行分析，瓜施-費雷博士及其團隊發現，與從不或極少食用橄欖油的人相比，每天攝入超過半湯匙橄欖油的人死於失智症的風險要低28%。同時，他們死於心血管疾病、呼吸系統疾病和癌症的風險也顯著降低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of this research is observational, so it’s difficult to prove cause and effect for a single food. Still, the findings support replacing sources of saturated fats (like butter, mayonnaise or margarine) with olive oil to stave off premature death, Dr. Guasch-Ferré said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些研究大多是觀察性的，因此很難證明單一食物的因果關係。儘管如此，瓜施-費雷博士表示，這些研究成果支持用橄欖油替代飽和脂肪來源（如黃油、蛋黃醬或人造黃油），以預防過早死亡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the healthiest way to enjoy it?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>最健康的食用方式是什麼？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CJSB4eWstZUDFTpGCAQde9QVKg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Olive oil is extracted by crushing olives. Doing this at low temperatures produces the highest quality olive oil (extra-virgin). Refined and blended varieties, including regular olive oil, are at least partially extracted using heat, chemicals or mechanical methods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">橄欖油是通過壓榨橄欖製成的，低溫壓榨可生產出最高品質的橄欖油（特級初榨）。而包括普通橄欖油在內的精鍊和混合品種在生產過程中至少部分採用了加熱、化學或機械方法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The more processing, the fewer nutritional benefits, Dr. Yubero-Serrano said. Regular olive oil is a good source of healthy fats. But extra-virgin is the “gold standard” when it comes to nutrition because of its polyphenols and other antioxidants, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尤貝羅-塞拉諾表示，加工步驟越多，營養價值就越低。普通橄欖油是健康脂肪的良好來源。但她指出，就營養價值而言，由於其富含多酚和其他抗氧化劑，特級初榨橄欖油才是「黃金標準」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Olive oil can get a bad rap because it’s high in calories — about 120 per tablespoon. But if you eat it in moderation, and in place of less healthy sources of fat like butter, it’s unlikely to sabotage your health goals. For most people, one to four tablespoons per day is a good target for health and longevity, experts say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">橄欖油常因熱量較高（每湯匙約120卡路里）而受詬病。但若適量食用，並用來代替黃油等不太健康的脂肪來源，它就不太可能破壞健康目標。專家表示，對大多數人來說，為了健康和長壽，每天一到四湯匙是一個很好的目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With that, here are some recipes from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》烹飪頻道食譜推薦</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. House Dressing</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 招牌沙拉醬</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-House-Dressing-lvgt/12WELL-HEALTHY-OLIVEOIL-House-Dressing-lvgt-master1050.jpg" src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-House-Dressing-lvgt/12WELL-HEALTHY-OLIVEOIL-House-Dressing-lvgt-master1050.jpg"/></div><figcaption><span></span> <cite>Rachel Vanni for The New York Times. Food Stylist: Spencer Richards.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This mustard-shallot vinaigrette, rich and fruity with olive oil, gets its smooth balance from the addition of warm water.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款芥末香蔥油醋汁富含橄欖油的濃郁果香，加入溫水後更顯順滑平衡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>House Dressing</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：招牌沙拉醬</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Olive Oil-Poached Tuna With Garlic Aioli</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 橄欖油水煮金槍魚配蒜香蛋黃醬</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Tuna-mqzj/12WELL-HEALTHY-OLIVEOIL-Tuna-mqzj-master1050.jpg" src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Tuna-mqzj/12WELL-HEALTHY-OLIVEOIL-Tuna-mqzj-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Susie Theodorou.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bathing fish in olive oil makes it deeply flavorful and juicy. Here, the leftover oil is blended into aioli.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將魚浸泡在橄欖油中烹製，使濃郁多汁，另將剩餘的橄欖油調製成蒜香蛋黃醬。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Olive Oil-Poached Tuna With Garlic Aioli</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：橄欖油水煮金槍魚配蒜香蛋黃醬</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Creamy Cauliflower Soup With Rosemary Olive Oil</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 迷迭香橄欖油奶油花椰菜湯 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Cauliflower-Soup-lcbf/12WELL-HEALTHY-OLIVEOIL-Cauliflower-Soup-lcbf-master1050.jpg" src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Cauliflower-Soup-lcbf/12WELL-HEALTHY-OLIVEOIL-Cauliflower-Soup-lcbf-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Infusing olive oil with fresh rosemary enriches this vegan cauliflower soup — or any other soup, salad or vegetable platter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將新鮮迷迭香浸入橄欖油可以豐富這款純素花椰菜湯的口感，搭配其他湯品、沙拉或蔬菜拼盤亦可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Creamy Cauliflower Soup With Rosemary Olive Oil</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：迷迭香橄欖油奶油花椰菜湯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Salmon With Olive Oil-Braised Zucchini and Chickpeas</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 鮭魚配橄欖油燉西葫蘆和鷹嘴豆</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Skillet-Salmon-lbpm/12WELL-HEALTHY-OLIVEOIL-Skillet-Salmon-lbpm-master1050.jpg" src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Skillet-Salmon-lbpm/12WELL-HEALTHY-OLIVEOIL-Skillet-Salmon-lbpm-master1050.jpg"/></div><figcaption><span></span> <cite>Bryan Gardner for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Slow-cooking zucchini in garlicky olive oil intensifies their natural sweetness and gives them a silky texture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">用蒜香橄欖油慢燉西葫蘆，能增強其天然甜味，並賦予其絲滑口感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Salmon With Olive Oil-Braised Zucchini and Chickpeas</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：鮭魚配橄欖油燉西葫蘆和鷹嘴豆</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Chimichurri Chicken</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 阿根廷青醬雞肉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Chimichurri-Chicken-gbkt/12WELL-HEALTHY-OLIVEOIL-Chimichurri-Chicken-gbkt-master1050.jpg" src="https://static01.nyt.com/images/2026/01/12/multimedia/12WELL-HEALTHY-OLIVEOIL-Chimichurri-Chicken-gbkt/12WELL-HEALTHY-OLIVEOIL-Chimichurri-Chicken-gbkt-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Olive oil heightens the freshness of parsley and oregano leaves in this classic Argentine sauce, which livens up any meat, fish or vegetable it’s drizzled over.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這款經典的阿根廷醬料中，橄欖油提升了歐芹和牛至葉的清新感。只需將其淋在肉類、魚類或蔬菜上，就能讓菜肴煥發活力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Chimichurri Chicken</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：阿根廷青醬雞肉</div></div></div></div></div><div class="big_ad" data-google-query-id="CK_C4eWstZUDFWROCAQdoDYuGg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2026年1月12日。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260702/olive-oil-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
