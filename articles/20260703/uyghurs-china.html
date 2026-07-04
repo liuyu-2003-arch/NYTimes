@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界辜負了維吾爾人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">世界辜負了維吾爾人</h1>
+    <h2 class="en-headline">The World Has Failed the Uyghurs</h2>
+    <div class="meta-line">TAHIR IMIN <span style="margin: 0 8px;">•</span> 2026-07-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="764" src="https://static01.nyt.com/images/2026/07/02/opinion/02imin/02imin-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Carolyn Drake</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the past decade, an uncrossable distance has separated me from my daughter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去的十年裡，一道無法跨越的鴻溝將我和女兒隔開。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She is in the Uyghur homeland — what China’s government calls Xinjiang — living under Beijing’s totalitarian drive to erase our culture. I am in exile, having fled nine years ago to avoid arrest. When I last saw her, she was a wide-eyed 6-year-old. She is growing up today without her father in a country that wants her to forget who she is.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她身處維吾爾人的故土——中國政府稱之為新疆的地方——生活在北京旨在抹殺我們文化而推行的極權運動之中。我則流亡海外——九年前為了躲避逮捕而逃離。我最後一次見到她時，她還是一個眼神清澈的六歲孩子。如今，她在一個試圖讓她忘記自己身份的國家裡，在沒有父親的陪伴下長大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Countless families like mine have been shattered by Beijing’s drive to forcefully assimilate Uyghurs into Chinese society. As many as one million Uyghurs and other Turkic ethnic minorities were sent to detention facilities between 2016 and 2019, forced to renounce Islam and subjected to Communist Party indoctrination. China says it closed those facilities, but Uyghurs still face coerced labor, mass surveillance and forced birth control. Many others have simply been imprisoned; I have reason to believe several of my relatives are among them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京強行將維吾爾人同化入中國社會的運動已經讓無數像我這樣的家庭支離破碎。在2016年至2019年間，多達100萬維吾爾人及其他突厥裔少數民族被送進拘禁設施，被迫放棄伊斯蘭教，並接受共產黨的政治灌輸。中國宣稱已關閉了這些設施，但維吾爾人仍面臨著強迫勞動、大規模監控和強制節育。還有許多人則直接被投入監獄；我有理由相信我的幾位親屬就在其中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When these atrocities first became known nearly a decade ago, Uyghurs assumed the global community would act to end one of the most sweeping campaigns of ethnic and religious repression since the Holocaust. For a time, the world heard us. A 2022 U.N. report said China may have committed crimes against humanity. Several countries declared it a genocide, banned goods made with Uyghur forced labor, and imposed sanctions on China. Yet China, which denies committing such crimes, has shrugged off the pressure and continued to extinguish our culture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近十年前，當這些暴行最初為世人所知時，維吾爾人曾以為國際社會會採取行動，終結這場自納粹大屠殺以來最廣泛的種族和宗教鎮壓運動之一。有一段時間，世界確實聽到了我們的聲音。2022年，一份聯合國報告指出，中國可能犯下了反人類罪。一些國家宣布這構成了種族滅絕，禁止進口維吾爾人強迫勞動製造的商品，並對中國實施制裁。然而，中國否認犯下這些罪行，無視這些壓力，繼續抹殺我們的文化。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLTm4cfut5UDFc3c0gQdwU8oCg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Uyghurs are now coming to a crushing realization: The world has failed us. If we are to survive as a people, Uyghurs in the diaspora must preserve in exile what China is erasing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維吾爾人現在正面臨一個令人心碎的現實：世界辜負了我們。如果我們這個民族要生存下去，散居海外的維吾爾人就必須在流亡中保存中國正在抹去的一切。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump’s trip to Beijing in May brought this hard truth home. His first administration declared China’s policies a genocide. But there is no indication that this human rights catastrophe even came up during his meetings with President Xi Jinping of China, the man who set these policies in motion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統5月的北京之行讓這一殘酷的真相顯得更加清晰。他的第一屆政府曾宣布中國的政策是種族滅絕。但沒有任何跡象表明，在川普與啟動這些政策的中國國家主席習近平會面時，這場人權災難曾被提及。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For centuries, Uyghurs maintained a distinct Eurasian identity. When I was young, my grandmother told me how our ancestors transformed our hometown, Poskam, from a desert into a living oasis: planting mulberry trees, digging irrigation canals and building our homes — a civilization conjured from sand. Our way of life blends influences from east and west yet remains unmistakably Uyghur, with our own literary, musical, architectural, philosophical and culinary traditions, some recognized by UNESCO as part of humanity’s shared heritage. Song has been especially important. My grandmother used to say our souls live in our songs. She sang while kneading dough to make noodles, braiding my aunt’s hair and watching the sun set over our mountains and deserts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾個世紀以來，維吾爾人一直保持著獨特的歐亞大陸身份認同。我小的時候，祖母告訴我，我們的祖先是如何將我們的家鄉澤普從沙漠變成生機勃勃的綠洲：我們種植桑樹，挖掘灌溉渠，建造我們的家園——這是一個從沙中變幻而出的文明。我們的生活方式融合了東西方的影響，但依然擁有鮮明地道的維吾爾特色，擁有我們自己的文學、音樂、建築、哲學和烹飪傳統，其中一些已被聯合國教科文組織認定為人類共同遺產。歌曲尤為重要。祖母常說，我們的靈魂就活在在我們的歌聲裡。她在揉面做麵條時唱歌，在給我姑姑編辮子時唱歌，在眺望夕陽落入群山和沙漠時也唱歌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But our strong sense of self has complicated Beijing’s efforts to integrate us into the Chinese nation. Its answer is to extinguish what it means to be Uyghur. A Financial Times investigation published in May documented Beijing’s systematic dismantlement of the mechanisms through which Uyghur identity is passed down. This includes taking Uyghur children from their families and sending them to boarding schools where they are forbidden from speaking their mother tongue, and eradicating Uyghur-language publishing and literature.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但我們強烈的自我認同使得北京將我們融入中華民族的努力變得棘手。他們的對策就是抹殺維吾爾人的特質。《金融時報》5月發表的一項調查記錄了北京如何系統性地瓦解維吾爾身份傳承的機制，包括將維吾爾兒童從家中帶走，送往寄宿學校並禁止他們使用母語，以及根除維吾爾語的出版物和文學。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Uyghurs in the diaspora, scattered mostly across the United States, Europe and Central Asia, have responded. Families have launched volunteer-run Uyghur-language schools for our children. Cultural associations keep alive traditions like the meshrep — our vibrant communal gatherings featuring food, song, dance and moral education. Others are assembling online repositories of Uyghur literature, historical documents, photographs and recordings before they disappear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">流散在世界各地、主要分布在歐美和中亞的維吾爾人做出了回應。一些家庭為我們的孩子開辦了由志願者運營的維吾爾語學校。文化協會努力維持著「麥西熱甫」(meshrep)等傳統——這是我們充滿活力的社區聚會，包含美食、歌曲、舞蹈和道德教育。還有一些人正在建立維吾爾文學、歷史文獻、照片和錄音的在線資源庫，以防它們消失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We are not the first people to stand on this precipice. Diaspora Jews helped preserve Jewish identity for centuries; exiled Tibetans are struggling to do the same, as have many other peoples throughout history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們並不是第一個站在這種懸崖邊緣的民族。流散海外的猶太人數百年來一直致力於維護猶太人的身份認同；流亡的藏人也在為此而奮鬥，縱觀歷史，許多其他民族也是如此。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP2G4sfut5UDFd_L0gQdPnoq8g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But there is no road map, and the challenge is immense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但我們沒有現成的路線圖，挑戰更是巨大的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much depends on sustaining our language, the irreplaceable medium of a culture. Yet I’ve seen a worrying pattern emerge across the diaspora: The first generation speaks the mother tongue. The second understands it, but increasingly responds in the local language. By the third generation, comprehension tends to fade. By the fourth, the language is often functionally dead, taking with it the bonds that connect people and communities. As a result, young Uyghurs are gradually disengaging from our gatherings and identity, which weakens our collective voice and, ultimately, our capacity to keep fighting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這在很大程度上取決於能否延續我們的語言，它是文化不可替代的載體。然而，我觀察到，流散海外的群體中出現了一種令人擔憂的模式：第一代人說母語。第二代人聽得懂，但越來越傾向於用當地語言回應。到了第三代，對母語的理解能力往往開始衰退。到了第四代，這門語言通常在功能上已經消亡，隨之帶走的是連接人與社區的紐帶。結果，年輕的維吾爾人逐漸脫離了我們的聚會和身份認同，這削弱了我們的集體聲音，並最終削弱了我們繼續抗爭的能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We lack some of the basic tools needed to turn this around. Many of the top Uyghur scholars, writers, artists, historians and linguists — people critical for cultural preservation — are silenced or imprisoned in China. The homegrown Uyghur schools and community organizations in the diaspora that are trying to fill that void operate mostly in isolation, under severe funding and manpower constraints.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們缺乏扭轉這種局面所需的一些基本工具。許多頂尖的維吾爾學者、作家、藝術家、歷史學家和語言學家——這些對文化保護至關重要的人士——在中國遭到封口或監禁。僑居海外的維吾爾族人自發創辦的學校和社區組織試圖填補這一空白，但它們大多處於孤立狀態，且面臨嚴重的資金和人力短缺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I founded the digital literary magazine Tupraq in 2024 and the news and commentary site Uyghur Post last year to help keep our written word alive. Both survive on small donations and volunteers. I have had to work multiple jobs to keep them afloat, and have repeatedly come close to shutting down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我在2024年創辦了數字文學雜誌《Tupraq》（故土），並於去年創辦了新聞和評論網站《維吾爾郵報》，以助維持我們書面文字的生命力。二者都靠微薄的捐款和志願者維持生存。我必須兼職做多份工作才能維持它們的運轉，它們還曾多次瀕臨停運邊緣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meanwhile, Beijing is working to undermine efforts like ours. Human rights groups have documented a broad campaign of intimidation by China aimed at silencing Uyghurs abroad, and digital security watchdogs say China-linked actors are likely behind cyberattacks against Uyghur websites. Uyghur Post has faced relentless attacks, forcing prolonged shutdowns. Fake sites have sprung up, apparently to confuse readers and erode our credibility. Similar challenges are reported by Uyghurs engaged in cultural preservation around the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，北京正在設法破壞我們這樣的努力。人權組織記錄了中國發起的一場旨在壓制海外維吾爾人發聲的大規模恐嚇運動，網路安全監督機構表示，針對維吾爾網站的網路攻擊背後很可能是與中國有關聯的行為者。《維吾爾郵報》面臨著無休止的攻擊，被迫長時間關停。虛假網站如雨後春筍般湧現，顯然是為了混淆讀者視聽，並削弱我們的信譽。世界各地致力於文化保護的維吾爾人也報告了類似的挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pressure on China to end its atrocities against Uyghurs must never relent. But what the Uyghurs need from the global community is changing. If the world can’t stop what’s happening in China, governments and private organizations must recognize that a unique slice of human culture faces extinction — and provide funding and institutional support for the Uyghur communities within their borders who are fighting to prevent that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要求中國結束針對維吾爾人暴行的壓力絕不能有絲毫鬆懈。但維吾爾人對國際社會的需求正在發生改變。如果世界無法阻止中國正在發生的事情，各國政府和私營機構就必須認識到，人類文化中一個獨特的組成部分正面臨滅絕——並為他們國內那些努力阻止這一局面的維吾爾社區提供資金和制度支持。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIqW4sfut5UDFXb50gQd0IE4dg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I do this work for my daughter. I wake up every morning wondering who she has become, whether she remembers the songs I sang to her. I realize I may never see her again. But what we build in exile may keep fragments of the Uyghur soul intact so that young ones like her can reclaim them someday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我做這項工作是為了我的女兒。每天早上醒來，我都在想，她現在變成了什麼樣子，她是否還記得我曾經唱給她的歌。我意識到，我可能再也見不到她了。但我們在流亡中所建立的一切，或許能讓維吾爾靈魂的碎片保持完整，以便有朝一日，像她這樣的年輕人能夠重新找回它們。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Tahir Imin是一位維吾爾學者和作家，曾被中國政府監禁。他現居華盛頓，是維吾爾郵報新聞網站和維吾爾自由研究所的創始人。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260703/uyghurs-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
