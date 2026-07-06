@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>習近平超級幕僚長蔡奇 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">習近平超級幕僚長蔡奇</h1>
+    <h2 class="en-headline">As Xi Looks to Extend His Rule, He Leans on a Longtime Ally</h2>
+    <div class="meta-line">儲百亮 <span style="margin: 0 8px;">•</span> 2026-07-06</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="蔡奇，中國領導人習近平備受信任的手下。他極可能是習近平核心圈子裡最具影響力的官員。" height="700" src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-01-zjlg/00int-china-politics-01-zjlg-master1050.jpg" width="1050"/><figcaption><span>蔡奇，中國領導人習近平備受信任的手下。他極可能是習近平核心圈子裡最具影響力的官員。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As China’s leader, Xi Jinping, forges toward a fourth term in power, he confronts a dilemma common to aging autocrats: testing and recruiting a rising generation of loyal officials while ensuring his own dominance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國領導人習近平向第四個任期邁進，他面臨年長威權領導人普遍會遇到的難題：如何在確保自己絕對主導地位的同時，考察並培養新一代忠誠的官員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To manage this looming challenge, he is leaning on Cai Qi, a longtime deputy who is probably the most influential official in Mr. Xi’s inner circle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了應對這一日益逼近的挑戰，他正倚重蔡奇——一位長期追隨習近平左右、在其核心圈子中或許最具影響力的副手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tall, silver-haired, and constantly at Mr. Xi’s side, Mr. Cai is a supercharged chief of staff to his leader. Mr. Cai holds multiple leading roles, including in national security and running the central office for Mr. Xi and other senior Communist Party officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">身材高大、滿頭銀髮、幾乎時刻陪伴在習近平身邊的蔡奇堪稱領導人的超級幕僚長。他身兼多個領導職務，包括國家安全領域，以及為習近平和其他中共高級官員服務的中央辦公廳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi recently appointed him president of the Central Party School, the elite academy that trains rising officials. Mr. Cai is also overseeing a new campaign to instill Mr. Xi’s ideas about discipline and loyalty among cadres.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近，習近平任命他兼任中央黨校校長，這所學校是中共培養未來領導幹部的搖籃。蔡奇同時還負責主持一項新運動，旨在向廣大幹部灌輸習近平關於紀律和忠誠的理念。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJiMndn2vJUDFWrx4wcdCc0b5Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Cai’s new roles indicated that he might take an important role in vetting potential new senior officials and enforcing the strict ideological standards that Mr. Xi is likely to expect from a new cohort of potential leaders. Mr. Xi is expected to secure another five-year term at a Communist Party congress late next year, a feat that would extend his rule to at least 20 years and potentially well into the 2030s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蔡奇的這些新職務表明，他可能在把關未來的高層人選、執行習近平可能對新一批儲備領導人提出的嚴苛意識型態標準方面發揮重要作用。預計習近平將在明年年底召開的中共黨代會上獲得又一個五年任期，這將使他的執政時間延長至至少20年，並有可能延續至2030年代中後期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The ability to speak on behalf of Xi Jinping is the rarest commodity in elite Chinese politics, and Cai Qi has that,” said Julian Gewirtz, who served as the senior director for China at the National Security Council during the Biden administration and is now a scholar at Columbia University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「代表習近平發言的能力是中國高層政治中最稀缺的特質，而蔡奇恰恰擁有它，」曾在拜登政府國家安全委員會擔任中國事務高級主任、現為哥倫比亞大學學者的朱利安·格維茲說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said that Mr. Cai’s leadership of the party school meant that he was “probably one of a very small number of people who can prepare the dossiers for Xi on those officials.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還表示，蔡奇執掌中央黨校意味著他「很可能是極少數能夠為習近平準備這些官員檔案資料的人之一」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="習近平與蔡奇去年在北京。" data-src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-02-zjlg/00int-china-politics-02-zjlg-master1050.jpg" src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-02-zjlg/00int-china-politics-02-zjlg-master1050.jpg"/></div><figcaption><span>習近平與蔡奇去年在北京。</span> <cite>Adek Berry/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Cai, 70, is among a cluster of senior officials who first worked with Mr. Xi when he was still a young official in eastern China in the 1990s and 2000s. In recent years, Mr. Cai appears to have risen to become Mr. Xi’s closest adviser and the tough enforcer of his vision. (Mr. Cai’s name is pronounced TSIGH Chee.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現年70歲的蔡奇是最早與習近平共事的高層官員之一——那還是上世紀90年代和本世紀前十年，習近平當時在中國東部擔任地方官員。近年來，蔡奇似乎已經成為習近平最得力的心腹，也是及其政治願景的強硬執行者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Into the second decade of his rule, Xi has come to value strict adherence to his stated desires, and Cai has been the official to ensure that,” said Victor Shih, a professor at the University of California San Diego who studies elite politics in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「進入執政第二個十年，習近平愈發看重對他既定意圖的嚴格貫徹，而蔡奇正是確保這一點得以落實的官員，」研究中國精英政治的加州大學聖地亞哥分校教授史宗瀚說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Cai did not always seem so stern. Back in the 1990s and 2000s, as an official in Fujian and Zhejiang provinces, he cultivated a reputation as an approachable, open-minded official.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蔡奇並非總是顯得如此嚴厲。20世紀90年代和21世紀初，在擔任福建省和浙江省的地方官員時，他曾以平易近人、思想開明著稱。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMTNndn2vJUDFdzl4wcdpz0y5g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He visited Taiwan in 2012 and wrote a travel diary that praised its many convenience stores. He opened a Weibo social media account that attracted millions of followers, with posts addressing residents’ complaints and presenting himself as an enlightened, open official.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2012年他曾訪問台灣，並寫下旅行日記，稱讚台灣遍布各地的便利店。他還開設了微博帳號，吸引了數百萬粉絲，發帖回應民眾的訴求，將自己塑造成一位開明、開放的官員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Openness is a good thing,” he wrote in one post. “For any political party, relying on self-restraint is not enough.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「公開是個好東西，」他曾在一條微博中寫道。「任何政黨，僅僅靠自我約束是不夠的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But after Mr. Cai was transferred to Beijing by Mr. Xi, he shed his folksy demeanor and quickly transformed into a guardian of Mr. Xi’s draconian priorities. He erased his Weibo account. In 2014, Mr. Cai helped establish the secretive Central National Security Commission, which expanded Beijing’s control over domestic and external security risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在蔡奇被習近平調往北京之後，他便卸下親民姿態，迅速轉變為習近平強硬政策的捍衛者。他註銷了自己的微博帳號。2014年，蔡奇參與籌建了神秘的中央國家安全委員會，進一步擴大了北京對國內外安全風險的掌控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three years later, Mr. Xi promoted Mr. Cai to be the mayor and party secretary of Beijing, a sensitive role focused on ensuring stability and order in the Chinese capital. Mr. Cai waged campaigns to remake the city in line with Mr. Xi’s vision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">三年後，習近平提拔蔡奇出任北京市市長和市委書記。這是一個極其敏感的職位，主要任務是確保首都的穩定與秩序。蔡奇隨後開展了一系列行動，按照習近平的設想重塑北京。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In late 2017, Mr. Cai launched a drive to expel hundreds of thousands of migrant workers from Beijing in the name of housing safety. The city government had long been trying to reduce the number of low-income migrants in Beijing and to attract more higher-paid, university-educated professionals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2017年底，蔡奇以房屋安全的名義發起了一場驅逐數十萬外來務工人員的行動。北京市政府長期以來一直試圖減少北京低收入外來人口的規模，吸引更多擁有大學學歷的高薪專業人才。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2017年，蔡奇在北京發起了一場驅逐外來務工人員的行動。在大興，整片的街區被拆除清空，居民的個人物品散落一地。" data-src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-03-zjlg/00int-china-politics-03-zjlg-master1050.jpg" src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-03-zjlg/00int-china-politics-03-zjlg-master1050.jpg"/></div><figcaption><span>2017年，蔡奇在北京發起了一場驅逐外來務工人員的行動。在大興，整片的街區被拆除清空，居民的個人物品散落一地。</span> <cite>Bryan Denton for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a combative speech, Mr. Cai used the imagery of battle to order officials not to flinch from enforcing the unpopular expulsions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一次措辭強硬的講話中，蔡奇以戰場廝殺為喻，要求官員在執行這項不得人心的驅逐行動時，不得手軟退縮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“At the grass roots, it’s about using real swords and real guns, putting blood on the blade, having the guts to clash head-on,” Mr. Cai said in a speech to Beijing officials that circulated online. Mr. Cai’s brutal approach ignited widespread criticism in the city, including petitions and a call for him to resign.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「到了基層，就是要真刀真槍、就是要刺刀見紅、就是要敢於硬碰硬，」蔡奇在一次面向北京官員的講話中說道，該講話在網上廣為流傳。他的強硬手段在北京引發強烈批評，出現了聯署請願，還有人公開呼籲他辭職。</div></div></div></div></div><div class="big_ad" data-google-query-id="COWnntn2vJUDFVa7rgUdhvMT5Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2022, Mr. Xi promoted Mr. Cai to the Politburo Standing Committee, the party’s top echelon. Mr. Cai also became the director of the party’s General Office and head of its Secretariat, putting him in charge of the paperwork, meetings, health, security and travel of senior officials, including Mr. Xi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年，習近平提拔蔡奇進入中共中央政治局常委會，這是中共最高權力核心。蔡奇同時還出任中共中央辦公廳主任和中央書記處書記，負責包括習近平在內的高層官員的文件處理、會議安排、健康保障、安全警衛和出行事務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Official reports indicate that Mr. Cai also oversees cybersecurity policy and is a deputy head of the Central National Security Commission, which monitors threats at home and abroad, roles that are usually kept behind a veil of secrecy. But his importance to Mr. Xi is clear. When Mr. Xi hosted President Trump on a state visit in May, Mr. Cai was first in the line of officials whom Mr. Xi introduced to Mr. Trump at a welcome ceremony.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官方報導顯示，蔡奇還負責網路安全政策，並擔任中央國家安全委員會副主席，該委員會負責監督國內外安全威脅，這些職務通常籠罩在保密的面紗之下。但蔡奇對習近平的重要性顯而易見。今年5月，習近平接待美國總統進行國事訪問時，蔡奇在他向川普介紹的官員隊伍中排第一位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now Mr. Cai’s role overseeing party affairs may give him a voice in choosing the officials who will help Mr. Xi achieve his goal of transforming China into a technological superpower and of bringing Taiwan, the democratic self-ruled island, under Beijing’s control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，蔡奇主管黨務工作的角色或將賦予他在選拔官員方面的話語權——這些官員將協助習近平實現將中國打造成科技強國、將民主自治島嶼台灣置於北京控制之下這兩大目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2018, Mr. Xi abolished a limit on his tenure as president, opening the way to lead indefinitely. Analysts say they do not expect Mr. Xi, 73, to name his own successor for years, to maintain his unchallenged control of the state.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2018年，習近平取消了國家主席任期限制，為無限期執政鋪平了道路。分析人士認為，為了維持無人挑戰的權力，現年73歲的習近平未來幾年內不會指定接班人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even so, Mr. Xi will need to replenish the ranks of top officials. More than two-thirds of the officials on the Communist Party’s Central Committee — a leadership council that has about 200 full members — will retire next year if an age norm applies. That norm means that most senior officials who are 68 or older at the time of the party congress step down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即便如此，習近平仍需要補充高層官員隊伍。如果年齡慣例繼續適用，那麼中共中央委員會約200名正式委員中，超過三分之二將在明年退休。根據這一慣例，在黨代會召開時年滿68歲或以上的大多數高級官員都將卸任。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When a political strongman like Xi Jinping reaches his late years, his sense of insecurity and distrust can rise, but he is not as familiar as he used to be with his new subordinates, which makes establishing that trust harder,” said Chien-wen Kou, a professor at National Chengchi University in Taiwan who studies China’s leaders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「像習近平（這樣）一個政治強人到晚年的時候，他的不安全感、他的不信任感是會上升的，可是他面對下面的這些部下是沒有像以前那麼熟了，所以形成信任會更難的，」台灣政治大學研究中國領導人的教授寇健文表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the opportunity to promote hundreds of officials carries risks. Mr. Xi has purged the People’s Liberation Army elite of many of the senior officers he had chosen to promote. Those accused of corruption and disloyalty and removed included General Zhang Youxia, whom Mr. Xi had kept on beyond the usual retirement age and appointed China’s top uniformed commander.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，提拔數百名官員的機會也伴隨著風險。習近平此前清洗了多名由他親手提拔的解放軍高級將領。被指控腐敗和不忠並被免職的人中，包括張又俠上將。習近平曾打破年齡慣例讓他留任，並任命他為解放軍最高指揮官。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="蔡奇（滿頭銀髮、系紅領帶者）於2022年進入中共中央政治局常委會，這是中共權力的最高核心層。現在，預計他將在下一代高層官員的選拔過程中發揮關鍵作用。" data-src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-04-zjlg/00int-china-politics-04-zjlg-master1050.jpg" src="https://static01.nyt.com/images/2026/07/02/multimedia/00int-china-politics-04-zjlg/00int-china-politics-04-zjlg-master1050.jpg"/></div><figcaption><span>蔡奇（滿頭銀髮、系紅領帶者）於2022年進入中共中央政治局常委會，這是中共權力的最高核心層。現在，預計他將在下一代高層官員的選拔過程中發揮關鍵作用。</span> <cite>Ng Han Guan/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Given all that has happened, Xi Jinping will be even more cautious in recruitment screening ahead of the 21st party congress,” said Deng Yuwen, a former editor at the Study Times, a newspaper published by the Central Party School. “Xi Jinping wants to make sure that the ideas of future party and government cadres stay totally aligned with his.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「既然出現這個事情，習近平對二十一大前的人事篩選工作會更加慎重，」曾任中央黨校機關報《學習時報》編輯、現居美國的鄧聿文說。「習近平要確保未來的黨政幹部的思想，要跟習近平保持完全一致。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if Mr. Cai also steps down from his other roles next year, which is possible given his age, he may stay as president of the party school, said Mr. Deng, who now lives in the United States. Mr. Cai could then serve as Mr. Xi’s eyes and ears, spotting and vetting officials for promotion in coming years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鄧聿文還表示，即便明年蔡奇因年齡原因退下來，他仍可能繼續擔任中央黨校校長。屆時，蔡奇可能繼續充當習近平的耳目，在未來幾年為其物色、考察和篩選有望晉陞的官員人選。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPfendn2vJUDFTDhlAkdFdsoLg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">儲百亮(Chris Buckley)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260706/china-xi-leadership-cai-qi/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
