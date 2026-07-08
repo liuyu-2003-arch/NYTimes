@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蘑菇有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">蘑菇有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Mushrooms?</h2>
+    <div class="meta-line">SIMAR BAJAJ <span style="margin: 0 8px;">•</span> 2026-07-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/02/02/well/WELL-HEALTHY-MUSHROOMS/WELL-HEALTHY-MUSHROOMS-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nutritionally speaking, mushrooms are in a class of their own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從營養學角度來說，蘑菇獨樹一幟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As members of the fungi kingdom, mushrooms contain forms of fiber that most other plants don’t have, along with high levels of antioxidants. And fun fact: They’re one of the few foods that can produce vitamin D.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為真菌王國的成員，蘑菇含有大多數植物所沒有的特殊膳食纖維，同時富含抗氧化物質。有趣的是，蘑菇還是極少數能夠自行生成維生素D的食物之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s a look at what mushrooms have to offer, along with ways to enjoy them from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是蘑菇的營養價值盤點，以及《紐約時報》美食版提供的幾種烹飪參考。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They have two unique types of fiber.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>蘑菇含有兩種獨特的膳食纖維。</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CKGnxsH0wZUDFaODgwgdUfQ0vg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mushrooms have a good amount of fiber, particularly a type known as beta-glucan, said Dr. Arrigo Cicero, the director of the School on Human Nutrition at the University of Bologna in Italy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">義大利博洛尼亞大學人類營養學院院長阿里戈·西塞羅博士表示，蘑菇富含膳食纖維，尤其是一種名為β-葡聚糖的纖維。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beta-glucan is commonly found in grains like oats and barley and is tied to lower cholesterol levels and reduced blood sugar spikes. But mushrooms contain an unusual type of beta-glucan that seems to support the immune system instead, Dr. Cicero said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">β-葡聚糖常見於燕麥、大麥等穀物中，有助於降低膽固醇水平、減緩血糖波動。但西塞羅博士指出，蘑菇所含的β-葡聚糖屬於一種較為特殊的類型，其主要作用似乎在於支持人體免疫系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mushrooms also contain chitin, a fiber mainly found in the shells of insects and crustaceans. Because chitin isn’t easily digested, it makes its way to the colon, where it can help support the gut microbiome.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘑菇還含有幾丁質，這是一種主要存在於昆蟲和甲殼類動物外殼中的纖維。由於幾丁質不易消化，它會一路抵達結腸，在那裡為腸道微生物群提供支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most Americans don’t get enough fiber, but eating more mushrooms can be an easy way to boost your consumption and diversify the sources, said Meghan Laszlo, a cancer dietitian at Cedars-Sinai in Los Angeles. There are about four grams of fiber in roughly one cup of raw shiitake mushrooms; experts recommend 21 to 38 grams daily, depending on your age and sex.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洛杉磯西達賽奈醫療中心癌症營養師梅根·拉斯洛表示，大多數美國人膳食纖維攝入不足，多吃蘑菇是一種簡便易行的補充方式，同時也能豐富膳食纖維的來源。大約一杯鮮香菇中含有約四克膳食纖維；專家建議每日攝入21至38克，具體取決於年齡和性別。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They contain powerful antioxidants.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>蘑菇含有強效抗氧化物質。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mushrooms are exceptionally rich in ergothioneine and glutathione, two important antioxidants that help your cells defend against everyday wear and tear, said Robert Beelman, the director of the Center for Plant and Mushroom Foods for Health at Penn State.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賓夕法尼亞州立大學植物與蘑菇食品健康中心主任羅伯特·比爾曼表示，蘑菇中麥角硫因和谷胱甘肽含量極高，這是兩種重要的抗氧化劑，能幫助人體細胞抵禦日常損耗。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNbxxsH0wZUDFcfDZQMdSDs2RQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While our bodies can produce glutathione, we get ergothioneine only from food, and mushrooms — enoki and king oyster, in particular — have some of the highest levels of any food.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷胱甘肽可由人體自行合成，但麥角硫因只能從食物中獲取，蘑菇——尤其是金針菇和杏鮑菇——的麥角硫因含量在所有食物中名列前茅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one study that tracked more than 3,000 participants over 21 years, higher ergothioneine levels in the blood were linked to a lower risk of heart disease and early death. Other research has found that people with mild cognitive impairment and frailty tend to have low levels of ergothioneine. While the findings don’t prove that ergothioneine is directly responsible for these health effects, they align with the idea that antioxidants shield cells from damage and support immune function, Dr. Beelman said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一項追蹤了3000多名參與者、歷時21年的研究發現，血液中較高水平的麥角硫因與較低的心臟病風險及早逝風險相關。另有研究發現，患有輕度認知障礙和體弱人群往往麥角硫因水平偏低。比爾曼博士指出，儘管上述發現並不能證明麥角硫因直接導致了這些健康效應，但它們與抗氧化物質保護細胞免受損傷、支持免疫功能的理論相吻合。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This may also be why some research has tied higher mushroom consumption to a lower risk of cancer, Ms. Laszlo said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉斯洛表示，這也可能正是部分研究發現較高蘑菇攝入量與較低癌症風險存在關聯的原因。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re rich in B vitamins and can make vitamin D.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>蘑菇富含B族維生素，還能夠生成維生素D。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mushrooms are good sources of several B vitamins that are important for metabolism and supporting your nervous system, Ms. Laszlo said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉斯洛說，蘑菇富含多種B族維生素，這些維生素對人體新陳代謝和神經系統健康很重要。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And they can produce vitamin D — a trick almost no other food can pull off. Vitamin D is important for immune function, heart health and muscle strength, but it’s naturally found in very few foods. Most mushrooms in the grocery store don’t contain much of it either, since they’re typically grown in the dark. “But if your mushrooms sunbathe, they can produce vitamin D like humans can,” said Dr. Tim Spector, an epidemiologist at King’s College London.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，蘑菇還能生成維生素D——這幾乎是獨家本領。維生素D對於免疫功能、心臟健康和肌肉力量都非常重要，但天然富含維生素D的食物其實很少。超市裡出售的大多數蘑菇維生素D含量並不高，因為它們一般是在黑暗環境下種植的。倫敦國王學院流行病學家蒂姆·斯佩克特博士說：「但如果讓蘑菇晒晒太陽，它們就能像人類一樣生成維生素D。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CPrtxsH0wZUDFZmigwgd5vg6QA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To try it, place your mushrooms outside in direct sunlight before cooking them, Ms. Laszlo said. Aim for anywhere from 15 minutes to an hour, and slice your mushrooms beforehand, to expose more surface area. Under the right conditions, a cup of raw<strong> </strong>mushrooms can generate enough vitamin D to satisfy the recommended daily amount.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉斯洛建議，在烹飪之前，將蘑菇放到陽光直射處曬15分鐘到1小時。最好先將蘑菇切片，以增大與陽光的接觸面積。在適宜條件下，一杯鮮蘑菇所產生的維生素D就足以滿足人體每日推薦攝入量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the healthiest way to eat them?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>怎樣吃蘑菇最健康？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While some specialty mushrooms may be higher in certain nutrients, all varieties are good, Dr. Spector said. “It’s probably more important to eat them regularly — the ones you can afford — rather than having a big feast of your expensive ones,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯佩克特博士表示，雖然某些蘑菇的某些營養成分更高，但所有種類的蘑菇都是健康的。「與其偶爾大吃一頓價格昂貴的蘑菇，不如經常吃那些自己買得起的蘑菇，這可能更重要。」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just remember that some mushrooms are poisonous, so make sure you know what you’re eating before you dig in.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，需要記住的是，有些蘑菇是有毒的，食用前務必確認種類。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mushrooms are low in calories and fat but rich in savory flavor. Lightly roasting, sautéing or grilling them deepens their umami — and means you can lean less on salt. Avoid cooking them over prolonged high heat, which can degrade some nutrients, Dr. Spector said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘑菇熱量和脂肪含量都很低，但味道鮮美。輕度烘烤、快速翻炒或炙烤都能進一步提鮮，這樣你也可以少放點鹽。斯佩克特博士建議，不要長時間高溫烹調，因為那樣會破壞一些營養成分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dried mushrooms are another good option — just look for freeze-dried versions, since heat drying can strip away some antioxidants, Ms. Laszlo said. Or try adding mushroom powder to pasta sauce or smoothies, but note that the nutritional content of these powders can vary.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">乾蘑菇也是不錯的選擇——拉斯洛建議優先選用凍乾產品，因為熱風乾燥工藝會使部分抗氧化物質流失。也可以將蘑菇粉加入義麵醬或奶昔中，但需注意的是，不同蘑菇粉的營養成分可能差異較大。</div></div></div></div></div><div class="big_ad" data-google-query-id="COWfx8H0wZUDFX2KgwgdXdMaHw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ready to put all this into practice? Here are some recipes from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">準備好付諸實踐了嗎？以下是《紐約時報》美食版的一些食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Harissa-Maple Mushrooms</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 哈利薩辣醬楓糖烤蘑菇</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Harissa-Maple-htpw/09WELL-HEALTHY-MUSHROOMS-Harissa-Maple-htpw-master1050.jpg" src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Harissa-Maple-htpw/09WELL-HEALTHY-MUSHROOMS-Harissa-Maple-htpw-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Roasting mushrooms concentrates their earthy flavor. Served over seasoned yogurt with a side of flatbread, this recipe is hearty enough to be a main dish.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">烘烤能夠進一步濃縮蘑菇濃郁的泥土香氣。搭配調味酸奶和麵餅，這道菜足以作為主菜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Harissa-Maple Mushrooms</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：哈利薩辣醬楓糖烤蘑菇</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Skillet Chicken With Mushrooms and Caramelized Onions</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 蘑菇焦糖洋蔥雞</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Skillet-Chicken-wvgf/09WELL-HEALTHY-MUSHROOMS-Skillet-Chicken-wvgf-master1050.jpg" src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Skillet-Chicken-wvgf/09WELL-HEALTHY-MUSHROOMS-Skillet-Chicken-wvgf-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This one-pot meal has the caramelized richness of French onion soup, along with silky mushrooms and browned chicken.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一道一鍋完成的菜肴兼具法式洋蔥湯般濃郁的焦糖風味、滑嫩的蘑菇口感以及煎至金黃的雞肉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Skillet Chicken With Mushrooms and Caramelized Onions</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：蘑菇焦糖洋蔥雞</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Farro With Mushrooms</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 蘑菇法羅飯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Farro-chlg/09WELL-HEALTHY-MUSHROOMS-Farro-chlg-master1050.jpg" src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Farro-chlg/09WELL-HEALTHY-MUSHROOMS-Farro-chlg-master1050.jpg"/></div><figcaption><span></span> <cite>Constantine Poulos for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dried porcinis give this take on risotto a big hit of flavor, and fresh wild mushrooms lend tenderness to each bite.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">乾牛肝菌賦予這道意式燴飯濃郁的風味，新鮮野蘑菇則帶來每一口的柔嫩口感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Farro With Mushrooms</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：蘑菇法羅飯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Ponzu Tofu and Mushroom Rice Bowls</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 柚子醋豆腐蘑菇飯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Tofu-klvz/09WELL-HEALTHY-MUSHROOMS-Tofu-klvz-master1050.jpg" src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Tofu-klvz/09WELL-HEALTHY-MUSHROOMS-Tofu-klvz-master1050.jpg"/></div><figcaption><span></span> <cite>James Ransom for The New York Times. Food Stylist: Maggie Ruggiero</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The citrus-soy tanginess of ponzu soaks into the mushrooms and tofu as they cook.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在烹飪過程中，蘑菇和豆腐會將柚子醋的酸鮮風味吸收。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Ponzu Tofu and Mushroom Rice Bowls</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：柚子醋豆腐蘑菇飯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Fresh and Wild Mushroom Stew</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 鮮野蘑菇燉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Stew-jptf/09WELL-HEALTHY-MUSHROOMS-Stew-jptf-master1050.jpg" src="https://static01.nyt.com/images/2026/02/09/multimedia/09WELL-HEALTHY-MUSHROOMS-Stew-jptf/09WELL-HEALTHY-MUSHROOMS-Stew-jptf-master1050.jpg"/></div><figcaption><span></span> <cite>Armando Rafael for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wild and cultivated varieties come together to give this hearty stew layers of complexity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">野生蘑菇與人工栽培的蘑菇相結合，為這道口味濃郁的燉菜帶來層次豐富、複雜多變的風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Fresh and Wild Mushroom Stew</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：鮮野蘑菇燉</div></div></div></div></div><div class="big_ad" data-google-query-id="CMjHx8H0wZUDFW6TgwgdEOgreA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Simar Bajaj為時報報導健康和健康生活方式。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260707/mushrooms-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
