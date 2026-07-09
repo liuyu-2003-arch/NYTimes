@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中澳在太平洋持久競爭 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中澳在太平洋持久競爭</h1>
+    <h2 class="en-headline">Why Australia Is Locked in a ‘Permanent Contest’ With China in the Pacific</h2>
+    <div class="meta-line">VICTORIA KIM <span style="margin: 0 8px;">•</span> 2026-07-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="澳洲總理阿爾巴尼斯（左）與斐濟總理蘭布卡週一在斐濟首都蘇瓦簽署了兩項安全協議。
+
+" height="700" src="https://static01.nyt.com/images/2026/07/08/multimedia/08int-oz-pacific-01-ckzl/08int-oz-pacific-01-ckzl-master1050.jpg" width="1050"/><figcaption><span>澳洲總理阿爾巴尼斯（左）與斐濟總理蘭布卡週一在斐濟首都蘇瓦簽署了兩項安全協議。 </span><cite>Leon Lord/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the day that China announced that it had successfully fired a submarine-launched ballistic missile into the middle of the Pacific Ocean, Prime Minister Anthony Albanese of Australia was in Suva, the capital of Fiji.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在中國宣布成功向太平洋中部發射一枚潛射彈道導彈的當天，澳洲總理阿爾巴尼斯正在斐濟首都蘇瓦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Albanese was visiting the country on Monday to sign two long-sought security agreements with Fiji’s leader, Prime Minister Sitiveni Rabuka. A week earlier, he was smiling and shaking hands with the prime minister of Vanuatu, having finalized a treaty with that island nation. The following day, he was in the Solomon Islands, standing shoulder to shoulder with its new leader and announcing aid for education and policing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿爾巴尼斯總理週一訪問該國，與斐濟總理西蒂維尼·蘭布卡簽署了兩項期待已久的安全協議。一週前，他還微笑著與萬那杜總理握手，與這個島國達成一項條約。次日，他出現在所羅門群島，與該國新領導人並肩而立，宣布提供教育和警務援助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The diplomatic blitz from the Australian leader is just the latest in what’s been a yearslong push to win over the island nations of the Pacific, by way of development assistance and smiling photo ops but also in securing legally binding mutual defense treaties and alliances.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿爾巴尼斯這一連串密集的外交行動只是澳洲近年來持續爭取太平洋島國的最新舉措。除了提供發展援助、安排微笑合影，澳洲還積極推動簽署具有法律約束力的共同防禦條約和聯盟協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Driving Australia’s efforts is what its foreign minister, Penny Wong, has termed a “permanent contest” for the Pacific region with an increasingly emboldened China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">推動澳洲這一系列努力的正是該國外長黃英賢所說的:與日益強勢的中國圍繞太平洋地區展開的一場「持久競爭」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMKIy_23xJUDFWwTdgYdL_gvmg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The region’s 14 sovereign states, many of which are remote and small in size and population but also encompass large swaths of exclusive economic zones in the Pacific Ocean, have been the focal point of heated geopolitical rivalry because of their strategic location. Many of the islands played key roles in the fighting during World War II, and have been the site of consequential weapons testing. They are also positioned near key shipping lanes ferrying international cargo, while the ocean floor holds valuable minerals, drawing massive commercial interest in deep-sea mining.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">太平洋地區共有14個主權國家。雖然其中許多國家偏處一隅，國土和人口規模都很小，但在太平洋擁有廣闊的專屬經濟區，所以因戰略位置重要而成為激烈地緣政治角力的焦點。許多島嶼曾在第二次世界大戰期間發揮關鍵作用，也曾是重要武器試驗的地點。此外，它們毗鄰國際貨運的重要航道，同時海底蘊藏著寶貴的礦產資源，吸引了對深海採礦的巨大商業興趣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here is how the jostling for influence in the region has been playing out:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是各方爭奪該地區影響力的博弈態勢：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Australia Redoubling Ties With Pacific Neighbors</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>澳洲加強與太平洋鄰國的關係</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Australia historically had close ties to island nations in the South Pacific, having been former colonial administrators to some and a founding member of the Pacific Islands Forum, the region’s most important multilateral organization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲與南太平洋島國歷來關係密切：它曾是其中一些國家的殖民管理者，也是該地區最重要的多邊組織——太平洋島國論壇的創始成員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s interest in the region snapped into focus in 2018 when reports emerged that it was seeking to establish a military base in Vanuatu. In the years leading up to 2018, Beijing had steeply increased aid and investment into countries in the region, many of which are impoverished and vulnerable to natural disasters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對該地區的興趣在2018年曾引起廣泛關注。當時有報導稱，北京正尋求在萬那杜建立軍事基地。在2018年之前的幾年裡，中國已大幅增加了對該地區國家的援助和投資，其中許多國家經濟貧困，也容易受到自然災害影響。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，在所羅門群島霍尼亞拉中國國有企業中國土木工程集團有限公司承建的一個道路項目上，中國工人與所羅門群島工人在現場施工。
+" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/08int-oz-pacific-tpbh/08int-oz-pacific-tpbh-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/08int-oz-pacific-tpbh/08int-oz-pacific-tpbh-master1050.jpg"/></div><figcaption><span>去年，在所羅門群島霍尼亞拉中國國有企業中國土木工程集團有限公司承建的一個道路項目上，中國工人與所羅門群島工人在現場施工。 </span><cite>Adam Ferguson for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2022, a leaked draft of a security agreement between China and the Solomon Islands prompted concerns that the deal would open the door to Chinese security forces being deployed to the region. That year, China’s foreign minister, Wang Yi, traveled to several Pacific island countries trying to round up support — unsuccessfully — for a sweeping regional deal that would have expanded Beijing’s role in policing, maritime cooperation and cybersecurity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年，中國與所羅門群島安全協議草案洩漏，引發外界擔憂，認為該協議可能為中國安全部隊部署到該地區打開大門。同年，中國外長王毅訪問多個太平洋島國，試圖爭取各國支持一項覆蓋整個地區的廣泛協議，希望擴大中國在警務、海洋合作和網路安全等領域的作用，但最終未能成功。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the years since, Australia has rapidly dialed up efforts to reinforce ties with the Pacific and present itself as the more desirable partner in both economic development and security. Many of the countries do not have their own militaries and have struggled with policing resources in moments of crisis, such as large-scale unrest in the Solomon Islands in 2021.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後幾年，澳洲迅速加大力度，強化與太平洋島國的聯繫，並努力把自己塑造成在經濟發展和安全領域都比中國更具吸引力的合作夥伴。許多島國沒有自己的軍隊，在危機時刻也缺乏足夠的警力，例如2021年所羅門群島爆發大規模騷亂期間就是如此。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNHzyv23xJUDFc8JdgYdLu48mQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the past two years, Australia has signed treaties with Nauru and Vanuatu and entered into alliances with Papua New Guinea and Fiji. Australia and Fiji also announced an “Ocean of Peace Alliance” in addition to their bilateral agreement, opening the door for other countries to join a regional bloc.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去兩年，澳洲與諾魯和萬那杜簽署了條約，並與巴布亞紐幾內亞和斐濟結成了聯盟。澳洲和斐濟還在雙邊協議基礎上宣布了「和平海洋聯盟」，並為其他國家加入這一區域集團預留了空間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sam Roggeveen, director of the international security program at the Lowy Institute, said a Chinese military outpost anywhere in the Pacific would be unacceptable for Australia because it would bring the reach of Beijing’s growing military forces much closer to its shores.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洛伊研究所國際安全項目主任薩姆·羅格文表示，中國在太平洋任何地方建立軍事據點對澳洲而言都不可接受，因為這將使北京不斷擴張的軍事力量更接近澳洲本土。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The most significant part of all of these agreements is that they attempt to make it if not impossible, much more difficult for China to establish a permanent military presence,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「所有這些協議最重要的意義在於，它們試圖限制中國建立永久性軍事力量——即使不能完全杜絕，也會使其難度大增，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China Doing ‘What Great Powers Do’</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>中國正在做「大國會做的事」</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, for its part, has always maintained its intentions were only to cooperate with the Pacific island nations as equals and has denied interest in establishing a base. A Foreign Ministry spokeswoman, Mao Ning, said this week the contest was in Australia’s imagination: “We do not engage in geopolitical rivalry or seek selfish political gains,” she said when asked about the agreement with Fiji.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國方面則始終堅稱，其目的是以平等夥伴的身份與太平洋島國開展合作，並否認有興趣建立軍事基地。中國外交部發言人毛寧本週表示，所謂競爭不過是澳洲的臆想。當被問及澳洲與斐濟簽署協議時，她說：「我們不搞地緣博弈，不謀求政治私利。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some leaders of Pacific island nations in the past have welcomed the competition, an approach that has been described as “friends to all, enemies to none” which could be leveraged to attract assistance and investment to a region in need.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些太平洋島國領導人過去曾對這種競爭持歡迎態度，將其描述為一種「廣交朋友、不樹敵手」的策略，可藉此吸引這個亟需發展的地區獲得更多援助與投資。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKeJy_23xJUDFasBdgYd-mwn-Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">James Batley, a fellow at the Australian National University and a former Australian diplomat who has served in various Pacific island nations, said over time, the countries may have come to see the limits of that balance, as China has made aggressive diplomatic pushes and flexed its military might with two ballistic missile tests in the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲國立大學研究員、曾在多個太平洋島國任職的前澳洲外交官詹姆斯·巴特利表示，隨著時間的推移，隨著中國持續發動強勢外交攻勢，並在該地區進行了兩次彈道導彈試驗以展示軍事實力，這些國家可能已經看到了這種平衡策略的局限性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They are paying a price for fostering a sense of competition; they can’t just quarantine themselves from the impacts of that,” Mr. Batley said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它們為培育競爭氛圍付出了代價；沒有任何國家能把自己完全隔絕在這種競爭影響之外，」巴特利說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The latest missile test may have helped cement support for Australia’s push in the region, Oliver Nobetau, Pacific islands program director at the Lowy Institute, wrote in an analysis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洛伊研究所太平洋島嶼項目主任奧利弗·諾貝托在一篇分析中寫道，最近的導彈試驗可能有助於鞏固太平洋島國對澳洲地區戰略的支持。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國官方媒體發布的一張照片顯示，週一中國潛艇試射了一枚遠程彈道導彈。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/08int-oz-pacific-03-ckzl/08int-oz-pacific-03-ckzl-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/08int-oz-pacific-03-ckzl/08int-oz-pacific-03-ckzl-master1050.jpg"/></div><figcaption><span>中國官方媒體發布的一張照片顯示，週一中國潛艇試射了一枚遠程彈道導彈。</span> <cite>Li Xiangchao/Xinhua, via Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A missile test makes Pacific countries spectators in their own region, much like they were during the Second World War. Albanese’s opening is to offer something different,” he wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「導彈試驗讓太平洋國家在自己的地區淪為旁觀者，就像第二次世界大戰期間一樣。阿爾巴尼斯提供的是一種不同的選擇，」他寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Wong, Australia’s foreign minister, said this week that “China will continue to do what great powers do. It will continue to assert its interests.” Countries in the region must band together to protect theirs, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲外長黃英賢本週表示：「中國將繼續做所有大國會做的事，它將繼續堅持自己的利益。」她說，該地區國家必須團結起來，維護自身利益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Matthew Wale of the Solomon Islands had a simpler request: no more missile tests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所羅門群島總理馬修·威爾提出了一個更簡單的要求：不要再進行導彈試驗。</div></div></div></div></div><div class="big_ad" data-google-query-id="COSfy_23xJUDFYwvdgYdwg04wg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We don’t want to see any more countries, China, America, anybody, we don’t want anybody testing the ICBMs in the Pacific islands region,” he said on Tuesday. “That’s the bottom line. Be our friend, but don’t threaten us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們不希望再看到任何國家——中國、美國，還是其他任何國家——我們不希望任何人在太平洋島國地區試射洲際彈道導彈，」他週二說。「這是底線。做我們的朋友，但不要威脅我們。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Victoria Kim是時報駐澳洲記者，常駐雪梨，報導澳洲、紐西蘭和泛太平洋地區。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260709/china-australia-pacific/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
