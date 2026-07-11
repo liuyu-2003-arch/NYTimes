@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中俄影響力行動瞄準AI - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中俄影響力行動瞄準AI</h1>
+    <h2 class="en-headline">China, Russia and Others Seek to Inflame Debate Over A.I. Data Centers</h2>
+    <div class="meta-line">STEVEN LEE MYERS, DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-07-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="OpenAI發布了這幅漫畫，作為中國相關人員利用ChatGPT生成內容的案例。該公司認為這些人與地方政府有關。目前尚不清楚標題中哪個詞被模糊處理了。" height="1024" src="https://static01.nyt.com/images/2026/07/10/multimedia/c10biz-datacenter-disinfo-span/c10biz-datacenter-disinfo-span-jumbo.jpg" width="640"/><figcaption><span>OpenAI發布了這幅漫畫，作為中國相關人員利用ChatGPT生成內容的案例。該公司認為這些人與地方政府有關。目前尚不清楚標題中哪個詞被模糊處理了。</span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A state-owned newspaper in China recently published a satellite image of a data center in Gainesville, Va., writing in English that the development of artificial intelligence posed a threat to Americans’ physical and financial well-being.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的一家國有報紙最近發表了一張位於維吉尼亞州蓋恩斯維爾的數據中心衛星圖像，並用英文寫道，人工智慧的發展對美國人的身體和財務健康構成了威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A comic strip made to look as if it had been published by a Maryland news outlet — created with OpenAI’s ChatGPT by people in China, the tech company said — circulated on X this year, blaming data centers for soaring electricity bills. It showed a tycoon smoking a cigar and clutching bags of cash.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一幅偽裝成馬里蘭州新聞媒體發布的漫畫今年在X上流傳開來。科技公司OpenAI表示，這幅漫畫是有人在中國使用該公司旗下的的ChatGPT創作的。漫畫將電費飆升歸咎於數據中心，畫面中一位大亨叼著雪茄，拎著幾袋現金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A video shared on X by a known covert Russian influence operation questioned the viability of a data center that an American company, Firebird, is constructing in Armenia, the small Caucasus nation that has been a focus of Kremlin pressure. “The country’s electrical grid instability may render it useless,” the video’s narrator says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">某知名俄羅斯祕密影響行動在X上分享了一段影片，對美國公司Firebird正在亞美尼亞建造的數據中心的可行性提出質疑，這個高加索小國一直是克里姆林宮施壓的焦點。「該國電網的不穩定性可能會讓它變得毫無用處，」影片的旁白說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All are examples of a push by foreign adversaries to seize on what polls have shown is deep ambivalence — verging at times on hostility — about the spread of the data centers needed to power A.I. in the United States and elsewhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民意調查顯示，公眾對美國和其他地方人工智慧所需數據中心的擴張存在深刻的矛盾心理（有時甚至接近敵意）。上述種種正是外國敵對勢力企圖利用這種心理的例子。</div></div></div></div></div><div class="big_ad" data-google-query-id="COfzz7y5yZUDFdROCAQdrC4zwQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, Russia and, to a lesser extent, Iran have sought to use state media outlets to turn the controversy over data centers in the United States into “a domestic fracture point,” according to a new analysis by Alethea, a threat intelligence company, which identified scores of articles and posts on social media this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>威脅情報公司Alethea的一份新分析報告顯示，中國、俄羅斯和伊朗（程度稍遜）都試圖利用官方媒體機構將美國圍繞數據中心的爭議轉變成一個「國內撕裂點」，該公司在今年發現了數十篇相關文章和社群媒體帖子。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These campaigns, whose impact on public opinion remains to be seen, have raised alarms in Washington, where A.I. is seen as a top issue heading into this year’s midterm elections.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些行動對公眾輿論的影響究竟如何尚待觀察，但它們已經在華盛頓敲響了警鐘，隨著今年期中選舉臨近，人工智慧已被視為首要議題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The foreign efforts appear intended to stoke the debate over data centers that has united political figures across the political spectrum — from Senator Bernie Sanders of Vermont, a progressive, to Stephen K. Bannon, the erstwhile adviser to President Trump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些外國行動似乎旨在挑起有關數據中心的辯論，而這場辯論已經讓不同政治光譜的政治人物聯合在了一起——從進步派的佛蒙特州參議員伯尼·桑德斯到川普總統的前顧問斯蒂芬·K·班農。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Foreign actors aren’t manufacturing American debates over the future of A.I., they are exploiting them,” said Jessica Brandt, a former official with the Office of the Director of National Intelligence who tracked foreign influence efforts during the Biden administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「外國行為體並不是在憑空製造美國關於人工智慧未來的辯論，他們是在利用這些辯論，」在拜登政府時期追蹤外國影響活動的前國家情報總監辦公室官員傑西卡·勃蘭特表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The goal, she added, is to “deepen our divisions in order to dent our appeal and weaken us from within.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她補充道，其目的是「加深我們的分歧，以此削弱我們的吸引力並從內部弱化我們」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Republicans and business lobbying groups have seized on the role of China, in particular, claiming that the country’s Communist Party wants to undercut American leadership in a field that the Chinese, too, hope to dominate. They argue that China’s propaganda is an effort to slow down American development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">共和黨人和商業遊說團體尤其強調中國所扮演的角色，聲稱中國共產黨想要削弱美國在這一中國自身也希望主導的領域中的領跑地位。他們辯稱，中國的宣傳是為了拖慢美國發展的步伐。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIig0Ly5yZUDFTmvOgUdTEAwnQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We can’t allow any effort by foreign adversaries to extort these fears and undermine our technological development,” Senator Tom Cotton, Republican of Arkansas, wrote to the acting attorney general, Todd Blanche, referring to genuine public concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們決不能允許外國敵對勢力利用這些恐懼來削弱我們的技術發展，」阿肯色州共和黨參議員湯姆·科頓在致代理司法部長托德·布蘭奇的信中寫道，其中的「恐懼」指的是公眾的真實擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration, which after taking office dismantled many of the government teams that tracked foreign influence operations, has begun to recognize the political threat of the rising sentiment against A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普上任後解散了政府內許多負責追蹤外國影響行動的團隊，但現在也已開始意識到反對人工智慧情緒高漲所帶來的政治威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Gallup poll in May found that 71 percent of Americans were somewhat or strongly opposed to having a data center built near them, almost 20 percentage points higher than those who opposed construction of a nearby nuclear power plant. Many have broad concerns about the effects of A.I. on jobs and the climate, while people who live near data centers complain they are eyesores and emit annoying sounds. Some cities and counties have enacted temporary or permanent moratoriums on new construction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>蓋洛普在5月的一項民意調查中發現，</span>71%的美國人對在自家附近興建數據中心持不同程度的反對意見，這一比例比反對在附近建造核電站的人高出近20個百分點。許多人對人工智慧對就業和氣候的影響持有廣泛的擔憂，生活在數據中心附近的人則抱怨它們既有礙觀瞻又發出令人煩躁的噪音。一些縣市已經發出臨時或永久性停建令。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent interview on Fox Business, Doug Burgum, the interior secretary, suggested that the outside influence campaigns had succeeded in building opposition to data centers. “I think some of this propaganda is being effective,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">內政部長道格·伯格姆最近在福克斯商業頻道接受採訪時表示，外部的輿論引導行動已成功煽動了對數據中心的反對情緒。「我認為其中一些宣傳正在產生效果，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The foreign campaigns follow a familiar playbook that dates back at least a decade. They often try to leverage official news organizations and social media to fuel domestic discord around hot-button issues like guns, race and vaccines, or even natural disasters like the wildfires in and around Los Angeles last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這些外國政治行動遵循了至少可以追溯到十年前的熟悉套路。它們經常試圖利用官方新聞機構和社群媒體，圍繞槍枝、種族和疫苗等熱門焦點問題來煽動國內不和，甚至還會利用諸自然災害，</span>如去年洛杉磯及其周邊地區發生的山火。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1-02/00Biz-DataCenterDisinfo-1-02-master1050.jpg" src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1-02/00Biz-DataCenterDisinfo-1-02-master1050.jpg"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Between January and June, state media in China, Russia and Iran mentioned data centers roughly 700 times, according to Alethea’s analysis. That was an average of nearly four times a day, though it remained a small fraction of overall published content about A.I. development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據Alethea的分析，今年1月至6月，中國、俄羅斯和伊朗的官方媒體大約700次提及數據中心。這相當於平均每天近四次，儘管這在所有關於人工智慧發展的已發表內容中依然只佔一小部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The outlets have featured articles and posts aimed at an American audience, as well as content highlighting criticism of data centers by prominent Americans, like Tucker Carlson, the conservative commentator. In Iran, state media has also highlighted links between American A.I. companies and Israel and criticized the race to develop the technology as reckless.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些平台推出了針對美國受眾的文章和帖子，並重點突出了美國名人對數據中心的批評，例如保守派評論員塔克·卡爾森。在伊朗，官方媒體還強調了美國人工智慧公司與以色列之間的聯繫，並批評開發該技術的競爭是輕率盲目的。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMfm0Ly5yZUDFSFGCAQdLoA6cw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Covert Russian information operations, previously identified by government officials and researchers, have recently begun to focus on data centers as a wedge issue on social media, but so far their Chinese counterparts have not done so in the same way, according to Alethea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Alethea指出，此前被政府官員和研究人員識破的俄羅斯祕密信息行動最近已開始將數據中心作為社群媒體上的一個分裂性議題來重點關注，但到目前為止，他們的中國同行還沒有以同樣的方式這樣做。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI did disclose last month that a small number of operatives working in China used the company’s ChatGPT platform to generate covert social media campaigns on X, including the comic strip.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，OpenAI在上個月透露，少數在中國境內工作的人員曾利用該公司的ChatGPT平台在X上發起祕密的社群媒體運動，其中包括前述漫畫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other posts by the operatives promoted claims that data centers were spiking electricity costs and criticized Mr. Trump’s tariffs as a blunt tool used to win the technology race.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些人員發布的其他帖子宣稱數據中心正在推高電費，並批評川普的關稅政策是用於贏得技術競爭的粗暴工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI, though, found “little to no authentic engagement” with the campaigns, and the accounts at issue were ultimately removed from X. OpenAI did not respond to requests for comment about Chinese or other foreign efforts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但OpenAI，發現這些行動「幾乎沒有引起真實的互動」，相關帳號最終已被X平台移除。OpenAI未回應關於中國或其他外國此類行動的置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and its partner, Microsoft, accusing them of copyright infringement of news content related to A.I. systems. They have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>（《紐約時報》已對OpenAI及其合作夥伴微軟提起訴訟，指控它們在人工智慧系統相關的新聞內容上存在版權侵權行為。它們均否認了這些指控。）</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lobbyists have also weighed in to insinuate that American opposition has been fomented with support from abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">遊說者也加入進來，暗示美國國內的反對聲浪是在國外的支持下煽動起來的。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN2o0by5yZUDFetMCAQdMHMOWw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Power the Future, an energy industry group, argued recently that domestic opposition to data centers was manufactured by environmental groups financed in part by foreign donors like Hansjörg Wyss, the Swiss philanthropist and conservationist whose foundation is well known for supporting environmental issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>能源行業團體「推動未來」(Power the Future)最近辯稱，國內對數據中心的反對是由某些環保組織精心製造出來的，而這些組織的部分資金源於國外捐贈者，例如瑞士慈善家兼環保人士漢斯約格·維斯(Hansjörg Wyss)，他的基金會因支持環保議題而廣為人知。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a statement, the Wyss Foundation said it did not provide grants to oppose data centers. “These reports are false, misleading and an attempt by special interests to manipulate the public into accepting data centers,” the statement said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維斯基金會在聲明中表示，它並未提供資金去反對數據中心。「這些報告是虛假的、具有誤導性的，是特定利益集團試圖操縱公眾去接受數據中心的一種企圖，」聲明說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another pair of reports, by the Bitcoin Policy Institute, a cryptocurrency advocacy group in Washington, also detailed what the group’s researchers called an “extensive, multiyear influence campaign” by China to sway the A.I. race.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓加密貨幣倡導組織比特幣政策研究所(Bitcoin Policy Institute)也發布了另外兩份報告，詳細闡述了其研究人員所稱的由中國發起的「廣泛且耗時數年的影響行動」，旨在左右人工智慧競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As evidence, the reports cited an invitation by Mr. Sanders for two Chinese-government-linked academics to attend a conference on Capitol Hill in April. They also criticized political donations to liberal organizations from Neville Roy Singham, an American tech entrepreneur who is based in Shanghai and has long been a subject of criticism for supporting Chinese propaganda campaigns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為證據，報告引用了桑德斯在4月邀請兩名與中國政府有聯繫的學者參加國會山莊會議一事。他們還批評了常駐上海的美國科技企業家羅一(Neville Roy Singham)向自由派組織的政治捐款，羅一<span>長期以來因支持中國的宣傳活動而遭受批評。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There is an organic opposition to data centers,” the author of the reports, Sam Lyman, said. “What we are calling for is simply transparency, though, because we’ve been able to document an inorganic element that runs parallel to this specific opposition movement.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對數據中心的反對聲音是自發產生的，」報告的作者薩姆·萊曼說。「我們所呼籲的僅僅是透明度，因為我們已經能夠證實，有一種非自發的因素正與這場特定的反對運動平行並存。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Sanders and Mr. Singham did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">桑德斯和羅一未回應置評請求。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLLM0by5yZUDFUivOgUdvywwWg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government, through its embassy in Washington, disputed accusations that it was trying to stoke protests in the United States — something it has accused the United States of doing inside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府通過其駐華盛頓大使館對關於其試圖在美國煽動抗議的指控提出了異議——中方此前曾指責美國在中國境內從事此類活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The allegations are completely unfounded and constitute smears and defamation,” a spokesman, Liu Chang, said in response to questions, noting that the United States and China needed “to work together to promote the development and improve the governance of A.I. to make sure it will better contribute to social progress.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">發言人劉暢在回應提問時表示：「這些指控完全毫無根據，構成了抹黑和誹謗，」並指出美中兩國需要「共同努力促進AI的發展並改善其治理，以確保其能更好地為社會進步做出貢獻」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not all of the anti-A.I. content online has an overtly political purpose. Other actors appear to be exploiting the issue simply to build engagement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網路上的反人工智慧內容並非全都帶有明顯的政治目的。其他行為體似乎僅僅是利用這一議題來賺取流量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alethea tracked a network of inauthentic accounts on Facebook that has been posting images appearing to highlight Americans’ opposition to data centers. They include images generated by artificial intelligence showing, for example, a field of crops carved into a massive obscene hand gesture, each tailored to users in different American states. “This is what Oklahoma thinks of data centers,” one says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Alethea追蹤到了Facebook上的一個虛假帳號網路，該網路一直在發布似乎旨在凸顯美國人反對數據中心的圖像。其中包括由人工智慧生成的圖像，例如一片農田被雕刻成一個巨大的不雅手勢，每張圖片都針對美國不同州的用戶的口味進行了定製。「這就是俄克拉何馬州對數據中心的看法，」其中一張寫道。</div></div></div><figure class="article-inline-photo with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1/00Biz-DataCenterDisinfo-1-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1/00Biz-DataCenterDisinfo-1-jumbo.jpg"/></div><figcaption><span></span> <cite></cite></figcaption></figure><figure class="article-inline-photo with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1-03/00Biz-DataCenterDisinfo-1-03-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/07/business/00Biz-DataCenterDisinfo-1-03/00Biz-DataCenterDisinfo-1-03-jumbo.jpg"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The network has digital traces linking it geographically to Bangladesh, Alethea found. It includes dozens of groups or accounts on Facebook and Instagram that feature names like “Life in Texas” or “I Love Minnesota.” Amid a steady stream of A.I. “slop” are posts opposing data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Alethea發現，該網路留下的數字痕跡在地域上指向了孟加拉國。它包括Facebook和Instagram上數十個帶有「德克薩斯生活」或「我愛明尼蘇達」等名稱的群組或帳號。在源源不斷的人工智慧垃圾內容中夾雜著反對數據中心的帖子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">McKenzie Sadeghi, a principal analyst at Alethea, called the posts “rural rage bait.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Alethea的首席分析師麥肯齊·薩德吉將這些帖子稱為「鄉村憤怒誘餌」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Data centers are likely the ideal topic for engagement-maximizing operators,” she said. “It is locally salient in all 50 states, fresh, and it maps onto pre-existing anti-China, anti-tax, ‘selling America’ grievance.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對於那些追求互動最大化的運營者來說，數據中心可能是最理想的話題，」她說。「它在全美所有50個州都具有地方敏感性、具有新鮮度，而且它能夠與現有的反華、反稅收以及對『出賣美國』的怨恨無縫對接。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Steven Lee Myers自舊金山報導關於錯誤信息和虛假信息的新聞。自1989年加入《紐約時報》以來，他曾自世界各地報導新聞，包括莫斯科、巴格達、北京和首爾。</p><div class="" data-poster=""><p class="cn-p">Dustin Volz為時報報導網路安全和情報領域，常駐華盛頓。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260710/china-russia-ai-data-centers/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

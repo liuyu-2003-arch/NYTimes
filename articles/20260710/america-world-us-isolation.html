@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國已經「殭屍化」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國已經「殭屍化」</h1>
+    <h2 class="en-headline">The Zombification of America</h2>
+    <div class="meta-line">STEPHEN MARCHE <span style="margin: 0 8px;">•</span> 2026-07-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/07/03/opinion/03marche/03marche-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Photo Illustration by Aaron DuRall</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The rupture of the world order is going much better than expected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">世界秩序的瓦解比預期要順利得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At first there was rage at America’s betrayal, when President Trump called for the annexation of Canada, threatened Greenland, imposed tariffs on its friends and began his campaign to undercut NATO, which continued at its latest meeting this week, in Ankara, Turkey. Now, a strange feeling is emerging in some of the countries that used to be known as America’s allies: Optimistic determination. There’s an established principle in chess that applies to geopolitics as well: “The threat is stronger than the execution.” The possibility of U.S. abandonment of the world order was terrifying. The reality turns out to be a new beginning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">起初，人們對美國的背叛感到憤怒——川普總統呼籲吞併加拿大、威脅格陵蘭島、對盟友徵收關稅，並開始削弱北約（這一行動在本週於土耳其安卡拉舉行的最新會議上仍在繼續）。如今，在一些曾經被稱為美國盟友的國家中，一種奇怪的情緒正在出現：樂觀的決心。國際象棋中有一條公認的原則，同樣適用於地緣政治：「威脅之力勝於實際執行。」美國放棄世界秩序的可能性曾經令人恐懼。但現實證明，這其實是一個新的開始。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Canada, America’s neighbor,<strong> </strong>was the first to see it, naturally. Since the beginning of Mr. Trump’s second term, American bullying on trade has been ferocious. As a result, Canada has had to consider what American favor or disfavor is worth. The Bank of Canada recently ran a scenario in which the United States imposed a 25 percent tariff on everything Canada exports to the United States. Canada’s growth of its gross domestic product would slow by about 2.4 percentage points, which over a period of adjustment is well within Canada’s capacity. A disaster, to be sure, but not the end of the world. That’s the worst-case scenario.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為美國的鄰國，加拿大自然是最先察覺到這一點的。自從川普的第二任期開始以來，美國在貿易上的霸凌行為愈演愈烈。因此，加拿大不得不重新衡量美國的青睞或冷落到底價值如何。加拿大央行最近進行了一項情景模擬：美國對加拿大向其出口的所有商品徵收25%的關稅。屆時加拿大的國內生產總值增速將放緩約2.4個百分點，但在一段調整期內，這完全在加拿大的承受能力之內。這確實是一場災難，但並非世界末日。這就是最壞的情況。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A recent study by economists at the Canadian Shield Institute, commissioned for the podcast “Gloves Off,” which I host, found that Canadian merchandise exports to the United States last year fell by over 30 billion Canadian dollars, (21 billion U.S. dollars), or over 5 percent of exports to the United States. But that loss was offset by nearly 29 billion Canadian dollars<strong> </strong>in new demand from the rest of the world. When services were included, total exports from Canada increased by almost 7 billion dollars. America can make whatever threats it likes, but if you have the aluminum or oil or potash, somebody will buy it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">受我主持的播客節目Gloves Off委託，加拿大盾牌研究所的經濟學家最近進行了一項研究。研究發現，去年加拿大對美國的商品出口下降了超300億加元（約合210億美元），占對美出口總額的5%以上。但這一損失被來自世界其他地區近290億加元的新需求所抵消。如果將服務業包括在內，加拿大的總出口額實際上增加了近70億加元。美國可以隨心所欲地發出威脅，但只要你擁有鋁、石油或鉀肥，總會有人來買。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKCr8s65yZUDFZrI_QUdNPQanA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not just Canada. European equities outperformed American equities in 2025, and surged in the first two months of 2026. The European Defense Industrial Strategy, put in place in 2024, is keeping more of Europe’s rapidly expanding military spending within the continent. And after the threat of the European Union’s anti-coercion instrument, the so-called trade bazooka allowing rapid counter tariffs, forced Mr. Trump to back down from his early round of Greenland threats, the Europeans now know that they have their own Strait of Hormuz — their own pain point that can make America flinch.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不僅僅是加拿大。歐洲股市在2025年的表現優於美國股市，並在2026年的前兩個月大幅飆升。2024年實施的《歐洲國防工業戰略》正將歐洲迅速擴大的軍事開支更多地保留在歐洲大陸內部。此外，歐盟的反脅迫工具——允許迅速徵收反制關稅的所謂「貿易火箭筒」——令川普被迫放棄了早先針對格陵蘭島的威脅，如今，歐洲人明白他們也有自己的「霍爾木茲海峽」——一個足以讓美國退縮的痛點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American military threats have the same diminishing power. If recent history has taught us anything, it’s that when the United States decides to achieve a geopolitical aim by means of military force, you can make a pretty safe bet that aim will not be achieved. Against all odds in a war with the United States, Iran’s corrupt and cruel regime has maintained its power and is now receiving sanctions relief. While the U.S. military invents whole new genres of defeat, the Gulf states, and their airports, have now learned during the Iran war exactly what an American security guarantee is worth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的軍事威脅同樣在失去威力。如果說近代歷史教會了我們什麼，那就是：當美國決定通過軍事力量來實現某個地緣政治目標時，可以相當穩妥地斷言，這個目標無法實現。在與美國的戰爭中，儘管面臨重重困難，伊朗那個腐敗而殘暴的政權卻保住了權力，如今甚至獲得了制裁豁免。當美國軍隊發明出各種全新的失敗模式時，海灣國家及其機場已經在伊朗戰爭中切身體會到，美國的安保承諾到底值幾個錢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the NATO meeting in Ankara, where Mr. Trump berated allied nations — especially Spain — and repeated his call for U.S. control of Greenland, the leaders of Spain and Denmark took Mr. Trump’s comments as the idle threats they self-evidently are. Prime Minister Mark Carney of Canada may well say that Mr. Trump “won the argument” on NATO members raising their spending levels for defense. The reason they are spending more now may be that they know that American military power is in retreat. American support, whatever that even means anymore, guarantees nothing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在安卡拉舉行的北約會議上，川普斥責了盟國——尤其是西班牙，並再次呼籲美國控制格陵蘭島，西班牙和丹麥的領導人則將川普的言論視為不值一提的空洞威脅。加拿大總理馬克·卡尼或許會說，川普在北約成員國提高國防開支水平的問題上「贏得了辯論」。但各國現在之所以增加開支，可能是因為他們知道，美國的軍事力量正在衰退。美國的支持——無論這在如今意味著什麼——已經無法提供任何保障。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not just NATO. Bureaucracies once defined by their lethargy are moving at surprising speed to limit their exposure to both the U.S. government and the companies that serve as outposts of American power. Since taking office a little over a year ago, Mr. Carney’s government has made just over 100 international trade deals. The European Union has expanded its defense procurement deliberately to avoid integration with American military forces. Disentanglement from American technology will be the thorniest knot to undo, but the work is already underway on this, too: The European Union has switched from Google to the French Qwant as a default search engine in its official systems, while Belgium and Finland have both moved away from Amazon Web Services.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不僅僅是北約。曾經以行動遲緩著稱的各國官僚機構正以驚人的速度採取行動，減少對美國政府以及作為美國權力前哨的企業的依賴。自一年多前上任以來，卡尼的政府已達成了剛剛超過100項國際貿易協議。歐盟有意擴大了國防採購，以避免與美國軍隊的深度融合。擺脫對美國技術的依賴將是最難解開的結，但這方面的工作也已經在進行中：歐盟已在其官方系統中將默認搜索引擎從谷歌切換到了法國的Qwant，比利時和芬蘭也都已放棄使用亞馬遜雲服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The post-American reality is not a world without America, of course. As a geopolitical actor, the United States has become a kind of lumbering zombie — a beast that can be startled into reflexive actions but lacks higher functions. Much of the world understands that another round of elections in the midterms or in 2028 won’t solve anything. The American people are so divided that the future will be chaotic whoever wins, many outside the United States feel. They fear a sane Republican or Democratic president would not be able to guarantee a stable American policy or consistent application of even the vaguest principles in international relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，後美國時代的現實並不是一個沒有美國的世界。作為一個地緣政治參與者，美國已經變成了一種行動遲緩的殭屍——這種怪物可能會因受驚做出條件反射般動作，卻已喪失高級思維能力。世界上許多國家都明白，無論是期中選舉還是2028年的大選，都解決不了任何問題。美國以外的許多人認為，美國人民的分裂程度已經如此之深，無論誰當選，未來都將陷入混亂。他們擔心，即便是一位理智的共和黨或民主黨總統，也無法保證美國政策的穩定性，甚至無法保證在國際關係中貫徹最模糊的原則。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What is America?” is no longer a grand theoretical question. It is a practical matter. Governors of a number of U.S. states have rational political programs. American institutions survive. Some Americans have even kept their ideals. But as for the entity known as the United States of America, there’s no there there. There’s no America to deal with. An increasingly isolationist America is no longer the leader of the free world. How can it be, when it’s no longer the leader of itself?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「什麼是美國？」這已不再是一個宏大的理論問題，而是一個實際問題。美國許多州的州長都提出了理性的政治綱領。美國的制度依然存續。一些美國人甚至依然堅守著自己的理想。但那個名為美利堅合眾國的實體已經徒有其表。已經沒有一個可以打交道的美國了。一個日益孤立主義的美國已不再是自由世界的領導者。既然它連自身都無法領導，又怎麼可能領導世界呢？</div></div></div></div></div><div class="big_ad" data-google-query-id="CKrE8s65yZUDFVLA_QUdKCcocw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Zombie America creates, at least in the short term, contradictions. In Canada, the North American Aerospace Defense Command, jointly operated with the United States, continues to be our most important alliance. Yet civil servants here have also started training with drones for the possibility of asymmetrical conflict with the United States.<strong> </strong>Real security can be found only by removing your country from American influence, on every front as far as possible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「殭屍美國」至少在短期內製造了矛盾。在加拿大，與美國聯合運營的北美防空司令部仍然是我們最重要的聯盟。然而，這裡的公務員也開始接受無人機培訓，以應對與美國發生不對稱衝突的可能性。只有盡可能在各個方面將本國從美國的影響中抽離出來，才能獲得真正的安全。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The threat is stronger than the execution” was the wisdom of Aron Nimzowitsch, a leading figure of the hypermodern school of chess. The reason it applies to the chessboard is that all the time and energy you spend trying to figure out how to avoid a disaster turns out to be worse than the disaster itself. Once the worst has happened, you can focus on incremental improvement rather than avoidance. You can become active rather than passive. In geopolitics, too, so much of power is the appearance of power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「威脅之力勝於實際執行」是超現代派國際象棋代表人物阿倫·尼姆佐維奇的智慧之言。它之所以適用於棋盤，是因為你為設法避免災難而耗費的所有時間和精力結果往往比災難本身更糟糕。一旦最壞的情況發生，你就可以專注於漸進式的改善，而不是一味規避。你可以變被動為主動。在地緣政治中同樣如此，力量在很大程度上其實只是力量的表象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Everybody who believes in freedom and democracy and the dignity of the person and the right of nations to self-determination should be working toward the destruction of the United States’ capacity to project power — to end the strange hold it has over the world so we can all move on. So far, no one is helping more than the United States itself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每一個相信自由、民主、人的尊嚴以及國家自決權的人都應該致力於摧毀美國投射力量的能力——結束它對這個世界的奇怪掌控，這樣我們所有人才能繼續前行。到目前為止，在這一點上，沒有誰比美國自己的貢獻更大了。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Stephen Marche是新近出版的《下一場內戰》一書的作者。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260710/america-world-us-isolation/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
