@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陷入困境的中國藍領工人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">陷入困境的中國藍領工人</h1>
+    <h2 class="en-headline">‘They Don’t Need People’: The Workers Left Behind by China’s Robot Drive</h2>
+    <div class="meta-line">王月眉 <span style="margin: 0 8px;">•</span> 2026-07-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="在中國製造業中心崑山，許多人正在尋找零工。隨著中國向自動化轉型，技術水平較低的工人越來越難找到穩定的工作機會。" height="700" src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-01-wlmv/00int-china-migrant-01-wlmv-master1050.jpg" width="1050"/><figcaption><span>在中國製造業中心崑山，許多人正在尋找零工。隨著中國向自動化轉型，技術水平較低的工人越來越難找到穩定的工作機會。</span> <cite>Vivian Wang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The park was in the center of China’s richest county. Willow trees clustered around a well-manicured pond. Joggers in performance gear circled shiny new playgrounds filled with children.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這座公園位於中國最富裕縣的中心地帶。精心打理的池塘周圍環繞著垂柳。身著運動裝的慢跑者繞著嶄新閃亮的遊樂場奔跑，遊樂場上擠滿了孩子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in a quieter part of the park, Hu Xinbing was resting after another day of trying, unsuccessfully, to win his share of the local prosperity. After failing to find a job that morning, Mr. Hu, 31, lay behind some bushes, using a windbreaker as a pillow, and waited until he could try again the next day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在公園較為安靜的角落，胡新兵（音）正在休息，他試圖從本地繁榮中分得一份好處，卻一無所獲，這樣的日子又過去了一天。31歲的胡新兵那天早上沒能找到工作，他躺在灌木叢後，把風衣當作枕頭，等待著第二天再次嘗試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Around him, about a dozen other out-of-work men had claimed their own corners of the park in Kunshan, about 30 miles outside of Shanghai, dozing on benches or inside tents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在他周圍還有十幾個失業的男人在這個公園裡各自佔據一角，在長椅上或帳篷裡打盹，這裡是崑山，距離上海約50公里。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not long ago, they would have been hard-pressed to find the downtime. Kunshan, which in the early 2010s produced one-third of the world’s laptops, is at the heart of China’s gargantuan electronics manufacturing industry. For decades, millions of workers from across the country, including Mr. Hu, flocked there for steady work assembling devices for Apple and Dell. For more than 20 years, Kunshan has been ranked as China’s most economically developed county.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久前，他們還很難有這種空閑時間。崑山曾是2010年代初期全球三分之一筆記型電腦的產地，是中國龐大電子製造業的中心。幾十年來，包括胡新兵在內，數百萬來自全國各地的勞動者湧入這裡，為蘋果和戴爾組裝設備，謀求穩定的工作。20多年來，崑山一直位列中國經濟最發達的縣。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKrq5Kv90JUDFajcuAgdyV0dug" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But now Mr. Hu is one of tens of millions of workers who may be left behind by China’s pivot away from low-end manufacturing toward advanced technology. Kunshan’s government has offered generous support for companies focused on technologies such as artificial intelligence or flying cars. Meanwhile, traditional electronics makers, facing uncertain demand because of trade frictions, have embraced automation, cutting positions and wages for human workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但現在，中國正從低端製造業向先進技術轉型，胡先生成了數千萬可能被時代拋下的勞動者之一。崑山政府為專注於人工智能或飛行汽車等技術的公司提供了慷慨的支持。與此同時，由於貿易摩擦而面臨不確定需求的傳統電子產品製造商紛紛採用自動化生產，削減了人類勞動者的崗位和工資。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s all robots driving screws. They don’t need people to do it anymore,” said Mr. Hu, who is originally from the poorer inland province of Henan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「全都是機器人在擰螺絲。他們不再需要人來做了，」來自較貧窮的內陸省份河南的胡新兵說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In previous years, he said, he signed longer-term contracts with manufacturers like Pegatron and Inventec, both major suppliers for Apple. During peak seasons, he could earn up to 6,000 yuan, or about $885, a month. But he said his previous employers had cut jobs as they introduced robots. In May, he said he worked only day gigs, mostly security jobs, that paid between 60 and 120 yuan, or roughly $9 to $18, each.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，在過去的幾年裡，他與和碩和英業達等製造商簽訂了較長期的合同，這兩家公司都是蘋果的主要供應商。在旺季，他每個月能賺到6000元人民幣。但他表示，他以前的僱主在引入機器人後削減了工作崗位。他說，在5月份，他只做日結工，主要是保安工作，每天的報酬在60到120元人民幣之間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It feels like there won’t be any work left in the future, if things keep developing like this,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「照這樣下去，感覺將來就沒有工作給我們了，」他還說。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="31歲的胡新兵在上海的一場寶可夢嘉年華上擔任保安。由於失去了穩定的工廠工作，胡新兵現在只能依靠每天打零工謀生。" data-src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-02-wlmv/00int-china-migrant-02-wlmv-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-02-wlmv/00int-china-migrant-02-wlmv-jumbo.jpg"/></div><figcaption><span>31歲的胡新兵在上海的一場寶可夢嘉年華上擔任保安。由於失去了穩定的工廠工作，胡新兵現在只能依靠每天打零工謀生。</span> <cite>Vivian Wang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The predicament of Mr. Hu and his fellow workers highlights the challenge China faces as it tries to transition into a high-tech power. China leads the world in technologies like solar panels and electric vehicles, and is vying with the United States for A.I. dominance. But the manufacturing jobs created by those industries are largely for skilled workers. Those roles cannot make up for job losses among less-skilled workers, who still make up one of the biggest parts of China’s work force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">胡新兵與和他一樣的勞動者們的困境凸顯了中國在努力轉型為高科技強國時所面臨的挑戰。中國在太陽能電池板和電動汽車等技術領域領先世界，並在人工智慧領域與美國爭奪主導權。但這些行業創造的製造業工作崗位大多面向熟練工人。這些崗位無法彌補低技能工人的失業，而低技能工人仍然是中國勞動力的主要組成部分之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many people have instead been pushed into daily gig work, either in the same factories where they used to work on contracts, or in other positions, like as security guards.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多人因此被迫轉向日常零工，要麼在他們以前曾簽訂過合同的同一批工廠裡，要麼從事其他工作，比如做保安。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJaD5av90JUDFezUuAgdyRQcJA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are already around 40 million gig workers in China’s manufacturing sector alone, according to Zhang Dandan, a professor at Peking University who has studied Kunshan’s migrant workers. In some large factories, they make up as much as 80 percent of the work force. They have few opportunities to learn new skills or find better employment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究崑山務工人員情況的北京大學教授張丹丹稱，僅在中國製造業領域，零工勞動者已達約4000萬人。在一些大型工廠，零工甚至佔到了勞動力的80%。他們幾乎沒有機會學習新技能或找到更好的就業機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In the future, as smart manufacturing advances and industrial upgrades continue, the scale of gig work will keep expanding,” Professor Zhang wrote in an article in Chinese media. (She noted that some workers, especially younger ones, actually prefer gig labor, because they see contract work as too restrictive, given the still-low pay.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「未來，隨著智能製造的深化和產業升級的推進，『零工』規模還會進一步擴大，」張丹丹在中國媒體發表的一篇文章中寫道。（她指出，一些工人，尤其是年輕工人，實際上更喜歡打零工，因為他們認為在薪酬仍然很低的情況下，合同工的限制性太強。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She called for worker retraining and stronger protections for their rights. “This is an issue that policymakers cannot afford to ignore,” she wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她呼籲對勞動者進行再培訓，並加強對勞動者權利的保護。「這也是政策制定者不可忽視的問題，」她寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recently, some Chinese courts ruled that employers cannot lay people off simply because their jobs were made redundant by A.I. But those rulings have focused on white-collar workers, not blue-collar ones like Mr. Hu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近，中國一些法院裁定，僱主不能僅因員工崗位被人工智慧取代就解僱他們。但這些裁決的焦點是白領工人，而不是像胡新兵這樣的藍領工人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Hub for Struggling Workers</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>困</b><b>境中的工人的聚集地</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The park in Kunshan, Zhenchuan Good Samaritan Park, has become known across China as a gathering place for the struggling or burned out. It is near major factories and a labor market, where recruiters gather every morning from 4 a.m. until they have filled their daily quotas. The park attracts vendors selling cheap haircuts and lunchboxes for less than a dollar, even as middle-class families flock there to enjoy the spotless facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">崑山的這個公園名叫震川好人公園，如今已成為全國聞名的陷入困境者或身心俱疲者的聚集地。它靠近幾家大工廠和一個勞動力市場，每天早上4點開始，招聘人員就會聚集在那裡，直到招滿當天的名額。這個公園吸引了提供廉價理髮服務和出售不到七元盒飯的攤販，而與此同時，中產階級家庭也紛紛湧來，享受這裡一塵不染的設施。</div></div></div></div></div><div class="big_ad" data-google-query-id="COyy5av90JUDFUbo_QUdoa8Z4Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At night, workers sleep in nearby dormitories for about $3. Some stay in the park itself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到了晚上，工人們睡在附近的宿舍裡，一晚大約只需花費20元。有些人則直接露宿在公園裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Similar clusters of laborers have sprung up around labor markets in Shenzhen and other manufacturing hubs in recent years, frequented by people like Mr. Hu who are looking for daily gig work.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，在深圳和其他製造業中心的勞動力市場周圍也湧現出類似的勞工聚集區，像胡新兵這樣尋找日結零工的人經常來到這些地方。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年在北京尋找零工的工人。據北京大學教授張丹丹介紹，僅在中國製造業領域，零工就約有4000萬人。" data-src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-04-wlmv/00int-china-migrant-04-wlmv-master1050.jpg" src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-04-wlmv/00int-china-migrant-04-wlmv-master1050.jpg"/></div><figcaption><span>去年在北京尋找零工的工人。據北京大學教授張丹丹介紹，僅在中國製造業領域，零工就約有4000萬人。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The son of farmers, Mr. Hu started working after middle school, assembling circuit boards and smartphones in factories around Kunshan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出身農民家庭的胡新兵在初中畢業後就開始工作，在崑山周圍的工廠裡組裝電路板和智慧型手機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The jobs were tedious and took a physical toll — he was unable to work for a year because of inflammation in his legs that a doctor said could be related to factory chemicals — but they were steady. He was able to save a few thousand dollars each year, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些工作既枯燥又傷害身體——由於腿部發炎，他曾整整一年無法工作，醫生說這可能與工廠的化學物質有關——但這些工作很穩定。他說，他當時每年都能攢下幾萬元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But jobs became scarcer after the coronavirus pandemic. As geopolitical and trade tensions between China and the West intensified, many manufacturers, including in Kunshan, scaled back or moved overseas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但新冠疫情之後，工作機會變得越來越少。隨著中國與西方之間的地緣政治和貿易緊張局勢加劇，許多製造商都縮減了規模或將業務轉移到海外，崑山的製造商也不例外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, China was pushing to become a technology superpower. That meant, in part, investing in robots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國正致力於成為技術超級大國。在某種程度上，這意味著要在機器人領域進行投資。</div></div></div></div></div><div class="big_ad" data-google-query-id="CITW5av90JUDFZ3buAgdgZ4I4Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2024, Mr. Hu returned to a factory he’d worked at the year before, making gaming laptops. Previously, he said, the workshop had been full of people busily turning screws by hand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，胡新兵回到了前一年他曾工作過的一家生產遊戲筆記型電腦的工廠。他說，以前車間裡全是忙著手工擰螺絲的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When I went again, I took a look and, whoa, there weren’t any people anymore,” he said. “It was all robots.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「再去的時候，我看了一眼，哇，已經一個人都沒有了，」他說。「全是機器人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People were still needed to load trays with batteries and wires, which the robotic arms would then put into place, he said. The managers referred to those jobs as “support positions” for the robots. Mr. Hu estimated that there were half as many people in each workshop as before.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，工廠仍然需要人工把電池和電線裝到托盤裡，然後由機械臂把它們放到位。經理們將這些工作稱為機器人的「輔助崗位」。胡新兵估計，每個車間裡的人數只有以前的一半。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The work was equally, if not more, exhausting, especially because alarms went off if he moved too slowly. He missed socializing with other workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這份工作同樣令人筋疲力盡，甚至可能更甚，特別是如果他動作太慢，警報就會響起。他懷念與其他工人交流的時光。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Now it’s all just ice-cold machines, and you’re working yourself to death,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「現在全都是冷冰冰的機器，你還得拚命幹活，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2023年，一名技術人員在崑山的一家工廠檢查自動化設備。胡新兵說，他曾經在那些工廠找過工作，當時工廠裡全是人。如今，「全是機器人在擰螺絲了。」" data-src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-wqfl/00int-china-migrant-wqfl-master1050.jpg" src="https://static01.nyt.com/images/2026/07/01/multimedia/00int-china-migrant-wqfl/00int-china-migrant-wqfl-master1050.jpg"/></div><figcaption><span>2023年，一名技術人員在崑山的一家工廠檢查自動化設備。胡新兵說，他曾經在那些工廠找過工作，當時工廠裡全是人。如今，「全是機器人在擰螺絲了。」</span> <cite>CFOTO/Sipa USA, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was plenty that Mr. Hu admired about China’s robotics prowess. He had passed kiosks with robot baristas, and he enjoyed watching dancing humanoid robots on Douyin, China’s version of TikTok. During the pandemic, he recalled, drones delivered his food when he was in quarantine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於中國在機器人技術方面的實力，胡新兵也非常欽佩。他路過由機器人擔任咖啡師的售貨亭，也喜歡在抖音上觀看跳舞的人形機器人。他回憶說，在疫情期間被隔離時，無人機為他配送了食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But his admiration was always tinged with anxiety. He was afraid that he didn’t have the energy or the ability to learn new skills that would protect him from being replaced.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他的欽佩總是夾雜著焦慮。他擔心自己沒有精力，也沒有能力去學習能保護他不被取代的新技能。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIDo5av90JUDFQT8_QUdA3E8PQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you don’t have an education, it’s not easy to learn those things,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果沒受過教育，學習這些可不容易，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The morning after he failed to find work, Mr. Hu awoke early as usual. This time, he secured a job as a security guard for a Pokémon festival in Shanghai. At around 6 a.m., he climbed aboard a bus with dozens of other workers to drive to the festival, where he set up barriers to keep overeager children from barreling into a Pikachu parade. He earned about $18 for the day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒能找到工作後的第二天早晨，胡新兵像往常一樣早早醒來。這一次，他成功應聘到上海一場寶可夢嘉年華的保安工作。早上6點左右，他和其他幾十名工人一起登上巴士，前往活動現場。在那裡，他架設隔離欄，防止過度熱情的孩子們衝進皮卡丘遊行隊伍。他那天賺了大約120元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At 8 p.m., he boarded the bus back to Kunshan. If the weather was nice, he might stay in the park.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">晚上8點，他登上返回崑山的公車。如果天氣好，他可能還會待在公園裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The next morning, he would get up and do it all over again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二天早上，他會起床，一切從頭再來。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><p class="cn-p">王月眉(Vivian Wang)是《紐約時報》駐華記者，常駐北京，撰寫關於中國的崛起及雄心如何塑造普通人日常生活的報導。</p><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260713/china-workers-robots-factories/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

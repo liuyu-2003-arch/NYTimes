@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大眾汽車是如何在中國陷入困境的 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">大眾汽車是如何在中國陷入困境的</h1>
+    <h2 class="en-headline">How Volkswagen’s Troubles Were Made in China</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-07-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上海車展上的大眾汽車展台。多年來，中國市場為這家德國車企貢獻了至少半數利潤。" height="700" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-01-glkb/00Biz-VW-China-01-glkb-master1050.jpg" width="1050"/><figcaption><span>上海車展上的大眾汽車展台。多年來，中國市場為這家德國車企貢獻了至少半數利潤。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen has problems around the world, spurring it to announce on Thursday that it would slash the number of models it offers by as much as half, but many of its troubles can be traced to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾汽車在全球範圍內面臨諸多挑戰，促使其週四宣布將削減多達一半的車型，而這些麻煩在很大程度上可以追溯到中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The German auto giant, the world’s second-largest carmaker after Toyota, led the pack in China, the world’s largest car market, for four decades. For many years, the company’s joint ventures and factories in China provided half or more of the company’s worldwide profits, which helped Volkswagen afford high salaries and generous benefits for its vast work force back in Germany.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這家德國汽車巨頭是僅次於豐田的全球第二大汽車製造商，曾在中國這個全球最大汽車市場稱雄長達四十年。多年來，大眾在華合資企業和工廠所貢獻的利潤佔據了公司全球利潤的半數乃至更多，正是這些收益使得大眾能夠在德國為龐大的員工隊伍支付高薪、提供豐厚的福利待遇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Volkswagen’s sales in China last year were down by a third compared with 2019, as the company lagged Chinese competitors in the switch to electric cars. And the company’s performance keeps getting worse: Sales in China from April through June were down by another third from just last year, a weak performance even by the standards of China’s slowing economy and shrinking car market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，隨著大眾在向電動車轉型的過程中落後於中國競爭對手，公司去年在華銷量與2019年相比下降了三分之一。更糟糕的是，頹勢仍在持續：今年4月至6月，大眾在華銷量較去年同期再度驟降三分之一，就算中國整體經濟和車市本身也在下滑，這也是一個相當疲軟的業績。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen now faces daunting competition from Chinese rivals in markets outside China, too. Chinese cars are pouring into Latin America and Africa, where Volkswagen has long been among the market leaders. And in the European Union, VW’s home turf, Chinese automakers passed Japanese automakers in terms of market share in May. The rapid expansion by low-priced Chinese entrants in Europe is putting heavy pressure on Volkswagen and other European manufacturers to cut prices, shrinking their profit margins.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾如今在中國以外的市場同樣面臨中國競爭對手的激烈競爭。中國汽車正大舉湧入拉丁美洲和非洲，而大眾在這兩個地區長期處於市場領先地位。在歐盟這個大眾的大本營，中國汽車製造商今年5月的市場份額已超越日本品牌。低價中國車企在歐洲的快速擴張正迫使大眾和其他歐洲製造商不得不降價應戰，從而不斷壓縮利潤空間。</div></div></div></div></div><div class="big_ad" data-google-query-id="CL6U5bD90JUDFQ9SCAQdipMXmw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen did not provide details on Thursday about how it might slim down its operations in line with a more limited model lineup. The company said it would aim to produce nine million vehicles a year, compared with a goal of 12 million before the Covid-19 pandemic and 10 million more recently. German press reports had suggested that Volkswagen was preparing to lay off as many as 100,000 workers by the end of the decade and close four factories in Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾週四並未詳細說明如何根據縮減後的產品陣容來精簡其運營。該公司表示，將力爭實現年產900萬輛汽車的目標，而新冠疫情前的目標為1200萬輛，前幾年的目標也達到了1000萬輛。德國媒體報導稱，大眾準備在2030年前裁員10萬人，並關閉歐洲的四家工廠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen’s China-related troubles can be traced in part to decisions the company made going back many years.<strong> </strong>The company’s leaders in Europe were skeptical nearly two decades ago as China’s leaders pushed the country’s auto industry to shift toward electric cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾在中國的困境部分根源在於公司多年前的一系列決策。近二十年前，當中國領導層力推本國汽車產業向電動車轉型時，大眾的歐洲高管對此持懷疑態度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like other multinationals, Volkswagen was reluctant to start designing a range of electric cars from scratch until the Chinese public showed a clear preference for such models. By contrast, Chinese automakers generally believed Beijing’s intentions and planned accordingly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">和其他跨國企業一樣，在看到中國消費者對電動汽車表現出明顯的偏好之前，大眾汽車不願意從零開始開發完整的電動車產品線。相比之下，中國本土車企普遍相信北京的政策方向，並據此提前進行了謀劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">State-controlled banks also issued huge loans to Chinese automakers at low interest rates, while local governments provided financial backing that helped the firms make interest payments and propped them up if they ran into financial trouble.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國的國有銀行以低利率向車企發放大量貸款，地方政府也提供財政支持，幫助企業償付利息，並在企業遇到財務困難時予以扶持。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上汽大眾合資生產基地。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-05-glkb/00Biz-VW-China-05-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-05-glkb/00Biz-VW-China-05-glkb-master1050.jpg"/></div><figcaption><span>上汽大眾合資生產基地。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="今年4月的北京車展上，大眾汽車在中國研發的全電動車型「與眾」。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-04-glkb/00Biz-VW-China-04-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-04-glkb/00Biz-VW-China-04-glkb-master1050.jpg"/></div><figcaption><span>今年4月的北京車展上，大眾汽車在中國研發的全電動車型「與眾」。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This year, Volkswagen introduced the first of many models it has developed in China to be fully electric and have extensive internet connectivity, the ID. Unyx 07. Its comprehensive electronic architecture, according to Volkswagen and analysts, translates into considerable cost savings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年，大眾推出了在中國本土研發的眾多車型中的第一款——「與眾」，這是一款配備了高度互聯智能系統的純電座駕。大眾及分析人士認為，其完整的電子電氣架構帶來了顯著的成本節約。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Over the past three years we have completely renewed our product portfolio,” said Ralf Brandstätter, the chairman and chief executive of Volkswagen Group China, in an email reply to questions. “This year, we are launching our largest product offensive ever, with 20 smart and electrified models coming to market.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾中國董事長兼首席執行官貝瑞德(Ralf Brandstätter)在回覆記者提問的電子郵件中表示：「過去三年，我們已經徹底更新了產品組合。今年，我們將發起史上規模最大的產品攻勢，共有20款智能電動車型推向市場。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJia5bD90JUDFRBTCAQdcpIHZQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Volkswagen’s new models in China are arriving late. In 2024 and 2025, China offered extensive subsidies for households to trade in gasoline-powered cars for electric alternatives. As a result, many Chinese households that want electric cars now already have them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，大眾在中國的新車型來得太遲。2024年至2025年間，中國推出了大規模補貼政策，鼓勵家庭以燃油車換電動車。因此，眾多有意購買電動車的中國家庭實際上已經完成了購買。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To make matters worse, Beijing made those electric-vehicle subsidies much less generous at the start of this year, after they became a budgetary burden. Industrywide sales of battery-electric and plug-in hybrid cars in China fell 14 percent in the first half of this year from the same period last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">更糟糕的是，由於財政負擔過重，中國政府今年年初大幅削減了電動車補貼。結果，今年上半年，中國純電動車和插電式混合動力汽車的整體銷量較去年同期下降了14%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Foreign automakers in China have missed the boat on electric vehicles,” said Stephen Dyer, the head of the Asia automotive and industrial division at AlixPartners, a global consulting firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在華外國汽車製造商已經錯過了電動汽車這班車，」全球諮詢公司艾睿鉑的亞洲汽車與工業部門主管戴加輝表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen had initially tried to modify a few existing gasoline-powered designs for electric versions. That left the company underprepared when Tesla ramped up production and sales in China in 2020, generating a rapid and almost nationwide embrace of electric cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾此前曾嘗試在少數燃油車型上加以改造，推出電動版本。但當2020年特斯拉在中國大舉擴產擴銷，幾乎在全國範圍內迅速點燃電動車熱潮時，大眾汽車已經措手不及。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A clear pattern has emerged since then. A few automakers, like Tesla and Xiaomi, sell only electric cars. BYD, the Chinese company that vies with Tesla for the top spot in global electric vehicle sales, also sells hybrid cars with large batteries and small gasoline engines. Some Chinese automakers that previously made mostly gasoline-powered models have shifted half or more of their sales to electric cars, notably Geely, which now rivals BYD for market leadership in China. Multinationals like Volkswagen, General Motors and Ford Motor continue to offer mainly gasoline-powered cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，一種清晰的格局逐漸成形：特斯拉、小米等少數車企專攻純電動車；除了在全球電動車銷量上與特斯拉爭雄，比亞迪同時提供搭載大容量電池和小排量汽油發動機的混合動力車型。吉利等原本以燃油車為主的中國車企已將過半銷量轉向電動車，目前與比亞迪爭奪中國市場領導地位；大眾汽車、通用汽車和福特等跨國車企則依然以燃油車為主要產品。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="小米SU7內部的電子主屏。在軟體及其他電子功能方面，大眾汽車正在努力追趕中國競爭對手。
+" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-07-glkb/00Biz-VW-China-07-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-07-glkb/00Biz-VW-China-07-glkb-master1050.jpg"/></div><figcaption><span>小米SU7內部的電子主屏。在軟體及其他電子功能方面，大眾汽車正在努力追趕中國競爭對手。 </span><cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="法蘭克福街頭的比亞迪汽車。這家中國汽車製造商正在打入大眾汽車的本土市場。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-03-glkb/00Biz-VW-China-03-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-03-glkb/00Biz-VW-China-03-glkb-master1050.jpg"/></div><figcaption><span>法蘭克福街頭的比亞迪汽車。這家中國汽車製造商正在打入大眾汽車的本土市場。</span> <cite>Felix Schmitt for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But sales of gasoline-powered cars in China have plummeted this year almost twice as fast as the decline in deliveries of battery-electric cars and plug-in hybrid gasoline-electric cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，中國燃油車銷量今年的跌幅幾乎是純電動車和插電式混合動力車交付量降幅的兩倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen’s share of China’s gasoline-powered car market has increased slightly. But with more than three out of five new cars in China now fully electric or plug-in hybrids, its strength in this fast-shrinking segment has not prevented the company from losing sales overall.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾汽車在中國燃油車市場的份額略有上升。但由於目前中國每五輛新車中就有三輛以上是純電動或插電式混動車型，大眾在這個快速萎縮的細分市場中的優勢並未能阻止其整體銷量下滑。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIat5bD90JUDFWSwOgUd27wFHw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Volkswagen’s difficulties in China primarily stem from its own slow transformation,” said Cui Dongshu, the secretary general of the China Passenger Car Association, a trade group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大眾汽車在中國的困境主要源於其自身轉型遲緩，」中國乘用車市場信息聯席會秘書長崔東樹說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A housing market crash has made it increasingly difficult for millions of Chinese households to afford a new car, releasing excess inventory from Chinese factories for export instead. China has also kept its currency weak, allowing its automakers to undercut rivals in foreign markets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">房地產市場的崩盤使數以百萬計的中國家庭越來越難以承受購置新車的開銷，而這也將中國工廠的過剩產能源源不斷地推向出口市場。與此同時，中國刻意維持弱勢人民幣匯率，使本國車企得以在海外市場以低價擊敗競爭對手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s car exports zoomed to eight million last year from one million in 2020, and are on track to reach 12 million this year. For comparison, the entire European Union car market was about 11 million last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的汽車出口量從2020年的100萬輛飆升至去年的800萬輛，並有望在今年達到1200萬輛。相比之下，整個歐盟去年的汽車市場規模約為1100萬輛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Aside from playing catch-up with Chinese competitors on drivetrains, Volkswagen has been slower to master vehicle software and other electronic technologies. The German company has followed European industry standards by testing self-driving features for longer than Chinese rivals before introducing them in mass-produced cars. While Volkswagen has been methodically testing, Chinese automakers have widely introduced self-driving technologies, despite occasional crashes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了在動力傳動系統方面追趕中國競爭對手外，大眾在汽車軟體及其他電子技術方面的發展也較為緩慢。德國公司遵循歐洲行業標準，在將自動駕駛功能應用到量產車型之前，會進行比中國同行更長時間的測試。而就在大眾汽車按部就班地測試期間，中國車企已經廣泛推出了自動駕駛技術，儘管期間偶有事故發生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen has also been later than Chinese competitors in adopting eye-catching instrument clusters with large display screens that become extensions of the driver’s smartphone. Volkswagen’s cars have begun to seem dowdy by comparison.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾在採用配備大尺寸顯示屏、與駕駛者的智慧型手機高度融合的酷炫儀錶盤方面同樣慢於中國的競爭對手。相比之下，大眾汽車開始顯得有些不夠時髦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Volkswagen cars, “features like the in-car touch screen, smartphone connectivity and the electronic cockpit simply aren’t as forward-looking or as user-friendly as those offered by Chinese brands,” said David Zhang, the dean of vehicle technology research at the Jiangxi New Energy Technology Institute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">江西新能源科技職業學院新能源汽車技術研究院院長張翔表示，「在大眾汽車上，車內觸屏、手機互聯和數字座艙等功能，無論在前瞻性還是用戶友體驗上，都遠不及中國品牌。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CLvO5bD90JUDFVlSCAQdB48nQw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese automakers have saved money by not investing as much in the costly precision steering and other driving performance features emphasized by engineers at Volkswagen and other German manufacturers. This has helped Chinese companies to offer more electronic features for cheaper prices than anything available from German automakers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國汽車製造商還通過減少對大眾等德國車企一直強調的高成本精準轉向系統及其他駕駛性能的投入，降低了製造成本。這使得中國車企能夠以比德國品牌更低的價格提供更為豐富的電子功能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The challenge isn’t simply to build better electric cars,” said Bill Russo, an automotive consultant in Shanghai, but to become “a different kind of company.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上海汽車諮詢顧問羅威(Bill Russo)表示：「挑戰不僅僅是造出更好的電動車」，而是要成為「一種完全不同類型的公司」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上海一家購物中心內，「與眾」的展廳。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-06-glkb/00Biz-VW-China-06-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-06-glkb/00Biz-VW-China-06-glkb-master1050.jpg"/></div><figcaption><span>上海一家購物中心內，「與眾」的展廳。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="大眾汽車位於合肥郊區的工廠。" data-src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-08-glkb/00Biz-VW-China-08-glkb-master1050.jpg" src="https://static01.nyt.com/images/2026/07/08/multimedia/00Biz-VW-China-08-glkb/00Biz-VW-China-08-glkb-master1050.jpg"/></div><figcaption><span>大眾汽車位於合肥郊區的工廠。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen built an immense electric car factory in 2023 in Hefei, a city in north-central China. It also constructed a 3,000-engineer design center nearby, with the goal of tailoring cars more directly to China while also adding the latest Chinese innovations to models slated for sale elsewhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2023年，大眾在合肥建成了一座大型電動車工廠。同時，公司還在附近建立了一座有3000名工程師的研發中心，希望研發出更符合中國市場需求的車型，並把中國最新的技術創新應用到銷往其他市場的產品上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Volkswagen has begun exporting cars from China to Central Asia and the Middle East. It has also begun looking for ways to use technologies developed by its Chinese engineers in South America and Africa.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾已開始從中國向中亞和中東出口汽車。它也開始尋求利用其中國工程師開發的技術，用於南美和非洲市場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Volkswagen China has the potential to become both an export hub and technology supplier for the Global South,” according to Mr. Brandstätter, the company’s China chief.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大眾中國有潛力成為『全球南方』的出口樞紐和技術供應商，」大眾中國區負責人貝瑞德表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Perhaps most notably, given the anxiety over job losses in Europe, Volkswagen in 2024 began shipping its Cupra Tavascan, a crossover sport utility vehicle, from China to Europe. Volkswagen said in a written reply to questions last week that it did not plan to export to Europe or the United States other models it builds in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">或許最值得關注的是，在歐洲對就業崗位流失的擔憂不斷加劇之際，大眾汽車於2024年開始將中國生產的Cupra Tavascan這款跨界SUV出口到歐洲。大眾汽車上週書面回覆記者提問時表示，目前沒有計劃把其他在中國生產的車型出口到歐洲或美國。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP7U5bD90JUDFdqwOgUd0g42Gg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The long-term dilemma for Volkswagen and other German automakers is that their complete mastery of internal combustion engine technology does not count for much in a global market that is racing toward electrification. “They’re really good at something that is going out of fashion fast,” said Michael Dunne, a longtime China automotive consultant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大眾以及其他德國汽車製造商面臨的長期困境在於，在全球汽車市場迅速邁向電氣化的當下，它們在內燃機技術上的深厚積累價值正在不斷下降。長期研究中國汽車行業的顧問麥可·鄧恩說：「他們確實非常擅長一項正在迅速過時的技術。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jack Ewing自紐約對本文有報導貢獻。Ruoxin Zhang自北京有研究貢獻。</p><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260713/volkswagen-china-problems-restructuring/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在中國，我們看到了本世紀的最大挑戰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">在中國，我們看到了本世紀的最大挑戰</h1>
+    <h2 class="en-headline">We Returned From China. We Realized Our Century’s Biggest Challenge.</h2>
+    <div class="meta-line">ERIC SCHMIDT, SELINA XU <span style="margin: 0 8px;">•</span> 2026-07-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/07/13/opinion/11schmidtxu/11schmidtxu-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Ben Denzer</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Humanity is inching along a precarious tightrope.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人類正行走在一條危險的鋼絲繩上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our world is in the midst of deciding how the artificial intelligence revolution will unfold and what limits should be drawn. Too much caution could waste A.I.’s promise of faster economic growth, greater scientific discovery and more prosperity. Too little caution could unleash labor-market chaos and social disorder. Balance matters. If we get the balance between control and growth wrong at any point, we’ll fall into the gorge below. And no country is guaranteed to get to the opposite side.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們的世界面臨一個抉擇：人工智慧革命將如何展開，以及應該劃定怎樣的界限。過度謹慎可能會辜負AI帶來的加速經濟增長、提升科學發現和促進繁榮的前景；謹慎不足則可能引發勞動力市場的混亂和社會失序。平衡至關重要。如果在任何時候失去控制與增長之間的平衡，我們都會跌入下方的深谷。而且，沒有哪個國家敢保證自己一定能走到彼岸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is our century’s biggest survival challenge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是我們本世紀最大的生存挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese tech executives we met on a trip last month were optimists about the technology, but they were much more conservative than Silicon Valley on how fast the growth of A.I. ought to be. Some were wary about replacing their employees too aggressively with A.I. Others worried that if A.I. became destabilizing, China’s entire industry might be reined in by the government. One chief executive even said point-blank that growing more slowly was preferable to going full speed ahead, so as to avoid a repeat of the Luddite backlash toward the Industrial Revolution, when 19th-century English workers tried to halt the spread of mechanization by storming factories and destroying power looms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>上個月的中國之行中，我們見到的中國科技高管對這項技術持樂觀態度，但在人工智慧的發展應該有多快這一問題上，他們比矽谷要保守得多。一些人對</span>過於激進地用人工智慧取代員工持謹慎態度；還有一些人擔心，如果人工智慧變得具有顛覆性，整個中國的人工智慧產業都可能受到政府的壓制。一位首席執行官甚至直截了當地表示，寧可發展得慢一點，也不要全速前進，以避免重蹈工業革命時期盧德分子抵制思潮的覆轍——當時19世紀的英國工人試圖通過衝擊工廠和搗毀動力織布機來阻止機械化的蔓延。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLbutrL90JUDFZ6xOgUdN7It6w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese policymakers are also visibly wrestling with how to encourage growth while preserving social and regime stability, which is the top priority for the Chinese Communist Party. In April, China stopped issuing new licenses for autonomous vehicles after dozens of robotaxis abruptly stranded passengers on the streets of Wuhan. That same month, a Chinese court ruled that companies cannot terminate employees just to replace them with A.I. systems. In June, a new employment five-year plan pledged to prevent large-scale unemployment risks and to use A.I. to promote job creation. A ban on A.I. companions for minors in China is set to take effect in July.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的政策制定者顯然也在鼓勵增長和<span>保持社會與政權穩定之間舉棋不定，而穩定正是中國共產黨的重中之重。今年4月，在數十輛無人駕駛計程車突然將乘客滯留在武漢街頭之後，中國暫停了新自動駕駛牌照</span>的<span>發放。同月，一家中國法院裁定，企業不得僅僅為了用</span>人工智慧系統取代工人而解僱員工。6月，一項新的就業五年計劃承諾要防範大規模失業風險，並利用人工智慧來促進就業崗位的創造。此外，中國針對未成年人的人工智慧虛擬伴侶禁令將於7月生效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although China is no paragon, such actions have helped buoy the population’s feelings toward A.I. Around 84 percent of respondents in China said they were excited about A.I., according to a recent Stanford report. Meanwhile, American skepticism toward the technology remains high. Communities across the United States are fighting the construction of data centers. Parents worry about children forming unhealthy attachments to A.I. companions. Workers fear being replaced. Policymakers warn of national security vulnerabilities. Researchers debate catastrophic risks. These fears are not irrational. People are asking a simple question: Will A.I. make my life better, or make it worse?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管中國算不上什麼典範，但這些舉措確實有助於提振民眾對人工智慧<span>的好感。根據史丹佛大學近期的一份報告，中國約有84%的受訪者表示對</span>人工智慧感到興奮。與此同時，美國對該技術的懷疑態度依然高企。全美各地的社區都在抵制數據中心的建設。家長們擔心孩子對人工智慧伴侶產生不健康的依戀。工人們害怕被取代。政策制定者警告國家安全漏洞。研究人員則在爭論災難性風險。這些恐懼並非無理取鬧。人們正在問一個簡單的問題：人工智慧會讓我的生活變得更好，還是更糟？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The question is hard to answer because the benefits of the technology are unevenly distributed and can often feel overhyped. One reason is what some have called “jagged intelligence,” where A.I. fails at incredibly simple tasks even as it excels in specific areas. So when some in Silicon Valley predict an impending jobpocalypse, while others view the industry’s claims as overblown, it’s hardly surprising that the public mood around A.I. is darkening. In a Gallup survey from last year, 80 percent of American adults thought the government should regulate A.I., even if doing so means slower progress, a view that was shared by Democrats and Republicans alike. Even young Americans who historically embraced new technologies are angrier and more skeptical.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這個問題很難回答，因為這項技術帶來的益處分布不均，且往往讓人覺得言過其實。原因之一就是所謂的「鋸齒狀智能」，即</span>人工智慧即使在特定領域表現卓越，在無比簡單的任務上也會搞砸。因此，當矽谷的一些人預言一場即將來臨的就業末日、另一些人則認為業界的宣稱誇大其詞時，公眾對人工智慧的情緒正在變得負面也就不足為奇了。在去年的一項蓋洛普調查中，80%的美國成年人認為政府應當對人工智慧實施監管，哪怕這樣做意味著進步會變慢，民主黨人和共和黨人均持這一觀點。甚至連在歷史上對新技術包容度最高的年輕一代美國人，如今也變得更加憤怒和懷疑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dismissing A.I. entirely would be a mistake. The technology can help diagnose diseases, predict protein folding, improve farming, forecast disasters better, design new materials, accelerate scientific and drug discovery and power robots in dangerous environments to improve human safety (such as in space, firefighting and minefields).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">徹底排斥人工智慧將是一個錯誤。這項技術可以幫助診斷疾病、預測蛋白質摺疊、改善農業耕作、更好地預報災難、設計新材料、加速科學與藥物發現，並在危險環境中驅動機器人以提高人類的安全（例如在太空、消防和雷場）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet how technology spreads is never inevitable. If A.I. is viewed as benefiting the few at the expense of the majority, then the public will rage against the machine. And A.I. won’t be able to make our lives better in the long run if it cannot survive in the short term. The real challenge, then, isn’t whether the United States or China will build an overwhelming, insurmountable advantage over the other. It’s whether either can figure out how to realize the benefits of A.I. without ripping apart its social fabric. Neither has found the answer yet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，技術的傳播方式從來都不是必然的。如果人工智慧被視為以犧牲大多數人為代價來使少數人獲益，那麼公眾就會發起對機器的反抗。如果人工智慧無法在短期內生存，長遠來看它也無法讓我們的生活變得更好。因此，真正的挑戰並不在於美國或中國誰能對另一方建立起壓倒性的、不可逾越的優勢，而是在於雙方是否都有人能弄清楚，如何在不撕裂自身社會結構的前提下實現人工智慧的益處。目前還沒有誰找到答案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silicon Valley tech executives and policymakers across the country are waking up to that fact. States have introduced dozens of bills this year to put safety and privacy guardrails around A.I. The Trump administration issued a new executive order that seeks to give the government more oversight over new models before they’re released to the public. Companies like OpenAI are starting to come around to the idea that strong safety rules can help reverse growing public opposition. But there is still no clear consensus on how the United States should move forward. We know big disruptions are coming, and they’re coming fast as A.I. capabilities advance faster than policy response. We need bigger ideas to fix what may soon break.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>矽谷的科技高管和全美各地的政策制定者正在清醒地認識到這一事實。今年，各州已經引入了數十項法案，旨在為</span>人工智慧築起安全和隱私的護欄。川普政府發布了一項新的行政命令，試圖在新的模型向公眾開放之前給予政府更多的審查權。像OpenAI這樣的公司也開始認同這一觀點，即強有力的安全規則有助於扭轉日益高漲的公眾反對聲浪。但在美國應當如何向前邁進的問題上，目前仍未達成清晰的共識。我們知道巨大的衝擊即將到來，而且隨著人工智慧能力比政策響應推進得更快，這一衝擊正在迅速逼近。我們需要更宏大的構想來修復可能很快就會斷裂的紐帶。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP2wt7L90JUDFdtWCAQdSF0X-g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To get to the other end of the tightrope, we need radical and incremental solutions alike. Here’s one to start: a populist A.I. agenda that treats the technology as a public project. Just as NASA made space a national mission rather than a private one, the government should now do the same for A.I. to ensure that its benefits reach the public, not just the companies building it. Here are some concrete ways to do that:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了走到鋼絲繩的另一端，我們既需要徹底的解決方案，也需要漸進式的解決方案。這裡有一個入手點：一項將該技術視作公共項目的民粹主義人工智慧議程。正如美國國家航空航天局將太空變成了一項國家使命而非私人任務一樣，政府現在對人工智慧也應當採取同樣的做法，以確保其益處能惠及公眾，而不僅僅是建造它的公司。以下是一些具體的實施方式：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One, treat some A.I. profits as a shared resource and distribute them directly to citizens. This can be in the form of a sovereign wealth fund, seeded by contributions from A.I. companies in the form of stock or cash.<strong> </strong>Prior models for this include Singapore’s Temasek, seeded in 1974 with equity in state-linked companies, and Australia’s Future Fund, which turned budget surpluses and government shares in a privatized telecom into a permanent endowment for future generations. Another format would be to reinvest A.I. profits into the younger generation, whose members risk being displaced before their careers even begin, and teach them how to use these tools. After all, the fruits of the age of A.I. are not the outcome of individual companies alone, but are built on the knowledge that society has accumulated over centuries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第一，將部分人工智慧利潤視為共享資源，直接分配給國民。可以採取主權財富基金的形式，由人工智慧公司以股票或現金的形式注資設立。對此已有先例可循，包括新加坡的淡馬錫（1974年依託國家關聯公司的股權注資成立）以及澳洲的未來基金（將財政盈餘和私有化電信公司中的政府股份轉化為惠及子孫後代的永久捐贈基金）。另一種形式是將人工智慧利潤重新投資到年輕一代身上，因為這些年輕成員面臨著在職業生涯開始之前就被取代的風險，並教導他們如何使用這些工具。畢竟，人工智慧時代的果實並不僅僅是個別公司自身努力的結果，而是建立在人類社會數個世紀以來所累積的知識基礎之上的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two, support public-interest A.I. models that the private sector might not be incentivized to build. Examples include models to help citizens navigate government services and benefits, to help them gain legal aid or to help educate their children. We strongly believe in the importance of open-source A.I., which anyone can freely use and modify. That would allow local governments, libraries, researchers, small businesses, nonprofits and independent developers to participate in building, owning, inspecting and adapting models for their community and privacy needs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二，支持私營部門去構建那些他們可能不情願做的公益性人工智慧模型。例如，幫助國民了解政府服務和福利的模型、幫助他們獲得法律援助的模型，或是幫助教育其子女的模型。我們篤信開源人工智慧的重要性，任何人都可以自由地使用和修改它。這將允許地方政府、圖書館、研究人員、小微企業、非營利組織和獨立開發者參與進來，共同構建、擁有、檢查並調整模型，以滿足其社區和隱私的需求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the government and companies, this means expanding shared A.I. computing infrastructure, teaching the public how better to understand and use A.I. for its personal well-being, and funding genuinely open-source and safe American models. Companies working alone won’t get us there: the enormous cost of computing power pushes them toward serving customers who can pay the most. Some technologies need to become public infrastructure through expanded access and price reductions. Britain once nationalized electricity; the United States regulated railroads. We’ve done it before and can do it again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於政府和企業而言，這意味著擴大共享的人工智慧算力基礎設施，教導公眾如何更好地理解並使用人工智慧來增進個人福祉，並資助真正開源且安全的美國模型。單靠公司單打獨鬥是無法讓我們達到這一目標的：計算能力的巨大成本正推著他們去服務那些出價最高的客戶。一些技術需要通過擴大准入和降低價格來演變成公共基礎設施。英國曾將電力收歸國有；美國曾對鐵路實施監管。我們以前做過，現在可以再做一次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three, regulate one area that attracts bipartisan agreement: the way children and teens interact with A.I. Several bipartisan bills have been introduced that propose safeguards for minors, parental controls and penalties for platform violations. Let’s advance those. Absent regulations, industry is unlikely to police itself, as we’ve seen before in the age of social media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第三，對一個形成了跨黨派共識的領域實施監管：即兒童和青少年與人工智慧互動的方式。目前已經引入了數項跨黨派法案，提出了對未成年人的保護措施、家長控制以及對平台違規行為的懲罰。讓我們推進這些法案。正如我們在以前的社群媒體時代所看到的那樣，如果缺乏監管，行業是不太可能自律的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Our society has navigated and absorbed major technological upheavals before, from the Industrial Revolution to the computer age. Those transitions endured politically because reformers and lawmakers built labor protections, social insurance, public schooling and antitrust law that helped broaden technology’s gains. This time around, many Americans have no faith that the benefits of A.I. will be distributed. It is up to policymakers and the companies building A.I. to change that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們的社會以前曾成功應對並消化了重大的技術劇變，從工業革命到計算機時代。那些過渡期之所以能在政治上維繫下去，是因為改革者和立法者建立了勞動保護、社會保險、公共教育和反壟斷法，從而有助於擴大技術的成果。而這一次，許多美國人根本不相信人工智慧的益處會被分享。改變這一現狀取決於政策制定者和構建人工智慧的公司。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJimuLL90JUDFTlMCAQdNTAOnA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. must help people thrive, not merely enrich a handful of companies and leave others behind. If that doesn’t happen, the country will resist it, slow it and fight over it. That is how America loses its balance on the tightrope.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧必須助力大眾福祉，而非僅僅讓少數企業獲利、棄多數人於不顧。否則，全社會就會抵制它、拖慢其發展速度，甚至為此爭鬥不休。這將使在鋼絲繩上的美國失去平衡。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Eric Schmidt曾任谷歌首席執行官兼董事長，現任Relativity Space董事長兼首席執行官。Selina Xu在Eric Schmidt的辦公室負責中國和人工智慧政策研究。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260713/ai-populism-china-open-source/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
