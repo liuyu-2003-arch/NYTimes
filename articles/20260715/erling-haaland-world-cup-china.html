@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「玩抽象」的哈蘭德如何俘獲中國球迷的心 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「玩抽象」的哈蘭德如何俘獲中國球迷的心</h1>
+    <h2 class="en-headline">How Erling Haaland’s Brand of Weird Resonates in China</h2>
+    <div class="meta-line">YAN ZHUANG, BERRY WANG <span style="margin: 0 8px;">•</span> 2026-07-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="7月5日，挪威在紐澤西州舉行的世界盃16強賽中擊敗巴西，哈蘭德賽後留影。" height="1024" src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-03-hmkv/14xp-worldcup-china-haaland-03-hmkv-jumbo.jpg" width="804"/><figcaption><span>7月5日，挪威在紐澤西州舉行的世界盃16強賽中擊敗巴西，哈蘭德賽後留影。</span> <cite>Justin Setterfield/Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Erling Haaland, Norway’s talismanic striker, led the country’s team to its best-ever World Cup finish — but he’s also a burgeoning social media sensation, known for his sense of humor and self-deprecation. His popularity has exploded even in China, which didn’t have a team in the tournament but where he has become the face of myriad memes, from his alleged resemblance to cartoon characters to fan art depicting him as the romantic hero of a sci-fi dating game.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">挪威隊的精神領袖、前鋒埃爾林·哈蘭德率領球隊取得了該國在世界盃歷史上的最佳戰績，而與此同時，他也迅速成長為社群媒體上的新晉頂流，以幽默感和自嘲精神而廣為人知。他的人氣在中國更是急升——儘管中國隊並未入圍本屆世界盃，但哈蘭德已成為無數網路梗的主角——從被調侃長得像動畫角色，到被粉絲創作成科幻戀愛手遊中的浪漫男主角，不一而足。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Haaland, already one of the world’s most recognizable soccer players, has gained legions of fans around the world over the course of the tournament. His Instagram following has grown by millions in the past few weeks, as have his Douyin and Weibo accounts — the Chinese equivalents of TikTok and X.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈蘭德原本就已是世界足壇最具辨識度的球星之一，他在本屆世界盃期間又在世界各地收穫了大批新粉絲。過去幾週，他的Instagram粉絲增加了數百萬，抖音和微博帳號（分別相當於中國的TikTok和X）關注量同樣水漲船高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of his early moments of internet fame in China came in the buildup to the tournament, when he starred in an advertisement for Walovi, a Chinese herbal tea brand. In the ad, Mr. Haaland breathes fire while holding a massive barbecue skewer in each hand, a play on the Chinese concept of “shanghuo” or “excess internal heat,” before cooling down with the drink.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在中國網路上最早的出圈時刻之一是在世界盃前夕出任中國涼茶品牌「王老吉」的廣告代言。在廣告中，哈蘭德雙手各舉一根巨大的燒烤串，口中噴火——這是對中文「上火」概念的形象化演繹——隨後喝下涼茶降火。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="這位挪威前鋒在達拉斯的狂野比爾西部商店購買了一隻手持格林諾爾斯野莓杜松子酒空瓶的浣熊標本。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-qgbk/14xp-worldcup-china-haaland-qgbk-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-qgbk/14xp-worldcup-china-haaland-qgbk-master1050.jpg"/></div><figcaption><span>這位挪威前鋒在達拉斯的狂野比爾西部商店購買了一隻手持格林諾爾斯野莓杜松子酒空瓶的浣熊標本。</span> <cite>Jan Langhaug/NTB, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Weibo, hundreds of millions of people have viewed hashtags detailing Mr. Haaland’s endorsement of the tea, as well as the cost of the hair ties he uses for his flowing blond locks (42 yuan, or about $6.30, according to some posts) and others declaring that “Haaland is the funniest football star I’ve ever seen.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在微博上，有關哈蘭德代言涼茶的標籤、他紮起一頭飄逸金髮所使用的頭繩價格（據一些帖子稱售價為42元人民幣），以及「哈蘭德是我見過最搞笑足球明星」等相關話題瀏覽量已達數億次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fans have taken to his enthusiasm for Chinese culture and willingness to engage with online memes and trends. They’ve even given him an affectionate nickname that he has acknowledged on social media: “Ha Bao,” or “Baby Ha.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他對中國文化的熱情，以及樂於參與網上玩梗和潮流趨勢的態度，贏得了中國粉絲的喜愛。大家甚至給他起了一個親切的暱稱——哈寶，而他本人也在社群媒體上認領了這個稱呼。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNSczsyC1pUDFa--pgQd2psWIw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Douyin, Mr. Haaland has delighted fans by discussing the Chinese foods he wants to try and taking part in a popular meme in which people pretend to swallow a monorail in the southwestern city of Chongqing. He’s even shown his Chinese audience how to tie his signature topknot.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在抖音上，哈蘭德曾興緻勃勃地談論自己想嘗試哪些中國美食，還參與了一個熱門網路梗——模仿把重慶輕軌一口吞下。他甚至還向中國粉絲展示自己標誌性的小辮子是怎麼扎出來的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Haaland’s exaggerated expressions and blond hair have been referenced in numerous memes, including one that places his hair on top of an image of a pouting Tom, the cat from “Tom and Jerry,” with some Chinese fans claiming a resemblance between their expressions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈蘭德誇張的表情和一頭金髮也成為無數網路梗的素材。其中一個梗把他的頭髮P到《貓和老鼠》中噘著嘴的湯姆貓頭上，不少中國網友認為兩者表情神似。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="哈蘭德誇張的表情和飄逸的金髮成為無數網路梗的素材。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-02-hmkv/14xp-worldcup-china-haaland-02-hmkv-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-02-hmkv/14xp-worldcup-china-haaland-02-hmkv-master1050.jpg"/></div><figcaption><span>哈蘭德誇張的表情和飄逸的金髮成為無數網路梗的素材。</span> <cite>Richard Pelham/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In another meme, fan-made art depicted him as a romantic hero of “Love and Deepspace,” a popular Chinese sci-fi romance mobile game, complete with an exaggeratedly chiseled physique and layers of body jewelry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一個網路梗中，粉絲把他創作成中國熱門科幻戀愛手遊《戀與深空》的浪漫男主，配上誇張的健美身材和層層疊疊的身體飾品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His quirky character, relatable silliness and unmistakable appearance resonate with China’s “chouxiang” or “abstract” meme culture, which is characterized by bizarre or unconventional characters, appearances and behavior, said Tobias Zuser, a sports and cultural studies researcher at the Chinese University of Hong Kong.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">香港中文大學體育與文化研究學者杜文哲(Tobias Zuser)表示，哈蘭德古靈精怪的個性、接地氣的搞笑氣質和辨識度極高的外形與中國的「抽象」梗文化高度契合——這種文化以離奇出格的人物、形象和行為為典型特徵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of the memes are so popular that they have made their way into Western fandom spaces. In one such video, Mr. Haaland appeared to be startled by his own reflection, which turned out to be an A.I.-altered version of a skit posted by a Chinese content creator, Agence France-Presse’s Fact Check reported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一些梗甚至火到了西方球迷圈。法新社事實核查部門稱，在一段影片中，哈蘭德似乎被鏡子裡的自己嚇了一跳，但實際上，那是中國的一個內容創作者發布的短片經過AI修改後的版本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Haaland has long been prolific on social media — last year, he started a YouTube channel, where he provides a playful insight into his life that is at odds with the outwardly polished approach of many elite footballers. He’s also nodded to his new American fanbase, with visits to locales like Wild Bill’s Western Store, where he shopped for a Stetson hat while wearing a T-shirt with the message “Y’all can kiss my Dallas.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈蘭德長期以來一直活躍於社群媒體。去年，他開設了自己的YouTube頻道，以輕鬆幽默的方式分享日常生活，與許多頂級球員精心打造的完美公眾形象形成鮮明對比。他也沒有忘記向新獲得的美國粉絲群體致意，例如造訪狂野比爾西部商店，穿著印有「Y’all can kiss my Dallas」字樣的T恤，選購一頂斯泰森牛仔帽。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上週日挪威對陣英格蘭的四分之一決賽現場。
+" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-02-lcgv/14xp-worldcup-china-haaland-02-lcgv-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-02-lcgv/14xp-worldcup-china-haaland-02-lcgv-master1050.jpg"/></div><figcaption><span>上週日挪威對陣英格蘭的四分之一決賽現場。 </span><cite>Elsa/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of Mr. Haaland’s online fame has been engineered. His agent, Rafaela Pimenta, has said that Mr. Haaland’s move to seek endorsements in China was deliberate following his success in the American market, according to The Athletic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈蘭德的網路爆紅在一定程度上也是背後團隊精心策劃的結果。據《The Athletic》報導，他的經紀人拉斐拉·皮門塔曾表示，在美國市場大獲成功之後，哈蘭德有意拓展中國市場代言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But his marketability is also predicated on his popularity. The site reported that in the days before Sunday’s quarterfinal between Norway and England, Mr. Haaland’s camp was told that social-media algorithms were being geared toward content featuring him in response to user demand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，他的商業價值終究還是建立在真實的人氣之上。《The Athletic》報導稱，在上週日挪威對陣英格蘭四分之一決賽前幾天，哈蘭德團隊獲悉，各大社群媒體平台的推薦算法正根據用戶需求而主動增加與他相關內容的推送。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMS5zsyC1pUDFX6YpgQdyQgPiQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, his appeal stems in part from the fact that the Chinese national team did not qualify for the World Cup, leading many fans to throw their support behind successful players from other teams, said Jian Xu, an expert in Chinese digital media and celebrity studies and an associate professor at Deakin University in Australia. (Other fans have rallied behind Ma Ning, the tournament’s highest-ranking Chinese referee.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲迪肯大學的中國數位媒體與名人研究專家許建副教授表示，他在中國的吸引力部分源於中國國家隊未能晉級世界盃，導致許多球迷轉而支持其他球隊的明星球員（另一些球迷則支持本屆世界盃級別最高的中國裁判馬寧）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Norway lost to England on Sunday, in a nail-biting game in South Florida, Chinese fans mourned the end of Mr. Haaland’s World Cup. And after the match, he made sure to thank his fans on Weibo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週日，在美國佛羅里達州南部進行的一場扣人心弦的比賽中，挪威隊不敵英格蘭隊，中國球迷也為哈蘭德世界盃之旅的結束感到惋惜。賽後，哈蘭德特意在微博上用中文向球迷致謝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Goodbye,” he wrote in Chinese. “This unforgettable journey!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「再見，」他用中文寫道。「這段難忘的旅程！」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="哈蘭德在對陣巴西的比賽中進球後的慶祝畫面。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-04-hmkv/14xp-worldcup-china-haaland-04-hmkv-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/14xp-worldcup-china-haaland-04-hmkv/14xp-worldcup-china-haaland-04-hmkv-jumbo.jpg"/></div><figcaption><span>哈蘭德在對陣巴西的比賽中進球後的慶祝畫面。</span> <cite>Hiroko Masuike/The New York Times</cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Yan Zhuang是時報駐首爾記者，報導突發新聞。</p><div class="" data-poster=""><span><p class="cn-p">Berry Wang是《紐約時報》記者/研究員，常駐香港。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260715/erling-haaland-world-cup-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

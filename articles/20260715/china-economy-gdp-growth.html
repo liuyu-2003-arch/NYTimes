@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國經濟增長放緩 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國經濟增長放緩</h1>
+    <h2 class="en-headline">China’s Economy Grows at Slowest Pace in Years</h2>
+    <div class="meta-line">艾莎, MURPHY ZHAO <span style="margin: 0 8px;">•</span> 2026-07-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上海一個電動車展廳裡面的顧客。由於許多人並未感受到經濟增長帶來的好處，中國消費者越來越崇尚節儉。" height="700" src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-01-jblq/Biz-China-Econ-01-jblq-master1050.jpg" width="1050"/><figcaption><span>上海一個電動車展廳裡面的顧客。由於許多人並未感受到經濟增長帶來的好處，中國消費者越來越崇尚節儉。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s economy last quarter grew at the slowest rate in three years, reflecting a broader slump that the country’s leaders signaled earlier this year when they set the lowest growth target in more than three decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國二季度經濟增速創下三年來最低水平，反映出更廣泛的經濟低迷。中國領導人早在今年初便已發出信號，設定了三十多年來最低的經濟增長目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, that National Bureau of Statistics said that the economy expanded by 4.3 percent in the second quarter, compared to a year ago, down from a 5 percent pace in the first quarter and short of economists’ expectations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，中國國家統計局公布數據：二季度國內生產總值同比增長4.3%，低於一季度5%的增速，也低於經濟學家的預期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although China’s factories are churning out chips and electric cars to supply a global boom in artificial intelligence and energy-saving products, many Chinese people are feeling squeezed at home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管中國的工廠正在馬不停蹄地生產晶片和電動汽車，以滿足全球人工智慧和節能產品的強勁需求，許多中國民眾在國內卻感受到越來越大的經濟壓力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A long-running property crisis has no end in sight, with steep declines in development activity dragging down economic growth. Jobs outside of factories are hard to come by and paychecks are not growing. Retail sales of consumer goods have been choppy. They fell in May, for the first time since the end of Covid-19 lockdowns in late 2022, before recovering somewhat in June.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曠日持久的房地產危機仍看不到盡頭，開發活動的大幅萎縮持續拖累經濟增長。製造業以外的就業崗位一位難求，薪資增長停滯。消費品零售額走勢起伏不定，今年5月甚至出現自2022年底新冠封控結束以來首次下滑，此後6月略有回升。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMfG8cOC1pUDFcqtpAQdjJ413w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is in stark contrast to China’s relentless strength in manufacturing and trade, with a government report released on Tuesday showing China’s exports surging by 27<strong> </strong>percent in June compared with a year earlier, driven by shipments of chips, batteries and cars. China’s trade surplus in June, at more than $125 billion, was second largest on record. In the first half of the year, the value of China’s exports grew by more than 20 percent, the data on Wednesday showed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這與中國在製造業和貿易領域的持續強勁勢頭形成了鮮明對比。週二公布的政府數據顯示，6月出口同比激增27%，晶片、電池和汽車是主要拉動力。6月貿易順差超過1250億美元，創歷史第二高。週三公布的數據還顯示，上半年出口總額同比增長逾20%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For economists, the latest numbers are another indication that China’s mighty export machine is masking weaknesses elsewhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在經濟學家看來，這些新數據再次表明，中國強大的出口機器正在掩蓋國內其他領域的疲軟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You get this A.I. boom, which is a global thing, and China is part of the leading nations on the frontier,” said Yu Song, the chief China economist at UBS Securities. “Without this, China’s economy would be in a much worse state.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">瑞銀證券首席中國經濟學家宋宇表示：「全球正掀起人工智慧熱潮，而中國正是引領這一前沿的主要國家之一。若非如此，中國經濟的狀況會糟糕得多。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When measured on a quarter-to-quarter basis, China’s economy expanded by only 0.9 percent in the second quarter. When projected out for a year, the second-quarter data implies that the economy was growing at an annual rate of 3.6 percent, sharply down from a pace of more than 6 percent in the first quarter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">按環比計算，二季度經濟僅增長0.9%。按年化計算，第二季度的數據意味著經濟年增長率為3.6%，較第一季度超6%的年化水平大幅放緩。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The second-quarter annualized rate also missed official targets. Shortcomings in China’s economic growth drivers prompted the ruling Communist Party earlier this year to set the lowest annual growth target in decades, with a goal of between 4.5 percent and 5 percent this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">二季度年化增速同樣未能達到官方目標。經濟增長動力不足，促使執政的中國共產黨在今年早些時候將年度經濟增長目標定為4.5%至5%之間，為數十年來的最低增長目標。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="本月，內蒙古通遼市一家工廠裡，工人們正在為大型風力渦輪機建造鋼製輪轂。可再生能源出口為中國的經濟提供了支撐。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-02-jblq/Biz-China-Econ-02-jblq-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-02-jblq/Biz-China-Econ-02-jblq-master1050.jpg"/></div><figcaption><span>本月，內蒙古通遼市一家工廠裡，工人們正在為大型風力渦輪機建造鋼製輪轂。可再生能源出口為中國的經濟提供了支撐。</span> <cite>Keith Bradsher/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The effects of the war in Iran have put an extra squeeze on Chinese households, with rising fuel prices prompting them to drive and fly less, at a time when many were already worried about the economy and choosing to save more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗戰爭的影響也給中國家庭帶來了額外的壓力：油價上漲導致民眾減少駕車和乘機出行，而此時許多人本就已對經濟狀況感到憂慮，選擇多存少花。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has softened the blow of rising fuel costs by controlling the price at the pump, but the cost of filling up for drivers is still double-digit percentages higher than a year ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過調控成品油價格，中國政府在一定程度上緩解了油價上漲的衝擊，但現在車主的加油成本仍比一年前高出了兩位數。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJj08cOC1pUDFVTMSgAdvK41yg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One silver lining, economists said, was that rising fuel prices started to feed through to broader inflation in the quarter, reversing a problem that China has struggled to shake: more than three years of a broad-based decline in prices. Such deflation tends to chill spending, with consumers putting off purchases in expectation that prices will be lower in the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經濟學家表示，唯一的好消息是，燃油價格上漲推動整體通膨水平在本季度上升，扭轉了中國過去三年多一直面臨的通縮問題——也就是整體物價持續下跌。通縮往往會抑制消費，因為消費者會預期價格未來將進一步走低，從而推遲購買。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s gross domestic product deflator, a broad measure of prices across the economy, was negative in 13 of the past 14 quarters — the most protracted slump on record. But it turned positive in the second quarter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">衡量整體價格水平的GDP平減指數在過去14個季度中有13個季度為負值，創下歷史上持續時間最長的下行週期。但在第二季度，這一指標終於轉為正值。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="本月上海的一處市場。為應對房地產下行，官方推出了消費補貼措施。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-03-jblq/Biz-China-Econ-03-jblq-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-03-jblq/Biz-China-Econ-03-jblq-master1050.jpg"/></div><figcaption><span>本月上海的一處市場。為應對房地產下行，官方推出了消費補貼措施。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For China’s leadership, the question now is, what to do next? Li Qiang, China’s premier, told a group of entrepreneurs this week that officials were focusing on new drivers of consumption and ensuring job stabilization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於中國領導人而言，眼下的問題是：下一步該如何應對？中國國務院總理李強本週在與企業家座談時表示，政府正著力培育新的消費增長點，確保就業大局穩定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is important to take a comprehensive and objective view of ​the current economic situation, fully recognizing the achievements made while remaining cleareyed about the problems,” said Mr. Li, according to state media, which ran a story about the meeting on the front page of the official People’s Daily.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「要全面客觀認識當前經濟形勢，既充分肯定取得的成績，又清醒看到存在的問題，」據官方媒體《人民日報》頭版報導，李強在座談會上表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some economists anticipate a discussion of fresh stimulus measures at a meeting of top policymakers later this month. On Monday, China’s top economic planner announced a plan to target $8.85 trillion of annual retail sales by 2030, implying a 20 percent rise from last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些經濟學家預計，本月晚些時候最高決策層會議將討論新的刺激措施。週一，中國最高經濟規劃部門宣布了一項計劃，目標是在2030年前實現60萬億元左右的年度零售額，意味著較去年增長20%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has also promised to raise wages and increase household consumption as a share of the economy. It is currently around 40 percent, significantly lower than the 60 percent share of gross domestic product for most developed countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京還承諾提高工資，並提高居民消費佔經濟的比重，目前這一比重約為40%，遠低於大多數發達國家佔國內生產總值60%的水平。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPCf8sOC1pUDFVzNSgAdbso6JQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But analysts said these goals are not particularly ambitious. And stubbornly reluctant consumers in China show few signs of opening their wallets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但分析人士表示，這些目標並不算特別雄心勃勃。而且中國消費者依然堅持不願消費，幾乎沒有鬆動跡象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Online shoppers are sharing tips on how to scrimp and save, rallying around the motto to “save where you can, spend where you must.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網購者分享省錢技巧，遵循「能省就省，該花才花」的口號。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="本月上海的遊客。 受伊朗戰爭推高燃油價格的影響，中國家庭面臨更大的經濟壓力，出行成本也隨之上升。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-04-jblq/Biz-China-Econ-04-jblq-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-04-jblq/Biz-China-Econ-04-jblq-master1050.jpg"/></div><figcaption><span>本月上海的遊客。 受伊朗戰爭推高燃油價格的影響，中國家庭面臨更大的經濟壓力，出行成本也隨之上升。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Users have shared tips about “shopping cart cooling-off periods,” or leaving nonessential items in carts for three days before deciding to buy them. (The practice is a wry nod to the officially enforced “cooling-off period” for couples seeking divorces.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網友還分享了「購物車冷靜期」的竅門——將非必需品放入購物車三天後再決定是否購買。（這是對官方針對申請離婚夫婦強制實施的「冷靜期」的幽默呼應。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Others push to replace foreign cosmetic brands with cheaper local alternatives, and to substitute skin care products with baby lotion. “Buy what’s right, not what’s pricey,” a user on the social media network Weibo posted recently.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有人主張用更便宜的國產品牌替代外國化妝品，用嬰兒潤膚露替代護膚品。「買對的，不買貴的，」一位用戶最近在微博上發帖稱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All the while, prices have continued to fall for products as varied as cosmetics and automobiles. For categories like cars, the recent plunge has been accentuated by the end of a policy to incentivize purchases.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，從化妝品到汽車，各種產品價格持續下跌。對於汽車等品類，由於購車激勵政策結束，近期的價格暴跌勢頭愈發加劇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since a devastating property crash, Chinese policymakers have tried to replace the growth generated by the real estate sector with more robust consumer spending. They rolled out huge subsidies for households to trade in old cars, home appliances and phones from 2024 through last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自房地產崩盤以來，中國政策制定者一直試圖以更強勁的消費支出來替代房地產行業帶來的增長。2024年至去年，他們推出了大規模補貼政策，鼓勵家庭以舊換新，置換舊車、家電和手機。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJKw8sOC1pUDFX_fSgAd8f0fHQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While it generated some activity, the policy failed to address the plummeting value of property, where most household wealth is concentrated. Now, economists say, China is in a “payback period” following the jump in policy-induced sales.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該政策雖然帶來了一些消費活動，但未能解決房地產價值暴跌的問題——而大多數家庭財富都集中在房地產上。如今，經濟學家表示，中國正處於政策刺激銷售激增後的「回撤期」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the economy splits between the relatively few who benefit from China’s role in the global A.I. boom and the rest, the divide is having a profound impact on the country’s social fabric.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著經濟分裂成兩個群體——一小部分人受益於中國在全球人工智慧熱潮中的角色，而其餘人群則不然——這種分化正對社會結構產生深遠影響。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國房地產市場崩盤後，數百萬建築工人失去了工作。" data-src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-05-jblq/Biz-China-Econ-05-jblq-master1050.jpg" src="https://static01.nyt.com/images/2026/07/14/multimedia/Biz-China-Econ-05-jblq/Biz-China-Econ-05-jblq-master1050.jpg"/></div><figcaption><span>中國房地產市場崩盤後，數百萬建築工人失去了工作。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has accentuated the class split between “those that benefit from the boom on their talents, well protected jobs and wealth versus those that are fully or partly replaced by A.I.,” according to economists from Nomura, a Japanese bank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本野村證券經濟學家表示，這加劇了「那些憑藉才能、受良好保護的就業和財富受益於經濟繁榮的人，與那些被人工智慧完全或部分取代的人」之間的階級分化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s property bust has led to more than 14 million people losing construction jobs. Many of those workers bought apartments in smaller cities, far from the pockets of A.I.-generated wealth that may revive parts of the property market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">房地產崩盤已導致超過1400萬人失去建築行業工作。其中在較小的城市購買了公寓，這些城市遠離那些可能重振部分房地產市場的、由人工智慧創造的財富聚集區。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For China, the issues are that it wants to make sure it is still at the frontier,” said Mr. Song, the UBS economist. “You want the benefits to be more widely shared so that you don’t leave too many people out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">瑞銀經濟學家宋宇表示：「對中國而言，問題在於它希望確保自己仍處於前沿位置。同時也希望讓更多人分享收益，不把太多人落下。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The A.I. boom “doesn’t benefit ordinary people in China because this priority, the industrial focus on high tech and semiconductors, actually causes structural unemployment and underemployment,” said Dan Wang, the China director at Eurasia Group, a consulting firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諮詢公司歐亞集團中國區主任王丹表示，人工智慧熱潮「並沒有惠及中國普通民眾，因為這種優先發展高科技和半導體產業的政策，實際上造成了結構性失業和就業不足。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ3y8sOC1pUDFSHtSgAdgQ0ePg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What’s more, Ms. Wang said, disposable income growth is now lower than economic growth. If that continues, she noted, “that means the national income is skewed in distribution toward government and companies, and not consumers.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，王丹指出，居民可支配收入增速現已低於經濟增速。如果這種情況持續下去，她表示，「這意味著國民收入的分配向政府和企業傾斜，而非消費者。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">艾莎(Alexandra Stevenson)是《紐約時報》上海分社社長，報導中國經濟和社會新聞。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260715/china-economy-gdp-growth/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
