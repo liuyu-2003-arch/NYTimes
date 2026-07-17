@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>民調顯示多國民眾對中國好感度超過美國 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">民調顯示多國民眾對中國好感度超過美國</h1>
+    <h2 class="en-headline">Global Opinion Shifts Toward Favoring China Over the U.S., Poll Finds</h2>
+    <div class="meta-line">JIN YU YOUNG <span style="margin: 0 8px;">•</span> 2026-07-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="過往民調已經顯示全球對美國的好感度持續下滑，而今年的調查結果更是呈現出斷崖式下跌。" height="700" src="https://static01.nyt.com/images/2026/07/16/multimedia/16int-pew-china-us-mpwg/16int-pew-china-us-mpwg-master1050.jpg" width="1050"/><figcaption><span>過往民調已經顯示全球對美國的好感度持續下滑，而今年的調查結果更是呈現出斷崖式下跌。</span> <cite>Ilaria Finizio/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People in many countries around the world now view China more positively than they do the United States, a new international survey has found, in a significant reversal of public opinion that comes as the two superpowers increasingly vie for global influence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一項新的國際民意調查發現，目前世界上許多國家的人民對中國的看法比對美國更正面，這一公眾輿論的重大逆轉正值這兩個超級大國展開日益激烈的全球影響力爭奪。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The poll, conducted by the Pew Research Center, found that China was favored over the United States in 25 out of 36 countries that it surveyed between February and May, according to a report the organization released on Wednesday. It was the first time in the two decades that Pew has conducted the survey that China beat out the United States in a majority of the countries polled, according to experts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>根據皮尤研究中心週三發布的一份報告，該機構在2月至5月期間對36個國家進行了調查，結果發現，其中有25個國家對中國的青睞度超過了美國。專家表示，這是皮尤開展該項調查二十年以來，中國首次在多數受訪國家中擊敗美國。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result reflects, in part, a concerted effort by China to expand its soft power, with cultural and economic influence campaigns in Africa, the Americas and beyond. The Pew Center cited China’s strengthened economic and security ties with countries like Brazil and Peru and its zero-tariff policy in Africa as drivers of its improved ratings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這一結果在一定程度上反映了中國在擴大軟實力方面所做的切實努力，包括在非洲、美洲及其他地區開展的文化和經濟影響力活動。皮尤研究中心指出，中國同巴西和秘魯等國加強經濟與安全聯繫，以及在非洲實行的零關稅政策都是推動其支持率提升的因素。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the shift was “especially due to deteriorating opinions of the U.S.,” the Pew report said. The United States’ aggressive foreign policy under President Trump, including imposing sweeping tariffs and slashing foreign aid, has soured many countries on American partnership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但皮尤的報告也指出，這種轉變「尤其是由於對美國看法的惡化」。在川普總統領導下，美國具有攻擊性的外交政策——包括加徵全面關稅和削減對外援助——已使許多國家對與美國的夥伴關係感到失望。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The findings “confirm the collapse of U.S. soft power under President Trump’s leadership, driven by his administration’s use of force and economic coercion,” said Susannah Patton, a nonresident fellow at the Lowy Institute, an independent research center in Sydney.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雪梨獨立研究中心洛伊研究所的非駐地研究員蘇珊娜·巴頓表示，這些發現「證實了在川普總統領導下美國軟實力的崩潰，而這正是由其政府訴諸武力和經濟脅迫所導致的」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年5月，南蘇丹阿科博，人們在取得世界糧食計劃署空投援助物資後步行回家。美國已大幅削減其對外援助預算。" data-src="https://static01.nyt.com/images/2026/07/16/multimedia/16int-pew-china-us-qzjl/16int-pew-china-us-qzjl-master1050.jpg" src="https://static01.nyt.com/images/2026/07/16/multimedia/16int-pew-china-us-qzjl/16int-pew-china-us-qzjl-master1050.jpg"/></div><figcaption><span>今年5月，南蘇丹阿科博，人們在取得世界糧食計劃署空投援助物資後步行回家。美國已大幅削減其對外援助預算。</span> <cite>Ed Ram for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Global opinion of the United States had already been suffering a steady decline over recent years, according to past Pew reports. But this year’s survey shows a precipitous drop-off. The United States’ median favorability — the median percentage of people across all surveyed countries who viewed it positively — dropped to 36 percent from 48 percent in last year’s poll. In contrast, China’s rose to 46 percent from 38 percent over the same period.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據皮尤以往的報告，全球對美國的看法近年來本就一直在持續下滑。但今年的調查顯示出了急劇的下跌。美國的好感度中位數（即在所有受訪國家中對美國持正面看法的受訪者百分比中位數）從去年民調的48%驟降至今年的36%。相比之下，中國的好感度中位數在同一時期內則從38%上升到了46%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most of the countries that viewed the United States more positively than China were among China’s traditional rivals in the Asia-Pacific region, like Japan and South Korea, or had leaders close to Mr. Trump, like Israel. Notably, respondents in Canada and Mexico — the United States’ immediate neighbors and two of its closest allies — reported a greater affinity for China than the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些對美國的看法比對中國更為正面的國家大多是中國在亞太地區的傳統對手（如日本和韓國），或者是領導人與川普關係密切的國家（如以色列）。值得注意的是，加拿大和墨西哥這兩個美國的近鄰和最親密的盟友，其受訪者表示對中國的好感度要高於美國。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIz065jF2JUDFcEETwgdlpsqyw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The poll also found that people in most of the surveyed countries had more confidence in President Xi Jinping of China than in Mr. Trump, although global opinions of both leaders remained low, the report said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告稱，調查還發現，在大多數受訪國家中，人們對中國國家主席習近平的信心要高於對川普，儘管全球對這兩位領導人的評價依然普遍偏低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some experts, like Chin-Hao Huang, an associate professor of political science at the Lee Kuan Yew School of Public Policy in Singapore, cautioned against reading too much into what the report could mean about China’s long-term popularity. Still, he said, the poll could serve as a “report card on the world, assessing how the Trump administration is faring in global affairs.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括新加坡國立大學李光耀公共政策學院政治學副教授黃清浩在內的一些專家警告稱，不應通過這份報告對中國的長期好感度做出過多解讀。不過他表示，這份民調可以作為「世界給出的一份成績單，用以評估川普政府在應對全球事務方面的表現」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An earlier Pew report, released in June, that assessed public opinion of Mr. Trump in 36 countries noted that the United States’ involvement in military conflicts was a major factor in the decline of his global favorability. A median of 74 percent of adults disapproved of how Mr. Trump was prosecuting the war in Iran, and 76 percent disapproved of his handling of the conflict in Gaza, the report found.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>皮尤在6月份發布的一份早期報告評估了36個國家公眾對川普的看法，該報告指出，美國捲入軍事衝突是其全球好感度下滑的一個主要因素。報告發現，對川普</span>進行伊朗戰爭的方式表達了不滿的成年人佔比中位數為74%，而76%的人對其處理加薩衝突的方式表示不滿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since the outbreak of the war in Iran in February, shipping through the Strait of Hormuz has all but come to a halt, severely disrupting global oil supplies and driving up prices on energy and a host of other goods. Last week, the International Monetary Fund predicted an uptick in global inflation, forecasting a rise of 4.7 percent in 2026, up from 4.1 percent in 2025, because of higher prices for key items like energy, metals, fertilizer and food.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>自2月份對伊戰爭爆發以來，通過霍爾木茲海峽的航運幾乎已完全停滯，嚴重干擾了全球石油供應，並推高了能源及許多其他商品的價格。上週，國際貨幣基金組織預測全球通貨膨脹將有所上升，並由於能源、金屬、化肥和食品等關鍵物資的價格上漲，預測2026年的全球通膨率將從2025年的4.1%升至4.7%。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Jin Yu Young自首爾報導韓國、亞太和全球突發新聞。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260717/pew-opinion-survey-china-united-states/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
