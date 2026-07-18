@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黃瓜有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">黃瓜有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Cucumbers?</h2>
+    <div class="meta-line">AMANDA SCHUPAK <span style="margin: 0 8px;">•</span> 2026-07-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/07/01/13WELL-HEALTHY-CUCUMBERS1-flph-cover/13WELL-HEALTHY-CUCUMBERS1-flph-cover-jumbo.jpg" width="820"/><figcaption><span></span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Kimberly Dong, an associate professor of nutrition and public health at the Tufts University School of Medicine, names fruits and vegetables that offer the most nutrition per bite, cucumbers aren’t at the top of her list. Still, she said, there are good reasons to eat them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當塔夫茨大學醫學院營養與公共衛生副教授金伯利·董（音）列舉每口營養價值最高的果蔬時，黃瓜並非首選。不過，她表示，我們仍然有充分的理由去吃黃瓜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Low in calories and full of water with some fiber, cucumbers are healthful, she said. And because they’re crunchy, with a mild, refreshing flavor, they pair well with many foods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，黃瓜熱量低，水分充足且含有一定膳食纖維，對健康有益。此外，黃瓜口感清脆，味道溫和清爽，所以非常適合與許多食物搭配。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cucumbers come in many variations: standard, fat, thick-skinned garden cucumbers; longer, more slender English (or hothouse) cucumbers with thin skin and smaller seeds; bite-size and bumpy gherkins; crisp, compact Persian cucumbers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃瓜有很多品種：粗壯、皮厚的普通地栽黃瓜；更長更細、皮薄籽小的英式黃瓜（或溫室黃瓜）；一口大小、表面凹凸不平的迷你黃瓜；以及口感清脆緊實的波斯黃瓜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However you slice them (or don’t!), here’s why cucumbers are a satisfying summer staple, with recipe ideas from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論怎麼切片（或者整根啃！），黃瓜都是夏日裡令人滿足的常備食材，了解原因以及《紐約時報》烹飪版的一些食譜建議。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLXxi66F25UDFdUiTwgdwv0q5A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re hydrating.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>補充水分</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As temperatures rise, cucumbers — which are about 96 percent water — are an excellent low-calorie source of hydration, Dr. Dong said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金伯利·董說，隨著氣溫升高，含水量約達到96%的黃瓜成為了極佳的低熱量補水來源。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A 10.5-ounce unpeeled garden cucumber, for instance, contains just over one cup of water and 45 calories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，一根約300克未去皮的地栽黃瓜含有略超一杯的水分，而熱量僅為45卡路里。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gina Jarman Hill, a professor of nutritional sciences at Texas Christian University<i>, </i>said there is a common misconception that cucumbers are “negative-calorie foods” — meaning they contain fewer calories than it takes to burn digesting them. “There’s no such thing as a ‘negative-calorie food,’” she said, but because the number of calories in cucumbers is so low, they’re about as close as you will get to one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">得克薩斯基督教大學營養科學教授吉娜·賈曼·希爾表示，人們普遍存在一種誤解，認為黃瓜是「負卡路里食物」——其所含熱量低於消化它所需的熱量。「世界上並不存在所謂的『負卡路里食物』，」她說，但是，因為黃瓜的卡路里含量極低，它可以算是最接近這一概念的食物了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As long as you’re mindful of what you pair them with, Dr. Hill said, there is no reason to curb your cucumber consumption.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希爾指出，只要注意搭配的食物，就沒有理由限制黃瓜的食用量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They may help support metabolic health.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>可能有助於維持代謝健康</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because a cucumber has so few carbohydrates (11 grams) and a little bit of fiber (1.5 grams), it has a minimal effect on blood sugar and is considered safe for people with diabetes, Dr. Hill said. Fiber helps to slow digestion, which keeps blood sugar levels in check, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希爾說，由於黃瓜的碳水化合物含量極低（11克），且含有少量膳食纖維（1.5克），所以它對血糖的影響微乎其微，被認為是糖尿病患者的安全食品。她表示，膳食纖維有助於減緩消化速度，從而控制血糖水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is also some limited research in animals and humans showing that eating cucumbers — or their extracts — may benefit insulin, cholesterol, triglyceride and blood pressure levels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，在動物和人類當中進行的一些有限研究表明，食用黃瓜或其提取物可能有益於胰島素、膽固醇、甘油三酯和血壓水平。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPa1jK6F25UDFe8jTwgd_58o5A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption;attribution-reporting" aria-label="廣告" data-google-container-id="2" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/health_2" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://b4bc2c0d3f3e5bcca27262477a47fb22.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a clinical trial published in 2016, for instance, researchers split 47 patients with slightly elevated cholesterol and triglyceride levels into two groups: one that took a daily capsule containing cucumber seed extract and another that took a placebo. After six weeks, the cucumber group had improved blood cholesterol readings compared with those in the placebo group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，在2016年發表的一項臨床試驗中，研究人員將47名膽固醇和甘油三酯水平略有升高的患者分為兩組：一組每天服用含有黃瓜籽提取物的膠囊，另一組服用安慰劑。六周後，與安慰劑組相比，黃瓜組的血液膽固醇指標得到了改善。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These studies are promising, Dr. Dong said, but still preliminary.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金伯利·董說，這些研究令人充滿希望，但仍處於初步階段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re the perfect snack and mealtime companion.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>它們是完美的零食和佐餐伴侶</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With subtle flavors and a satisfying crunch, cucumbers can be an excellent complement to — or replacement for — many foods. Slices or spears can be healthier substitutes for processed snacks like chips and crackers, and can act as vehicles for fiber-rich bean dips and hummus, Dr. Dong said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃瓜味道清淡，口感爽脆，可以成為許多食物的絕佳搭配或是替代品。金伯利·董說，切片或切塊的黃瓜可以作為薯片和餅乾等加工零食的健康替代品，也可以蘸著富含膳食纖維的豆泥和鷹嘴豆泥食用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cucumbers can also make meals feel lighter and fresher by adding volume with minimal calories, said Isaac Bernal, a chef in New York City.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約市的廚師艾薩克·伯納爾表示，黃瓜還可以在幾乎不增加熱量的情況下增加餐食份量，使菜肴吃起來感覺更清淡、更新鮮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fermented pickles, made from cucumbers that have been soaked in a salty brine that encourages beneficial bacteria to grow, may offer some extra health benefits, said Heewon L. Gray, an associate professor of nutrition and dietetics at the University of South Florida. Fermented foods have been linked to reduced inflammation and better gut health. (Regular pickles can also be a healthy snack, but they’re pasteurized or made with vinegar to inhibit the growth of bacteria.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">發酵腌黃瓜是將黃瓜浸泡在能促進有益菌生長的鹽水中製成的，南佛羅里達大學營養與飲食學副教授希沃恩·格雷表示，它可能會提供一些額外的健康益處。發酵食品已被證明有助於減少炎症和改善腸道健康。（普通腌黃瓜也可以是一種健康的零食，但發酵腌黃瓜經過了巴氏殺菌，或添加了醋以抑制細菌生長。）</div></div></div></div></div><div class="big_ad" data-google-query-id="CK3ujK6F25UDFYMiTwgdNyYx2Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You can find fermented pickles in the refrigerated sections of grocery stores. They often have “fermented,” “probiotic” or “containing live cultures” labels, and don’t include vinegar among their ingredients, Dr. Gray said. Keep in mind that pickles — fermented or not — are salty. One dill pickle spear has 326 milligrams, or 14 percent of the daily recommended limit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你可以在食品店的冷藏區找到發酵腌黃瓜。格雷說，它們通常貼有「發酵」、「益生菌」或「含活性菌種」的標籤，並且配料表中不含醋。請記住，無論是否發酵，腌黃瓜都是鹹的。一長條蒔蘿腌黃瓜含有326毫克鈉，占每日推薦限量值的14%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether on the side or at the center of a dish, these recipes from New York Times Cooking will help you work more cucumbers into your summer menu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論作為配菜還是主菜，《紐約時報》烹飪版推薦的這些食譜可以幫助你在夏日菜單中加入更多黃瓜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese Smashed Cucumbers With Sesame Oil and Garlic</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中式芝麻油蒜香拍黃瓜</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/08/19/multimedia/13WELL-HEALTHY-CUCUMBERS/19cukerex2-vzfj-master1050.jpg" src="https://static01.nyt.com/images/2024/08/19/multimedia/13WELL-HEALTHY-CUCUMBERS/19cukerex2-vzfj-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The classic Chinese dish of smashed cucumbers becomes a main dish with the addition of shredded chicken. For a no-cook meal on a hot day, use a store-bought rotisserie bird.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在經典的中國菜拍黃瓜中加入雞絲，它就變成了一道主菜。如果在炎熱的日子裡不想開火做飯，可以使用商店買來的烤雞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Chinese Smashed Cucumbers With Sesame Oil and Garlic</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：中式芝麻油蒜香拍黃瓜</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tzatziki Chickpea Salad</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">希臘酸奶黃瓜醬鷹嘴豆沙拉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/08/14/multimedia/13WELL-HEALTHY-CUCUMBERS-2/hm-tzatziki-and-chickpea-saladrex-jwqc-master1050.jpg" src="https://static01.nyt.com/images/2024/08/14/multimedia/13WELL-HEALTHY-CUCUMBERS-2/hm-tzatziki-and-chickpea-saladrex-jwqc-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chickpeas add heartiness to this main dish of juicy cucumber chunks sharp with garlic and mellowed by honey in a Greek yogurt dressing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鷹嘴豆為這道主菜增添了飽滿的口感，多汁的黃瓜塊搭配蒜香，再佐以蜂蜜調製的希臘酸奶醬汁，風味醇厚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Tzatziki Chickpea Salad</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：希臘酸奶黃瓜醬鷹嘴豆沙拉</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Salmon and Couscous SaladWith Cucumber-Feta Dressing</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鮭魚庫斯庫斯沙拉配黃瓜菲達奶酪醬</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2021/03/04/dining/13WELL-HEALTHY-CUCUMBERS-3/merlin_183955374_635d6987-6d53-4930-917a-ec5b13e591b1-master1050.jpg" src="https://static01.nyt.com/images/2021/03/04/dining/13WELL-HEALTHY-CUCUMBERS-3/merlin_183955374_635d6987-6d53-4930-917a-ec5b13e591b1-master1050.jpg"/></div><figcaption><span></span> <cite>Linda Xiao for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Inspired by mast-o khiar, a Persian side dish of cucumbers and yogurt, this dressing also includes feta. It makes this hearty salmon salad especially satisfying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款醬汁的靈感來自波斯配菜黃瓜酸奶醬，其中還加入了菲達奶酪，為這道豐盛的鮭魚沙拉更添美味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Salmon and Couscous Salad With Cucumber-Feta Dressing</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：鮭魚庫斯庫斯沙拉配黃瓜菲達奶酪醬</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Smacked Cucumber ‘Quick Kimchi’</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拍黃瓜「快手泡菜」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2020/07/08/dining/13WELL-HEALTHY-CUCUMBERS-4/02kimchirex1-master1050.jpg" src="https://static01.nyt.com/images/2020/07/08/dining/13WELL-HEALTHY-CUCUMBERS-4/02kimchirex1-master1050.jpg"/></div><figcaption><span></span> <cite>Beatriz Da Costa for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The spicy tang of kimchi comes from tossing the cucumbers in vinegar rather than fermenting them, making for a fresh, fast dish that would pair well with anything from the grill.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這道泡菜的辛辣酸爽源自醋拌黃瓜而非發酵，製作便捷、口感清新，適合搭配任何燒烤食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Smacked Cucumber ‘Quick Kimchi’</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：拍黃瓜「快手泡菜」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tajín Mango Cucumber Salad</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">塔欣芒果黃瓜沙拉</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/08/06/multimedia/13WELL-HEALTHY-CUCUMBERS-5/cr-mango-cucumber-salad-plwc-master1050.jpg" src="https://static01.nyt.com/images/2025/08/06/multimedia/13WELL-HEALTHY-CUCUMBERS-5/cr-mango-cucumber-salad-plwc-master1050.jpg"/></div><figcaption><span></span> <cite>Armando Rafael for The New York Times. Food Stylist: Cyd Raftus McDowell.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Juicy mango brings out the crunch in cucumbers and both taste even fresher with the chile-lime zing of Tajín, a popular Mexican seasoning available in supermarkets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多汁的芒果襯托出黃瓜的清脆，超市常見的墨西哥調味料塔欣帶來的辣椒青檸風味，令二者口感更顯清爽。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Tajín Mango Cucumber Salad</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：塔欣芒果黃瓜沙拉</div></div></div></div></div><div class="big_ad" data-google-query-id="CM7li66F25UDFYOu0QQdTwUr3w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260717/cucumber-health-benefits/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

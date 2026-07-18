@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川普指北京干預選舉 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">川普指北京干預選舉</h1>
+    <h2 class="en-headline">Trump Released Documents on China and the 2020 Election. Here’s What We Know.</h2>
+    <div class="meta-line">DUSTIN VOLZ, JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-07-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2019年在日本舉行的二十國集團峰會期間，川普總統與中國國家主席習近平舉行雙邊會晤。" height="700" src="https://static01.nyt.com/images/2026/07/16/multimedia/16trump-speech-china-new-mlzk/16trump-speech-china-new-mlzk-master1050.jpg" width="1050"/><figcaption><span>2019年在日本舉行的二十國集團峰會期間，川普總統與中國國家主席習近平舉行雙邊會晤。</span> <cite>Erin Schaff/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump started his speech on Thursday evening by outlining a series of claims about China’s attempts to acquire American voter data, portraying the alleged activity as a historic scandal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統週四晚間發表講話，首先概述了一系列關於中國試圖獲取美國選民數據的指控，並將他聲稱的這些活動描述為一樁歷史性的醜聞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China’s efforts to collect that data have been broadly known for years. Voter data is in many cases freely available to download on the internet, and in other cases can be purchased. Possessing such data could reveal insights about American voters, but would not allow votes to be manipulated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國對這方面數據的收集多年來早已眾所周知。很多時候選民數據可以從互聯網上免費下載，還有一些則是可以購買。擁有此類數據或許可以更好地理解美國選民，但並不能以此來操縱選票。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump asserted that Beijing had carried out “the largest compromise of election data in history” starting with the 2020 cycle, illicitly collecting 220 million voter files “over a period of years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普堅稱，北京從2020年大選週期開始實施了「史上最大規模的選舉數據入侵」，並「在數年時間裡」非法收集了2.2億份選民文件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was unclear precisely how the president arrived at that number, which could include names, addresses and phone numbers, though the heavily redacted documents include a table that lists volumes of acquired records, including some 204 million records from 2016. China has hacked far more sensitive information, such as government personnel records, than what voter files would offer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚總統究竟是如何得出這一數字的，這其中可能包括姓名、地址和電話號碼，不過這些經過大量塗黑的文件中，包含了一張列出了獲取記錄數量的表格，其中包括2016年的約2.04億條記錄。相比於選民文件所能提供的信息，中國竊取過遠比這更敏感的信息，例如政府人事記錄。</div></div></div></div></div><div class="big_ad" data-google-query-id="COCZsKeF25UDFe_AlAkdblchkg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The claim was one of several Mr. Trump made that was either overstated or untethered from reality as his administration published hundreds of pages of documents that were far more measured and reserved in their judgments about China and other election security issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一主張是川普的若干誇大其詞或脫離現實的言論之一，其政府公布的數百頁文件在對中國和其他選舉安全問題的判斷上則顯得更為克制和保留。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During the 2020 election, the mainstream view inside U.S. intelligence agencies was that China was not seeking to influence the outcome of the presidential contest, but there was a dissenting view that Beijing wanted Mr. Trump to lose his re-election bid.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2020年大選期間，美國情報機構內部的主流觀點是，中國並不試圖影響總統選舉的結果，但也有人持不同意見，認為北京希望川普在爭取連任的競選中失敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Newly declassified documents released on Thursday by the Trump administration present a more detailed account of that dissenting view, although its main aspects were already public.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府於週四發布的最新解密文件對這種不同意見進行了更詳細的描述，儘管其主要內容此前已經公開。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A senior cyber intelligence official, Chris Porter, who was not identified in the documents, wrote a series of classified memos on the matter. He made the case that “Beijing has taken at least some low-level, exploratory steps” to undermine Mr. Trump’s chances of being re-elected in his 2020 race against Joseph R. Biden Jr.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾就此事撰寫一系列機密備忘錄的高級網路情報官員克里斯·波特（其身份未在文件中指明）提出論據認為，「北京至少已經採取了一些低水平的、探索性的步驟」，來削弱川普在2020年競選中擊敗約瑟夫·R·拜登獲得連任的機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In broad strokes, Mr. Porter’s dissent was made public after the election, first in a note released on Jan. 7, 2021, by John Ratcliffe, who was then the outgoing director of national intelligence, and later in a declassified intelligence community assessment on foreign influence operations that was released in March 2021.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">簡而言之，波特的不同意見在大選後被公之於眾首先是在2021年1月7日由時任即將離任的國家情報總監約翰·拉特克利夫發布的一份說明中，隨後是在2021年3月發布的一份關於外國影響行動的解密情報界評估報告中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That document noted Mr. Porter agreed with the overall view of the intelligence community that “there was no information suggesting China tried to interfere with election processes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">文件指出，波特同意情報界的總體觀點，即「沒有任何信息表明中國曾試圖干預選舉程序」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The documents made public Thursday were heavily redacted but give a closer look into the intelligence Mr. Porter and a colleague used to draw their conclusions that China was at least taking some steps to undermine Mr. Trump’s re-election.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四公布的文件雖存在大量塗黑，但仍可以藉此深入了解波特及其同事所使用的情報，這些情報幫助他們得出結論：中國至少正在採取一些措施來破壞川普的連任競選。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKa5sKeF25UDFQzklAkd85UEjA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his first declassified memo, from Oct. 16, 2020, Mr. Porter said that he and the other intelligence official assessed Beijing’s efforts at influence “probably included overt messaging, nascent online covert influence capabilities” as well as diplomatic and economic leverage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其2020年10月16日的第一份解密備忘錄中，波特表示，他和其他情報官員評估，北京在施加影響方面的努力「可能包括公開宣傳、新生的網路隱蔽影響能力」以及外交和經濟手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The memo notes that the national intelligence officer for East Asia as well as other officers from the Office of the Director of National Intelligence disagreed. They assessed that China had not deployed influence efforts, in large measure because its leadership sought stability in relations with the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該備忘錄指出，負責東亞事務的國家情報官員以及國家情報總監辦公室的其他官員對此持反對意見。他們評估認為，中國並未展開施加影響的行動，這在很大程度上是因為其領導層尋求與美國保持穩定關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Key sections of the October 2020 document are redacted, making it difficult to assess fully what intelligence caused Mr. Porter and the other intelligence officer to have doubts over their colleagues’ conclusions. Mr. Porter and the colleague gave their assessment a low-to-medium confidence level, suggesting that they did not have robust evidence for the conclusions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2020年10月文件的關鍵部分被塗黑，這使得人們很難全面評估究竟是什麼情報讓波特和其他情報官員對同事的結論產生懷疑。波特和其同事將他們的評估定為「低到中等」置信度，這表明他們並沒有紮實的證據來支持其結論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in parts of the memo, Mr. Porter and the other officer cite increasing planning discussions among Chinese officials about how to respond to American pressure and worries about the damage Mr. Trump’s re-election would do to China’s semiconductor industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在備忘錄中，波特和其他官員幾次提到中國官員之間正越來越多地談及如何應對美國的壓力，以及擔心川普的連任將對中國的半導體行業造成多大損害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a partially redacted sentence, Mr. Porter wrote about a recommendation that China collect “black materials” about Mr. Trump and “sensationalize” them at the appropriate time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一個被部分塗黑的句子中，波特寫道，有一項建議是收集關於川普的「黑料」，並在合適的時機予以「炒作」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is no evidence that recommendation was acted on. But that did not seem to matter to Mr. Trump in his remarks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒有證據表明該建議已被付諸實施。但這在川普的講話中似乎並不重要。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNH1sKeF25UDFVnJ4wcdu34Vjw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In mid-2019, the Chinese government strategy against the United States was focused on undermining domestic confidence in the U.S. president,” Mr. Trump said. “They wanted to just make you sound like your president was not so hot. When actually your president has done a great job.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在2019年中期，中國針對美國的戰略重點是削弱美國國內對總統的信心，」川普說道。「他們只想讓你們覺得你們的總統不怎麼樣。而實際上你們的總統做得非常出色。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In another section, the file says China was experimenting with creating deepfakes — manipulated images and videos — to denigrate Mr. Trump. Due to redactions, it is unclear whether China did anything more than experiment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有文件提到中國正在嘗試製作深度偽造內容——即經過篡改的圖像和影片——來詆毀川普。由於內容被塗黑，目前尚不清楚中國除了嘗試之外是否還做了更多事情。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the dissenting intelligence officers noted that Chinese government had used Chinese organizations to incite protests in the U.S. to undermine Mr. Trump’s re-election chances and that pro-China influence network had posted messaging denigrating the administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但持不同意見的情報官員指出，中國政府曾利用中國組織在美國煽動抗議活動以削弱川普的連任機會，且親中影響網路曾發布過詆毀該屆政府的言論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump referred to those intelligence findings in his remarks, but exaggerated what the declassified documents said, portraying them as a far broader effort.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普在講話中提到了這些情報發現，但他誇大了這些解密文件所表述的內容，將其描繪成了一場規模宏大得多的行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In another memo, Mr. Porter wrote that key adversarial countries — Russia, China, Iran and North Korea — all had the capability to access and manipulate data in some election-related computer systems. They found that voter registration databases and election websites were most vulnerable. While systems that tabulate voters could be “vulnerable to localized exploitation,” they found it would be difficult to manipulate on a big enough scale to change the election outcome.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在另一份備忘錄中，波特寫道，主要的敵對國家——俄羅斯、中國、伊朗和朝鮮——都有能力訪問和操縱某些選舉相關計算機系統的數據。他們發現，選民登記數據庫和選舉網站最容易受到攻擊。雖然統計選民的系統可能「容易遭到局部的利用」，但他們發現，要在足夠大的規模上進行操縱以改變選舉結果將是困難的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The intelligence community assessment conducted on the 2020 vote made much the same points. It said while adversarial powers had the capability of hacking local election systems, any effort to change votes would be detected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>針對2020年投票進行的情報界評估也提出了幾乎相同的觀點。該報告稱，雖然敵對勢力有能力黑入地方選舉系統，但任何試圖更改選票的企圖都會被察覺。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CN_7sKeF25UDFXLH4wcdyj8ZbA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One file reveals that in January 2022, actors aligned with the Chinese government obtained public voter registration data from Colorado, Connecticut, Florida, Michigan, Oklahoma and Rhode Island and unsuccessfully tried to download a voter registration application from Ohio.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一份文件透露，在2022年1月，為中國政府效力的駭客獲取了來自科羅拉多州、康乃狄克州、佛羅里達州、奧克拉荷馬州、密西根州和羅德島州的公共選民登記數據，並曾試圖從俄亥俄州下載選民登記申請，但未能成功。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such information, the report said, could be useful in hacking efforts against those voters or election influence operations. But the report conceded: “The actual motivations for collecting this information is unknown.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告稱，此類信息可能有助於針對這些選民實施駭客攻擊，或用於選舉影響行動。但報告承認：「收集這些信息的實際動機尚不明確。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Dustin Volz為時報報導網路安全和情報領域新聞，常駐華盛頓。</p><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260717/documents-china-2020-election-trump/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
