@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美人工智慧發展策略截然不同 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美人工智慧發展策略截然不同</h1>
+    <h2 class="en-headline">China’s A.I. Play Is Different From America’s</h2>
+    <div class="meta-line">ROSS DOUTHAT <span style="margin: 0 8px;">•</span> 2026-07-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1193" src="https://static01.nyt.com/images/2026/07/18/multimedia/18douthat-gtkb/18douthat-gtkb-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Daniel Ribar for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early in the Cold War, even as the United States and the Soviet Union engaged in a relentless nuclear arms race, they treated nuclear technology as a tool of soft power and diplomacy — something to share and export, a seal on alliances and a token of friendship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">冷戰初期，就在美蘇兩國進行無休止的核軍備競賽的同時，雙方也將核技術視為軟實力與外交的工具——一種可以共享和出口的資源，是鞏固同盟、表達友誼的信物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Thus Dwight Eisenhower’s America launched the Atoms for Peace program, which helped build civilian nuclear programs around the world, in the same year that it executed the Rosenbergs for giving the Soviets our atomic secrets. The Soviet Union likewise exported forms of nuclear power to Eastern Bloc nations and Mao’s China. In each case, the broad goal was to spread the tech while maintaining control over the weapons, taking very different approaches to the two forms of nuclear strength.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，正是在艾森豪威爾政府處決向蘇聯洩漏美國核機密的羅森堡夫婦的同一年，美國啟動了「原子用於和平」計劃，幫助世界各國建立民用核項目；蘇聯也向東歐的社會主義陣營國家以及毛澤東時代的中國輸出了各種形式的核能技術。兩國的總體目標都是在保持對核武器控制權的同時傳播核技術，只是對於核力量的兩種不同形式採取了截然不同的策略。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This history suggests a framework for understanding the difference between the American and Chinese approaches to artificial intelligence. The United States is behaving as though frontier A.I. models could be the equivalent of nuclear <i>weapons</i>, offering an immensely destructive form of power that requires a careful and jealous watch. American A.I. tycoons constantly talk as if they were engaged in an Oppenheimer-style race (complete with Oppenheimer-style moral hand-wringing), the American military-industrial complex is intent on keeping China from closing the current A.I. gap, and both industry and government increasingly treat frontier models as grave security threats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這段歷史為我們提供了一個理解美中兩國人工智慧路徑之異同的框架。美國的做法彷彿把最前沿的人工智慧模型視為核武器——一種具有巨大破壞力、需要小心翼翼、嚴密守護的力量。美國的人工智慧巨頭們時刻掛在嘴邊的語氣彷彿他們正置身於一場奧本海默式的競賽（連同奧本海默式的道德焦慮），美國軍工複合體一心阻止中國縮小當前的人工智慧差距，產業界和政府也越來越傾向於將前沿模型視為嚴峻的安全威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meanwhile, China treats the models that its companies produce as the equivalent of nuclear <i>energy</i>, a lower-risk technology to be shared and commercialized to win friends and influence the world and undermine the advantages of the American A.I. giants. There is some Chinese lip service to risk and safety, but little sense that this is a unique power to be hoarded, a geopolitical trump card or a weapon with existential stakes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國則把本國企業開發的人工智慧模型視作核能——一種風險較低的技術，應當通過共享和商業化推廣來贏得朋友、擴大國際影響力，並削弱美國人工智慧巨頭的優勢。中國雖然也會在口頭上提及風險和安全，但幾乎看不出他們將其視為需要囤積居奇的獨特力量，也沒有把它當作地緣政治的王牌或具有生死攸關意義的戰略武器。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLug1M2N5ZUDFYjm_QUd8KQqXw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For a while (well, for a few months, but that’s an eternity in A.I. time), I’ve wondered about the sincerity of the Chinese position. Since its companies and models have consistently lagged behind Anthropic and OpenAI, China has obvious incentives to use open source to undermine Silicon Valley’s profits and reach, all while letting Washington worry about the risks that the most cutting-edge models may create. Were China to suddenly surpass us, I’ve speculated, the incentives might change, and it might start trying to lock down and weaponize its best models, treat them as state secrets and sovereign goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去一段時間（好吧，也就幾個月，但在人工智慧時代已是永恆），我一直懷疑中國這種立場的真誠性。由於中國的人工智慧企業和模型一直落後於Anthropic和OpenAI，中國顯然有動力藉助開源模式削弱矽谷公司的利潤和影響力，同時讓華盛頓去操心最前沿模型可能帶來的風險。如果有一天中國突然實現反超，我曾猜測，它的激勵機制可能會發生變化，它可能會開始試圖封鎖其最好的模型並將其武器化，將它們視為國家機密和主權資產。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We do not yet have a Chinese model that surpasses our own, but this week brought a model that may come close, Kimi K3 from the Chinese company Moonshot AI. And so far Beijing is treating Kimi K3 like all its prior models: It’s going to be open source for maximum adoption, without any American-style fretting over risks and guardrails and export controls.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們目前還沒有看到超越美國的中國模型，但本週出現了一款可能已接近這一水平的新模型——來自中國公司月之暗面的Kimi K3。而迄今為止，北京對待Kimi K3的態度與此前所有模型如出一轍：開源，追求最大程度的採用率，沒有像美國那樣因擔憂各種風險而在安全護欄和出口管制上患得患失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This decision should make us a little more confident that Beijing’s overall approach is sincere. It suggests that the Chinese don’t just reject the utopian and dystopian scenarios common in Silicon Valley, where past some threshold the power of artificial intelligence totally remakes the world. They may not even be especially “risk-pilled,” in the sense of worrying about the kinds of perils that today’s A.I. models might already create — through the power to hack and bring down complex systems, the power to help terrorists create bioweapons, the uncertain risks of rogue A.I. behavior and more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一決定應該讓我們對北京整體路線的真誠性多了幾分把握。它表明，中國人不僅拒絕接受矽谷流行的那種烏托邦或反烏托邦敘事——即越過某個臨界點，人工智慧的力量將徹底重塑世界。他們甚至可能壓根就不是特別買那些風險論的賬，也就是說，他們並不怎麼為當下人工智慧模型可能引發的危害而焦慮——無論是攻擊複雜系統致其癱瘓、協助恐怖分子研製生物武器、失控人工智慧行為的不確定風險，等等。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American A.I. companies and the national security state seem to assume that we’re already at a point where you simply can’t let the world use the best A.I. models without controls and guardrails any more than you’d ship atomic bombs or ICBMs to random homes or private companies. Whereas the Chinese are willing to shrug and push the envelope and let America fret about safety and sovereignty, on the assumption that A.I. is a normal technology and the safety concerns will get figured out along the way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的人工智慧企業和國家安全機構似乎認為，我們已經進入了這樣一個階段：世界再也不能在沒有監管和安全護欄的情況下自由使用最先進的人工智慧模型，就像不能把原子彈或洲際彈道導彈隨意送到普通家庭或私人企業一樣。而中國則似乎對此並不十分在意，願意繼續大膽推進，讓美國去操心安全和主權的問題，因為他們認為人工智慧本質上仍是一項普通技術，其安全問題會在發展過程中逐漸得到解決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or to return to a more cynical reading, maybe they’re making a double bet. If A.I. creates only modest risks and isn’t actually some kind of strategic superpower, their open-source models are the best way to undermine the American advantage and make the world like China more than us. Alternatively, if we do get some kind A.I. Chernobyl from someone misusing a Chinese model — well, the repercussions and backlash will still probably hurt U.S. companies the most, because the American public is already skeptical of A.I. and primed for data center moratoria.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，如果換一種更加現實主義的解讀，中國也許打的是進退自如的算盤。如果人工智慧最終帶來的風險有限，並沒有真正成為某種具有戰略意義的超級武器，那麼開源模型就是削弱美國優勢、讓世界更加親近中國的最佳方式。又或者，即便真的有人濫用中國的某款模型製造出一場類似「人工智慧車諾比」的災難，那麼其衝擊和反噬很可能仍然對美國公司的傷害最大，因為美國公眾本來就對人工智慧持懷疑態度，而且已經做好了支持限制數據中心建設等監管措施的準備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I’m not sure where this leaves the A.I. safety movement, which is responsible for a lot of that pro-regulatory priming. The cause of A.I. safety has advanced along several lines in the United States, benefiting from the progressive left’s hostility to Silicon Valley, the Pentagon’s anxiety about the power of privately controlled models and the A.I. industry’s internal doomer culture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我不太確定這將把人工智慧安全運動帶向何方，而正是這一運動推動了美國社會如今越來越支持加強監管。在美國，人工智慧安全事業的發展得益於幾股力量的共同作用：進步派左翼對矽谷的敵意、五角大廈對私人企業掌握人工智慧模型能力的擔憂，以及人工智慧行業內部盛行的「末日論」文化。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ7Z1M2N5ZUDFR3PuAgdx7oslQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it avails the would-be regulators nothing to slow American progress if China believes it’s playing a completely different game.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，如果中國相信自己參與的是一場完全不同的博弈，那麼無論監管者如何努力放慢美國的發展速度，都將無濟於事。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Ross Douthat自2009年起一直在時報擔任觀點版面的專欄作者。他也是觀點播客「Interesting Times」的主播。他著有多本書，最近的一本是《The Deep Places: A Memoir of Illness and Discovery》。歡迎在Facebook和X上關注他。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260721/china-united-states-artificial-intelligence/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

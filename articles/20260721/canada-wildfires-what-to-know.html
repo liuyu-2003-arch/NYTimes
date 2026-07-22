@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加拿大野火火勢如何，為何難以控制？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">加拿大野火火勢如何，為何難以控制？</h1>
+    <h2 class="en-headline">Canada Wildfires: What to Know</h2>
+    <div class="meta-line">《紐約時報》 <span style="margin: 0 8px;">•</span> 2026-07-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週三，多倫多加拿大國家電視塔的觀景台，野火煙霧籠罩著市中心。
+
+" height="698" src="https://static01.nyt.com/images/2026/07/18/multimedia/18int-canada-wildfires-wtk-vcmj/18int-canada-wildfires-wtk-vcmj-master1050.jpg" width="1050"/><figcaption><span>週三，多倫多加拿大國家電視塔的觀景台，野火煙霧籠罩著市中心。 </span><cite>Ian Willms for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wildfires in Canada have cast a pall of smoke across a swath of the country and the United States, polluting the air for millions of people, forcing hundreds to evacuate in some places and tainting skies with a brick-red haze.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加拿大的野火使濃煙籠罩了加拿大和美國大片地區，導致數百萬民眾暴露於受到污染的空氣中，在一些地方迫使數百人撤離，天空被染成了磚紅色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fires have darkened skies from Toronto to Detroit and the East Coast of the United States, leaving New York, Toronto and Washington with the worst air quality in the world on Saturday morning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從多倫多到底特律，再到美國東海岸，野火已使天空變得昏暗。週六上午，紐約、多倫多和華盛頓的空氣質量位列全球最差。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Canadian firefighters have sought to bring the wildfires under control, but days of darkened skies and unhealthy air have raised tensions with the United States. A group of Republican lawmakers criticized Ottawa’s handling of the fires, and President Trump threatened to impose tariffs on Canada to pay for harm caused by the smoke.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加拿大的消防人員一直在努力控制火勢，但連續數日的陰霾和有害空氣已引發與美國的緊張氣氛。一些共和黨議員批評加拿大政府應對不力，川普總統則威脅要對加拿大徵收關稅，以彌補煙霧給美國造成的損害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Mark Carney did not directly address the complaints by Republican lawmakers, but he suggested the United States should do more to combat climate change, which scientists say is a significant factor in creating bigger, longer and fiercer wildfires.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加拿大總理卡尼沒有直接回應共和黨議員的批評，但他表示，美國應該採取更多措施應對氣候變化。科學家認為，氣候變化是導致野火規模更大、持續時間更長、火勢更猛烈的重要因素。</div></div></div></div></div><div class="big_ad" data-google-query-id="CO-gy8iN5ZUDFbhSCAQd-yQ6Zw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is the status of the fires?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>目前火勢如何？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As of Sunday, nearly 200 wildfires were burning in Ontario, including more than 70 raging out of control. Roughly 1.7 million acres have burned in Ontario, according to the Canadian Interagency Forest Fire Center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至週日，安大略省共有近200處野火仍在燃燒，其中70餘處完全失控。根據加拿大跨部門森林消防中心的數據，安大略省過火面積已達近70萬公頃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Twelve communities have been evacuated, according to the local authorities, many in northwestern Ontario. About 300 people have been rescued from campsites, Premier Doug Ford of Ontario said in a brief address on Saturday. Indigenous communities have been among the worst affected by the fires.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當地政府稱，目前已有12個社區實施撤離，它們大多位於安大略省西北部。安大略省省長道格·福特週六在簡短講話中表示，約有300人從露營地獲救。原住民是受野火影響最嚴重的群體之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most of the evacuees have been taken to Thunder Bay, Ontario, a city on Lake Superior, where the air quality index, though still in the high-risk category, had improved on Sunday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數撤離人員已被安置到位於蘇必利爾湖畔的安大略省桑德貝市。雖然當地空氣質量仍屬於高風險水平，但截至週日已有所改善。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is Canada doing?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>加拿大採取了哪些措施？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Ford said that there were 155 fire crews at work, with 80 water bombers and helicopters active and 40 additional aircraft ready to deploy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">福特表示，目前共有155支消防隊、80架滅火飛機和直升機投入滅火作業，另有40架飛機隨時待命。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He also urged people not to return to campsites or homes, so that aircraft were not forced to hold off delivering their loads for fear of harming people on the ground. There was little sign on Saturday that the fires would soon wane.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還呼籲民眾不要返回露營地或住所，以免飛機在投水時顧忌地面人員安全而被迫中斷作業。截至週六，火勢仍沒有明顯減弱的跡象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With Thunder Bay rapidly becoming overcrowded with evacuees, some people have been sent on to Toronto and other locations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著桑德貝迅速人滿為患，部分疏散人員已被轉移到多倫多及其他地點。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週六，安大略省省長道格·福特（中）在安大略省桑德貝市出席新聞發布會。
+
+" data-src="https://static01.nyt.com/images/2026/07/18/multimedia/18int-canada-wildfires-wtk-02/18int-canada-fires-ford-tvfz-master1050.jpg" src="https://static01.nyt.com/images/2026/07/18/multimedia/18int-canada-wildfires-wtk-02/18int-canada-fires-ford-tvfz-master1050.jpg"/></div><figcaption><span>週六，安大略省省長道格·福特（中）在安大略省桑德貝市出席新聞發布會。 </span><cite>Cole Burston for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials, including Eleanor Olszewski, Canada’s minister of emergency management, have defended Canada’s forestry practices. “Warmer, drier weather is becoming more common, increasing wildfire risk in Canada and around the world,” Ms. Olszewski said in a statement on Friday evening. “Northern Ontario and Quebec, for example, received less than 40 percent of normal precipitation this June, with temperatures above historical averages.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加拿大應急管理部長埃莉諾·奧爾謝夫斯基等官員為該國的林業管理做法進行了辯護。「更加炎熱、更加乾燥的天氣正變得越來越普遍，這增加了加拿大乃至全球發生野火的風險，」奧爾謝夫斯基在週五晚的聲明中表示。「例如，安大略省北部和魁北克省今年6月的降水量不足正常水平的40%，氣溫也高於歷史平均水平。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why is it so hard to control fires in Canada?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為何加拿大的野火如此難以控制？</b></div></div></div></div></div><div class="big_ad" data-google-query-id="COSky8iN5ZUDFRFCCAQdb78rUw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most wildfires in Canada spread across such vast, remote areas that they cannot be fought effectively and are often left to burn, experts say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，加拿大大多數野火發生在廣袤偏遠的地區，消防人員很難有效撲救，通常也只能任其燃燒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Half of Canada’s wildfires, like the blazes in northern Ontario, burn in sparsely populated areas, said Michael Flannigan, an expert on fire management at Thompson Rivers University in British Columbia. They are most often accessible only by plane.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不列顛哥倫比亞省湯普森河大學消防管理專家麥可·弗蘭尼根指出，加拿大半數野火（如安大略省北部的此次火情）發生在人口稀少的地區，人們通常只能乘飛機抵達。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if it were possible to to deploy firefighters to such remote areas, there is rarely enough time to react. Ignited mostly by lightning, wildfires often spread widely in the highly combustible boreal forest before firefighters can respond within the first critical 30 minutes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即使在如此偏遠的地區能夠部署消防員，也往往沒有足夠的時間作出反應。野火多由閃電引發，在消防員能夠於關鍵的前30分鐘內作出反應之前，火勢就已在高度易燃的北方針葉林中迅速蔓延。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the long run, wildfires are considered beneficial because they remove the most flammable material in forests, promoting regeneration. Extinguishing every fire increases risk, as Canadian officials have learned in managing national parks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從長期來看，野火實際上被認為對森林生態有益，因為它能夠清除森林中最易燃燒的物質，為植被更新創造條件。加拿大官員在國家公園管理實踐中發現，試圖撲滅每一場野火反而會增加未來發生更嚴重火災的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is happening with the smoke?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>煙霧情況如何？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The plume of smoke far above the Earth’s surface remained on Saturday, but where and when the pollution would spread was hard to predict, as it can shift considerably by the hour. Amid the elusive forecast, air quality warnings and alerts remained in place across many of the affected states and provinces.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">瀰漫在高空的煙霧週六仍未消散，但污染向何處擴散及何時擴散均難以預測——因為風向可能每小時都發生顯著變化。在預報仍存在較大不確定性的情況下，多個受影響的州和省仍維持空氣質量預警。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK67y8iN5ZUDFdlZCAQdviQUlg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Summer weather, like thunderstorms, can help clear smoke, but the smoke itself complicates the forecast. It can block sunlight, keeping temperatures lower at the surface and preventing storms from rising and intensifying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">夏季天氣中的雷暴有助於驅散煙霧，但煙霧本身又會增加天氣預報的難度。煙霧能遮擋陽光，使地表溫度保持較低水平，並抑制雷暴的生成與增強。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scientists estimate that wildfire smoke is linked to tens of thousands of deaths a year, and that human-caused climate change is responsible for a growing share of them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科學家估計，野火產生的煙霧每年與數以萬計的死亡病例有關，而其中越來越多的死亡可以歸因於人為造成的氣候變化。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260721/canada-wildfires-what-to-know/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
