@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國打造新型軟實力 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國打造新型軟實力</h1>
+    <h2 class="en-headline">China Rewrites the ‘Soft Power’ Playbook for the A.I. Age</h2>
+    <div class="meta-line">STEVE LOHR <span style="margin: 0 8px;">•</span> 2026-07-24</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上週在上海舉行的世界人工智慧大會上月之暗面的展位。月之暗面及其他中國科技公司一直致力於推動開源人工智慧的發展。" height="700" src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-01-lztf/Biz-AI-China-01-lztf-master1050.jpg" width="1050"/><figcaption><span>上週在上海舉行的世界人工智慧大會上月之暗面的展位。月之暗面及其他中國科技公司一直致力於推動開源人工智慧的發展。</span> <cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Cold War era, “soft power” meant American movies and music that won hearts and minds abroad. Today, in the digital era, China is promoting a very different kind of soft power: its open, low-cost artificial intelligence technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在冷戰時期，「軟實力」意味著在海外贏得人心的美國電影和音樂。如今，在數位時代，中國正在推行一種截然不同的軟實力：開放、低成本的人工智慧技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a speech last week, China’s leader, Xi Jinping, described so-called open-source A.I. as key to China’s ambitions to shape the global development of the technology. Mr. Xi hailed open-sourcing, in which much of the software can be freely shared and modified, as a “rare and historical opportunity” to spread the technology’s benefits worldwide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在上週的一次講話中，中國領導人習近平將所謂的開源人工智慧描述為中國塑造該技術全球發展雄心的關鍵。習近平讚揚了開源模式——即大部分軟體可以被自由共享和修改的模式——稱其為將該技術的紅利傳播到全世界的「難得的歷史機遇」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi made clear that China will champion the open path as an alternative to relying on U.S. tech giants, whose A.I. software is typically closed and more costly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平明確表示，中國將倡導這條開放的道路，以此作為依賴美國科技巨頭的替代方案；後者的人工智慧軟體通常是封閉的，且成本更高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A.I. development should not be a solo performance by a single country,” Mr. Xi said, “but a symphony of global collaboration.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「人工智慧發展不應該是某個國家的獨奏，而應當是全球合作的交響，」習近平說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CK_OzZrU7JUDFTATRAgd-tQVsQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese are calling for a new A.I. order amid a mounting battle for global dominance between the leading American companies and fast-moving Chinese rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國領先企業與發展迅速的中國競爭對手爭奪全球主導地位的鬥爭日益激烈之際，中方正呼籲建立一種新的人工智慧秩序。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. companies like OpenAI, Anthropic and Google hold their technology close, arguing that guarding the underlying code ensures greater security and control of powerful A.I. systems. Chinese companies like DeepSeek, Moonshot AI, Z.ai and Alibaba have championed open-source A.I. They contend that those systems cost less, will accelerate global adoption and are no less secure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">OpenAI、Anthropic和谷歌等美國公司對其技術嚴加保密，它們認為保護底層代碼能確保對強大人工智慧系統擁有更高的安全性和控制力。而深度求索、月之暗面、智譜AI和阿里巴巴等中國公司則一直在倡導開源人工智慧。它們認為，這些系統成本更低，將加速全球普及，而且安全性毫不遜色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Promoting open-source artificial intelligence “serves China’s twin goals of bolstering its image as an inclusive A.I. leader and reducing global reliance on American A.I.,” said Kyle Chan, a fellow at the Brookings Institution who is a China technology policy expert.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會研究員、中國科技政策專家凱爾·陳（音）表示，推廣開源人工智慧「有助於中國的雙重目標：一是提升其作為包容性人工智慧領導者的形象，二是減少全球對美國人工智慧的依賴」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上週，中國國家主席習近平在上海出席了一場人工智慧會議。" data-src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-02-lztf/Biz-AI-China-02-lztf-master1050.jpg" src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-02-lztf/Biz-AI-China-02-lztf-master1050.jpg"/></div><figcaption><span>上週，中國國家主席習近平在上海出席了一場人工智慧會議。</span> <cite>Pool photo by Ng Han Guan</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the Chinese companies rapidly close the gap in A.I. performance, the country’s rivalry with the United States has become more hostile. American companies have accused some Chinese competitors of improperly harvesting data from their systems to aid their own technology’s development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國公司迅速縮小在人工智慧性能上的差距，中美之間的競爭也變得更具敵意。美國公司指責一些中國競爭對手不當抓取其系統數據，幫助發展自己的技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, Anthropic sent a letter to two U.S. senators accusing the Chinese tech giant Alibaba of “brazenly” and “illicitly” trying to copy its technology using 24,000 fraudulent accounts. Alibaba has denied any wrongdoing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，Anthropic致信兩名美國參議員，指責中國科技巨頭阿里巴巴試圖利用2.4萬個虛假帳戶「公然」且「非法」複製其技術。阿里巴巴否認有任何不當行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration is taking such allegations seriously. On Wednesday, Treasury Secretary Scott Bessent threatened to impose sanctions on Chinese A.I. companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府正在認真對待這些指控。週三，財政部長貝森特威脅要對中國人工智慧公司實施制裁。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP3wzZrU7JUDFTc8RAgdUZE8kQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We support open-source A.I. and the innovation it unlocks,” Mr. Bessent posted on X. “But open source is not open season on American IP,” referring to intellectual property.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們支持開源人工智慧及其帶來的創新，」貝森特在X上發帖稱。「但開源並不意味著對美國IP的開放狩獵，」IP是指知識產權。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. tech executives and investors also worry that the Chinese open-source technology could change the economics of A.I. production. Their models are more efficient, eating up less computing power. That innovation is driven partly by necessity because U.S. trade restrictions have limited access to the most advanced A.I. chips from Nvidia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國科技高管和投資者也擔心，中國的開源技術可能會改變人工智慧生產的經濟學。中國的模型更高效，消耗的算力更少。這種創新部分是出於無奈，因為美國的貿易限制阻礙了它們獲取英偉達最先進人工智慧晶片的途徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the Chinese A.I. alternatives are nearly as good and less expensive — estimates range from 50 percent to 90 percent for some tasks — they could threaten the business plans and sky-high valuations of the American A.I. leaders. And the Chinese technology is increasingly being embraced by engineers and companies in the United States, seeking to trim costs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果中國的人工智慧替代方案幾乎一樣好且更便宜——據估計，在某些任務中成本可降低50%至90%——它們可能會威脅到美國人工智慧領導者的商業計劃和極高的估值。此外，為了削減成本，中國的技術正日益被美國的工程師和公司所接受。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The China strategy is “to capture market share across the world, even if it doesn’t translate into profits right away,” said Wendy Chang, a senior analyst at the Mercator Institute for China Studies, a think tank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智庫墨卡托中國研究所高級分析師溫迪·張表示，中國的戰略是「搶佔全球市場份額，即使這不會立即轉化為利潤」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="深度求索位於杭州的總部。" data-src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-03-lztf/Biz-AI-China-03-lztf-master1050.jpg" src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-03-lztf/Biz-AI-China-03-lztf-master1050.jpg"/></div><figcaption><span>深度求索位於杭州的總部。</span> <cite>Jade Gao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Proponents of the open approach point to Linux, an open-source software operating system, as a reason for optimism. The software runs most of the computers in internet data centers and has benefited from many people poring over the code and making fixes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">開放策略的支持者以開源軟體操作系統Linux作為樂觀的理由。該軟體運行在互聯網數據中心的大多數計算機上，並得益於眾多開發者對源代碼的深入研究和修復。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, computer experts agree that A.I. is a more nuanced case. There is more than code involved, notably the data used for training a model. And A.I. models form judgments and can reason.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，計算機專家們一致認為，人工智慧的情況更為複雜微妙。它所涉及的不僅僅是代碼，尤其是用於訓練模型的數據。而且，人工智慧模型會做出判斷並能夠進行推理。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJapzprU7JUDFbKY7gEdNakkOw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are also security concerns. Some security experts insist that the open-source approach of releasing both software and the numerical settings for training A.I. models, known as weights, greatly increases the risk of the technology’s being used for cyberattacks or even to help build bioweapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">安全方面也存在隱患。一些安全專家堅稱，將軟體和用於訓練人工智慧模型的數值參數（即權重）一併公開的開源做法極大地增加了人工智慧技術被用於網路攻擊、甚至幫助製造生物武器的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And the heavy influence of the Chinese government on its companies raises potential data protection and security concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，中國政府對本國公司的巨大影響力也引發了潛在的數據保護和安全擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the closed models of the Silicon Valley companies have had their own security glitches. This week, OpenAI disclosed that a model it was testing went rogue and attacked the computer systems of another company. The targeted company, Hugging Face, said it had deployed a Chinese open-source model from Z.ai to analyze data and counter the attack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，矽谷公司的閉源模型也存在著自身的安全漏洞。本週，OpenAI披露其正在測試的一個模型失控，攻擊了另一家公司的計算機系統。受攻擊的公司Hugging Face表示，它部署了來自智譜AI的中國開源模型來分析數據，抵禦了這次攻擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, China has outlined a plan to leverage its open-source advantage as a diplomatic tool.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，中國已經制定一項計劃，將其開源優勢作為一種外交工具加以利用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The concept of open-source A.I. software as an instrument of soft power has been popularized in technology circles. It suggests influence through persuasion and desire — something people want — rather than the coercive “hard power” of military might and economic muscle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將開源人工智慧軟體作為一種軟實力工具的概念已在科技圈流行開來。這一理念主張通過說服和滿足渴望——即提供人們想要的東西——來施加影響力，而不是通過軍事力量和經濟實力這種強制性的「硬實力」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The open path offers a low-cost on-ramp to A.I. for software engineers and for nations seeking to catch the next wave of technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這條開放之路為軟體工程師和尋求趕上下一波技術浪潮的國家提供了一個低成本的人工智慧入門通道。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="英偉達創始人兼首席執行官黃仁勛。" data-src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-04-lztf/Biz-AI-China-04-lztf-master1050.jpg" src="https://static01.nyt.com/images/2026/07/23/multimedia/Biz-AI-China-04-lztf/Biz-AI-China-04-lztf-master1050.jpg"/></div><figcaption><span>英偉達創始人兼首席執行官黃仁勛。</span> <cite>Mikayla Whitmore for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Those who benefit from free A.I. software certainly recognize it,” said Lawrence Lessig, a professor at Harvard Law School and a technology policy expert. “From a political perspective, it’s an enormous gain for China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「那些從免費人工智慧軟體中受益的人肯定認識到了這一點，」哈佛法學院教授、科技政策專家勞倫斯·萊斯格說。「從政治角度來看，這對中國來說是一個巨大的收益。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, an authoritarian power, often uses the language of openness in outreach overseas, especially to the developing world. And in recent years, it has used A.I. in those efforts, setting up joint A.I. development and education centers in dozens of nations. This year, China established the World Artificial Intelligence Cooperation Organization to shape A.I. governance principles and to promote A.I. adoption and training in China-friendly countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為一個威權大國，中國在海外拓展特別是面向發展中國家時經常使用開放的語言。近年來，它將人工智慧融入這些努力中，在數十個國家建立了聯合人工智慧發展和教育中心。今年，中國成立了世界人工智慧合作組織，旨在塑造人工智慧治理原則，並在對中國友好的國家推廣人工智慧的應用和培訓。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIaTzprU7JUDFfwcRAgdkz8new" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his speech, Mr. Xi pledged further investments. That included 5,000 A.I. training and seminar programs for students and workers in developing countries over the next five years, as well as new or enlarged A.I. initiatives in Africa, Asia and Latin America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在演講中，習近平承諾將進一步增加投資。其中包括未來五年內為發展中國家的學生和工人提供5000個人工智能培訓和研討項目，以及在非洲、亞洲和拉丁美洲開展新的或規模更大的人工智慧倡議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the same day as Mr. Xi’s speech, the People’s Daily, the Communist Party’s official newspaper, published an article on China’s A.I. investments abroad with a litany of training and joint-development programs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在習近平發表演講的同一天，中共官方報紙《人民日報》發表了一篇關於中國在海外進行人工智慧投資的文章，列舉了一系列培訓和聯合開發項目。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Its self-congratulatory conclusion: “China is helping countries around the world, particularly those in the Global South, strengthen their capabilities, winning broad international recognition and support.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">文章以自我讚許的口吻總結道：「中國的務實合作正跨越山海，幫助世界各國特別是全球南方國家加強能力建設，獲得國際社會廣泛支持認同。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-155wybs-print" data-poster=""><p class="cn-p">Xinyun Wu自台灣台北、 Alan Rappeport自華盛頓對本文有報導貢獻。</p><p class="cn-p">Steve Lohr撰寫關於科技及其對經濟、就業和勞動市場的影響的文章。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260724/china-ai-soft-power/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

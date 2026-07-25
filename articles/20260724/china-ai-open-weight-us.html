@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國人工智慧的制勝之道 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國人工智慧的制勝之道</h1>
+    <h2 class="en-headline">China’s A.I. Has a Winning Formula. America, Don’t Panic.</h2>
+    <div class="meta-line">JASON HSU <span style="margin: 0 8px;">•</span> 2026-07-24</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/07/23/opinion/23_hsu_burton/23_hsu_burton-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Mikey Burton</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government has spent three years giving away its most capable artificial intelligence to anyone to use. That generosity was always temporary. Chinese authorities have reportedly been meeting with Alibaba, ByteDance and the start-up Z.ai to discuss restricting overseas access to some of China’s most advanced models — including systems that have not yet been released.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">三年來，中國政府一直把它最強大的人工智慧免費向所有人開放。然而，這樣的慷慨從來都是不會持久的。據報導，中國當局一直在與阿里巴巴、字節跳動以及初創公司智譜AI會面，討論限制境外用戶訪問中國部分最先進模型的問題——包括一些目前尚未發布的系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government’s instinct will likely be to answer with a ban of its own. That would be a mistake. The right response is the opposite: America and its allies should build and deploy their own so-called open-weight models, which users can download, run and modify on their machines. They should do so at scale, and commit to releasing new and better versions on a dependable schedule — so that anyone building on an American model can count on the next one arriving. China’s move is an opening for the United States to take the lead again on A.I. It will not stay open for long.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府的本能反應很可能是以自己的禁令作為回應。那將是一個錯誤。正確的做法恰恰相反：美國及其盟友應該構建並部署自己的所謂「開放權重」模型，使用戶能夠將模型下載到本地，在自己的設備上運行並進行修改。而且，這項工作應當大規模推進，並承諾按照可靠的週期發布更為強大的新版本。讓所有基於美國模型進行開發的人都能確信，下一代模型會如期推出。中國的這一舉動正是美國重奪人工智慧主導權的一個機會窗口。但這個窗口不會開太久。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An A.I. model’s “weights” are the billions of individual settings acquired and fine-tuned during training that help determine how a model responds to prompts. When a company keeps its weights secret, as OpenAI does with GPT, other companies and developers can rent access through its servers — but they cannot look inside or take the model with them. When a company publishes these weights, as the Chinese company DeepSeek has for its A.I. model, any user can download and run the weights on its own hardware, inspect them and retrain them for a specialized task.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧模型的「權重」是指訓練過程中獲得並微調好的數十億個獨立參數，它們有助於決定模型如何對提示詞作出回應。當一家公司對其權重保密時——比如OpenAI對GPT的做法——其他公司和開發者只能通過其伺服器租用訪問權限，但無法查看模型內部，也無法將模型帶走。當一家公司公開這些權重時——比如中國公司DeepSeek，任何用戶都可以下載這些權重，在自己的硬件上運行、檢查它們，並針對特定任務進行重新訓練。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is how China is arguably winning the A.I. race. Last week, the Chinese start-up Moonshot A.I. unveiled Kimi K3, which the company says is the world’s largest open-weight A.I. model and rivals the performance of Anthropic and OpenAI’s best models to date. Alibaba’s Qwen is now the most downloaded A.I. model family on earth. Developers have used it to build more than 100,000 specialized models of their own. On OpenRouter, a service that lets developers send their work to whichever A.I. model they choose, Chinese open-weight models accounted for more than 20 percent of the units of text processed over a number of weeks in 2025 and more than 40 percent over a few weeks this spring; in 2024, such models’ weekly processing of text was as low as about 1 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">可以說，這正是中國在人工智慧競賽中佔據優勢的原因。上週，中國初創公司月之暗面推出了Kimi K3，該公司稱，這是目前全球規模最大的開放權重人工智慧模型，其性能足以媲美Anthropic和OpenAI迄今最優秀的模型。阿里巴巴的通義千問如今已成為全球下載量最高的人工智慧模型家族。開發者已利用它構建了超過10萬個各類專用模型。在OpenRouter——一個允許開發者將任務發送給任選人工智慧模型的服務平台——上，來自中國的開放權重模型在2025年連續數週處理的文本量已佔全部處理量的20%以上，而在今年春季的連續數週時間裡，這一比例更是超過40%；相比之下，2024年，這類中國模型每週處理的文本量佔比最低時僅約為1%。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLL6xqTU7JUDFdZPCAQdodwy_g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of that traffic is American. Airbnb’s customer service agent runs substantially on Qwen; Airbnb’s chief executive, Brian Chesky, has called the model fast and cheap. Cursor, among the most valuable A.I. coding start-ups in the country, built its Composer 2 model on a base licensed from Moonshot. DoorDash now routes the “lower-level work” of its code review system to Kimi, DoorDash’s co-founder Andy Fang reports, reserving an American model for the hardest tasks. More American businesses, attracted by lower costs, are joining these start-ups in using these models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些流量中，很大一部分來自美國。Airbnb的客服系統大量運行於通義千問之上，其首席執行官布賴恩·切斯基稱讚該模型速度快、成本低。美國最具價值的人工智慧編程初創企業之一Cursor則基於月之暗面授權的基礎模型開發了自己的Composer 2模型。外送平台DoorDash聯合創始人方安迪（音）透露，如今公司已將代碼審查系統中的「較低層級工作」交由Kimi完成，只將最困難的任務交由美國模型來做。受成本優勢吸引，越來越多的美國企業正在跟隨這些初創公司的腳步，轉向使用這些中國模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This had been China’s plan since 2017: push Chinese models into every market, shape the standards others adopt and pull the world toward the Chinese hardware the models run best on. The country ran the same sequence with solar and telecom equipment and, most notably, critical minerals — building the world’s dependence on cheap rare earths before restricting exports once that dependence was real.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這正是中國自2017年以來一直奉行的戰略：將中國的人工智慧模型推向全球各個市場，塑造其他國家所採用的技術標準，並進一步推動世界轉向那些最適合運行中國模型的中國硬件。中國此前在太陽能產業、通信設備領域，尤其是在關鍵礦產領域，都採取過同樣的路徑——先利用廉價稀土建立起全球依賴，再在這種依賴真正形成之後限制出口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Chinese labs restrict access now, won’t everyone just switch to a better American model? No, because switching an A.I. model is not like canceling a subscription. It means tearing out a foundation. A European manufacturer running a Chinese model on its own premises, trained on confidential records that cannot legally leave the building, cannot simply swap in a superior American model that costs more to use and runs on someone else’s servers. That dependence is key to China’s strategy. A country that can’t switch off a foreign model has handed China a grip on the systems it runs on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果中國實驗室現在限制訪問，難道大家不會幹脆轉向一個性能更好的美國模型嗎？不會，因為切換人工智慧模型不像取消訂閱那麼簡單。這意味著要拆除整個底層基礎。一家歐洲製造商如果在本地運行一個中國模型，並用依法不得出境的機密數據對其進行了訓練，就無法簡單地換入一個使用成本更高、運行在他人伺服器上的美國優質模型。這種依賴正是中國戰略的關鍵所在。一個無法擺脫外國模型的國家，就等於把其所運行系統的控制權拱手交給了中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Developers outside China should be concerned about what’s next. Everyone building on a Chinese model assumes a better one is coming — free, as it always has been. If China keeps its next generation of models at home, the rest of the world’s builders who rely on something freely modifiable are stuck with an antiquated version, while Chinese firms advance with something more powerful. The gap widens with every release.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國以外的開發者應當對接下來的走勢保持警覺。每一個基於中國模型進行開發的人都默認——未來會有更好的版本推出，並且像以往一樣免費。如果中國將下一代模型留在國內，那麼世界上那些依賴免費可修改模型的開發者將被困在一個過時的版本裡，而中國企業則在更強大版本的加持下不斷向前。雙方之間的差距將隨著每一次新版本發布而不斷擴大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two U.S. congressional committees have opened investigations into Airbnb and Cursor’s parent company over their use of Chinese models. The Trump administration is reportedly considering effectively barring Americans from using Chinese A.I. models. But banning those models would impede American developers and hand China the claim that its technology is too good for America to compete with fairly. The United States dominates in tech by making its platforms the ones the world’s developers choose to build on, not by banning foreign use.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩個國會委員會已就Airbnb和Cursor的母公司使用中國模型一事展開調查。據報導，川普政府正在考慮有效禁止美國人使用中國人工智慧模型的措施。但是，禁止這些模型將給美國開發者帶來不便，也會給中國提供口實，宣稱它的技術先進到美國都無法通過公平競爭來應對。美國在科技領域的主導地位，靠的是讓全球開發者都願意基於美國的平台進行開發，而不是通過禁止外國使用來達成的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government should fund a contract to train an advanced open-weight model. It should stipulate those weights remain permanently open. That contract would give companies in the United States and allied nations a foundation to build on and compete in this arena of A.I. development. OpenAI and Google have released open-weight models, but only occasionally, because nothing rewards them for doing it consistently. The buyers of such a model would be the firms already reaching for Qwen and Kimi as well as the international partners that will not put their data on Chinese servers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府應當出資建立一個訓練先進開放權重模型的項目，並規定這些權重必須永久保持開放。這將為美國及其盟友國家的企業提供一個共同的基礎平台，使它們能夠在人工智慧發展的這一領域展開創新與競爭。OpenAI和Google都發布過開放權重模型，但只是偶爾為之，因為沒有任何機制能激勵它們持續這樣做。這類模型的潛在用戶不僅包括那些已經開始採用通義千問和Kimi的企業，也包括那些不願把數據存放在中國伺服器上的國際合作夥伴</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ2Vy6TU7JUDFTpVCAQdmlQ64w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Customers that adopt an open-weight American model also need the chips to run it, somewhere to store data and the computing power to put the model to work. That is what the Development Finance Corporation and the Export-Import Bank — the government agencies that back U.S. business abroad — should be financing all at once. Chinese models have come to dominate in places like Nairobi and São Paulo because China made them free, packaging the model, the hardware and the financing together. America has the capital and the technology to offer the same package, on better terms, with security standards that even newcomers can meet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">採用美國開放權重模型的用戶同樣需要運行模型所需的晶片、存儲數據的基礎設施，以及讓模型真正投入使用所需的算力。這正是美國國際開發金融公司和美國進出口銀行——這兩個負責支持美國企業開展海外業務的政府機構——應當同時提供融資支持的方向。中國的模型之所以能夠在奈洛比、聖保羅等地佔據主導地位，是因為中國免費提供模型，並將模型、硬件和融資打包在一起。美國擁有足夠的資金和技術，完全能夠提供同樣的整體方案，而且條件更優、安全標準更高，即使是剛起步的國家也能夠達到這些標準。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI and Anthropic’s business is the “frontier”: the hardest, highest-value work, offered to customers that want the best model available and will pay for it. That is not the business an open-weight model takes, where finances or data-sensitivity factor in more heavily. For many U.S. customers, the frontier model keeps the hard work moving, and something cheaper — and easier to tinker with — sits underneath it. The frontier lab gets paid either way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">OpenAI和Anthropic的商業模式立足於「前沿」，也就是承擔最困難、價值最高工作的模型，服務對象是那些希望獲得當前最優秀模型、並願意為此付費的客戶。開放權重模型面向的並非同一市場——在那裡，財務成本或數據敏感性的考量權重更大。對許多美國用戶而言，前沿模型負責完成最複雜的任務，而底層則運行著一種更便宜、也更容易進行定製修改的模型。無論哪種情況，前沿模型開發企業都能夠獲得收益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The only question is whose model is underneath. It should be an American one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">唯一的問題是：那個底層模型來自哪裡。答案應該是美國。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jason Hsu是哈德遜研究所的高級研究員。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260724/china-ai-open-weight-us/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
