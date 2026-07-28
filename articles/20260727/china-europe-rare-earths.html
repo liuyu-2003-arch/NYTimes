@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國再揮稀土大棒 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國再揮稀土大棒</h1>
+    <h2 class="en-headline">China Wields Its Rare-Earths Leverage Over Europe With Export Controls</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-07-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國對德國最大的國防承包商萊茵金屬公司徵收了關稅，這是中國針對歐洲對被指協助俄羅斯對烏戰爭的中國企業所採取的措施進行報復的一部分。" height="700" src="https://static01.nyt.com/images/2026/07/24/multimedia/24Biz-China-Rare-vmfb/24Biz-China-Rare-vmfb-master1050.jpg" width="1050"/><figcaption><span>中國對德國最大的國防承包商萊茵金屬公司徵收了關稅，這是中國針對歐洲對被指協助俄羅斯對烏戰爭的中國企業所採取的措施進行報復的一部分。</span> <cite>Georg Hochmuth/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, China blacklisted two American companies crucial to U.S. efforts to create a supply chain for making powerful rare earth magnets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上月，中國將兩家對美國建立強力稀土磁體供應鏈至關重要的美國公司列入黑名單。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Friday, Beijing took similar action against even more companies in Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週五，北京對歐洲更多公司採取了類似行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Ministry of Commerce announced that it had banned any further shipment to 14 companies in the European Union of “dual-use” materials or products — items that China describes as potentially having both military and civilian applications. As a result, the companies may struggle to buy many of the critical minerals they need to make products like rare-earth magnets and semiconductors, which are essential for cars, offshore wind turbines, robots, drones and other advanced manufacturing applications.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部宣布，已禁止向14家歐盟公司進一步運送「兩用」材料或產品——中國將這些物品描述為具有潛在的軍事和民用雙重用途。受此影響，這些公司可能難以採購製造稀土磁體和半導體等產品所需的許多關鍵礦物，而這些產品對於汽車、海上風力渦輪機、機器人、無人機和其他先進制造應用來說是必不可少的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past 16 months, China has used its dominance over the mining and processing of rare earths as leverage in economic disputes with trading partners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去的16個月裡，中國利用其在稀土開採和加工方面的主導地位作為與貿易夥伴在經濟爭端中的籌碼。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKj_scyY9JUDFYclRAgdWfgFeA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a statement on Friday, the Commerce Ministry noted that it had acted one day after the European Union imposed sanctions on 14 companies in mainland China and Hong Kong in connection with Russia’s war effort in Ukraine. The European Union said these companies, along with 24 Russian companies and 10 firms elsewhere, were “entities that are part of or support Russia’s military-industrial complex or enable the circumvention of E.U. sanctions.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週五的聲明中，中國商務部指出，採取此項行動的前一日，歐盟剛剛對中國大陸和香港的14家公司實施了與俄羅斯在烏克蘭戰爭相關的制裁。歐盟表示，這些公司連同24家俄羅斯公司和10家其他地區的企業都是「屬於或支持俄羅斯軍工複合體，或為規避歐盟制裁提供便利的實體」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the European companies targeted by China play a crucial role in turning rare-earth metals and other critical minerals, like antimony and tungsten, into alloys and specialty chemicals that manufacturers need.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多被中國列入目標名單的歐洲公司在將稀土金屬和銻、鎢等關鍵礦物轉化為製造商所需的合金和特種化學品方面發揮著至關重要的作用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Also on China’s list was Germany’s largest defense contractor, Rheinmetall, which has been central to Germany’s effort to rearm after Russia’s full-scale invasion of Ukraine in 2022. Military hardware uses a lot of superhard tungsten and some rare earths.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的名單上還包括德國最大的國防承包商萊茵金屬公司，2022年俄羅斯全面入侵烏克蘭後，該公司對德國尋求重新武裝的努力起到了核心作用。軍事設備需使用大量的超硬鎢和部分稀土。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Critical minerals have received growing attention in the West, especially since China imposed export restrictions in late 2024 on four critical but obscure minerals: tungsten, antimony, gallium and germanium. China then put export restrictions in April last year on seven kinds of rare-earth metals that are crucial to a very wide range of manufacturing, and has announced plans to impose restrictions in November on five more kinds of rare-earth metals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關鍵礦產在西方受到的關注日益增加，尤其是自中國在2024年底對鎢、銻、鎵和鍺這四種關鍵但鮮為人知的礦物實施出口限制以來。中國又在去年4月對廣泛製造業至關重要的七種稀土金屬實施了出口限制，並宣布計劃在11月對另外五種稀土金屬實施限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration and the European Union are each trying to build mines for critical minerals and construct refineries that can turn ore into pure mineral powders and eventually into strong metal alloys. The production process is complex and can be dirty: Converting the powders into metals involves sometimes toxic chemicals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府和歐盟都在努力建設關鍵礦物礦山，並建造能夠將礦石轉化為純礦物粉末、最終轉化為堅固金屬合金的精鍊廠。生產過程很複雜，而且可能產生污染：將粉末轉化為金屬有時涉及有毒化學物質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Almost all of the world’s capacity for rare-earth-metal conversion and alloy making is in China. Many of the European companies targeted by China on Friday are small and medium-size enterprises that hold what little expertise remains outside China for the advanced processing of critical minerals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球幾乎所有的稀土金屬轉化和合金製造產能都在中國。週五被中國針對的許多歐洲公司都是中小型企業，它們掌握著中國以外僅存的關鍵礦物高級加工專業知識。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIavssyY9JUDFcEiRAgdrjwqQQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the companies on China’s list is Germany’s Sindlhauser Materials. Sindlhauser’s website says it makes yttrium alloys with zircon. Yttrium and samarium have been the two kinds of rare earths in shortest supply outside China after Beijing imposed export controls, with prices rising as much as a hundredfold.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國的辛德豪瑟材料公司是被列在中國名單上的公司之一。該公司網站顯示，它能製造含鋯的釔合金。在北京實施出口管制後，釔和釤成為中國以外供應最短缺的兩種稀土，價格最高曾上漲百倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yttrium alloys with zircon are used in making advanced semiconductors. Makers of semiconductor manufacturing equipment have been complaining for months about acute shortages of yttrium compounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">含鋯的釔合金被用於製造先進半導體。幾個月來，半導體製造設備的製造商一直在抱怨釔化合物的嚴重短缺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sindlhauser declined to comment on China’s action.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">辛德豪瑟拒絕就中國的行動置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another company restricted by China was one of Europe’s premier manufacturers of custom-designed electric motors with powerful rare-earth magnets inside, Italy’s Lafert Group. Lafert’s motors power many of the robots and other industrial automation in Europe’s factories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一家受中國限制的公司是歐洲首屈一指的定製電機製造商——義大利的拉法特集團，其產品內部裝有強力稀土磁體。拉法特的電機為歐洲工廠中的許多機器人和其他工業自動化設備提供動力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has been encouraging multinationals to move more of their supply chains into China, including buying electric motors from Chinese companies. While Beijing has severely restricted exports of rare earths and rare-earth magnets, it has allowed unrestricted exports of fully assembled electric motors with the rare-earth magnets already inside.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京一直鼓勵跨國公司將其更多供應鏈轉移到中國，包括向中國公司購買電機。雖然北京嚴格限制了稀土和稀土磁體的出口，但卻允許無限制地出口內部已裝有稀土磁體的完整組裝電機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rheinmetall and Lafert did not immediately respond to requests for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">萊茵金屬和拉法特沒有立即回應置評請求。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLnTssyY9JUDFWyF7gEd28wiHA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European Union Chamber of Commerce in China has previously criticized the very broad dual-use designations on many critical minerals like those that China cited to restrict sales to the 14 European companies on Friday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國歐盟商會此前曾批評，許多關鍵礦產的「兩用」認定範圍過於寬泛，例如中國上週五援引的、用於限制向14家歐洲公司銷售的那些礦產。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260727/china-europe-rare-earths/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

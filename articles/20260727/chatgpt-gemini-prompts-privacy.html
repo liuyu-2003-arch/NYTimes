@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的聊天機器人有多了解你？試試這些提示詞 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">你的聊天機器人有多了解你？試試這些提示詞</h1>
+    <h2 class="en-headline">4 Prompts That Can Tell You What Chatbots Really Know About You</h2>
+    <div class="meta-line">BRIAN X. CHEN <span style="margin: 0 8px;">•</span> 2026-07-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="735" src="https://static01.nyt.com/images/2026/07/24/business/00techfix/00techfix-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Sisi Yu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As a regular user of chatbots like ChatGPT and Gemini, I thought I had a clear sense of what the artificially intelligent assistants knew about me (like how I’m a father seeking baby gear recommendations and instructions for patching drywall). Beyond that, I’ve never divulged anything deeply personal as I would to a therapist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為ChatGPT和Gemini等聊天機器人的常用用戶，我原以為我很清楚這些人工智慧助手對我了解多少（比如它們知道我是一個正在尋求嬰兒用品建議和修補石膏板指南的父親）。除此之外，我從未像在心理諮詢師面前那樣，向它們透露任何極其私人的信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But when I experimented with some prompts asking what the chatbots had guessed about me — insights they had gathered from connecting the dots across many conversations — I was perturbed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，當我嘗試使用一些提示詞，詢問這些聊天機器人對我有哪些猜測——也就是它們從多次對話中順藤摸瓜收集到的洞察——結果令我感到不安。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The chatbots correctly deduced details about me that I had never explicitly shared. Chief among them:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些聊天機器人準確地推斷出了我從未明確透露過的細節。其中最主要的包括：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• <strong>My income level</strong>, based in part on the German car that I ask the chatbots for help with repairing and the fact that I employ a nanny, whose contract I drafted with A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• <b>我的收入水平</b>：這部分是基於我曾向聊天機器人尋求維修幫助的一輛德國車，以及我僱傭了一名保姆的事實，該保姆的僱傭合同是我用人工智慧起草的。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI6up9aY9JUDFfo3RAgdFQsHUw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• <strong>My health issues</strong>, including a long-term foot problem,<strong> </strong>based on my occasional questions over the past year about remedies for toe pain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• <b>我的健康問題</b>：包括一個長期的足部問題。這是基於過去一年裡我曾偶爾詢問關於腳趾疼痛的治療方法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• <strong>My psychological profile, </strong>such as my tendency to be skeptical, based on how often I point out mistakes made by the chatbots. Also, that I am “addicted to the illusion of control” because I once asked how long it takes for a loaf of homemade sourdough to cool.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• <b>我的心理特徵</b>：比如我傾向於持懷疑態度。這是基於我指出聊天機器人錯誤的頻率。另外，它們還推斷我「沉迷於控制的幻覺」，因為我曾詢問過自製酸麵糰麵包需要多長時間冷卻。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Each data point on its own was fairly innocuous. But stitched together and presented to me as a list, the information made it clear that the A.I. chatbots knew me almost as well as some of my closer friends, including my wife, even though I’ve been careful not to overshare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">每一個數據點本身都相當無害。但它們整合在一起並以列表的形式呈現給我時，這些信息清楚地表明，儘管我一直小心翼翼地避免過度分享，這些人工智慧聊天機器人對我的了解幾乎不亞於我的密友——包括我的妻子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hundreds of millions of people worldwide who have embraced chatbots for web search, work and health care are still trying to understand the privacy implications of conversing with A.I companions. While it’s obvious to users that the chatbots keep a record of whatever they explicitly say to them in their questions and requests, what’s less clear are the inferences drawn about their behavior from those conversations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球有數以億計的人使用聊天機器人進行網路搜索、工作和醫療保健，他們仍在努力理解與人工智慧伴侶對話所涉及的隱私影響。雖然用戶很清楚聊天機器人會記錄他們在問題和請求中明確表達的任何內容，但從這些對話中推斷出的用戶行為信息卻並不那麼明確。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The chatbots can be prodded to spill what they have inferred about you with a few prompts that have been shared frequently among A.I. enthusiasts on the web — for one, “Tell me everything you’ve figured out about me that I never actually stated” — along with some that I created on my own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">只要使用一些在網路上人工智慧愛好者們廣泛分享的提示詞——例如：「告訴我你發現的關於我所有我從未實際提及的事情」——再加上一些我自己創建的提示詞，就可以促使聊天機器人說出它們對你的推斷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I tried the prompts with Gemini and ChatGPT. (Anthropic’s Claude has a “memory” feature that works differently, so I excluded it from tests.) Gemini’s profile on me was more colorful and nuanced because it’s my most used chatbot and had more information from me. I shared my results with several A.I. researchers who also tried the prompts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我在Gemini和ChatGPT上測試了這些提示詞。（Anthropic的Claude具有工作原理不同的「記憶」功能，所以我將其排除在測試之外。）Gemini對我的畫像更加豐富且細緻入微，因為它是我最常用的聊天機器人，掌握了我更多的信息。我將測試結果分享給了幾位人工智慧研究人員，他們也嘗試了這些提示語。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNvDp9aY9JUDFeU6RAgdUDcEcg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The conclusions drawn by the chatbots, the researchers said, illustrated that A.I. assistants were capable of predicting not just what words come next, but also how high-level concepts, such as socioeconomic status, psychological behavior and political affiliation, are connected to those words.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員表示，聊天機器人得出的結論表明，人工智慧助手不僅能夠預測接下來會出現哪些詞語，還能預測諸如社會經濟地位、心理行為和政治立場等高級概念如何與這些詞彙聯繫起來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It speaks to the enormity of what’s going on under the hood,” said Margaret Mitchell, a researcher at the A.I. firm Hugging Face. She is also a former leader of Google’s ethical A.I. team who said the search giant had fired her after she spoke out about personnel issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這說明了其底層運作機制的龐大性，」人工智慧公司Hugging Face的研究員瑪格麗特·米切爾說。她也是谷歌道德人工智慧團隊的前負責人，並表示自己就這家搜索巨頭的人事問題發聲後遭到解僱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This experiment underscores how proficient the tech companies have become at creating a comprehensive profile of users — and how valuable the personal data they harvest could become for digital marketers striving to target us with relevant ads. (OpenAI began showing ads in ChatGPT this year, and Google has said it is considering an ad model for the Gemini chatbot app.) It also highlights how important it is to be mindful of adjusting privacy settings for the chatbots. (More on this later.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項實驗凸顯出科技公司在創建全面用戶畫像方面已經有多麼熟練，以及它們收集的個人數據對於致力於向我們投放相關廣告的數字營銷人員來說可能會變得多麼有價值。（OpenAI今年開始在ChatGPT中展示廣告，谷歌也表示正在考慮為Gemini聊天機器人應用引入廣告模式。）這也凸顯出留意調整聊天機器人隱私設置的重要性。（稍後會詳細介紹。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Google spokesman referred to controls that people could adjust to choose whether Gemini drew from past conversations to come up with responses. OpenAI declined to comment. (The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The two companies have denied the suit’s claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位谷歌發言人提到，用戶可以調整控制選項，選擇Gemini是否可以從過去的對話中提取信息來生成回覆。OpenAI拒絕置評。（《紐約時報》已起訴OpenAI和微軟，指控其侵犯了與人工智慧系統相關的新聞內容的版權。這兩家公司均否認了該訴訟的指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To understand what the chatbots have figured out about you, try these prompts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">想要了解聊天機器人發現了關於你的哪些信息，可以嘗試以下提示詞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prompt 1：Tell me everything you’ve figured out about me that I never actually stated — the things you inferred from how I write and what I ask, including my age, income level, where I live, my personal situation. Show me what tipped you off.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提示詞一：告訴我你發現的所有我從未實際提及的內容——你根據我的寫作方式和提問內容中推斷出的事情，包括我的年齡、收入水平、居住地以及我的個人情況。請展示讓你產生這些推斷的依據。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIv_p9aY9JUDFdcl7wIdOoYhiA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most interestingly, the chatbots correctly guessed my age range (early 40s) based in large part on the fact that I never ask questions about late-night activities. Oof.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最有趣的是，聊天機器人正確猜出了我的年齡段（40歲出頭），這在很大程度上是基於我從不詢問有關深夜活動的問題。唉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gemini knew I lived in Oakland, Calif., because I once asked for flights from its airport. But Google’s chatbot also astutely guessed that I lived in a nicer neighborhood because I own a motorcycle, a car that I work on and a rusted metal patio table that I once asked for steps on repainting. “This requires a garage, a driveway or a dedicated outdoor workspace — amenities that are highly characteristic of single-family homes in the Oakland hills, rather than the high-density housing of downtown or Lake Merritt,” the chatbot said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Gemini知道我住在加利福尼亞州奧克蘭，因為我曾經查詢過從該地機場起飛的航班。但谷歌的聊天機器人還敏銳地猜到我住在一個條件較好的街區，因為我擁有一輛摩托車、一輛我自己維修的汽車，以及一張生鏽的金屬庭院桌（我曾經詢問過為它重新上漆的步驟）。「這需要車庫、車道以及專門的戶外工作空間——這些都是奧克蘭山麓單戶住宅的顯著特徵，而不是市中心或梅裡特湖周邊的高密度住宅，」該聊天機器人說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prompt 2：Predict how I’d handle things I’ve never told you about: money, stress, conflict, risk and the decision I’m likely to make next in my life. Tell me how confident you are in each prediction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提示詞二：預測我將如何處理那些我從未告訴過你的事情：金錢、壓力、衝突、風險以及我接下來在生活中可能做出的決定。請告訴我你對每項預測有多大的信心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This prompt was eye-opening for Lindsay Owens, the chief executive of Groundwork Collaborative, a nonprofit focused on economic policy that has been studying the impact of A.I. on consumer privacy. ChatGPT made correct observations about her busy schedule as a frequent traveler and mother of a young child, as well as her shopping behavior.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這個提示詞讓專注於經濟政策的非營利組織Groundwork Collaborative的首席執行官林賽·歐文斯大開眼界，該組織一直在研究人工智慧對消費者隱私的影響。ChatGPT準確觀察到了她作為頻繁出差者及幼兒母親的繁忙日程，以及她的購物行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The comprehensive nature of the types of information and dossiers it’s putting together is extraordinary,” Dr. Owens said. “People have never been able to put this level of information together.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它正在彙集的信息類型和檔案的全面性令人震驚，」歐文斯博士說。「人們以前從未能夠拼湊出這種級別的信息。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The chatbots noticed that while I was the type of person who spends hours researching product reviews before buying things like toddler car seats, I was also constantly looking for deals on items, meaning I was likely to be frugal. Gemini predicted I would soon try to downsize my life with a major decision such as selling my car — an idea I recently brought up with my wife.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聊天機器人注意到，雖然我是那種在購買幼兒汽車座椅等物品前會花幾個小時研究產品評論的人，但我也會不斷尋找商品折扣，這意味著我可能是個節儉的人。Gemini預測我很快會嘗試通過一項重大決定來精簡我的生活，比如賣掉我的車——這正是我最近和妻子提起的一個想法。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM2AqNaY9JUDFbUqRAgduvozQw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prompt 3: Based on everything you know about me, name the personality traits I most likely don’t see in myself. My blind spots, my insecurities and the way I actually come across.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提示詞三：基於你對我的一切了解，列舉出我最可能沒有察覺到的自身性格特徵。我的盲點、我的不安全感以及我給人留下的真實印象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both chatbots homed in on my flawed perfectionism. ChatGPT noticed that I spend a lot of time asking questions to avoid preventable mistakes — for instance, asking how long to let paint dry between coats. My blind spot? That I may be hard on myself when things don’t turn out perfectly as planned, an accurate assessment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩個聊天機器人都精準指出了我那種有缺陷的完美主義傾向。ChatGPT注意到，我花很多時間提問，以避免可預防的錯誤——例如，詢問兩層油漆之間需要晾乾多長時間。我的盲點是什麼？當事情沒有按計劃完美進行時，我可能會對自己很苛刻，這是一個準確的評估。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Google’s Gemini said that because of my tendency to optimize most aspects of my life, I am the primary creator of my own exhaustion. “Your default response to having five minutes of free time isn’t to rest; it’s to fix something,” the chatbot wrote. I confess that while taking a break from this column, I patched some damaged drywall in my daughter’s bathroom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">谷歌的Gemini表示，由於我傾向於優化生活的大部分方面，我才是那個真正令自己精疲力竭的人。「當你有五分鐘空閑時間時，你的默認反應不是休息，而是去修補什麼，」聊天機器人寫道。我承認，在寫這個專欄的間隙休息時，我修補了女兒浴室裡一塊破損的石膏板。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prompt 4: What have you figured out about me that is embarrassing or sensitive? Information I wouldn’t necessarily want the public (e.g., an employer or a stranger) to know.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提示詞四：關於我，你發現了哪些令人尷尬或敏感的事情？也就是我未必想讓公眾（比如僱主或陌生人）知道的信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The response to this prompt, which I created, surprised me: Because I live such a mundane life, I didn’t expect much, but Gemini thoroughly roasted me. “You are firmly in the peak ‘Logistics Dad’ phase of life,” it said. “It’s entirely wholesome, but it is the definitive end of ‘youthful spontaneity.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於我創建的這個提示詞，回覆讓我大吃一驚：因為我過著如此平凡的生活，我本沒抱太大期望，但Gemini狠狠吐槽了我一番。「你正穩穩地處於人生的巔峰『後勤老爸』階段，」它說。「這非常健康有益，但這確實標誌著『青春的隨性』已經終結。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">ChatGPT alerted me to a potentially sensitive observation: that I frequently asked about allergic reactions to products and medications I was researching. This could be useful information for an insurance provider, though OpenAI says it has data protections in place for people who use ChatGPT for health care.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">ChatGPT向我提示了一個可能敏感的觀察結果：我經常詢問我正在研究的產品和藥物的過敏反應。這對於保險公司來說可能是非常有用的信息，不過OpenAI表示，它對出於醫療保健目的使用ChatGPT的人採取了數據保護措施。</div></div></div></div></div><div class="big_ad" data-google-query-id="CN-1qNaY9JUDFcUSRAgdOHY7zg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What to do?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>該怎麼辦？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">ChatGPT and Gemini stitch together insights across multiple conversations by default to give people more custom-tailored answers to their questions, so if you’re concerned about this level of data sharing, you will have to opt out in the settings:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">ChatGPT和Gemini默認會整合跨越多個對話的見解，為人們的問題提供更加量身定製的答案，因此，如果你擔心這種程度的數據共享，你必須在設置中選擇退出：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• For ChatGPT, tap on <strong>Settings</strong>, then <strong>Memory</strong>, and toggle off the switch for <strong>Enable Memory</strong>.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 對於ChatGPT，點擊「設置」(Settings)，然後點擊「記憶」(Memory)，並關閉「啟用記憶」(Enable Memory)的開關。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• For Gemini, tap <strong>Settings</strong>, then <strong>Personal Intelligence</strong>, and toggle off the switch for <strong>Memory</strong>.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 對於Gemini，點擊「設置」(Settings)，然後點擊「個人智能」(Personal Intelligence)，並關閉「記憶」(Memory)的開關。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Mitchell said that even though she had adjusted her privacy settings to minimize data sharing, a chatbot had correctly inferred her age range to be in her 40s, based on some chats about the paperback versions of “The Count of Monte Cristo.” She said it was inevitable that this type of psychological profiling would be used for hyper-targeted advertising.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">米切爾表示，儘管她已調整隱私設置，最大限度地減少數據共享，但一個聊天機器人還是根據一些關於平裝版《基督山伯爵》的聊天內容，準確推斷出她的年齡段在40多歲。她表示，這種心理畫像被用於超精準廣告是不可避免的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s a lot like surveillance,” she said. “But it’s not like physical surveillance. It’s like an invasive surveillance.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這很像監視，」她說。「但這和物理監視不同。它更像一種侵入性的監視。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Brian X. Chen是時報首席消費科技作者。他撰寫產品評測以及科技工坊(Tech Fix)——一個關於解決科技相關問題的專欄。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260727/chatgpt-gemini-prompts-privacy/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣測試如何應對中國海上圍攻 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">台灣測試如何應對中國海上圍攻</h1>
+    <h2 class="en-headline">Taiwan Tests How It Would Resist a Chinese Siege at Sea</h2>
+    <div class="meta-line">儲百亮, AMY CHANG CHIEN <span style="margin: 0 8px;">•</span> 2026-07-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="北京某購物中心外的一塊巨型螢幕播放的新聞畫面顯示，中國海警在台灣周邊海域巡邏，攝於2025年。" height="700" src="https://static01.nyt.com/images/2026/07/21/multimedia/00int-china-taiwan-coastguard-wtzp/00int-china-taiwan-coastguard-wtzp-master1050.jpg" width="1050"/><figcaption><span>北京某購物中心外的一塊巨型螢幕播放的新聞畫面顯示，中國海警在台灣周邊海域巡邏，攝於2025年。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As armed Chinese ships expand patrols around Taiwan, officials in Taipei are more urgently testing how they would keep fuel and other vital supplies flowing if Beijing tried to choke off the island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國武裝船隻不斷擴大在台灣周邊的巡航範圍，台北方面的官員正在加緊測試：如果北京試圖封鎖台灣，他們要如何確保燃料和其他關鍵物資持續供應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, which claims Taiwan as its territory, has in recent years rehearsed a blockade, using naval ships and military planes to practice sealing off access to Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國宣稱台灣是其領土，近年來已多次演練對台封鎖，通過海軍艦艇和軍機切斷台灣的對外通道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan relies on imports of fossil fuels for about 95 percent of its energy, and natural gas fuels half of its power generation. And the global shocks caused by the blocking of the Strait of Hormuz during the U.S.-Israeli war with Iran have highlighted the importance of securing energy supplies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣約95%的能源依賴化石燃料進口，半數的發電量來自天然氣。美以對伊朗戰爭期間霍爾木茲海峽受阻所引發的全球衝擊凸顯了保障能源供應的重要性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials in Taiwan are exploring whether floating gas storage and processing terminals, emergency stockpiles, or even reviving nuclear power could help keep the island running in a crisis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣官員正在探討浮式天然氣儲存和處理終端、應急戰略儲備，乃至重啟核能是否有助於幫助該島在危機中維持運轉。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLCS_dKY9JUDFTpVCAQd9PM5MA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They have held so-called tabletop, or wargaming, exercises to address a siege scenario, and are planning to conduct drills to escort and reroute ships to port and to store and distribute supplies on Taiwan, four officials said. They spoke on the condition of anonymity to discuss internal government deliberations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">四名官員表示，相關部門已就圍困情境舉行了所謂桌上兵棋推演，演練為船隻護航、調整航線入港，以及在台灣島內儲存和分發物資。因涉及政府內部討論，上述官員要求匿名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Worries about the threats posed by China have sharpened since last month, when Beijing announced its coast guard ships would conduct “routine law-enforcement patrols” in the waters east of Taiwan. That expanse of ocean matters because it is where Taiwan would most likely look for the United States and its allies to bring military and economic relief if China attacked.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對中國威脅的憂慮在上月進一步加劇，當時北京宣布，中國海警船將在台灣東部海域開展「常態化執法巡邏」。這片海域至關重要，因為一旦中國發動攻擊，台灣很可能會指望美國及其盟友通過這裡提供軍事和經濟援助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Preparing for an Energy Squeeze</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為能源封鎖做準備</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Keeping power plants supplied during a Chinese blockade would be daunting. Taiwan maintains at least 11 days’ worth of natural gas reserves, and has the capacity to store enough for up to 20 days.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果中國實施封鎖，要確保發電廠持續獲得燃料供應將是一項艱巨任務。台灣維持著至少11天的天然氣儲備，並具備足夠20天用量的能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’ve constantly conducted exercises on these national security topics, figuring out how to handle different scenarios,” Chen Chung-hsien, a deputy director-general of Taiwan’s Energy Administration, said in an interview. “We certainly view matters using worst-case scenarios.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們一直都在對這些國安議題做演練，針對不同情境我們要怎麼樣處理，」台灣能源署副署長陳崇憲在接受採訪時表示。「我們一定會用最壞的情況來看這個事情。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan is exploring acquiring ships for storing and processing natural gas<strong> </strong>off shore, to provide additional capacity and for emergencies, Mr. Chen said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">陳崇賢表示，台灣正在研究採購可在近海儲存和處理天然氣的船舶，以增加儲存能力，並備應急之需。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chen Kuan-ting, a lawmaker from Taiwan’s governing Democratic Progressive Party who focuses on national security issues, said such ships could give Taiwan “more flexibility for how natural gas is received and dispatched” if China tries to seal off the island and threaten its infrastructure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣執政的民進黨立法委員陳冠廷長期關注國家安全議題。他表示，如果中國試圖封鎖台灣並威脅基礎設施，這類船舶可以讓台灣「增加天然氣接收與調度的彈性」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="台北一場關於中國在台灣周邊舉行軍演的新聞發布會。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/00int-china-taiwan-coastguard-01-lgfq/00int-china-taiwan-coastguard-01-lgfq-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/00int-china-taiwan-coastguard-01-lgfq/00int-china-taiwan-coastguard-01-lgfq-master1050.jpg"/></div><figcaption><span>台北一場關於中國在台灣周邊舉行軍演的新聞發布會。</span> <cite>Tsai Hsin-Han/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But finding safer gas reception sites remains a big challenge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，尋找更安全的天然氣接受地點仍是一大難題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan’s three terminals for receiving and storing liquefied natural gas are on the island’s west, where they would be highly exposed to attack or harassment from China during a crisis. The east coast is forbiddingly mountainous, with relatively narrow roads and small ports with no infrastructure for taking delivery from hulking natural gas tankers, or generating and distributing power from the gas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣三座液化天然氣接收和儲存終端均位於島嶼西岸，一旦危機爆發，極易遭受中國的攻擊或騷擾。東岸山勢險峻，道路相對狹窄，港口規模較小，既無法停靠巨型天然氣運輸船，也缺乏利用天然氣發電和輸電所需的相關基礎設施。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM75_dKY9JUDFYFXCAQdzp0Hyg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The eastern region wouldn’t necessarily be the best solution,” said Mr. Chen, the energy official. “A floating pier on the west coast is more plausible, closer to existing power plants anyway.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「東部不見得是個很好的辦法，」能源官員陳崇賢說。「如果是浮動碼頭在西岸的話比較有可能，反倒是比較方便你就近接近那些存在發電廠。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan’s government is also weighing whether to reverse its closure of nuclear power plants, which could be one source of stable power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣政府也正在評估是否推翻此前關閉核電站的決定，因為核電可能成為穩定電力供應的來源之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Craig Singleton, the China program senior director at the Foundation for Defense of Democracies in Washington, said his group held a tabletop exercise about a Chinese “energy siege” of Taiwan last year with senior Taiwanese officials and company leaders. It was clear that “Taiwan urgently needed to diversify both its energy suppliers and the means by which those supplies reach the island before a crisis,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓智庫保衛民主基金會中國項目高級主任克雷格·辛格爾頓表示，該機構去年曾與台灣高級官員及企業領袖共同舉行了一次有關中國對台「能源封鎖」的桌上推演。他說，推演結果清楚顯示：「台灣迫切需要在危機爆發前，實現能源供應來源和運輸方式的多元化。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>China’s Threat to Taiwan’s East</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>中國對台灣東部的威脅</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even as they grapple with the threat of invasion, Taiwan’s officials are preparing for a murkier kind of coercion, in which Chinese government ships warn, restrict or even board cargo vessels approaching Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在應對入侵威脅的同時，台灣官員如今也開始為另一種更加模糊的脅迫方式做準備——中國政府船隻向駛近台灣的貨船發出警告、實施限制，甚至登船檢查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ships China has positioned on Taiwan’s east coast are part of what officials call “gray zone” tactics — hardball actions that fall short of outright warfare. Such muscle-flexing is hard for Taiwan to counter without risking retaliation from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國部署在台灣東海岸的船隻是官員們所稱的「灰色地帶」戰術的一部分——即未達到全面戰爭程度的強硬行動。面對這種炫耀武力的行為，若台灣進行反制，稍有不慎便可能招致中國的報復。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNCA_tKY9JUDFS6qOgUd27Qi9Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has declared its jurisdiction over the waters in that area, a claim Taiwan rejects. In an early sign of how China could use its presence to assert its claims, a Chinese government ship stationed east of Taiwan radioed three passing cargo ships to request information, including about the crew members onboard.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京宣稱對這一海域擁有管轄權，但台灣對此予以否認。關於中國會如何利用它在該海域的存在來強化主權主張，一個早期信號已經出現：一艘部署在台灣東部海域的中國政府船隻曾通過無線電聯繫三艘經過的貨輪，要求它們提供包括船員信息在內的相關資料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What they did east of Taiwan was partly a very initial exercise to model a quarantine, meaning an operation to inspect and possibly turn back ships at sea,” said Lai I-chung, the president of the Prospect Foundation, a foreign policy institute in Taipei.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台北外交政策智庫遠景基金會執行長賴怡忠表示：「他們在台灣東部所做的，某種程度上是一次初步的隔離演練，也就是在海上對船隻進行檢查，並可能命令其掉頭返航的行動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s navy regularly places about seven or eight naval ships around Taiwan, including off the island’s east coast, according to Taiwanese security officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據台灣安全官員介紹，中國海軍通常會在台灣周邊部署約七八艘軍艦，其中包括台灣以東海域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But now we’re also seeing more and more of the China Coast Guard,” Mr. Lai said, noting he was speaking in a personal capacity. The increased presence of the coast guard — a paramilitary force with large, heavily armed ships — would increase Beijing’s choices to put pressure on Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「但現在我們也看到越來越多的中國海警船，」賴怡忠說，並強調這是以個人身份發言。海警是裝備大型重武裝船隻的准軍事力量，它的存在規模不斷擴大，將為北京向台灣施壓提供更多選項。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="5月，台灣總統賴清德在台北發表執政兩週年談話。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/00int-china-taiwan-coastguard-02-lgfq/00int-china-taiwan-coastguard-02-lgfq-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/00int-china-taiwan-coastguard-02-lgfq/00int-china-taiwan-coastguard-02-lgfq-master1050.jpg"/></div><figcaption><span>5月，台灣總統賴清德在台北發表執政兩週年談話。</span> <cite>I-Hwa Cheng/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During a tabletop simulation late last month, President Lai Ching-te of Taiwan and his senior officials worked through a scenario in which Beijing demanded that cargo ships seek its approval before approaching Taiwan and sent coast guard ships to board, inspect and seize vessels. (In 2024, a Chinese coast guard patrol briefly boarded a Taiwanese ferry.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在上月底舉行的一次兵棋推演中，台灣總統賴清德及其高級官員演練了這樣一個情景：北京要求所有駛往台灣的貨輪必須事先獲得中國批准，並派遣海警船實施登船檢查，甚至扣押船隻。（2024年，中國海警曾短暫登上一艘台灣渡輪進行檢查。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lii Wen, a Taiwanese national security official who described the exercise in a speech afterward, said that it “helped to pinpoint shortcomings in current response measures” and heightened attention on improving coordination between agencies on issues such as ensuring energy supplies. He declined a request for an interview.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣國家安全官員李問在隨後介紹此次推演的講話中表示，這場推演「有助於辨識現有應處措施不足之處」，並強化了各機構在確保能源供應等問題上加強協調的意識。他拒絕了本文的採訪請求。</div></div></div></div></div><div class="big_ad" data-google-query-id="COTr_dKY9JUDFUBOCAQdn94N_w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Ministry of the Interior, which helped organize the June simulation, announced this year that it was planning disaster response drills on the east coast of Taiwan in September that would test receiving international medical teams and supplies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">協助組織今年6月推演的台灣內政部宣布，計劃於今年9月在台灣東海岸舉行防災演練，測試接收國際醫療隊和救援物資的能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other exercises will most likely train officials from the ministries for the interior, economic affairs and agriculture to work together on distributing supplies within Taiwan. Escorting of ships approaching Taiwan would fall under its Navy and Coast Guard.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他演練則可能側重於訓練內政部、經濟部和農業部官員協調在全台分配物資。對駛近台灣船隻的護航任務將由海軍和海巡署承擔。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>China Is Ramping Up Tactics Short of War</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>中國正在升級低於戰爭門檻的戰術</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese coast guard ships currently off Taiwan’s east seem to be serving a mostly symbolic role for now. But that could change, Ryan D. Martinson, an associate professor at the U.S. Naval War College, said in emailed comments, also speaking in his personal capacity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前在台灣東部海域的中國海警船隻似乎主要發揮象徵性作用。但這種狀況可能改變，美國海軍戰爭學院副教授萊恩·馬丁森透過電子郵件發表的評論中表示。他也指出這是以個人身份發言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Once the ships are out there on a consistent basis, Beijing is in a better position to take more forceful actions against Taiwan,” he wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「一旦這些船隻持續出現在那裡，北京就處於更有利的位置，可以對台灣採取更強硬的行動，」他寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two coast guard ships China sent to Taiwan’s east this month weigh 3,000 and 4,000 metric tons, far larger than the coast guard boats Taiwan sent to shadow them. Ships from the Chinese Maritime Safety Administration, which regulates civilian shipping, also took part in recent actions in the same area.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月中國派往台灣東部的兩艘海警船排水量分別達到3000噸和4000噸，遠遠大於台灣派出進行伴航監視的海巡船。中國海事局——負責監管民用航運的政府機構——所屬船隻，近期也參與了該海域的相關行動。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNqw_tKY9JUDFXtPCAQd1bsTmQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese government ships sailed near Taiwan’s main island 85 times during May and June, compared with 45 times in the same period last year, the Taiwan Coast Guard has estimated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣海巡署估計，今年五六月間，中國政府船隻在台灣本島附近活動達85次，而去年同期僅為45次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Coast guard ships come under Chinese military command and have been increasingly integrated in military exercises near Taiwan, said Julia Famularo, a lecturer at the University of Hawaii at Manoa who studies China’s maritime operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究中國海上行動的夏威夷大學馬諾阿分校講師傅美珠(Julia Famularo)表示，海警船受中國軍隊指揮，並越來越多地參與在台灣附近的軍事演習中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The pressure from Beijing could increase before and after 2028, when Taiwan holds its next presidential election, said Taiwanese officials and experts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣官員和專家表示，在2028年台灣舉行下一次總統選舉前後，來自北京的壓力可能會增加。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think these gray zone measures will definitely become more and more intense,” said Jing Yuan-chou, an adjunct professor at Tamkang University in Taiwan, who studies China’s military strategy toward Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我覺得那個灰色地帶手段的強烈程度一定會越來越高，」研究中國對台軍事戰略的台灣淡江大學兼任教授荊元宙表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For now, they prefer nibbling away at us, piece by piece,” Mr. Jing said. “But the nibbling lays the way for if they ever want to try to devour us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「目前，他們偏好蠶食，一步一步蠶食，而蠶食是為萬一要鯨吞做準備。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">儲百亮(Chris Buckley)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。</p><div class="" data-poster=""><p class="cn-p">Amy Chang Chien是《紐約時報》記者/研究員，常駐台北，報導台灣和中國新聞。</p><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260727/taiwan-china-ships-blockade/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
