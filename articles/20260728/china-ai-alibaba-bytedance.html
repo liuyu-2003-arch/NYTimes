@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國AI發展面臨難題 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國AI發展面臨難題</h1>
+    <h2 class="en-headline">Even China’s A.I. Powerhouses Can’t Figure Out How to Profit Off A.I.</h2>
+    <div class="meta-line">MEAGHAN TOBIN <span style="margin: 0 8px;">•</span> 2026-07-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="在上海舉行的世界人工智慧大會期間，參觀者們來到月之暗面展台，該展台展示了Kimi K3模型。" height="700" src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-01-mbct/27Biz-China-AI-Money-01-mbct-master1050.jpg" width="1050"/><figcaption><span>在上海舉行的世界人工智慧大會期間，參觀者們來到月之暗面展台，該展台展示了Kimi K3模型。</span> <cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s leading technology companies have been steadily releasing artificial intelligence models that perform nearly as well as the best systems in the world. But they are all facing the same problem: overcoming the punishing economics behind the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領先的科技公司一直在穩步推出性能幾乎可與全球頂尖系統媲美的人工智慧模型。但它們都面臨著同一個問題：如何克服這項技術背後嚴酷的經濟難題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. companies have tried different approaches to bring in enough money to sustain the enormous expense of building A.I. systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧公司嘗試了不同的方法來獲取足夠的資金，支撐構建人工智慧系統的巨額開支。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Start-ups like DeepSeek and Moonshot AI have raised billions from investors. Alibaba, China’s A.I. heavyweight, has started charging users for access to its best models. ByteDance, the parent company of TikTok and an A.I. powerhouse itself, launched a tiered pricing system, hoping to get people to pay more for using its most advanced models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">深度求索和月之暗面等初創公司已經從投資者那裡籌集了數十億美元。中國的人工智慧巨頭阿里巴巴已開始向使用其最先進模型的用戶收費。TikTok的母公司、本身也是人工智慧巨頭的字節跳動推出了分級定價系統，希望讓人們為使用其最先進的模型支付更多費用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To build state-of-the-art A.I. models, A.I. companies constantly need to buy powerful computer chips — enough to build the models, more to test improvements and still more to ensure they can perform for users all over the world. The companies also need to build or rent space in data centers that house all this computing power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了構建最先進的人工智慧模型，人工智慧公司需要不斷購買強大的計算機晶片——一部分用來構建模型，更多的用來測試改進，還有更多是用來確保它們能為全球用戶提供服務。這些公司還需要建設或租賃數據中心的空間來容納所有這些計算能力。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMOktIzb9pUDFcEiRAgdhboDKg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. companies are not the only ones confronting these tough economics. Their giant rivals in Silicon Valley, from OpenAI and Anthropic to Google, are also investing more in A.I. than they are earning from it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">面臨這些嚴峻經濟挑戰的不僅僅是中國人工智慧公司。從OpenAI、Anthropic到谷歌，矽谷的強大競爭對手在人工智慧領域的投資也遠遠超過了收益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Chinese companies, the challenge is compounded by a central paradox of the country’s approach to A.I. development. Most of China’s leading A.I. systems are open source or open weight. That has accelerated their development — the entire industry gains when every company shares its work in public.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於中國公司來說，這一挑戰因中國人工智慧發展方式中的一個核心悖論而加劇。中國大多數領先的人工智慧系統都是開源或開放權重的。這加速了它們的發展——每家公司都公開分享其成果時，整個行業都會從中受益。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="Anthropic正在大力投資人工智慧領域，其投入規模與中國領先的人工智慧企業的大手筆投入不相上下。" data-src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-02-mbct/27Biz-China-AI-Money-02-mbct-master1050.jpg" src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-02-mbct/27Biz-China-AI-Money-02-mbct-master1050.jpg"/></div><figcaption><span>Anthropic正在大力投資人工智慧領域，其投入規模與中國領先的人工智慧企業的大手筆投入不相上下。</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s open-source approach has spawned a crowded field of innovative and intensely competitive start-ups all offering systems at low cost.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的開源方法催生了一個競爭激烈的創新型初創企業擁擠領域，它們都以低成本提供系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So attempts to increase revenue by charging more for access to certain models can scare away customers. Price-conscious Chinese consumers — businesses and individuals alike — are quick to hop across platforms in search of inexpensive A.I. tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，試圖通過提高某些模型的使用費來增加收入的做法可能會嚇跑客戶。無論是企業還是個人，注重價格的中國消費者會迅速在各個平台之間跳轉，尋找更便宜的人工智慧工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While China’s A.I. companies are searching for sustainable business models, spending is high and revenue low, said Richard Lin, a vice president at the Silicon Valley company Datastrato.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷公司Datastrato的副總裁理查德·林（音）表示，儘管中國的人工智慧公司正在尋找可持續的商業模式，但目前的狀況是支出高昂，而收入微薄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In two or three years, we will still be trying to figure out how large models can earn money,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在兩三年內，我們可能還在努力摸索大模型該如何賺錢，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPjYtIzb9pUDFbMeRAgd-Xs1hg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Offering low prices has helped the Chinese firms gain users, including in Silicon Valley, where many companies depend on the more affordable systems. Yet Chinese companies have struggled to translate huge numbers of global users into profits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">提供低價幫助中國公司贏得了用戶，包括在矽谷，那裡有許多公司依賴於這些更實惠的系統。然而，中國公司一直難以將龐大的全球用戶群體轉化為利潤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, the Chinese start-up Z.ai released a model, GLM-5.2, that it said was nearly as powerful as Anthropic’s best. Many software developers and start-ups in Silicon Valley quickly started using it, in part because it was cheaper than the American systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，中國初創公司智譜AI發布了一款名為GLM-5.2的模型，稱其功能幾乎與Anthropic最好的模型一樣強大。矽谷的許多軟體開發者和初創公司迅速開始使用它，部分原因是它比美國的系統更便宜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai’s models improved and became more popular, and the company’s revenue more than doubled last year. But Z.ai lost nearly $700 million.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智譜AI的模型不斷改進並變得更加受歡迎，該公司去年的收入增加了一倍多，但虧損了近7億美元。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國人工智慧初創公司智譜AI憑藉其低成本模型吸引了眾多開發者，但去年仍虧損近7億美元。" data-src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-03-mbct/27Biz-China-AI-Money-03-mbct-master1050.jpg" src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-03-mbct/27Biz-China-AI-Money-03-mbct-master1050.jpg"/></div><figcaption><span>中國人工智慧初創公司智譜AI憑藉其低成本模型吸引了眾多開發者，但去年仍虧損近7億美元。</span> <cite>Raul Ariano/Bloomberg</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When it went public in Hong Kong, Z.ai said it planned to use most of the money to improve its models, largely by acquiring more chips. A few weeks after the stock listing, Z.ai said it was looking for partners to share computing power resources and apologized after users complained about slow service.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在香港上市時，智譜AI表示計劃將大部分資金用於改進其模型，主要是通過購買更多晶片。股票上市幾周後，智譜AI表示正在尋找合作夥伴來共享算力資源，並就用戶投訴服務速度慢致歉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Open models are a powerful distribution strategy, but they are not a complete business model,” said Wei Sun, a principal A.I. analyst at Counterpoint Research in Beijing. “An I.P.O. can finance the next training cycle, but it cannot by itself create sustainable economics.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「開放模型是一種強大的分發策略，但它們不是一個完整的商業模式，」總部位於北京的Counterpoint Research首席人工智慧分析師孫偉（音）說。「首次公開募股可以為下一個訓練週期提供資金，但它本身無法創造可持續的經濟效益。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This month, Moonshot released a model called Kimi K3, which the company said performed better than models from OpenAI and Anthropic did on some tasks. But within two days the company was forced to announce that it needed to stop accepting new users because it couldn’t get enough computer chips to serve them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，月之暗面發布了一款名為Kimi K3的模型，該公司表示它在某些任務上的表現優於OpenAI和Anthropic的模型。但不到兩天，該公司就被迫宣布需要停止接受新用戶，因為它無法獲得足夠的計算機晶片來為他們提供服務。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKGItYzb9pUDFbMeRAgd-Xs1hg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s A.I. industry has faced years of U.S. trade restrictions that confine its ability to buy the world’s most powerful chips. To get around these limitations, many Chinese companies rent remote access to data centers outside China stocked with advanced chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧行業多年來一直面臨美國的貿易限制，這些限制束縛了其購買世界上最強大晶片的能力。為了繞過這些限制，許多中國公司租用位於中國境外、配備先進晶片的數據中心的遠程訪問權限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Chinese A.I. start-ups have far less money to buy computing power than their deep-pocketed American rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但與資金雄厚的美國競爭對手相比，中國人工智慧初創公司用來購買算力的資金要少得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, DeepSeek held one of China’s most anticipated funding rounds, raising money from investors including the internet giant Tencent, the battery maker CATL and the country’s state investment fund for artificial intelligence. DeepSeek raised $7.5 billion. In May, Moonshot raised $2 billion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，深度求索進行了中國最受期待的融資輪之一，從互聯網巨頭騰訊、電池製造商寧德時代以及中國國家人工智慧投資基金等投資者那裡籌集了資金。深度求索籌集了75億美元。今年5月，月之暗面籌集了20億美元。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="深度求索和月之暗面等初創公司已籌集數十億資金，而阿里巴巴最先進的人工智慧模型已經收費。" data-src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-04-mbct/27Biz-China-AI-Money-04-mbct-master1050.jpg" src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-AI-Money-04-mbct/27Biz-China-AI-Money-04-mbct-master1050.jpg"/></div><figcaption><span>深度求索和月之暗面等初創公司已籌集數十億資金，而阿里巴巴最先進的人工智慧模型已經收費。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By comparison, Anthropic raised $65 billion in May alone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比之下，Anthropic僅在5月就籌集了650億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese tech firms have far less capital, but U.S. tech executives and investors worry that China’s open-source push threatens to upend the economics of A.I. production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國科技公司的資本要少得多，但美國科技高管和投資者擔心，中國的開源熱潮可能會顛覆人工智慧生產的經濟模式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. start-ups say years of export controls have pushed them to use chips as efficiently as possible, potentially challenging the idea that has motivated much of global A.I. investment: that making cutting-edge A.I. systems will always require increasing investment in more chips and data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧初創公司表示，多年的出口管制迫使它們盡可能高效地使用晶片，這可能會挑戰推動全球大量人工智慧投資的理念：即製造尖端人工智慧系統將始終需要不斷增加對更多晶片和數據中心的投資。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMSFtYzb9pUDFRc3RAgd0QMBww" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, a debate is raging in the United States that could make it even harder for Chinese A.I. companies to earn money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，美國正圍繞這一問題展開激烈辯論，這可能會讓中國人工智慧公司更難盈利。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Leading Silicon Valley companies including Anthropic and OpenAI have claimed that Chinese firms improperly harvested data from their A.I. systems to accelerate the development of the Chinese models. Some American tech companies and investors want Washington to limit access to Chinese open-source models, saying they could be a threat in the wrong hands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括Anthropic和OpenAI在內的矽谷領先公司聲稱，中國公司從其人工智慧系統中不當採集數據，以加速中國模型的開發。一些美國科技公司和投資者希望華盛頓限制對中國開源模型的訪問，稱如果它們落入別有用心的人手中，可能會成為威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Kevin Xu, the founder of Interconnected Capital, a hedge fund that invests in A.I. technologies, said, “Many Silicon Valley start-ups rely on open-weight models to both customize their product and also not have to pay OpenAI and Anthropic their high prices.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資人工智慧技術的對沖基金Interconnected Capital的創始人凱文·許（音）表示：「許多矽谷初創公司依賴開放權重模型來定製其產品，同時又不必向OpenAI和Anthropic支付高昂的價格。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These American tech companies have been an important source of revenue for many Chinese A.I. firms. If they are cut out of it, they risk losing that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些美國科技公司一直是中國許多人工智慧公司的重要收入來源。如果它們被排斥在外，它們將面臨失去這一收入的風險。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Xinyun Wu自台灣台北對本文有研究貢獻。</p><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260728/china-ai-alibaba-bytedance/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月之暗面公開Kimi K3模型技術細節 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">月之暗面公開Kimi K3模型技術細節</h1>
+    <h2 class="en-headline">Chinese A.I. Start-Up Shows the World What It Has Built</h2>
+    <div class="meta-line">MEAGHAN TOBIN <span style="margin: 0 8px;">•</span> 2026-07-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="本月在上海舉行的世界人工智慧大會上，月之暗面展示了Kimi K3模型。" height="700" src="https://static01.nyt.com/images/2026/07/27/multimedia/27Biz-China-Moonshot-tcgj/27Biz-China-Moonshot-tcgj-master1050.jpg" width="1050"/><figcaption><span>本月在上海舉行的世界人工智慧大會上，月之暗面展示了Kimi K3模型。</span> <cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese start-up Moonshot publicly released the details of its latest artificial intelligence model on Monday, showing the world how it was built. But in a departure for most Chinese A.I. firms, Moonshot indicated that people or companies who want to use it on a large scale will have to secure licenses to use it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國初創企業月之暗面週一公開發布了其最新人工智慧模型的技術細節，向外界展示了該模型的構建過程。但與大多數中國人工智慧企業有所不同，月之暗面表示，希望大規模使用該模型的個人或企業需要獲得相應的商用授權。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The model, called Kimi K3, sent shock waves through Silicon Valley and U.S. technology stocks this month when Moonshot said that it performed some tasks as well as the best models from American rivals, including OpenAI and Anthropic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月早些時候，月之暗面聲稱這款名為Kimi K3的模型在某些任務上的表現可與包括OpenAI和Anthropic在內的美國競爭對手的最佳模型相媲美，這一消息當時在矽谷和美國科技股中引發了震動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Kimi K3 followed the release of other high-performing Chinese A.I. models. Most of these were open source or open weight, which means the company publicly shares the details of how it built the technology, making it easier for anyone to use it. China’s tech industry has embraced open source, which has helped Chinese firms improve their models quickly and won them customers around the world with lower prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Kimi K3發布前，中國推出了多款高性能人工智慧模型。這些模型大多採用開源或開放權重的形式——即公司公開其技術構建細節，使他人更容易使用這些技術。中國科技行業已全面擁抱開源路線，這不僅幫助中國企業快速迭代優化模型，也憑藉更低的價格贏得了全球客戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The model’s release has also inflamed a fierce debate in Beijing, Silicon Valley and Washington about whether governments should take steps to limit access to Chinese open source models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這款模型的發布也在北京、矽谷和華盛頓點燃了一場激烈爭論：政府究竟是否應該採取措施，限制外界對中國開源模型的訪問？</div></div></div></div></div><div class="big_ad" data-google-query-id="CMO50I_b9pUDFVmwOgUdz30uKA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, executives, investors and officials are divided over whether the increasingly widespread use of Chinese models goes beyond being a threat to the profits of American A.I. firms to constituting a threat to U.S. national security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國，企業高管、投資者和政府官員之間存在明顯分歧——中國模型日益廣泛的使用究竟只是威脅到美國人工智慧企業的利潤，還是已經對美國的國家安全構成了威脅？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, the debate centers on how to capitalize on making a technology that is accessible and popular, while finding ways to make money from it. Chinese companies must navigate those forces alongside evolving policies set by a government that has placed A.I. development near the top of its economic priorities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而在中國，爭論的焦點則在於，如何讓一項技術保持開放、易於獲取並廣受歡迎，又能找到從中盈利的方法。中國企業還必須在應對這些現實因素的同時適應政府不斷調整的政策，中國政府已將人工智慧發展列為最重要的經濟戰略之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With its release of programming code and other information on Monday, Moonshot is showing its work in public, which is consistent with China’s open source ethos. But the company is also moving to capitalize on its model’s popularity by saying that large users will need to enter into commercial licensing agreements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">月之暗面週一發布了程序代碼及其他相關信息，公開展示其模型的構建過程，這符合中國推崇開源的發展理念。但該公司也開始利用模型的高人氣實現商業化，宣布大型用戶必須與公司簽訂商業許可協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The model is so large that it could not be downloaded and used on a basic computer. While Kimi K3 is technically open, most people who use it will either get a subscription from Moonshot or get access to the model from another company that has reached a licensing agreement with Moonshot.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該模型體量龐大，無法在普通計算機上下載和運行。儘管Kimi K3在技術層面屬於開放模型，但大多數用戶要麼需要向月之暗面訂閱付費服務，要麼需要通過已與月之暗面簽署授權協議的第三方管道來訪問該模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies have tried different approaches to bring in enough money to sustain the enormous expense of building A.I. systems. Moonshot is notable for being the first to make this commercial requirement so explicit, said Kevin Xu, the founder of Interconnected Capital, a hedge fund that invests in A.I. technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了支撐開發人工智慧系統所需的巨大成本，中國企業一直在嘗試各種商業模式。投資人工智慧技術的對沖基金Interconnected Capital創始人凱文·徐（音）表示，月之暗面值得關注的一點在於，它是第一家如此明確提出商業許可要求的中國人工智慧企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the past, Chinese start-ups have shared technical details at the same time they unveiled a new model. But Moonshot waited nearly two weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以往，中國初創企業通常在發布新模型的同時分享技術細節。但月之暗面這次等待了將近兩週。</div></div></div></div></div><div class="big_ad" data-google-query-id="COvG0I_b9pUDFchLCAQd4lUuKA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The delay signals just how sensitive this technology has become as a geopolitical flashpoint between China and the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一延遲表明，在中美地緣政治競爭不斷加劇的背景下，這項技術如今已變得何等敏感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since Meta announced late last year that it would acquire Manus, an A.I. start-up founded in China, the Chinese government has placed enormous scrutiny on how A.I. systems made in the country are used by people outside it. In April, the Chinese government ordered the transaction be unwound, indicating that it was considering whether A.I. systems made by Chinese companies could be regulated as exports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自Meta去年年底宣布將收購由中國創立的人工智慧初創公司Manus以來，中國政府便開始嚴格審查境外用戶如何使用中國開發的人工智慧系統。今年4月，中國政府要求撤銷這項交易，顯示其正在考慮是否應將中國企業開發的人工智慧系統視為出口產品加以監管。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, Chinese officials are grappling with how to regulate the technology to allow Chinese companies to compete with rivals in Silicon Valley, while keeping the strategic and economic benefits firmly inside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國官員正努力探索如何監管這項技術，既讓中國企業能夠與矽谷競爭對手展開競爭，又確保其戰略和經濟利益牢牢留在中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the same day that Moonshot announced Kimi K3, Xi Jinping, China’s leader, made a speech at the World A.I. Conference in Shanghai that cast China as the global champion of an open approach to the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在月之暗面發布Kimi K3的同一天，中國國家主席習近平在上海世界人工智慧大會上發表講話，將中國塑造成推動人工智慧開放發展路線的全球倡導者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The crux of the debate in China is how do you square these different signals about the strategic benefit of Chinese tech being used around the world,” said Samm Sacks, a senior fellow at the Johns Hopkins School of Advanced International Studies who attended the conference in Shanghai. “Beijing wants champions, but how not to kill the golden goose?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國內部爭論的核心在於，如何調和這些關於中國技術被全球使用的不同信號，」約翰斯·霍普金斯大學高級國際研究學院高級研究員薩姆·薩克斯說，她出席了上海的大會，「北京希望打造業界巨頭，<span>但如何才能不殺雞取卵呢？</span>」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s A.I. industry has faced years of U.S. trade restrictions that limit its ability to buy the computer chips that power A.I. systems. It also has far less money to buy such computer power compared to deep-pocketed American rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧產業多年來一直面臨美國貿易限制，削弱了其購買驅動人工智慧系統的計算機晶片的能力。與財力雄厚的美國競爭對手相比，中國在購買此類計算能力方面的資金也少得多。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKqR0o_b9pUDFZhZCAQdJMQkBA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two days after Moonshot announced Kimi K3, the company was forced to announce that it needed to stop accepting new users because it couldn’t get enough computer chips to serve them. The company is not accepting new subscribers. Moonshot declined to comment on its subscribers on Monday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">月之暗面宣布發布Kimi K3兩天後，該公司就不得不宣布暫停接受新用戶，因為無法獲得足夠的計算機晶片來提供服務。該公司目前不接受新訂閱用戶。月之暗面週一拒絕就用戶情況置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Jeffrey Ding, a professor at George Washington University who studies A.I. competition between the U.S. and China, said that Chinese companies had embraced open source in part as a tool to help them catch up quickly to the best A.I. systems in the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">喬治華盛頓大學研究美中人工智慧競爭的教授傑弗里·丁（音）表示，中國企業擁抱開源，部分原因在於將其視為快速追趕全球最先進人工智慧系統的工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Chinese companies are not doing open source for the sake of open source itself; they are employing it at as a strategy, as a tool of the challenger,” he said. “Eventually the goal is to make money.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「中國企業並不是為了開源而開源；他們把開源當作一種戰略、一種挑戰者工具加以運用。最終目標還是要賺錢。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Xinyun Wu自台灣台北對本文有研究貢獻。</p><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260728/moonshot-kimi-k3-china-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
