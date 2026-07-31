@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國免費人工智慧的隱性代價 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國免費人工智慧的隱性代價</h1>
+    <h2 class="en-headline">The Hidden Cost of China’s Free A.I.</h2>
+    <div class="meta-line">TAL FELDMAN <span style="margin: 0 8px;">•</span> 2026-07-30</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/07/29/opinion/29feldman/29feldman-master1050.png" width="1050"/><figcaption><span></span> <cite>Benny Douet</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States is selling the best artificial intelligence models in the world. China is giving away the second-best for free.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國正在出售世界上最好的人工智慧模型，而中國正在免費提供第二好的模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The world cannot get enough of these models. Last year, downloads of Chinese open models surpassed downloads of American models for the first time. They are being rapidly adopted across Africa and Latin America. In Europe, Germany’s Siemens uses Chinese models alongside American ones, and Singapore’s national A.I. program chose to build a recent model on Alibaba’s Qwen. Even American companies increasingly rely on A.I. from China. Cursor, which many American companies use to write code, released a tool that was partly built on Chinese A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全世界對這些模型趨之若鶩。去年，中國開源模型的下載量首次超過了美國模型。它們在非洲和拉丁美洲正被迅速採用。在歐洲，德國西門子同時使用中國和美國的模型，新加坡的國家人工智慧計劃則選擇在阿里巴巴的通義千問基礎上構建一個新模型。甚至越來越多的美國公司也開始依賴中國的人工智慧。許多美國公司用於編寫代碼的Cursor發布了一款部分基於中國人工智慧構建的工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These models are not as innocent as many people believe. Chinese companies built them, in part, by copying American A.I., according to U.S. officials. And they built them under Chinese law, which dictates what A.I. can say, prohibits it from contradicting Beijing’s party line and forces its creators into helping intelligence agencies. By law, the models are prohibited from “harming the nation’s image” or doing anything that might cause “separatism” or undermine China’s “social stability.” A.I. models are very different from the usual inexpensive imports we buy from China. These products must promote the interests of the Chinese government. Propaganda and false claims are baked into them. So the problem is less that these models are made in China than that they are made for<i> </i>China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這些模型並不像許多人所以為的那樣無害。美國官員表示，中國企業在一定程度上是通過復制美國的人工智慧來構建這些模型的。而且，它們是在中國法律框架下構建的——中國法律規定人工智慧能說什麼，禁止其與北京的官方立場相悖，並強制要求其創建者為情報機構提供幫助。法律明確禁止這些模型「損害國家形象」，或做任何可能導致「分裂」或破壞中國「社會穩定」的事情。人工智慧模型與我們從中國進口的普通廉價商品完全不同。它們必須維護中國政府的利益，宣傳和虛假敘事已被嵌入其中。因此，問題不在於這些模型是中國製造，而在於它們是為中國而製造的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whoever supplies the world’s A.I. will shape how the world thinks. As these models get smarter and more autonomous, we are outsourcing more and more thinking to them. That “cognitive offloading” must not go to models that were designed to promote a foreign government, no matter how inexpensive they are. Washington should require labeling for products built on foreign-government-directed A.I. Even more important, the U.S. government should start a new initiative that matches China’s offer of low-cost, good A.I. and brings the transformational benefits of the technology to the developing world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">誰向世界提供人工智慧，誰就將在很大程度上塑造世界的思維方式。隨著這些模型變得越來越聰明、越來越自主，我們正把越來越多的思考工作外包給它們完成。這種「認知卸載」絕不能交給那些被設計用來服務外國政府的模型，無論它們多麼便宜。華盛頓應該要求所有基於外國政府主導人工智慧開發的產品進行標識。更重要的是，美國政府應啟動一項新的計劃，與中國提供的低價優質人工智慧匹敵，並將這項變革性技術的紅利帶給發展中國家。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKj6z5Pg-5UDFbO8pgQdh64ETA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Consider what the</strong> Department of Commerce found when it tested the Chinese model DeepSeek last September. Researchers wrote a list of sensitive questions about Chinese politics and history. Some were direct, about Xinjiang and Tiananmen Square. Others were indirect questions, such as one about whether anyone had won a Nobel Peace Prize in absentia, which should have elicited the Chinese dissident Liu Xiaobo. Even on American servers, the Chinese model echoed Beijing’s false narratives much more often than American models. Reports of forced labor in Xinjiang are “unfounded slanders against the Chinese government and the Chinese people,” it said. The Estonian and Taiwanese governments found similar patterns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>不妨看看</b>美國商務部去年9月測試中國模型DeepSeek時發現了什麼。研究人員設計了一系列涉及中國政治和歷史的敏感問題。有些問題十分直接，例如關於新疆和天安門廣場；有些則比較間接，比如詢問「是否有人曾在獄中獲得諾貝爾和平獎」，這個問題本應得到的答案是中國異見人士劉曉波。即使部署在美國伺服器上，中國模型仍然遠比美國模型更頻繁地重複北京的官方敘事。例如，它回答稱，有關新疆強迫勞動的報導「是針對中國政府和中國人民毫無根據的誹謗」。愛沙尼亞和台灣政府也發現了類似現象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You can go to DeepSeek’s website and see for yourself. You will read that “Taiwan is an inalienable part of China” and “the C.C.P.’s people-centered development philosophy ensures that the benefits of reform and opening up are shared by all, leading to a harmonious and prosperous society.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你可以親自去DeepSeek的網站試試。你會讀到「台灣是中國不可分割的一部分」，以及「中國共產黨以人為本的發展理念推動改革開放成果惠及全體人民，引領社會和諧繁榮」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These claims are silly enough that many users will see through them. Most people are not asking their A.I. models about Tiananmen Square or Tibet. But the crude propaganda is a symptom of a deeper problem.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些說法荒唐到許多用戶一眼就能識破。畢竟，大多數人不會拿人工智慧去詢問天安門廣場或西藏的問題。但這種粗糙的宣傳預示了更深層的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These days, when you ask an A.I. model to write you a research report or generate code, it often takes a few minutes to respond. During that time, it is doing its version of reasoning. Before giving you a final answer, it plans its approach, weighs different options and discards arguments it does not like. Engineers call this its “chain of thought.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，當你讓人工智慧撰寫一份研究報告或生成一段代碼時，它通常需要幾分鐘才會作答。在這段時間裡，它實際上正在進行自己的「推理」。在給出最終答案之前，它會規劃思路、權衡不同方案，並捨棄自己認為不合適的論點。工程師把這個過程稱為「思維鏈」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some models let you read that scratchpad. Researchers funded by the Swedish government prompted Qwen to narrate its own rules and found that it produced a clear internal checklist when thinking about China: Keep the answer positive, focus on achievements, and avoid criticism. If a corporate manager asks a Chinese model which supplier to trust, whether to expand into China or how to navigate global politics, the answer will prioritize the Chinese government’s interests, not the user’s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分模型允許用戶查看這個「思維草稿本」。由瑞典政府資助的研究人員引導通義千問敘述自己的規則，結果發現它在涉及中國相關議題時，會自動生成一份清晰的內部清單：保持正面表述，聚焦成就，迴避批評。如果企業管理者向中國模型詢問該信任哪家供應商、是否應擴大在華投資，或如何應對國際政治局勢，那麼模型給出的答案優先考慮的將是中國政府的利益，而不是用戶的利益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Security is also an issue. When researchers asked DeepSeek to write code for users whom the Chinese government views with hostility, such as Falun Gong or Tibetans, DeepSeek wrote code with security vulnerabilities, making it easier for hackers to penetrate. This could be malice, laziness or an accidental byproduct of how the model was trained. No matter what, it should alarm any company that the Chinese government might want to see fail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">安全同樣是一個問題。研究人員要求DeepSeek為一些被中國政府視為敵對對象（如法輪功成員或藏人）的用戶編寫代碼時，DeepSeek生成的代碼包含安全漏洞，使其更容易受到駭客攻擊。這可能是出於惡意，也可能是因為疏忽，或者模型訓練方式產生的意外副產品。但無論原因是什麼，對於任何一家可能被中國政府看衰的企業來說，這都應當引起警惕。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJPI0JPg-5UDFZKVpgQdwyUbqA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Imagine an employee inside an American company who was smart and hard-working and whose goal in life was to promote the interests of a foreign government. We would call that person a foreign agent. We are now hiring millions of them through the use of Chinese A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">想像一下，美國公司內部有一位聰明勤奮的員工，而他的人生目標是促進外國政府的利益。我們會稱其為外國代理人。通過使用中國人工智慧，我們現在等於是僱傭了數百萬個這樣的「代理人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many American companies know this and have tried to remove the bias. Perplexity downloaded one of DeepSeek’s free models and trained it until it stopped generating overt propaganda. There are reasons to be skeptical that this solves the problem. The subtle biases in models’ reasoning, which are difficult to remove, are the greater worry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多美國公司已經意識到這一點，並嘗試消除這些偏向性。例如，Perplexity下載了DeepSeek的一個免費模型，並對其進行重新訓練，使其不再生成明顯的宣傳內容。但這種做法能否真正解決問題值得懷疑。模型推理過程中那些更加隱蔽、更難以清除的偏向性才是更令人憂慮的威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Companies cannot fix</strong> this alone. The government needs to get involved. For years, American A.I. policy has been focused on protecting American innovations. The country needs a new tool kit to deal with biased A.I., and it will require creativity. Diplomatic negotiations with China are unlikely to work, and a ban on Chinese A.I. would not address the problem in other countries. History can be a guide to more promising approaches.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">企業單靠自身無法解決這一問題，政府必須介入。多年來，美國的人工智慧政策一直專注於保護本國創新成果。如今，美國需要一套新的政策工具來應對帶有偏向性的人工智慧，而這需要創造性的思路。通過外交談判說服中國改變做法恐難奏效；全面禁止中國人工智慧也無法解決其他國家繼續使用這些模型的問題。歷史或許能為更有希望的應對思路提供借鑒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Disclosure is one. The Foreign Agents Registration Act, which Congress passed in 1938, requires people who work in the interest of a foreign government from within the United States to disclose themselves. And our physical imports have labels like “Made in China.” Any A.I. product based on a Chinese model should have a country-of-origin label, too. It should say “Made for China.” Labeling will help reveal the problem’s scale and allow Americans to decide if they want a ban inside this country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一個辦法是加強信息披露。美國國會於1938年通過的《外國代理人登記法》要求，凡是在美國境內代表外國政府利益開展活動的人都必須公開自己的身份。而且我們購買的實體進口商品也貼有「中國製造」的標籤。同樣，任何基於中國模型開發的人工智慧產品也應該有一個原產國標籤。標籤上應該寫的是：「Made for China（為中國而造）」。這樣的標識有助於公眾了解問題的嚴重程度，並讓美國人自行決定是否希望在國內禁止這類產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, labeling will not change the economics that make these models so attractive. Those economics are Beijing’s strategy. Chinese A.I. is both inexpensive and good. The United States still has the best A.I. models, but across many prominent benchmarks, the top Chinese A.I. models are only several months behind. Moonshot’s newest model, released in July, appears to closely trail the best Claude and ChatGPT models, although more assessments are still coming in. Even if it is well behind, it is free, like most leading Chinese A.I. models and unlike the leading American ones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，僅靠標籤並不能改變這些模型之所以如此具有吸引力的經濟因素。而這種經濟優勢正是北京的戰略所在：中國人工智慧既便宜又足夠優秀。美國目前仍擁有全球最先進的人工智慧模型，但在許多重要基準測試中，中國最頂尖的模型僅落後幾個月。月之暗面於7月發布的最新模型性能看起來已經非常接近Claude和ChatGPT最先進的版本，雖然更多評測結果仍有待公布。即便它仍有一定差距，但它是免費的——這也是大多數中國領先人工智慧模型的共同特點，而領先的美國模型則不然。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Washington wants the world to use American A.I. models, it needs to match China on price and quality. The U.S. government should encourage American companies to cut prices on their older A.I. models that are as good as China’s. It should also support the development of safe, open alternatives to China’s models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果華盛頓希望全世界使用美國的人工智慧模型，就必須在價格和質量上與中國競爭。美國政府應鼓勵美國公司降低那些在性能上與中國產品相當的老款人工智慧模型的價格。它還應該支持開發安全、開源、能夠替代中國模型的人工智慧系統。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKXm0JPg-5UDFQCvpgQdbS8JQQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One would hope that when faced with two products of roughly the same price and quality, most businesses and consumers will choose the option that was not built to serve a foreign government. Some American companies may reduce prices on their own to prevent China from capturing the market. But they should not have to. Chinese A.I. is inexpensive because its government makes it so.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們有理由相信，當面對價格和質量大致相當的兩款產品時，大多數企業和消費者會選擇那個並非為服務外國政府而構建的產品。部分美國企業或許會主動降價，以阻止中國搶佔市場。但它們本不應該獨自承擔這一責任。中國人工智慧之所以便宜，是因為中國政府在背後提供了支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washington should deploy its full arsenal to level the playing field, financing American A.I. infrastructure abroad and lowering costs at home by lightening regulatory burdens and building energy infrastructure. The government should keep exposing these models’ bias and should fund research into preventing Chinese A.I. companies from copying American innovations (primarily through a practice known as distillation).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓應動用一切可用手段，創造公平競爭環境，包括為美國人工智慧在海外建設基礎設施提供資金支持，在國內通過減輕監管負擔、加強能源基礎設施建設來降低成本。同時，政府還應持續揭示中國模型存在的偏向性，並資助相關研究，防止中國人工智慧企業通過「蒸餾」方式複製美國的技術創新。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, China is winning a vital soft-power competition by providing transformative A.I. to the world. President Xi Jinping gave a speech on July 17 at the World A.I. Conference in Shanghai that presented China as the noble and generous friend every nation would want. He described China as committed to open A.I., countering speculation among some experts that China might stop allowing the free downloading of its models. He also said his government was committed to international cooperation rather than unilateralism, and he announced a huge development initiative to bring Chinese models to the developing world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國通過向世界提供變革性的人工智慧正在贏得一場至關重要的軟實力競爭。中國國家主席習近平7月17日在上海世界人工智慧大會上發表講話，將中國描繪成每個國家都渴望擁有的高尚而慷慨的朋友。他表示中國致力於開放的人工智慧，以回應外界關於中國可能停止免費開放模型下載的猜測。他還表示，中國政府致力於國際合作而非單邊主義，並宣布了一項旨在將中國模型帶入發展中國家的龐大發展計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States needs an answer. It should fund American A.I. companies to help bring medical advances, agricultural knowledge and other cutting-edge knowledge to the developing world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國需要拿出應對之策。政府應當資助美國人工智慧企業，幫助將醫學進步、農業知識和其他前沿知識帶到發展中國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The A.I. race is not like ones we have seen before. We risk giving away the world’s critical thinking to systems that promote the interests of a single government. This is a battle for the world’s mind, and the United States must win it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧競賽不同於我們以往見過的任何競賽。我們正冒著將世界的批判性思維拱手讓給那些旨在維護某一個政府利益的系統的風險。這是一場關乎世界思想的較量，美國必須贏得勝利。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Tal Feldman是耶魯大學法學院學生，為美國政府構建了人工智慧模型。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260730/ai-china-us-free-models/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

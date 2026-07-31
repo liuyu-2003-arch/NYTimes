@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超長途飛行時代來臨：如何在飛機上度過22小時？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">超長途飛行時代來臨：如何在飛機上度過22小時？</h1>
+    <h2 class="en-headline">Project Sunrise, a 22-Hour Nonstop Flight, Is Coming. What Will It Be Like?</h2>
+    <div class="meta-line">LAURA CHUNG <span style="margin: 0 8px;">•</span> 2026-07-30</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週二，一架由澳洲航空運營的空巴試飛飛機降落在法國圖盧茲。" height="700" src="https://static01.nyt.com/images/2026/07/29/multimedia/29int-oz-sunrise-01-lcmj/29int-oz-sunrise-01-lcmj-master1050.jpg" width="1050"/><figcaption><span>週二，一架由澳洲航空運營的空巴試飛飛機降落在法國圖盧茲。</span> <cite>Manuel Blondeau/AOP Press, via Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Millions of people were following online as an Airbus jet operated by Qantas touched down in Toulouse, France, on Tuesday. It had just completed a marathon: flying 12,460 nautical miles in 24 hours and 24 minutes nonstop from Melbourne, Australia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，當澳洲航空運營的一架空中巴士客機在法國圖盧茲降落時，數以百萬計的人在網上關注著這一時刻。這架飛機剛剛完成了一場馬拉松式的飛行：從澳洲墨爾本起飛，耗時24小時24分鐘不間斷飛行了12460海裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Only the specially manufactured plane wasn’t carrying any passengers. It was a test for the airline’s long awaited Project Sunrise, which aims to offer the first nonstop flights between Sydney and London starting next year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，這架特製的飛機沒有搭載任何乘客。這是該航空公司備受期待的「日出計劃」的一次測試，該計劃旨在從明年開始提供雪梨與倫敦之間的首次直飛航班。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The route would become the world’s longest commercial passenger service and usher in a new era of ultralong-haul travel. It has also raised a host of questions. How can a plane fly for so long without refueling? How do humans survive that many hours in the skies? And would anyone want to take such a trip?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該航線將成為全球最長的商業客運航線，並開啟超長途飛行的新時代。它也引發了一系列疑問：飛機如何在不加油的情況下飛行這麼久？人類如何在空中度過這麼多個小時？又是否有人願意踏上這樣的旅程？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some answers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是一些答案。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMnZ75Hg-5UDFQWdcgAd55Usmw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is Project Sunrise?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>什麼是日出計劃？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2017, Qantas announced plans to connect Australia to London and New York with direct flights that would reduce current travel times by up to four hours by doing away with transfers in Asia, the Middle East or North America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2017年，澳洲航空宣布計劃開通澳洲至倫敦和紐約的直飛航線，省去在亞洲、中東或北美轉機，將現有的旅行時間縮短最多四個小時。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To do this, in 2022, Qantas ordered 12 specially modified Airbus A350-1000ULR jets. After several delays, test flights began last month. The first major one was a flight from Toulouse, Airbus’s headquarters, to Melbourne, a journey that took 19 hours and 12 minutes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為此，澳航於2022年訂購了12架經過特殊改裝的空巴A350-1000ULR客機。經過多次延期後，測試飛行於上月開始。首次重大測試是從空巴總部圖盧茲飛往墨爾本，歷時19小時12分鐘。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The return flight this week took longer, as the flight team — consisting of several Airbus flight test crew members, two design engineers and two Qantas technical pilots — tried to simulate the longest potential commercial route and account for unexpected diversions, according to Airbus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">空巴公司表示，本週的回程飛行耗時更長，因為由數名空巴飛行測試機組成員、兩名設計工程師和兩名澳航技術飛行員組成的飛行團隊試圖模擬最長潛在商業航線，並考慮意外繞航的情況。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This was the longest flight ever flown by an Airbus aircraft,” a spokesman for the company said in a statement on Wednesday. “We are now evaluating the data with the relevant authorities to determine if it also qualifies as an official world record.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">空巴公司的一位發言人在週三的聲明中表示：「這是空巴飛機有史以來飛行距離最長的一趟航班。我們目前正與相關部門評估數據，以確定它是否符合官方世界紀錄的認定標準。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上週，澳洲航空的飛行員們在墨爾本參觀日出計劃的執飛飛機。" data-src="https://static01.nyt.com/images/2026/07/29/multimedia/29int-oz-sunrise-02-lcmj/29int-oz-sunrise-02-lcmj-master1050.jpg" src="https://static01.nyt.com/images/2026/07/29/multimedia/29int-oz-sunrise-02-lcmj/29int-oz-sunrise-02-lcmj-master1050.jpg"/></div><figcaption><span>上週，澳洲航空的飛行員們在墨爾本參觀日出計劃的執飛飛機。</span> <cite>James Ross/Australian Associated Press, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 3.6 million people tracked its route on Flightradar24, the website said, the second most tracked flight in the site’s history. (More than five million followed the Royal Air Force flight carrying Queen Elizabeth II’s coffin from Edinburgh to R.A.F. Northolt near London in 2022).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">航班跟蹤網站Flightradar24表示，超過360萬人在該網站上追蹤了這一航線，使其成為該網站歷史上受關注度第二高的航班。（2022年，超過500萬人追蹤了運送伊麗莎白二世女王靈柩從愛丁堡飛往倫敦附近皇家空軍諾斯霍爾特基地的英國皇家空軍航班）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Qantas anticipates that the Sydney to London flight, which will take up to 22 hours, will operate daily beginning in October 2027. There is no timing for the start of service between New York and Sydney, although further details are expected next year, the airline said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳航預計，雪梨至倫敦的航班將長達22小時，並將於2027年10月開始每日運營。澳航表示，紐約與雪梨之間的服務開通時間尚未確定，但預計明年將公布更多細節。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJ-d8JHg-5UDFQOFpgQdYDgweA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How can the plane fly for so long?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>飛機如何能夠飛行這麼久？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of the reason that the customized Airbus A350-1000ULR can fly such long distances without refueling is because of the installation of an additional rear center fuel tank. That allows the aircraft to carry an additional 5,300 gallons of fuel and helps extend the plane’s range from about 9,100 nautical miles to 10,000 nautical miles, according to Airbus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">定製的空巴A350-1000ULR之所以能夠在不加油的情況下飛行如此遙遠的距離，部分原因在於加裝了額外的後部中央燃油箱。據空巴介紹，這使得該飛機能夠多裝載5300加侖的燃油，並有助於將飛機的航程從約9100海裡延長至10000海裡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the return flight this week, the team tested the fuel management and air conditioning systems, as well as the flight crew rest area. The new plane will be able to fly over the North Pole region, a first for an Australian commercial airline, according to a statement by Qantas’s chief technical pilot, Alex Passerini.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在本週的回程航班上，團隊測試了燃油管理和空調系統，以及機組人員休息區。根據澳航首席技術飛行員亞歷克斯·帕塞裡尼的聲明，這架新飛機能夠飛越北極地區，這對於澳洲的商業航空公司來說尚屬首次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s obviously lower density, less traffic and so on” near the North Pole, he said, “so we can get the best out of the airplane.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「北極附近有空氣密度明顯較低、交通流量較少等條件，所以我們可以發揮出飛機的最佳性能。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The North Pole route will operate during winters in the Northern Hemisphere because of favorable jetstreams, with the airline flying more traditional routes at other times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於噴射氣流條件有利，北極航線將在北半球的冬季運營，而在其他時間，該航空公司將執飛更傳統的航線。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What will it be like for passengers?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>對乘客來說體驗如何？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The plane is designed with 238 seats across four cabins: first, business, premium economy and economy. This is fewer seats than on a standard long-haul flight and means more space for passengers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該飛機設計有238個座位，四個艙位：頭等艙、商務艙、特選經濟艙和經濟艙。座位數量少於標準長途航班，這意味著乘客擁有更寬敞的空間。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="專為日出計劃航班設計的新款頭等艙套房。" data-src="https://static01.nyt.com/images/2026/07/29/multimedia/29int-oz-sunrise-03-lcmj/29int-oz-sunrise-03-lcmj-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/29/multimedia/29int-oz-sunrise-03-lcmj/29int-oz-sunrise-03-lcmj-jumbo.jpg"/></div><figcaption><span>專為日出計劃航班設計的新款頭等艙套房。</span> <cite>Tim Hepher/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Qantas said the plane will also have a “well-being zone” where passengers can get snacks and stretch. The airline said it had worked with a range of health and food experts, including from the University of Sydney’s Charles Perkins Center, to find ways to reduce jet lag and the effects of being in a plane for 20 hours.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳航表示，飛機上還將設有一個「健康區」，乘客可以在那裡領取小吃並舒展身體。該航空公司表示，已與包括雪梨大學查爾斯·珀金斯中心的專家在內的一系列健康和食品專家合作，尋找方法減輕時差反應，以及緩解長達20小時飛行所帶來的不適。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Professor Stephen Simpson, who leads the center’s team working on Project Sunrise, said that plans include modifications to cabin lighting and meal ingredients. For example, breakfasts will contain caffeine or chili to help your body wake up, and the lights will be brighter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">領導該中心「日出計劃」團隊的史蒂芬·辛普森教授表示，計劃包括對客艙照明和餐食成分進行調整。例如，早餐將含有咖啡因或辣椒幫助身體清醒，且艙內燈光將更加明亮。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM-M8JHg-5UDFWa8pgQdNTQ4-Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A team of scientists flew on three specialized research flights — using another aircraft — from Sydney to New York and London in 2019 and monitored 23 volunteers. Those with specially designed menus, lighting, sleep and movement plans experienced less severe jet lag and better cognitive performance in the two days after the flight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2019年，一組科學家乘坐另一架飛機進行了三次專項研究飛行，從雪梨飛往紐約和倫敦，並對23名志願者進行了監測。在飛行後的兩天裡，那些使用專門設計的菜單、照明、睡眠和活動計劃的志願者時差反應較輕，且認知能力更好。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Laura Chung是《紐約時報》駐雪梨記者/研究員，報導澳洲、紐西蘭和太平洋地區新聞。</p><p class="cn-p">翻譯：晉其角</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260730/qantas-long-haul-flight-project-sunrise/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
