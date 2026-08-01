@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國擬禁止進口中國人形機器人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國擬禁止進口中國人形機器人</h1>
+    <h2 class="en-headline">China Threatens Retaliation as U.S. Moves to Block Robot Imports</h2>
+    <div class="meta-line">STEVE LOHR, XINYUN WU <span style="margin: 0 8px;">•</span> 2026-07-31</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="去年在上海一場展會上展出的人形機器人。" height="700" src="https://static01.nyt.com/images/2026/07/30/multimedia/30Biz-China-Robots-vlzp/30Biz-China-Robots-vlzp-master1050.jpg" width="1050"/><figcaption><span>去年在上海一場展會上展出的人形機器人。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Robot trade tensions escalated on Thursday as China angrily denounced a proposal by the United States to ban imports of Chinese-made humanoid robots, calling the measure discriminatory and threatening retaliation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，機器人領域的貿易緊張局勢升級。中國憤怒譴責了美國一項旨在禁止進口中國製造的人形機器人的提議，稱該措施具有歧視性，並威脅將予以報復。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a sharply worded statement, China’s commerce ministry accused the Trump administration of launching a new provocation that would “severely undermine the stability of China-U.S. economic and trade relations, and seriously disrupt the stability of global industrial and supply chains.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一份措辭嚴厲的聲明中，中國商務部指責川普政府發起了新的挑釁，稱這將「嚴重破壞中美經貿穩定局面，嚴重擾亂全球產業鏈供應鏈穩定」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Tuesday, the U.S. Federal Communications Commission said that it intends to restrict imports of humanoid and animallike robots on national security grounds, while promoting the development of advanced robots domestically.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，美國聯邦通信委員會表示，打算以國家安全為由限制人形及動物形態機器人的進口，同時推動美國國內先進機器人的發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although the F.C.C. did not explicitly identify China, Chinese producers dominate the global humanoid robot industry. China’s commerce ministry said the proposal was unmistakably aimed at the country’s manufacturers, describing it as “discriminatory and suppressive against Chinese companies and products.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管聯邦通信委員會沒有明確點名中國，但中國生產商主導著全球人形機器人產業。中國商務部表示，該提議無疑是針對中國製造商的，並將其描述為「歧視性對待和打壓中國企業和產品」。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNC69Z-i_pUDFbeApAQdCoUmlw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The proposal thrusts the emerging robotics industry into the latest front in the technology rivalry between the United States and China, which have already imposed tit-for-tat restrictions on access to artificial intelligence systems, advanced semiconductors and other critical technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一提議將新興的機器人產業推向了中美技術競爭的最新前線。此前，兩國已在人工智慧系統、先進半導體及其他關鍵技術領域實施了針鋒相對的限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s statement warned that if Washington proceeds with the ban, “China will resolutely retaliate to safeguard its legitimate rights and interests.” It did not specify what measures it might take.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的聲明警告稱，如果華盛頓推進這項禁令，「中方將堅決予以反制，維護自身正當權益。」但聲明並未具體說明可能採取的措施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration argues that increasingly capable humanoid robots pose national security risks on two fronts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府認為，能力日益強大的人形機器人在兩個方面構成了國家安全風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First, officials contend the machines could function as Trojan horses for data collection, harvesting personal information and even sensitive government data as they become more integrated into homes, workplaces and public spaces. Second, the administration argues that advanced robotics will become a strategically important technology in an economy increasingly dependent on A.I..</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先，官員們認為，隨著這些機器越來越深地融入家庭、工作場所以及公共空間，它們可能會充當數據收集的「特洛伊木馬」，搜集個人信息甚至敏感的政府數據。其次，政府認為，在日益依賴人工智慧的經濟體中，先進機器人將成為一項具有戰略重要性的技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China dismissed those concerns, accusing the United States of “overstretching the concept of national security.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對這些擔憂予以駁斥，指責美國「泛化國家安全概念」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The F.C.C. has previously invoked national security concerns to prohibit imports of telecommunications equipment from Chinese companies such as Huawei and ZTE.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聯邦通信委員會此前曾多次以國家安全擔憂為由禁止進口華為和中興等中國企業的電信設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether restrictions on Chinese robots would be effective is an open question.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對中國機器人的限制是否會有效仍是一個懸而未決的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese start-ups are producing thousands of humanoid robots priced below $5,000, far cheaper and at a greater scale than competitors elsewhere. While Chinese manufacturers once depended on Japanese and other foreign suppliers for critical components such as sensors and joints, those parts are now overwhelmingly produced in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的初創企業正在生產成千上萬台售價低於5000美元的人形機器人，其價格遠低於其他地區的競爭對手，生產規模也大得多。儘管中國製造商曾經在傳感器和關節等關鍵零部件上依賴日本及其他外國供應商，但如今這些部件已絕大部分在中國國內生產。</div></div></div></div></div><div class="big_ad" data-google-query-id="COWK9p-i_pUDFYbRSgAdlJ4S4A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As a result, it has become nearly impossible to build a competitive humanoid robot without Chinese-made components.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，如果沒有中國製造的零部件，幾乎不可能製造出具有競爭力的人形機器人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has also established a significant lead in industrial robotics. It manufactures and installs factory robots at a pace unmatched by any other country. More than two million robots were operating in Chinese factories in 2024, with another 300,000 installed during the year — more than the rest of the world combined.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在工業機器人領域也確立了顯著的領先優勢。其製造和安裝工廠機器人的速度是其他任何國家都無法比擬的。2024年，中國工廠裡有超過200萬台機器人在運轉，當年新增安裝量達30萬台——這一數字超過了全球其他地區的總和。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Steve Lohr撰寫關於科技及其對經濟、就業和勞動市場的影響的文章。</p><div class="" data-poster=""><span><p class="cn-p">Xinyun Wu是《紐約時報》記者/研究員，常駐台北，報導科技、台灣和中國新聞。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260731/china-robots-ban-fcc/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

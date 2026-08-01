@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福奇聽證會，一場政治鬧劇 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">福奇聽證會，一場政治鬧劇</h1>
+    <h2 class="en-headline">What We Really Learned From the Fauci Hearing</h2>
+    <div class="meta-line">RACHAEL BEDARD <span style="margin: 0 8px;">•</span> 2026-07-31</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/07/29/multimedia/29bedard-lmbg/29bedard-lmbg-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Senate hearings are always theatrical. Even still, Wednesday morning’s Senate committee hearing to interrogate Dr. Anthony Fauci on, among other things, the origins of Covid-19 was a shocking performance: Dr. Fauci barely spoke, while everyone else spent some three hours projecting their emotions onto him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">參議院的聽證會總是充滿戲劇性。儘管如此，週三上午參議院委員會就新冠病毒起源等問題質詢安東尼·福奇博士的那場聽證會仍是一場令人震驚的表演：福奇幾乎一言不發，其他人在約三個小時裡卻不斷將自己的情緒投射到他身上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Senator Rand Paul of Kentucky, the committee chair, has cast himself as a contemporary Joe McCarthy intent on ferreting out the truth about one man’s supposed crimes against his country. The Covid lockdown “could never have been inflicted without you aiding and abetting the crime,” he said to Dr. Fauci during his opening statement. And “you have for years avoided responsibility.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">委員會主席、肯塔基州參議員蘭德·保羅將自己塑造成當代的喬·麥卡錫，一心要查明某人所謂危害國家罪行的真相。在開場白中，他對福奇說，新冠封鎖「如果沒有你協助和教唆犯罪，絕對不可能實施」。他還說，「多年來你一直在逃避責任。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just before leaving office, President Joe Biden took the remarkable step of providing Dr. Fauci with a blanket pardon covering all of his activities from 2014 to early 2025. This pardon would not protect against new accusations of perjury if Dr. Fauci were found to have lied during sworn testimony after Mr. Biden left office in 2025. On the advice of his lawyers, the 85-year-old Dr. Fauci made the extraordinary choice during Wednesday’s hearing to plead the Fifth Amendment. As Republican senators peppered him with often hostile questions, he repeated over and over again that he respectfully declined to answer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在離任之前，拜登總統採取了一項非同尋常的舉措，對福奇從2014年到2025年初的所有活動給予了全面赦免。但如果福奇博士在拜登2025年離任後被發現曾在宣誓作證時撒謊，這項赦免將無法保護他免受新的偽證罪指控。在律師的建議下，85歲的福奇在週三的聽證會上做出了援引美國憲法第五修正案這一不同尋常的選擇。當共和黨參議員向他拋出一連串往往充滿敵意的問題時，他一遍又一遍地重複表示禮貌地拒絕回答。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By doing so, Dr. Fauci became the speechless cipher to whom committee Republicans and Democrats argued their irreconcilable stories — about the pandemic, but also more broadly about science and public health in America. The effect was a useless drama that offered zero insights to a public desperate for them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過這樣做，福奇博士成了一個無言的符號，委員會中的共和黨人和民主黨人對著他陳述著彼此無法調和的說法——不僅是關於大流行的敘事，還包括更廣泛的關於美國科學和公共衛生的敘事。其結果是一場毫無用處的鬧劇，未能向迫切需要深刻見解的公眾提供任何啟示。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNXV86Si_pUDFbSjpgQdg2A4QQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Paul personally and directly accuses Dr. Fauci of: funding dangerous gain-of-function research in Wuhan, China, that may have resulted in a lab leak, releasing SARS-CoV-2 into the world (which Dr. Fauci denies); promoting mitigation policies that infringed on civil liberties; profiting off his pandemic-era fame; and hiding the truth about what he knew about the virus’s origins and when.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">保羅親自且直接地指控福奇：資助中國武漢危險的功能增益研究，這可能導致了實驗室洩漏，從而將SARS-CoV-2病毒釋放到全世界（福奇對此予以否認）；推行侵犯公民自由的防疫政策；利用其在大流行期間的名聲牟利；以及隱瞞了他對病毒起源及其知情時間的真相。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Fauci has faced congressional grilling numerous times, before both the House and the Senate. In the days before this event, Mr. Paul released more than 1,100 pages of Dr. Fauci’s diary entries. (Dr. Fauci apparently wrote them on computers associated with his government account; they were retrieved by Health Secretary Robert F. Kennedy Jr. and his staff, who provided them to Senator Paul.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論是在眾議院還是參議院，福奇都曾多次面臨國會的嚴厲盤問。在這次聽證會的前幾天，保羅公布了福奇1100多頁的日記內容。（顯然，福奇是在與其政府帳戶相關聯的電腦上寫下這些日記的；衛生部長小羅伯特·F·甘迺迪及其工作人員找回了這些日記，並將其提供給了保羅。）</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/07/29/multimedia/29bedard-bqpl/29bedard-bqpl-jumbo.jpg" src="https://static01.nyt.com/images/2026/07/29/multimedia/29bedard-bqpl/29bedard-bqpl-jumbo.jpg"/></div><figcaption><span></span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Excerpts from Dr. Fauci’s private writings, including his reflections on his conversations with celebrities and his growing award collection, seem to affirm the right’s portrayal of him as a self-regarding operator who was flattered rather than humbled by the attention he received during a national crisis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">福奇博士私人筆記的節選——包括他對與名人交流的感想，以及他不斷增加的獎項收藏——似乎證實了右翼對他的刻畫：一個自我中心的操弄者，在國家危機期間受到的關注讓他沾沾自喜，而不是保持謙遜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But many of the entries being cited as evidence that Dr. Fauci lied to the public or deliberately withheld information are really reminders of how uncertain the context was for pandemic decision-making. Some of the entries, in fact, give a useful glimpse into how decisions were hashed out among experts with different perspectives and concerns, with Dr. Fauci often playing the role of convener or informal chair. On Jan. 26, 2020, he wrote that the virus may have originated in animals and jumped to humans; later, he dutifully noted conversations he was having with other scientists who were discussing alternative possibilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，許多被援引為福奇向公眾撒謊或故意隱瞞信息證據的日記實際上是在提醒人們，當時的大流行決策背景充滿了不確定性。事實上，其中一些記錄生動地展現了持不同觀點和關切的專家們如何商討決策，而福奇經常在其中扮演召集人或非正式主席的角色。在2020年1月26日，他寫道，病毒可能起源於動物並傳染給人類；後來，他又如實記錄了自己與其他科學家討論其他可能性時的對話內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview with The New York Times’s David Wallace-Wells in 2023, Mr. Wallace-Wells pushed Dr. Fauci on the lab leak hypothesis and his role in funding research in Wuhan. When Mr. Wallace-Wells suggested more thorough responses that Dr. Fauci could’ve offered when questioned on the subject, he became irritated. “David, have you ever testified before a congressional committee?” he snapped.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2023年接受《紐約時報》戴維·華萊士-韋爾斯採訪時，華萊士-韋爾斯就實驗室洩漏假說以及他在資助武漢研究中的作用向福奇施壓。華萊士-韋爾斯建議福奇，在被問及該話題時本可提供更詳盡的回答，福奇變得惱火起來。「戴維，你曾在國會委員會面前作過證嗎？」他厲聲說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Fauci seems to have concluded years ago that the more he says, the more his character and actions become subject to debate. And so, on Wednesday, he took abuse — and some praise — and stayed silent. Another Republican senator, Josh Hawley of Missouri, in a particularly aggressive performance, accused him of wanting “to be the sun god of science.” Senator Bernie Moreno, an Ohio Republican, demanded to know, using an expletive, who Dr. Fauci thought he was for doing what he did.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">福奇似乎幾年前就得出了結論：他說得越多，他的品格和行為就越會成為爭論的焦點。因此，在週三，他承受著辱罵——也有一些讚揚——並保持了沉默。另一位共和黨參議員、來自密蘇里州的喬希·霍利尤為咄咄逼人，指責福奇想要「成為科學界的太陽神」。俄亥俄州共和黨參議員伯尼·莫雷諾則用髒話質問福奇到底以為自己是誰，竟敢做那樣的事。</div></div></div></div></div><div class="big_ad" data-google-query-id="COuo9KSi_pUDFa63pgQdaLgJKA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democratic senators, including Gary Peters from Michigan and Richard Blumenthal from Connecticut, commiserated with Dr. Fauci over his ordeal, and used much of their time to argue that the committee ought to be discussing all of the ways President Trump and Secretary Kennedy have ruined public health.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根州的加里·彼得斯和康乃狄克州的理查德·布盧門撒爾等民主党參議員對福奇遭受的磨難表示同情，並利用了他們的大部分發言時間主張，該委員會本應該討論川普總統和甘迺迪部長是如何從各個方面破壞公共衛生的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Only Senator Andy Kim, a Democrat from New Jersey, said anything insightful — and that was about what the hearing represented about the state of politics in America, and the implications for trust and a functioning democracy. “Right now, I feel the hyper-partisanship growing in this country in dangerous ways,” Mr. Kim said. “People calling our public servants criminals,” he lamented, is “undermining the very nature of the work of governance.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">只有紐澤西州民主党參議員安迪·金髮表了有見地的言論——他談到了此次聽證會所反映的美國政治現狀，以及這對公眾信任和民主正常運轉的啟示。「現在，我感覺到這個國家的極端黨爭正在以危險的方式加劇，」金說。他感嘆道，「人們把我們的公職人員稱為罪犯，這正在破壞治理工作的本質。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He’s right, of course; show trials are bad for democracy and do nothing to get us closer to either truth or consensus. Hanging over every conversation about what happened during the pandemic of the recent past is anxiety about what might happen should we face a pandemic in the near future. In projecting all of a difficult era’s conflicts onto Dr. Fauci, Republicans evade the harder work of figuring out what we actually should learn from his, and our, mistakes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，他是對的。作秀式的審判對民主是有害的，且無助於讓我們更接近真相或達成共識。在每一場關於過去那場大流行期間發生了什麼的對話中都籠罩著一種焦慮：如果我們在不久的將來再次面臨疫情，會發生什麼。共和黨人將那個艱難時期的所有衝突都投射到福奇身上，從而逃避了一項更艱巨的工作——弄清楚我們到底應該從他以及我們自己的錯誤中吸取什麼教訓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Fauci is a complicated man who has been both elevated and reduced to a symbol. His legacy after a decades-long career at the intersection of science and politics is now defined by incompatible, contested accounts of his pandemic-era impact. There is little hope of resolving that contest any time soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">福奇博士是一個複雜的人，他既被抬高也被貶為一個符號。經歷了數十年處於科學與政治交匯處的職業生涯後，他留下的歷史遺產如今正被關於他在疫情時期影響力的評價所定義，它們相互矛盾且存在爭議，而且在短期內，這樣的矛盾恐怕難以化解。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Theater, at its most powerful, refracts truth through fiction so its force can be viscerally felt. This hearing was a performance that only entrenched the mistrust that increasingly defines Americans’ relationship to their institutions. Dr. Fauci, the ultimate institutionalist, has become that mistrust’s enduring target.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最有力量的戲劇通過虛構來折射真相，讓人們能切身感受到它的力量。而這次聽證會不過是一場作秀，只會進一步加深那種日益定義美國人與制度之間關係的猜疑。作為最典型的建制派，福奇已成為這種猜疑的長期靶子。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Rachael Bedard是觀點文章作者，也是一名老年病學家和姑息治療醫生。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260731/anthony-fauci-hearing-covid/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
