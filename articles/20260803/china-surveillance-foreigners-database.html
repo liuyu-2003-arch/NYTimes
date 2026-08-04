@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國如何監視在華外國人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國如何監視在華外國人</h1>
+    <h2 class="en-headline">How China Keeps Tabs on Foreigners</h2>
+    <div class="meta-line">郭莉莉, PEI-LIN WU <span style="margin: 0 8px;">•</span> 2026-08-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="591" src="https://static01.nyt.com/images/2026/07/30/world/00hp-int-china-surveillance-promo/00hp-int-china-surveillance-promo-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Courtesy of Marc Hofer</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most days, Marc Hofer, a cybersecurity researcher and journalist based in Amsterdam, trawls the internet for clues about how China surveils its citizens, a subject that has fascinated him since he worked there as a foreign correspondent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數日子裡，常駐阿姆斯特丹的網路安全研究員兼記者馬克·霍弗都會在互聯網上搜尋有關中國如何監控本國公民的線索，這是他之前擔任駐華記者時便產生濃厚興趣的課題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hofer, 46, was doing his usual scan earlier this year when he came across something called “Dynamic Control Platform for Overseas Personnel.” It was a futuristic dashboard — like something from the movie “Minority Report” — that appeared to track foreigners in the northern Chinese city of Zhangjiakou, a popular skiing spot that co-hosted the 2022 Winter Olympics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年早些時候，當他像往常一樣進行搜索時，46歲的霍弗發現了一個名為「境外人員動態管控平台」的系統。那是一個充滿未來感的控制面板——看起來就像電影《少數派報告》裡的東西，似乎用於追蹤中國北方城市張家口的外國人。張家口是著名的滑雪勝地，也是2022年冬奧會的聯合舉辦城市。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-01/c03int-china-surveillance-master1050.png" src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-01/c03int-china-surveillance-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The system’s dashboard said it tracked more than 700 foreign residents living in the city. In total, it had entries for nearly 12,000 people, which included fugitives, people from Hong Kong and Taiwan, as well as more than 300 foreign journalists. Some of them had not been to Zhangjiakou.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">系統的控制面板顯示，該平台追蹤著逾700名在張家口定居的外籍人士，數據庫中共收錄了近1.2萬條記錄，包括在逃人員、港台人士，以及300餘名外國記者。其中一些人從未去過張家口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Suddenly, Mr. Hofer saw his own face — in a photograph taken by Chinese immigration officials for their records. Next to it was his passport number and the cellphone number he had used in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">突然，霍弗看到了自己的臉——那是一張中國出入境管理人員為留檔而拍攝的照片。照片旁邊還有他的護照號碼，以及他在中國時使用過的手機號。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-02/c03int-china-surveillance-02-master1050.png" src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-02/c03int-china-surveillance-02-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was floored. “Whoever put that stuff in there had access to real data,” he recalled. He also noticed a list of users who had recently logged into the site — it included the names of police stations in Zhangjiakou and other cities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他目瞪口呆。「把這些東西放進去的人是能夠接觸到真實數據的，」他回憶道。他還注意到一份最近登錄該網站的用戶名單，其中包括張家口及其他城市的派出所。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China monitors its 1.4 billion people on an unparalleled scale, with the help of cameras, cellphone signals and national IDs. The database Mr. Hofer found offered a rare window into how extensively the Chinese authorities also surveil foreigners, displaying entries about people categorized by nationality, with their birth date, sex, marital status, address and occupation, and sometimes their religion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">藉助攝像頭、手機信號和居民身份證，中國對14億人口實施著規模空前的監控。霍弗發現的這個數據庫為外界提供了一個難得的窗口，得以一窺中國當局對外籍人員的監控範圍之廣——數據庫按國籍對人員進行分類，內容包含出生日期、性別、婚姻狀況、住址和職業，有時還記錄宗教信仰。</div></div></div></div></div><div class="big_ad" data-google-query-id="CND74NTlhZYDFc5aCAQdGSMq6w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It also included instances when they were captured on camera at traffic intersections, markets, shopping malls or other locations, including a mosque.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">系統還記錄了他們在交通路口、市場、購物中心或其他場所（包括一座清真寺）被攝像頭拍到的影像。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies hoping to sell their surveillance platforms to the police often create demo web pages that use photos and information about people taken from social media. This was different, Mr. Hofer said: “This is more than some guys playing around, or a student, or a low-level project.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些希望把監控平台賣給警方的中國企業經常會創建演示網頁，並配以從社群媒體上抓取的人物照片和信息。但這個系統不一樣，霍弗說：「這不是什麼人在隨便玩玩，也不像是學生或小項目能做出來的東西。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That day, in January, he began downloading as much data as possible from the site. By May, it had been taken offline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從1月發現之日起，他便開始從該網站下載盡可能多的數據。到5月，該網站下線。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Designed for the Police</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為警方打造</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The New York Times found links between the platform and Origin Dynamic, a Beijing company that provides robotics, surveillance services and equipment to the police, according to public tender documents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》根據公開招標文件發現，該平台與北京的長源動力科技有限公司存在關聯。這家公司向警方提供機器人技術、監控服務和設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Origin Dynamic had filed a patent application in 2023 for a similar system, which it described as an “information interface for non-Chinese citizens” and was nearly identical to the Zhangjiakou platform in its design and functions. The company is owned in part by the city government of Yancheng in Jiangsu Province.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長源動力在2023年為一個類似系統申請了專利，將其描述為「外籍人員信息界面」，其設計和功能與張家口平台幾乎完全相同。該公司部分股權由江蘇省鹽城市政府持有。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Origin Dynamic and the Zhangjiakou Public Security Bureau did not respond to requests for comment sent by email and fax.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長源動力和張家口市公安局均未回應通過電子郵件和傳真發送的置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hofer, who shared the data he saved with The Times, believed that the dashboard had been designed for the Zhangjiakou Public Security Bureau, the city’s police department. It included information that only the Chinese authorities would have had access to, and the user log that Mr. Hofer saw listed eight police stations in Zhangjiakou and three from other cities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">霍弗將他保存的數據分享給了《紐約時報》。他認為該平台是為張家口市公安局設計的。其中包含只有中國的有關部門才能獲取的信息，而他看到的用戶日誌中列出了張家口的八個派出所及其他城市的三個派出所。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was not clear how, or if, the police have used the database in their work. But its existence illustrates how the Chinese authorities aggregate vast amounts of data from surveillance cameras, medical records, bills, facial-recognition tools and other sources to monitor and analyze the behavior of foreign residents. It had fields for places they frequented, hospital visits and gas payments, as well as flights and trains taken, including seat numbers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚警方是否或如何在工作中使用該數據庫。但它的存在表明，中國的有關部門將來自監控攝像頭、醫療記錄、帳單、人臉識別工具及其他管道的海量數據整合起來，用以監控和分析外國居民的行為。數據庫中包含常去地點、就醫記錄和加油付款記錄等，還有乘坐過的航班和火車，包括座位號等信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For example, it logged the movements of a woman from Mongolia as she went from a residential compound in Zhangjiakou to shopping malls, restaurants and supermarkets. In some instances, the database indicated, she had been tracked using facial recognition.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，數據庫記錄了一名蒙古國女性的活動軌跡：她從張家口的一處住宅小區前往購物中心、餐館和超市。數據庫顯示，她的部分行蹤是通過人臉識別技術追蹤到的。</div></div></div><figure class="article-inline-photo with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-03/c03int-china-surveillance-03-jumbo.png" src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-03/c03int-china-surveillance-03-jumbo.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under Xi Jinping, the ruling Chinese Communist Party has overseen a drive to use big data in the name of public safety to stamp out dissent and prevent potential terrorist attacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平執政以來，中共以公共安全為名，大力推動利用大數據開展監控，以壓制異議、防範潛在的恐怖襲擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other countries employ similar kinds of surveillance systems, but in China, there is little protection against police overreach, according to Maya Wang, the deputy Asia director at Human Rights Watch.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他國家也在使用類似的監控系統，但人權觀察亞洲事務副主任王亞秋表示，在中國，幾乎沒有能防止警察濫用權力的機制。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNSh4dTlhZYDFbVXCAQdWW83rw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That kind of integration of data is really quite unprecedented and illustrates China’s lack of safeguards,” Ms. Wang said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種數據整合程度確實前所未有，也凸顯了中國在防護機制方面的缺失，」王亞秋表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>An Unsecured Platform</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>一個沒有安全防護的平台</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Mr. Hofer first came across the platform’s login page, a username and password had already been filled in. The fact that a system with sensitive personal information on hundreds of people was accessible to anyone who could find it on the internet suggested a major lack of privacy protections.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">霍弗第一次看到這個平台的登錄頁面時，用戶名和密碼已經自動填好。一個包含數百人敏感個人信息的系統竟然可以被任何能在網上找到它的人訪問，這表明該系統在隱私保護方面存在嚴重缺陷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Greg Walton, a cybersecurity researcher who has studied similar Chinese systems, said the exposure of this one was not an anomaly. It was a consequence of China’s “surveillance sprawl,” which is fueled by an expanding ecosystem of vendors, contractors and public security agencies, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾研究過類似中國系統的網路安全研究員格雷格·沃爾頓表示，此次曝光事件並非孤例。他認為，這是中國「監控泛濫」的後果，而供應商、承包商和公安部門不斷擴張的生態系統正在推波助瀾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Walton, a senior investigator at the SecDev Group, a Canadian research firm, said that each new platform “increases the number of places where sensitive personal data can be misconfigured, copied or left externally discoverable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沃爾頓是加拿大研究公司SecDev Group的高級調查員。他指出，每新增一個平台，「就意味著又多了一個敏感個人數據可能被錯誤配置、被複制或暴露給外部的地方。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Times verified that data in the entries for six people besides Mr. Hofer was accurate. A Times reporter who used to be based in Beijing was in it, listed in an entry that included the name of her child. Her name was misspelled, but her passport and other information were correct.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》核實了除霍弗外六人的條目信息，確認數據均屬實。時報一位曾駐北京記者的信息也在其中，條目中還包含她孩子的姓名。她的名字拼寫有誤，但護照及其他信息均正確。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKm44dTlhZYDFaRCCAQdz_AfGw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Work on the Zhangjiakou system appeared to have started in 2021, and changes were made to it as recently as April, according to Mr. Hofer, who has documented his findings in a Substack newsletter. Several fields in the database were empty or filled with dummy text, suggesting it was still under construction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">霍弗表示，張家口系統的開發工作似乎始於2021年，最近一次修改是在今年4月。數據庫中的一些字段為空，或者填入了佔位符，這表明該系統當時可能仍在建設之中。他在Substack平台上的新聞通訊中記錄了自己的調查發現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Residents were tracked on cameras in public locations, but the platform also pulled from sources not directly connected to the police. It had a list of foreigners and Chinese citizens who had visited the city’s Thaiwoo Ski Resort, including photos of them taken there, their full names and passport numbers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">居民的行蹤在公共場所被攝像頭追蹤，但該平台的數據來源並不僅限於警方。數據庫中有一份外籍人士和中國公民曾到訪張家口太舞滑雪小鎮的名單，包括他們在那裡被拍攝下來的照片、全名和護照號碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Sorting by Country and Religion</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>按國籍和宗教分類</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The platform labeled people from Australia, Canada, New Zealand, the United Kingdom or the United States as being in the “Five Eyes Alliance.” That is a reference to the intelligence-sharing agreement between the five countries that Beijing frequently criticizes as promoting Cold War-style divisions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該平台將來自澳洲、加拿大、紐西蘭、英國或美國的人標記為「五眼聯盟」成員。五眼聯盟是這五國間的情報共享協議，北京經常批評這一聯盟助長類似冷戰時期的陣營對立。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It also highlighted residents from what it called “key countries” — a list that included Egypt, Iran, Israel, Morocco, Pakistan and Sudan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">平台還標註了來自所謂「重點國家」的居民——名單包括埃及、伊朗、以色列、摩洛哥、巴基斯坦和蘇丹。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Visitors from Hong Kong, home to widespread anti-Beijing protests in 2019, and Taiwan, a self-governing democracy that China claims as its own, had their own categories. The database also tracked international students, foreign spouses and “key persons,” a euphemism often used by the Chinese authorities to refer to activists or fugitives, or others deemed to be threats to social stability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">來自香港（2019年曾爆發大規模反北京抗議活動）和台灣（中國聲稱擁有主權的自治民主政體）的訪客被單列出來。數據庫還追蹤留學生、外籍配偶以及「重點人員」——後者是中國的有關部門常用的委婉說法，用於指代活動人士、在逃人員或其他被視為對社會穩定構成威脅的人。</div></div></div></div></div><div class="big_ad" data-google-query-id="CP_N4dTlhZYDFdJOCAQdT2g3fQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the foreign students listed appeared to be from Pakistan and India and were studying at Hebei North University in Zhangjiakou. Profiles of the students included their religion, marital status, focus of study and times they had been captured on cameras at the school’s entrances.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數據庫中列出的許多外國學生似乎來自巴基斯坦和印度，就讀於張家口的河北北方學院。這些學生的個人檔案包括宗教信仰、婚姻狀況、所學專業，以及他們在學校入口處被攝像頭拍到的次數。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The platform also claimed to be able to map a person’s relationship network. An illustration of the function showed the names of three Pakistani men in their 20s, linking them to one another after they were captured on camera together.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該平台還聲稱能夠繪製個人的關係網路。一項功能示意圖展示了三名20多歲的巴基斯坦男性的姓名，因被攝像頭同框拍到而將他們關聯到一起。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-04/c03int-china-surveillance-04-master1050.png" src="https://static01.nyt.com/images/2026/08/02/multimedia/c03int-china-surveillance-04/c03int-china-surveillance-04-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One set of entries that Mr. Hofer downloaded included names of residents who had been penalized under Chinese law. It showed one woman who had been fined 1,000 Chinese yuan (about $150) in 2021, for example, for not registering a change of address. Other examples included foreigners who had been cited for teaching without required licenses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">霍弗下載的一組數據中，還包括一些因違反中國法律而受到處罰的居民姓名。例如，其中一名女子在2021年因未登記住址變更而被罰款1000元人民幣。其他案例還包括一些因無證從事教學活動而受到處罰的外國人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The information appeared to have been entered by an official at the Zhangjiakou police station named Zhang Jinglong, according to files downloaded by Mr. Hofer that listed him as a contributor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據霍弗下載的文件，這些信息似乎由張家口公安局一個名叫張經龍的警官錄入，文件將其列為信息錄入者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An official by that name was profiled by the Zhangjiakou police in 2020. He was praised for monitoring discussions online and actively participating in them to “guide citizens to establish correct” views.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2020年，張家口警方曾對一位同名警官進行過宣傳報導，稱讚他積極監控網路輿論並主動介入，以「引導群眾樹立正確」觀念。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, an artificial intelligence lab in the police bureau was named for him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，該市公安局以他的名字命名了一個人工智慧實驗室。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">「境外人員動態管控平台」的網頁截圖由網路安全研究員馬克·霍弗提供。</p><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p><p class="cn-p">Pei-Lin Wu是《紐約時報》記者/研究員，報導台灣和中國新聞。</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260803/china-surveillance-foreigners-database/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
