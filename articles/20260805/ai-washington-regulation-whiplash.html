@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>如何應對中國開源AI模型？川普政府內部爭論升級 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">如何應對中國開源AI模型？川普政府內部爭論升級</h1>
+    <h2 class="en-headline">White House Whipsaws Silicon Valley (and Itself) Over A.I. Rules</h2>
+    <div class="meta-line">DAVID McCABE, MIKE ISAAC, ANA SWANSON, KATE CONGER <span style="margin: 0 8px;">•</span> 2026-08-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="華盛頓與北京之間正展開一場關於誰將控制關鍵技術的博弈，由月之暗面開發的Kimi等中國開源人工智慧模型為這場博弈增添了全新且緊迫的維度。" height="700" src="https://static01.nyt.com/images/2026/08/03/multimedia/03biz-ai-whiplash--03-chmf/03biz-ai-whiplash--03-chmf-master1050.jpg" width="1050"/><figcaption><span>華盛頓與北京之間正展開一場關於誰將控制關鍵技術的博弈，由月之暗面開發的Kimi等中國開源人工智慧模型為這場博弈增添了全新且緊迫的維度。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump administration officials have struggled over the past few weeks with what to do about artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去幾週裡，川普政府的官員們一直在為如何應對人工智慧問題而苦惱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In particular, a group that includes White House chief of staff Susie Wiles, Treasury Secretary Scott Bessent and Commerce Secretary Howard Lutnick have debated whether or not to take a far more interventionist approach to “open source” A.I. models, which are freely available to download and modify, said more than a half-dozen current and former tech and government officials and other people familiar with the matter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據多位現任及前任科技界與政府官員以及其他知情人士透露，一個核心小組討論了是否要大幅增加對可自由下載和修改的「開源」AI模型的干預，小組成員包括白宮幕僚長蘇西·威爾斯、財政部長史考特·貝森特和商務部長霍華德·盧特尼克等人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Senior officials have considered a range of actions, including using sanctions, a trade blacklist against Chinese companies that make these open-source A.I. models, or even banning U.S. cloud companies from doing business with them, said five of the people, all of whom spoke on condition of anonymity to discuss private matters. But after an outcry from Silicon Valley, they appear to have changed their minds and instead are focused on promoting American A.I. models to be more competitive, the people said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五位因涉私下討論而要求匿名的知情人士表示，高級官員們曾考慮過一系列行動，包括實施制裁、將開發這些開源AI模型的中國公司列入貿易黑名單，甚至禁止美國雲服務公司與它們開展業務。但這些知情人士表示，在受到矽谷的強烈反對後，他們似乎改變了主意，轉而專注於推動美國AI模型以提升競爭力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Tuesday, the Trump administration’s A.I. plans may become clearer. The White House has invited U.S. tech companies to discuss a framework that would allow the government to review new A.I. models for cybersecurity issues before they are released publicly, according to three people with knowledge of the plans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據三位了解相關計劃的人士透露，川普政府的AI計劃可能會在週二變得更加清晰。白宮已邀請美國科技公司討論一項框架，該框架將允許政府在新的AI模型向公眾發布前，對其網路安全問題進行審查。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJO5r96niJYDFUaEpAQd40Ix2g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is all happening so fast,” said Senator Jon Husted, Republican of Ohio, last week after he met with the chief executives of Nvidia and OpenAI. “I don’t know that I have any definite conclusions about any of it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這一切發生得太快了，」俄亥俄州共和黨參議員喬恩·赫斯特德上週在會見了英偉達和OpenAI的首席執行官後表示。「我不確定自己對任何事情得出了確切的結論。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The whiplash is a sign of the Trump administration’s conflicting impulses when it comes to A.I. and the difficulties of handling such a quickly developing and powerful technology. The White House has aggressively intervened in swathes of the economy over the last 18 months, from media to computer chip manufacturing to mining. But A.I. is changing rapidly and the government has scrambled to determine how to put its thumb on the scale.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種態度上的劇烈搖擺體現了川普政府在面對AI時內部存在的矛盾衝動，也反映出掌控這樣一項發展極為迅速且威力強大的技術所面臨的困難。在過去18個月裡，白宮對經濟的多個領域進行了激進干預，涵蓋了從媒體、計算機晶片製造到礦業的各個方面。然而AI正經歷快速變革，政府一直在倉促應對，試圖摸索該如何施加影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump began his second term as an unabashed A.I. booster, peeling back regulations and forging close relationships with A.I. companies and start-ups. But that changed in June when Mr. Trump issued an executive order that would give the government oversight over new A.I. models. Since then, the technology has continued to evolve quickly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>川普總統在其第二個任期之初是一位毫不掩飾的AI推動者，不僅廢除了多項監管規定，還與多家AI公司及初創企業建立了緊密的聯繫。但這一局面在6月發生了轉變，當時川普頒佈了一項行政命令，賦予政府對新AI模型的監督權。</span>此後這項技術繼續保持著快速的迭代進化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most recent debates were prompted by a surge in powerful new Chinese A.I. models, which are known as “open source,” where the public can see the underlying computer code, or “open weight,” where companies reveal the calculations used to generate answers to questions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這一輪最新的爭論是由中國推出的多款強大的新AI模型引發的。這些模型被稱為「開源」（即公眾可以看到底層代碼）或「開放權重」（即公司會公開用於生成問題答案的計算參數）</span>模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Silicon Valley, the response to these Chinese A.I. models varied wildly. OpenAI and Anthropic, which generally do not share the underlying technology of their models, pushed the government to rein in their Chinese rivals, citing national security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在矽谷，對這些中國AI模型的反應截然不同。通常不共享其模型底層技術的OpenAI和Anthropic以國家安全方面的考量為由施壓政府遏制其中國競爭對手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other U.S. tech companies that produce open-source models, including Nvidia, pushed back. They argued that open-source models encourage innovation and could be used to defend computer systems from cyberattacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他開發開源模型的美國科技公司（包括英偉達）則表達了反對意見。它們主張，開源模型能促進創新，並且有助於計算機系統抵禦網路攻擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Which side comes out on top has taken on new significance in the long-running fight between Washington and Beijing over which nation will control critical technologies and win the A.I. race. Raising the stakes, Xi Jinping, China’s leader, is set to visit Washington in September for meetings that are expected to include some discussion of A.I. Industry executives and analysts said they believed the administration was unlikely to take action before that visit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中美兩國關於誰將控制關鍵技術並贏得AI競賽的長期博弈中，最終誰能獲勝已經被賦予新的重要意義。令局勢愈發緊張的是，中國領導人習近平計劃於9月訪問華盛頓，預計屆時的會晤將包含對AI的討論。行業高管和分析師表示，他們認為政府不太可能在該訪問之前採取實際行動。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="黃仁勛上週與商務部長盧特尼克在橢圓形辦公室。他已直接向政府官員闡述了開源人工智慧產品的優點。" data-src="https://static01.nyt.com/images/2026/08/03/multimedia/03biz-ai-whiplash--01-chmf/03biz-ai-whiplash--01-chmf-master1050.jpg" src="https://static01.nyt.com/images/2026/08/03/multimedia/03biz-ai-whiplash--01-chmf/03biz-ai-whiplash--01-chmf-master1050.jpg"/></div><figcaption><span>黃仁勛上週與商務部長盧特尼克在橢圓形辦公室。他已直接向政府官員闡述了開源人工智慧產品的優點。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The United States leads the world in A.I. innovation, and President Trump’s successful approach will keep it that way,” said Liz Huston, a White House spokeswoman. The Department of Commerce declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國在AI創新方面領跑全球，川普總統成功的應對舉措將保持這一態勢，」白宮發言人莉茲·休士頓表示。商務部拒絕置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The debate heated up last month, as executives at Anthropic and OpenAI continued regulatory discussions after the release of Moonshot AI’s Kimi, a bleeding-edge Chinese model that performed on par with top models from the two American companies in some areas, two of the people familiar with the companies’ positions said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩位了解兩家公司立場的知情人士透露，爭論在上個月進一步升級，當時月之暗面公司推出了前沿模型Kimi，該模型在某些領域的表現與這兩家美國頂尖公司的旗艦模型不相上下，隨後Anthropic和OpenAI的高管繼續與監管部門展開討論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI and Anthropic also expressed concerns about “distillation,” when a model is developed based on the responses of a different A.I. tool, essentially creating a copy, according to three people familiar with the matter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據三位知情人士透露，OpenAI和Anthropic還對「蒸餾」現象表達了擔憂，即通過另一個AI工具的輸出來訓練和開發新模型，這實質上等同於製造複製品。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="OpenAI首席執行官薩姆·奧爾特曼上週在華盛頓討論政府為制定人工智慧測試管理框架所做的努力。" data-src="https://static01.nyt.com/images/2026/08/03/multimedia/03biz-ai-whiplash--02-chmf/03biz-ai-whiplash--02-chmf-master1050.jpg" src="https://static01.nyt.com/images/2026/08/03/multimedia/03biz-ai-whiplash--02-chmf/03biz-ai-whiplash--02-chmf-master1050.jpg"/></div><figcaption><span>OpenAI首席執行官薩姆·奧爾特曼上週在華盛頓討論政府為制定人工智慧測試管理框架所做的努力。</span> <cite>Alex Kent/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration echoed those concerns. Michael Kratsios, who leads the White House Office of Science and Technology Policy, posted last month on X that the Chinese company that makes Kimi had distilled Anthropic’s powerful Fable model.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府對這些擔憂做出了回應。領導白宮科技政策辦公室的麥可·克拉齊奧斯上個月在X上發帖稱，開發Kimi的中國公司「蒸餾」了Anthropic強大的Fable模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He warned that “stealing proprietary U.S. technology and undermining American research is unacceptable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他警告稱：「竊取美國專有技術並破壞美國科研成果是不可接受的。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CMrtr96niJYDFSCUpAQduoAckg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The same day, Mr. Bessent posted that Chinese companies could face sanctions or other federal restrictions over stealing intellectual property.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同一天，貝森特發帖稱，中國公司可能會因竊取知識產權而面臨制裁或其他來自聯邦政府的限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration has also considered restricting the models that can be used by the federal government, or regulating information and communication technology through the Department of Commerce, a potential way to prevent U.S. firms from doing business with Chinese A.I. companies, four people familiar with the discussions said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據四位了解討論情況的人士透露，政府還考慮限制聯邦政府可使用的模型，或者通過商務部對信息和通信技術實施監管，這是一種阻止美國公司與中國AI企業開展業務的潛在手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We believe both open-weight and closed models have an important role to play in democratizing access to AI,” an OpenAI spokesperson said. “Advances in Chinese open-weight models are not an argument against openness. They reinforce the need for a coherent national framework that enables the U.S. to evaluate new models quickly, manage risks, and get the most powerful AI tools into the hands of cyber defenders.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">OpenAI的一位發言人表示：「我們相信開放權重模型和封閉模型在推動AI普及方面都發揮著重要作用。中國開放權重模型的進步並不是反對開放的理由。它們反而強化了建立一套連貫的國家框架的必要性，使美國能夠快速評估新模型、管理風險，並將最強大的AI工具交到網路安全防禦者的手中。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic拒絕置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The companies have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>（《紐約時報》已向OpenAI和微軟提起訴訟，指控其</span>侵犯了與AI系統相關的新聞報導的版權。兩家公司均否認了這些指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At Nvidia, Microsoft, Google and Meta, executives grew increasingly concerned that Anthropic and OpenAI would win over the White House with their arguments for tighter restrictions, according to two of the people. That would potentially cement the A.I. start-ups’ positions as market leaders,</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據兩位知情人士透露，英偉達、微軟、谷歌和Meta的高管們越來越擔心Anthropic和OpenAI會憑其論點說服白宮實施更嚴格的限制。那將有可能鞏固這兩家AI初創企業作為市場主導者的地位。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNXMr96niJYDFSX8SgAdDs4e_w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other A.I. labs were at risk of falling permanently behind, the people added. And because several of the companies make their own open-source models or supply hardware to businesses that use open-source technology, they worried the restrictions could harm them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">知情人士補充道，其他AI實驗室則面臨著永遠落後的風險。而且由於其中幾家公司本身也開發開源模型，或向使用開源技術的企業供應硬件，它們擔心這些限制措施可能會損害自身利益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over private texts, phone calls and video conferences, executives quietly built an argument that open-source models were good for the world and for American innovation, according to three of the people familiar with the talks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據三位了解談判情況的人士透露，通過私下的短訊、電話和影片會議，高管們悄悄構建起了一套論證，即開源模型對世界以及美國的創新都是有益的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Jensen Huang, the chief executive of Nvidia, became the face of that pushback in the nation’s capital. In his first-ever post on X on July 24, he defended open-source models, saying they accelerated innovation and strengthened security. Nvidia set up an alliance of companies pledging to work on open-source tools for A.I. safety, which quickly ballooned from a few members to more than 230.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達首席執行官黃仁勛成為了華盛頓<span>推行這一反駁主張的代表人物。在於7月24日發布的首條X帖子中，他為開源模型做出了辯護，稱其加速了創新並強化了安全性。英偉達建立了一個公司聯盟，承諾致力於開發用於AI安全的開源工具，該聯盟迅速從最初的少數幾個成員暴漲至超過230個。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Christopher Padilla, a former Commerce Department official and tech executive, said the clash was primarily an industry debate about money and market dominance — what he called a “cage match over the future of the A.I. industry.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前商務部官員、現科技界高管克里斯托弗·帕迪拉表示，這場衝突本質上是一場關於資金和市場主導權的行業爭論——他稱之為「關於AI行業未來的一場鐵籠纏鬥」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It happens to have a national security dimension, but it’s mainly a fight about what the A.I. market should look like: a collection of walled gardens dominated by a few big players, or a more open free-for-all with many smaller ones,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它恰好存在一個國家安全維度，但其核心是一場關於AI市場應該是什麼樣子的爭論：是由少數巨頭主導的一些封閉花園，還是由許多較小參與者共同構成的更為開放的自由競爭，」他說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokesman for Nvidia declined to comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達的一位發言人拒絕置評。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLH1r96niJYDFbPLSgAd0GoCdA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fueling the debate are recent revelations from OpenAI and Anthropic that their models had, unprompted, hacked other organizations. OpenAI said last month that two of its A.I. models had infiltrated Hugging Face, another tech company. Anthropic last week said that its own technology had hacked into three unnamed organizations, partly because of human error.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為這場爭論推波助瀾的還有OpenAI和Anthropic最近披露的細節：它們的模型在未得到指令的情況下自發黑入了其他機構。OpenAI上個月表示，其兩個AI模型侵入了另一家科技公司Hugging Face。Anthropic上週則表示，其自身的技術黑入了三個未具名的機構，部分是因人為失誤造成的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, OpenAI’s chief executive, Sam Altman, met with White House officials including Mr. Kratsios and Ms. Wiles to discuss the administration’s efforts to create a framework governing the testing of A.I. He also met with members of the Senate, though several lawmakers said the open-source debate had not come up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，OpenAI首席執行官薩姆·奧爾特曼與包括克拉齊奧斯和威爾斯在內的白宮官員進行了會晤，討論政府在制定管理AI測試框架方面所做的努力。他還與多位參議員進行了會面，不過幾位議員表示並沒有談及開源問題的爭論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By the time Mr. Altman appeared in Washington, Mr. Huang was already bringing his case for open-source A.I. products directly to administration officials and to lawmakers in a series of Capitol Hill meetings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在奧爾特曼現身華盛頓之際，黃仁勛已經在國會山莊舉行的一系列會議中直接向政府官員和議員陳述支持開源AI產品的理由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“He makes a compelling argument,” said Senator Mark Warner, Democrat of Virginia, after meeting with Mr. Huang last week, adding that the rise of Chinese open-source A.I. models had complicated the debate. “I’m not sure this is a genie we can put back in the bottle in terms of open source, but I’m still thinking this through.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他的論點很有說服力，」維吉尼亞州民主党參議員馬克·沃納在上週會見黃仁勛後表示，並稱中國開源AI模型的崛起使這場爭論變得更加複雜。「我不確定就開源而言，我們是否還能把這隻精靈放回瓶子裡，但我仍在深入思考這個問題。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">David McCabe是《紐約時報》記者，報導數字經濟和新技術帶來的複雜法律和政策問題。</p><div class="" data-poster=""><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Mike Isaac是《紐約時報》矽谷記者，常駐舊金山。他報導全球最具影響力的科技公司，以及它們如何塑造互聯網和現實世界的文化。</p><p class="cn-p">Ana Swanson報導貿易和國際經濟新聞，常駐華盛頓。她從事新聞工作已超過十年。</p><p class="cn-p">Kate Conger是一名科技記者，常駐舊金山。可以通過電子郵件kate.conger@nytimes.com聯繫她。</p><p class="cn-p">翻譯：經雷</p></div></div><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260805/ai-washington-regulation-whiplash/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

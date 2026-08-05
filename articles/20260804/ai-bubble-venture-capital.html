@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧泡沫未必是件壞事？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人工智慧泡沫未必是件壞事？</h1>
+    <h2 class="en-headline">In Silicon Valley, Some Say an A.I. Bubble Would Be Just Fine</h2>
+    <div class="meta-line">ERIN GRIFFITH <span style="margin: 0 8px;">•</span> 2026-08-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/07/30/business/00ai-bubble-SUB/00ai-bubble-SUB-jumbo.jpg" width="683"/><figcaption><span></span> <cite>Linn Fritz</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Michael Burry, the investor made famous in “The Big Short,” has warned about an artificial intelligence bubble. So has Dean Baker, an economist who identified the U.S. housing bubble ahead of the 2008 financial crisis. Even Jamie Dimon, the chief executive of JPMorgan Chase, has expressed caution.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因電影《大空頭》(The Big Short)<span>聞名的投資者麥可·伯裡曾警告人工智慧存在泡沫。曾指出2008年金融危機前美國地產泡沫的經濟學家迪恩·貝克也發出過類似警告。甚至連摩根大通首席執行官傑米·戴蒙也表達了謹慎態度。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in Silicon Valley, some people are less worried. In fact, they say, a bubble might be a good thing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在矽谷，有些人卻沒那麼擔心。事實上，他們認為泡沫可能是一件好事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In particular, venture capital investors, the optimistic risk-takers who provide money for start-ups, view the frothiness as a necessary part of the innovation machine. The excitement created by a bubble can drive new breakthroughs, their thinking goes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尤其是風險投資人——這些為初創企業提供資金的樂觀主義冒險家——將這種泡沫化傾向視為創新機器中不可或缺的一部分。他們的邏輯是，泡沫所創造的熱情能夠推動新的突破。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Bubbles are a part of technology and innovation,” said Tomasz Tunguz, an investor at the venture capital firm Theory Ventures. These frenzies are important for allowing crucial infrastructure to get built, even if they lead to some “capital destruction” along the way, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「泡沫是科技和創新的一部分，」風險投資公司Theory Ventures投資人托馬什·通古茲說道。他還說，即使這些狂熱在此過程中會導致一些「資本毀滅」，但它們對於讓關鍵基礎設施得以建成至關重要。</div></div></div></div></div><div class="big_ad" data-google-query-id="CITsh-CniJYDFdCHpAQdRmIGig" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is a common refrain in the nation’s tech capital. How else can risky, cutting-edge companies attract the money, talent and excitement they need to build the future?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國的這個科技之都，這是個常見的觀點。要不然，那些充滿風險的前沿公司該如何吸引構建未來所需的資金、人才和關注度呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If you were to rely on a purely organic, rational way of financing big technology platform shifts, they would probably never happen,” said Samir Kumar, an investor at Touring Capital, a venture capital firm. Once you get past the excessive exuberance, he added, “there are long-term benefits.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你要依賴一種純粹有機、理性的方式來為大型科技平台的轉變提供融資，那可能永遠不會發生，」風險投資公司Touring Capital投資人薩米爾·庫馬爾表示。而且一旦你跨越了過度繁榮的階段，「就會看到長期的好處，」他還說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This counterintuitive thinking stands in contrast to rising concerns over a potential A.I. mania, with dealmaking that never seems to stop. This week alone, OpenAI and Nvidia were close to landing an elaborate $500 billion data center deal in Ohio. Amazon, Google, Meta and Microsoft said they had spent a combined $170 billion on capital expenditures in the second quarter, up 72 percent over last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種反直覺的想法與人們對潛在人工智慧狂熱的日益擔憂形成了鮮明對比，這一領域的交易活動似乎永不停歇。僅在本週，OpenAI和英偉達就即將敲定一項在俄亥俄州建設價值達5000億美元的複雜數據中心協議。亞馬遜、谷歌、Meta和微軟表示，他們在第二季度的資本支出總計達到1700億美元，同比大幅增長了72%。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="亞馬遜今年在倫敦舉辦的「遞送未來」大會。這家公司是極少數能挺過2000年互聯網泡沫破裂的企業之一。
+" data-src="https://static01.nyt.com/images/2026/07/31/multimedia/31biz-ai-bubble-amazon-khzj/31biz-ai-bubble-amazon-khzj-master1050.jpg" src="https://static01.nyt.com/images/2026/07/31/multimedia/31biz-ai-bubble-amazon-khzj/31biz-ai-bubble-amazon-khzj-master1050.jpg"/></div><figcaption><span>亞馬遜今年在倫敦舉辦的「遞送未來」大會。這家公司是極少數能挺過2000年互聯網泡沫破裂的企業之一。 </span><cite>Francesca Jones for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Venture funding in the first half of the year also hit $413 billion, more than all of 2025, according to PitchBook, which tracks private investment. Young companies that have not released a product or earned a dollar of revenue are landing valuations that sound absurd, in one case reaching $32 billion. And there is so much money sloshing around Silicon Valley that nearby San Francisco has a mansion shortage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">追蹤私募投資的機構PitchBook的數據指出，今年上半年的風險投資額達到了4130億美元，超過了2025年全年的總和。一些尚未推出產品或賺到一分錢收入的新興公司正斬獲聽起來極其荒謬的估值，其中一個甚至達到了320億美元。矽谷的財富是如此橫流滿溢<span>，以至於鄰近的舊金山出現了豪宅短缺。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The bubble-is-good philosophy reveals how much the tech industry is still pressing the pedal to the metal, four years into the A.I. boom. Many investors said the funding behavior was justified because companies were using the technology to hit unfathomable levels of growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「泡沫有益」的哲學揭示出，人工智慧狂熱持續了四年之後，科技界依然在全力踩油門。許多投資者表示，這種融資行為是有道理的，因為各類公司正在利用這項技術來實現令人難以置信的增長水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI, valued at $730 billion, is generating $2 billion in revenue a month. Anthropic, valued at $900 billion, is producing nearly $4 billion a month. Google and Meta have boasted of nearly a billion people using their A.I. models. The demand for A.I., investors said, is seemingly unlimited.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">估值為7300億美元的OpenAI每月產生20億美元的收入。估值為9000億美元的Anthropic每月產生近40億美元的收入。谷歌和Meta都宣稱有近十億人在使用他們的人工智慧模型。投資者表示，對人工智慧的需求似乎是無限的。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="OpenAI位於舊金山的辦公室。這家估值達7300億美元的公司目前月營收已達20億美元。
+" data-src="https://static01.nyt.com/images/2026/07/31/multimedia/31biz-ai-bubble-openai-kmbz/31biz-ai-bubble-openai-kmbz-master1050.jpg" src="https://static01.nyt.com/images/2026/07/31/multimedia/31biz-ai-bubble-openai-kmbz/31biz-ai-bubble-openai-kmbz-master1050.jpg"/></div><figcaption><span>OpenAI位於舊金山的辦公室。這家估值達7300億美元的公司目前月營收已達20億美元。 </span><cite>Lucas Foglia for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“V.C.s only really make money when there are big technology shifts to invest behind,” said Pratyush Buddiga, an investor at Susa Ventures.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「風險投資人只有在有重大技術變革可供投資時才真正能賺到錢，」Susa Ventures投資人普拉蒂尤什·布迪加說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The two companies have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>（《紐約時報》已向OpenAI和微軟提起訴訟，指控其</span>侵犯了人工智慧系統相關新聞報導的版權。這兩家公司均否認了這些指控。）</div></div></div></div></div><div class="big_ad" data-google-query-id="CPjVh-CniJYDFWiPpAQdQBwOmA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">William Quinn, an associate professor at Queen’s University Belfast and a co-author of “Boom and Bust: A Global History of Financial Bubbles,” said past bubbles, and the easy money that came with them, had obvious positive elements: They drove innovation and long-term economic growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">貝爾法斯特女王大學副教授、《繁榮與蕭條：金融泡沫的全球史》(Boom and Bust: A Global History of Financial Bubbles)一書的合著者威廉·奎因表示，過去的泡沫以及隨之而來的容易獲取的資金具有明顯的積極因素：它們推動了創新和長期經濟增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In Silicon Valley, there are things that everyone seems to believe that seem crazy to the rest of the world, and on a lot of those things, it seems like Silicon Valley was right and the rest of the world was wrong,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些事情在矽谷似乎所有人都深信不疑，而在世界其他地方看來卻很瘋狂；但在很多這類事情上，似乎矽谷是對的，而世界其他地方是錯的，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bubbles also tend to go on for a lot longer than people think they will, Mr. Quinn said. Pessimists who see irrational behavior and sit on the sidelines can miss years of gains before any correction or crash. By the time the comedown happens, no one is listening to their bubble warnings anymore.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奎因表示，泡沫持續的時間通常也比人們想像的要長得多。在發生任何回調或崩盤之前，看到非理性行為就選擇旁觀的悲觀主義者可能會錯失多年的收益。等到轟然倒塌真正發生時，已經再也沒有人在聽他們的泡沫警告了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s always the joke that they’ve predicted 10 of the last three crashes,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大家總是開玩笑說，他們預測到了過去三次崩盤中的十次，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The Dot-Com Lesson</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>互聯網泡沫的教訓</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tech industry veterans still carry scars of the 2000 dot-com crash and its painful aftermath. For several years after, it was nearly impossible for start-ups to raise money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科技行業的資深人士依然帶著2000年互聯網泡沫破裂及其痛苦後果留下的傷疤。那之後的好幾年裡，初創公司幾乎不可能籌集到資金。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNuuiOCniJYDFVL4SgAdrGYEPA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The handful of companies that powered through to the other side — Amazon, PayPal, eBay — went on to become behemoths. And over time, the fiber-optic network that exuberant investors overbuilt in that boom helped more people get online, fueling the growth of new tech companies like Facebook.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">少數挺過難關的公司——亞馬遜、PayPal、eBay——後來都成長為了巨頭。隨著時間的推移，狂熱的投資者在那個繁榮時期過度建設的光纖網路幫助了更多人接入互聯網，從而推動了像Facebook這樣的新型科技公司的增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors who witnessed the dot-com crash remained wary of history’s repeating itself. In the early 2010s, they warned of a bubble among mobile apps with no revenue. Then came fears over “unicorn” start-ups that were valued at $1 billion or more, followed by nonsensical crypto projects and, eventually, the overlapping investment manias of 2021.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>見證了互聯網崩盤的投資者始終對歷史重演保持警惕。在2010年代初期，他們警示過沒有收入的移動應用存在泡沫。隨後是對估值達到或超過10億美元的「獨角獸」初創公司的擔憂，接著是荒謬不經的加密貨幣項目，並最終發展為2021年相互交織的投資狂熱。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But none of those moments led to a major crash.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這些節點都沒有引發嚴重的崩潰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Charles Hudson, an investor at Precursor Ventures, said the 2021 frenzy taught him that investors got little credit from sitting things out in bubbly times. Some investors made lots of bad, silly bets in 2021, but their backers did not punish them for the excesses. The lesson, he said, was to keep investing, even when things felt overheated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Precursor Ventures的投資者查爾斯·哈德森表示，2021年的狂熱給了他一個教訓：在泡沫時期選擇置身事外的投資者並不會因此獲得什麼讚賞。一些投資者在2021年做出了許多糟糕、愚蠢的下注，但他們的出資人並沒有因為這些過激行為而懲罰他們。他說，這給人的啟示是：即使在環境看起來過熱時，也要繼續投資。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The A.I. boom has been trickier to navigate, with obscene dollar amounts and the market moving at hyperspeed. Even so, Mr. Hudson said he knew he could not sit it out. He has focused on backing even younger companies and homed in on the “application layer,” or software start-ups that use A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧熱潮的走向更加難以把握，涉及的金額巨大，市場發展速度也異常迅猛。即使如此，哈德森表示他知道自己不能置身事外。他將重點放在資助更為年輕的公司上，並聚焦於「應用層」，即使用人工智慧的軟體初創公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It would be incredibly dangerous, and maybe irresponsible, to just say, ‘I’m not investing in A.I. at all because I think pockets of the business are a bubble,’” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果僅僅因為認為這個行業的某些局部存在泡沫，就聲稱『我完全不投資人工智慧』，那將是極其危險的，甚至是不負責任的，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="COWEiOCniJYDFanLSgAdDxQmMQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sudheendra Chilappagari, an investor at Battery Ventures, was in school when the dot-com bubble happened. (At 33, he is older than some of the top A.I. start-up founders, who were not yet born.) He joked that he felt jealous of his older colleagues because they started investing before there was so much noise and chaos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Battery Ventures投資人<span>蘇德辛德拉·奇拉帕加里在互聯網泡沫發生時還在上學。（現年33歲的他比一些頂尖人工智慧初創公司的創始人年齡還要大，他們當時甚至尚未出生。）他開玩笑說，他很羨慕資歷更老的同事，因為他們在沒有這麼多噪音和混亂之前就已經開始投資了。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said he was taking a lesson from their experience in the 1990s search engine wars. At the time, Battery Ventures invested in Infoseek, one of the earliest search engines — only to get crushed by Yahoo and others that then got crushed by Google.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他表示，自己正從他們90年代搜索引擎之戰的經歷中吸取教訓。當時，Battery Ventures投資了最早的搜索引擎之一Infoseek——結果被雅虎等公司碾壓，後者隨後又被谷歌碾壓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s not always the first mover that captures the enterprise value,” Mr. Chilappagari said. In a so-called supercycle like the A.I. boom, he expects continuous waves of possible investments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「捕捉到企業價值的並不總是先行者，」奇拉帕加里說道。在像人工智慧爆發這樣的所謂「超級週期」中，他預計會出現一浪接一浪潛在的投資機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The investors acknowledge that many factors could set off a crash: geopolitical clashes, competitive threats from cheaper open-source A.I. models, societal backlashes against data centers or more safety problems like OpenAI’s rogue hacking of a partner company. Even disappointment over how long it takes investments to pay off could deflate the market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資者承認，許多因素都可能引發崩潰：地緣政治衝突、來自更便宜的開源人工智慧<span>模型的競爭威脅、社會對數據中心的反彈，或是更多類似於OpenAI對合作公司進行惡劣駭客攻擊的安全問題。甚至是對投資多久能獲得回報感到失望，都可能讓市場泄氣。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You don’t want to get delusional,” Mr. Kumar of Touring Capital said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你不能讓自己陷入妄想，」Touring Capital的庫馬爾說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Darian Shirazi, an investor at the venture capital firm Gradient Ventures, said his profession had become more nerve-racking because the typical strategy of hitting one home-run deal to drive profits was so much more extreme. Venture capital firms might previously have hoped for a few of their investments to sell for $1 billion or $2 billion. In the A.I. boom, that potential outcome has increased to $50 billion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">風險投資公司Gradient Ventures的投資者達裡安·席拉齊表示，他的職業變得更加令人神經緊繃，因為這種通過一次「全壘打」式的交易來帶來利潤的典型策略如今已經極端得多。過去，風險投資公司可能希望他們的幾筆投資能以10億或20億美元的價格出售。而在人工智慧繁榮時期，這一潛在結果已暴漲至500億美元。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNGOiOCniJYDFXLrSgAdZ78Vfw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Your winner can be wildly outsized,” he said. “If it works, it works much better than anything we’ve ever seen in the history of venture capital.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你賭贏的那一把可以大到難以置信，」他說。「一旦成了，那就是遠遠超越我們在風險投資歷史上見過的任何投資的大勝。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Erin Griffith自舊金山報導科技公司、初創企業，以及矽谷文化。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260804/ai-bubble-venture-capital/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
