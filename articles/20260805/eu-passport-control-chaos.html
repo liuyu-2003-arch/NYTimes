@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邊檢排隊六小時？歐洲出入境系統引發旅行「噩夢」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">邊檢排隊六小時？歐洲出入境系統引發旅行「噩夢」</h1>
+    <h2 class="en-headline">Long Lines, Missed Flights: Travel Chaos Follows E.U.’s New Passport Controls</h2>
+    <div class="meta-line">JEANNA SMIALEK, KOBA RYCKEWAERT <span style="margin: 0 8px;">•</span> 2026-08-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="官員表示，里斯本機場護照檢查的等候時間在去年冬天達到了六個小時的峰值，但現在最長時間僅為當時的四分之一。" height="700" src="https://static01.nyt.com/images/2026/07/22/multimedia/22int-europe-travel-chaos-01-cqvg/22int-europe-travel-chaos-01-cqvg-master1050.jpg" width="1050"/><figcaption><span>官員表示，里斯本機場護照檢查的等候時間在去年冬天達到了六個小時的峰值，但現在最長時間僅為當時的四分之一。</span> <cite>Armando Franca/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shoneez Sallie had been traveling for 23 hours from South Africa when she landed in Brussels, only to face a demoralizing sight that has become all too common for foreign travelers entering or leaving the European Union. There was a long, <i>long</i> line for passport control, barely moving.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從南非出發飛行了23個小時後，肖妮茲·薩利降落在布魯塞爾，面對的卻是如今出入歐盟的外國旅客早已屢見不鮮的沮喪一幕。邊檢站排起了長龍，隊伍幾乎一動不動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Sallie, 39, said she stood in that line for five hours and 15 minutes. There were only six border security booths open, with officers in them processing roughly 1,000 people, she estimated. She waited so long that the rental company gave away the car she had reserved, and she had to pay about $740 more for another one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現年39歲的薩利表示，她在隊伍裡站了五小時15分鐘。據她估計，現場僅開放了六個邊檢窗口，官員們處理著大約1000名旅客。她等待的時間太長，以至於租車公司將她預訂的車租給了別人，她不得不額外支付約740美元重新租了一輛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some people were sitting on the floor and sort of scooting their bums up when the line moved,” she said. She posted a video on social media showing the dispirited crowd under the glaring lights of the Brussels entry hall.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「有些人坐在地上，等隊伍挪動時就挪著屁股往前擠，」她說。她在社群媒體上發布了一段影片，展示了布魯塞爾入境大廳刺眼的燈光下無精打採的人群。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not just Brussels. In Lisbon, the lines peaked at six hours. In Amsterdam, KLM says its travelers are missing their flights at twice the usual rate during peak hours. Across Europe, travelers have been bemoaning delayed vacations and chaotic business travel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>遭殃的不止布魯塞爾。在里斯本，排隊等候時間最長達到了六個小時。在阿姆斯特丹，荷蘭皇家航空表示高峰時段旅客錯失航班的概率是平時的兩倍。在整個歐洲，旅客們都在抱怨假期被延誤以及商務出行陷入混亂。</span></div></div></div></div></div><div class="big_ad" data-google-query-id="CPHuhYzpipYDFdSQpgQdUGEUPQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All blame the same culprit: Europe’s new biometric border system, which aims to better track travelers — and keep out unauthorized visitors — by taking their fingerprints and facial scans. So far, it has succeeded at annoying them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大家都將矛頭指向同一個罪魁禍首：歐洲全新的生物識別邊檢系統，該系統旨在通過採集指紋和面部掃描更好地追蹤旅客——並將未經授權的訪客拒之門外。但到目前為止，它唯一的「成就」就是激怒了旅客。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both travelers and much of the travel industry are irate, with the Ryanair chief condemning the “bureaucratic stupidity” of the European Union.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>旅客和大部分旅遊業界人士都怒不可遏，萊恩航空首席執行官更是譴責歐盟這種「官僚主義式的愚蠢」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though E.U. officials have pointed a finger at pre-existing problems with airport staffing and logistics, Ursula von der Leyen, the president of the bloc’s executive arm, has acknowledged “technical problems” in the new system. Recognizing the severity of the problem, the European Commission is considering extending a grace period that allows airports to temporarily stop collecting key biometric data in the case of long lines.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管歐盟官員將指責推給了機場人員配置和流程等固有問題，但該執行機構主席烏爾蘇拉·馮德萊恩承認新系統存在「技術問題」。考慮到問題的嚴重性，歐盟委員會正在考慮延長寬限期，允許機場在排長隊的情況下暫停採集關鍵的生物識別數據。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="布拉格邊檢處使用電子自助終端的乘客。在其他機場，這些自助終端尚未投入使用。" data-src="https://static01.nyt.com/images/2026/07/22/multimedia/22int-europe-travel-chaos-02-wfzk/22int-europe-travel-chaos-02-wfzk-master1050.jpg" src="https://static01.nyt.com/images/2026/07/22/multimedia/22int-europe-travel-chaos-02-wfzk/22int-europe-travel-chaos-02-wfzk-master1050.jpg"/></div><figcaption><span>布拉格邊檢處使用電子自助終端的乘客。在其他機場，這些自助終端尚未投入使用。</span> <cite>David W Cerny/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Guillaume Mercier, a spokesman for the commission, said last week that “we are now in close, in constructive contact” with nations “to see what the challenges are at certain border crossing points.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">委員會發言人紀堯姆·梅西耶上週表示，「我們目前正與各成員國保持密切、建設性的溝通」，以「了解某些邊防檢查站面臨的挑戰是什麼」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nightmare experiences are well documented, but not typical. Based on data collected by the firm Qsensor, wait times in Amsterdam averaged 15 minutes in late June and early July, and about nine minutes in Paris.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管這些噩夢般的遭遇被廣泛記錄，但並不具有普遍性。根據Qsensor公司收集的數據，6月下旬至7月初，阿姆斯特丹的平均等候時間為15分鐘，巴黎約為九分鐘。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But when problems occur, they balloon quickly. Reports of hourslong lines and missed connections continue to accumulate across Europe, blanketing social media and making for office chatter among travelers around the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而一旦出現問題，惡化速度極快。關於排長隊數小時和錯失轉機航班的報導在歐洲各地不斷累積，鋪滿了社群媒體，並成為全球旅客茶餘飯後的談資。</div></div></div></div></div><div class="big_ad" data-google-query-id="CInChozpipYDFbuxpgQddIQDUQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My family had warned me about how long these lines were, but they were so much worse than we expected,” said Mike Sofka, 39, who waited in line with his wife at Charles de Gaulle Airport near Paris for about three hours before flying back to Chicago in early July.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我的家人曾警告過我這些隊伍有多長，但實際情況比我們預期的還要糟得多，」39歲的麥克·索夫卡說道。7月初，他在飛回芝加哥前與妻子在巴黎附近的戴高樂機場排隊等候了大約三個小時。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The goal of the new system is simple: Europe wants to better track who travels into and out of its 29-country free-movement zone. Anyone visiting from the outside, including from the United States and Britain, must register.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新系統的目標很簡單：歐洲希望更好地追蹤誰在進入和離開其29個國家組成的自由流動區。任何來自外部的訪客（包括美國和英國旅客）都必須登記。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But gathering the biometric data takes time, especially when thousands of people need to do it at once. Big backups have been reported ever since the system began to be phased in during the autumn of 2025. Airport workers often do what they can to help, like distributing water bottles, but tempers can run short.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但收集生物識別數據需要時間，尤其是當成千上萬的人需要同時辦理時。自2025年秋季開始分階段引入以來，該系統屢屢出現嚴重壅堵的情況。機場工作人員通常會盡其所能提供幫助，比如分發瓶裝水，但不滿仍然會爆發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Returning home from a July holiday at Lake Como, in Italy, Taylor Henriksen, 25, had a layover in Brussels, where she waited in line for around two and a half hours to get through passport control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結束了7月份在義大利科莫湖的假期返程期間，25歲的泰勒·亨裡克森在布魯塞爾轉機，在那裡她等候了大約兩個半小時才通過邊檢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She missed her connecting flight to Washington, D.C.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她錯過了前往華盛頓的轉機航班。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They were handing out Biscoff cookies and lollipops,” she said. “It made it worse, honestly. I was like, don’t even do that.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們當時在分發Biscoff焦糖餅乾和棒棒糖，」她說。「老實說，這讓情況變得更糟糕了。我的感覺是，別搞這些套路。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CNnChozpipYDFZG9pgQd1K8DTg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some people were “borderline in tears,” saying that they needed to get home to their families, but that the airport staff would not allow them to cut the line. She said one worker, rather than offering solutions, was “just saying, ‘Want a cookie? Want a cookie?’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有些人「瀕臨絕望哭泣」，說他們需要趕回家見家人，但機場工作人員不允許他們插隊。她說，一名工作人員非但沒有提供解決方案，反而「只是在問，『要餅乾嗎？要餅乾嗎？』」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alexander Zinell, the chief executive of Fraport Greece, which runs airports around the country, including on the islands of Corfu and Mykonos, said that customers have at times lined up out the doors before reaching border control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">運營包括科孚島和米克諾斯島在內的希臘各地機場的Fraport Greece公司首席執行官亞歷山大·齊內爾表示，有時客戶在到達邊檢之前，隊伍就已經排到了大門外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some authorities blame glitches in the technology itself — issues have been reported with both the vendors implementing the process and the European Union’s central technology. Kiosks are meant to collect the biometric images without needing border control officers to do it, but in many airports, the machines either do not work or haven’t been activated. Daniel Bunn, an American, said that was the case when he flew to Brussels on business in April.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些部門將其歸咎於技術本身的故障——據報導，供應商的部署和歐盟中央技術均存在問題。自助終端本應在不需要邊檢官員干預的情況下收集生物識別圖像，但在許多機場，這些機器要麼無法工作，要麼尚未啟用。美國人丹尼爾·邦恩表示，他4月份飛往布魯塞爾出差時就遇到了這種情況。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The kiosks are right there next to where you’re standing in line,” said Mr. Bunn, head of the Tax Foundation in Washington, explaining that he had waited for an hour and a half.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「那些自助終端就在你排隊站立的位置旁邊，」華盛頓稅務基金會負責人邦恩解釋道，他當時排了一個半小時的隊。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="新的生物識別邊檢系統旨在讓歐洲變得更安全。" data-src="https://static01.nyt.com/images/2026/07/20/multimedia/22int-europe-travel-chaos-sub-klgm/-22int-europe-travel-chaos-sub-klgm-master1050.jpg" src="https://static01.nyt.com/images/2026/07/20/multimedia/22int-europe-travel-chaos-sub-klgm/-22int-europe-travel-chaos-sub-klgm-master1050.jpg"/></div><figcaption><span>新的生物識別邊檢系統旨在讓歐洲變得更安全。</span> <cite>Juan Medina/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ihsane Chioua Lekhli, a Brussels Airport spokesperson, said the airport had installed around 60 kiosks to reduce the number of passengers needing to go through staffed border checkpoints, but the machines are not yet in use as they are still being tested. The airport hopes to have them operational “as soon as possible,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯塞爾機場發言人伊薩內·希烏阿·萊赫利表示，機場已安裝了約60個自助終端，以減少需要通過人工邊檢口的旅客人數，但由於仍處於測試階段，這些機器尚未投入使用。她說，機場希望「儘快」讓它們投入運行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some airports are slowly figuring out how to manage the new system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些機場正在摸索如何管理這一新系統。</div></div></div></div></div><div class="big_ad" data-google-query-id="CObLhozpipYDFYetpgQdmR0BeA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pedro Moura, general coordinator of Portugal’s Borders and Foreigners Coordination Unit, said that while lines at Lisbon’s airport had reached as long as six hours in December, these days, they are an hour during peak periods. Ahead of the summer rush, the border authority was adding 369 new border guards to ease pressure. The country has also been early to roll out an app — also active in Sweden — that allows people to submit much of their information in advance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">葡萄牙邊境與外國人協調單位總協調員佩德羅·莫拉表示，雖然里斯本機場的排隊時間在12月曾長達六個小時，但如今在高峰時段已縮短到一個小時。在夏季高峰來臨之前，邊境當局增加了369名邊防警衛以緩解壓力。該國還率先推出了一個應用程序（該程序也在瑞典啟用），允許人們提前提交大部分信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some places and at quiet times of day, lines are whizzing along even with the new system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在某些地方以及一天中的平峰時段，即使使用新系統，隊伍也在快速流動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cameron Hewitt, a travel writer for Rick Steves’ Europe, worried that he might encounter problems when he traveled through Amsterdam from Seattle this year. “I was a little nervous,” he said. “I didn’t dillydally getting off the plane.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Rick Steves\' Europe的旅遊作家卡麥隆·休伊特今年從西雅圖途徑阿姆斯特丹時曾擔心會遇到麻煩。「我當時有點緊張，」他說。「下飛機的時候一秒都不敢耽誤。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the end, though, he whisked through registration and made his tight connection in plenty of time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過最終，他迅速完成了登記，並留有充裕的時間趕上了安排得很緊湊的轉機航班。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Ms. Sallie, a travel agent who thought that the horror stories she saw online might be exaggerated, has found during her travels that meltdowns are real. She has heard from other travelers about backups in Amsterdam and Paris, and in addition to her own Brussels debacle, she had to wait in a two-hour line in Copenhagen. She arrived to her flight only five minutes before the gate closed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為一名旅行社代理，薩利原本以為自己在網上看到的那些慘狀可能有所誇大，但她在旅行中發現，這些崩潰場面是真實存在的。她從其他旅客那裡聽說過阿姆斯特丹和巴黎的滯留情況，除了在布魯塞爾遇阻，她還在哥本哈根排了兩個小時的隊。當她趕到登機口時，距離登機口關閉僅剩五分鐘。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Border guards can already hit pause on collecting fingerprints and facial scans for up to six hours once lines get out of control. That ability is set to expire in September, but the European Union can extend it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">邊防現在已經可以在隊伍過長的情況下暫停採集指紋和面部掃描，最長可以持續六個小時。該權限定於9月到期，但歐盟可以予以延長。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLHUhozpipYDFYiWpgQdk24vAw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Airlines and airports asked for greater flexibility to suspend the system pre-emptively, after they know a rush is coming but before lines have formed. E.U. officials refused that request.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>航空公司和機場要求在得知客流高峰即將來臨、但隊伍尚未形成之前擁有更大的靈活性來預先暫停該系統。歐盟官員拒絕了這一請求。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Eventually, the authorities still insist, updated border checkpoints will be both more secure and faster than the old ways.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當局依然堅稱，升級後的邊檢查驗口最終將比舊方式更安全，同時也更快速。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bart van den Brink, the Dutch migration minister, acknowledged that the system is a “big implementation challenge,” but said that it “will be worth it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">荷蘭移民部長巴特·范登布林克承認該系統「在實施上是個巨大挑戰」，但也表示「這將是值得的」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Jeanna Smialek是《紐約時報》布魯塞爾分社社長。</p><div class="" data-poster=""><div class="css-aao5n7-print" data-poster=""><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Koba Ryckewaert是《紐約時報》記者/研究員，常駐布魯塞爾。</p><p class="cn-p">翻譯：經雷</p></div></div></div></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260805/eu-passport-control-chaos/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
