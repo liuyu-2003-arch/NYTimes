@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>像美國最有權勢的那群人那樣吃飯 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">像美國最有權勢的那群人那樣吃飯</h1>
+    <h2 class="en-headline">The Most Powerful Men in America Are Eating Only Steak and Sauerkraut. Could I?</h2>
+    <div class="meta-line">WILLY STALEY <span style="margin: 0 8px;">•</span> 2026-08-06</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/07/29/magazine/mag-09ididit/mag-09ididit-jumbo.jpg" width="769"/><figcaption><span></span> <cite>Sarah Anne Ward for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I was a little less than 30 minutes into a video call with Sean O’Mara, the trim and handsome 63-year-old doctor who has reportedly been giving dietary advice to several members of the Trump cabinet, when he pulled up an image of two liquids the color of radiator fluid. This vibrant yellow-green, O’Mara explained, occupies a specific attention-getting wavelength. “Soda companies use that color to get people to buy,” he said, gesturing to the first liquid, which was Mountain Dew. “Your brain kind of lights up. You’re like, Wow, that’s cool stuff.” He directed my attention to the other liquid, roughly the same color, and in a jar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我與肖恩·奧馬拉的影片通話進行到快30分鐘的時候，他展示了一張圖片，上面是兩種顏色類似防凍液的液體。這位現年63歲、身材勻稱、長相英俊的醫生據傳一直在向川普內閣的幾位成員提供飲食建議。奧馬拉解釋說，這種鮮艷的黃綠色處於一種特別吸引注意力的波長。「汽水公司就是用這種顏色吸引人們購買的，」他指著第一種液體——激浪汽水——說，「你的大腦會被瞬間點亮，你會覺得：哇，這東西太酷了。」接著，他引導我看向另一種裝在罐子裡、顏色相近的液體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Do you know what that is?” he asked me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你知道這是什麼嗎？」他問我。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“No,” I said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不知道，」我說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That’s urine,” he said. “That’s urine from a human being.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是尿液，」他說，「這是一個人的尿液。」</div></div></div></div></div><div class="big_ad" data-google-query-id="CPq6jN20jZYDFWgFrQYd1UkRjA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The strong implication was that it was his. Passing urine this color is a good thing, O’Mara said, and it started happening to him six years ago: a byproduct of his diet, which comprises almost exclusively steak and fermented foods. The Wall Street Journal reported in June that Robert F. Kennedy Jr., JD Vance, Howard Lutnick and Sean Duffy had all taken up the O’Mara program. Kennedy has credited it with reducing his visceral fat load by 40 percent; the president has reportedly taken notice of Vance’s slimming figure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>他強烈暗示這是他自己的尿。奧馬拉表示，排出這種顏色的尿液是一件好事，而這種現象是從六年前開始出現在他身上的——這是他飲食結構的副產品。他的飲食幾乎完全由牛肉和發酵食品組成。《華盛頓郵報》6月報導稱，小羅伯特·F·甘迺迪、JD·萬斯、霍華德·</span>盧特尼克和肖恩·達菲都採用了奧馬拉的飲食計劃。甘迺迪稱該計劃使其內臟脂肪含量減少了40%；據報導，總統也注意到了萬斯日益苗條的身材。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I understand the appeal of a radical — and radically simple — dietary intervention. Last year, facing down 40, frustrated both with my body and with the sudden appearance of miraculous fat-melting drugs, I stopped eating carbohydrates and started running a lot in the mornings. I lost something like 25 pounds this way. Naturally, I was intrigued by the existence of a more powerful and manly diet for more powerful and manly people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我能理解這種激進且極度簡單的飲食干預的吸引力。去年，面對即將到來的40歲門檻，我既對自己的身體感到沮喪，又對突然出現的能奇蹟般溶脂的藥物感到無所適從，於是我停止攝入碳水化合物，並開始長時間的晨跑。通過這種方式，我減掉了大約11公斤。自然而然地，我對這種專為更強大、更有男子氣概的人群打造的飲食法產生了濃厚興趣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So I joined the cabinet — for a week, anyway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">於是，我加入了內閣的行列——至少體驗了一週。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">O’Mara calls it the Living Diet: You eat nothing but the flesh of grass-fed ruminants — cows, yes, but also bison, elk and venison — and as many different fermented foods as possible, because their bacteria help repopulate your gut, which he says improves your metabolism, leading to weight loss. Wild-caught seafood is cool, too, but ruminants are best, O’Mara says, because they ferment what <i>they</i> eat in their many stomachs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧馬拉稱之為「活食」(Living Diet)：除了草飼反芻動物（牛肯定算，但也包括水牛、麋鹿和鹿）的肉以及盡可能多的不同發酵食品外，什麼都不吃。因為發酵食品中的細菌有助於重建你的腸道微生態，他聲稱這能改善新陳代謝，從而減輕體重。野生捕撈的海鮮也不錯，但奧馬拉說反芻動物是最好的，因為它們會在自己的多個胃裡發酵吃下去的食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He wanted me eating fermented beets, carrots and radishes; Roquefort and Parmesan; yogurt, kefir and kvass. He showed me a picture of his typical plate of food: It looked as if a steak had been dropped on a painter’s easel, studded as it was with multihued hillocks of fermented vegetables. “I have a refrigerator that has about 20 to 30 ferments, and I just get little bits of each one,” he explained. “I’m just rubbing this meat around in all that bacteria.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他希望我吃發酵甜菜、胡蘿蔔和櫻桃蘿蔔；洛克福羊乳乾酪和帕瑪森乾酪；酸奶、開菲爾和格瓦斯。他向我展示了他的典型一餐：看起來就像一塊牛肉掉在了畫家的調色板上，上面鑲嵌著五顏六色的發酵蔬菜小丘。「我的冰箱裡大約有20到30種發酵食品，我每種都取一點點，」他解釋道，「我就是把這塊肉在所有這些細菌裡蹭來蹭去。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It turns out a breakfast of ground beef with a pile of kimchi and a fried egg is, frankly, invigorating. But lunch, by virtue of having to take place near the Times Building in Midtown Manhattan, allowed me to really spread my wings: I found my way to the skirt steak from a Spanish restaurant, which could be secured off menu — and, mercifully, to go. I would drag my jar of kimchi, plastic trays of fermented banchan and a wedge of Roquefort to a shared lounge area and hope the staff of T Magazine across the way didn’t notice my grotesque feeding ritual; at times I hoped someone would ask what I was doing, just so I could explain that I’m not normally like this. They never did.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實證明，由牛肉餡、一堆韓式泡菜和一枚煎蛋構成的早餐確實是令人精神振奮的。但午餐必須在曼哈頓中城時報大樓附近解決，我得以恣意發揮：我從一家西班牙餐廳找到了不在菜單上的裙邊牛排——幸好可以打包帶走。我會拎著我的韓式泡菜罐、發酵小菜的塑料盒和一塊洛克福乾酪來到公共休息區，希望對面的《T雜誌》員工沒有注意到我這怪異的進食儀式；有時我甚至希望有人能問問我在幹什麼，這樣我就可以解釋我平時並不是這樣的。但他們從來沒問過。</div></div></div></div></div><div class="big_ad" data-google-query-id="CPLpjN20jZYDFePEwgQdo7YaCw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Setting aside the magic of fermented foods, the diet also seems to operate by straightforward math. There are barely any calories in kimchi, and it’s actually pretty hard to eat that much beef, even — or especially — if it’s all you’re eating. It’s as high in satiety as nearly any protein you can find. As the week wore on, the mere thought of my next meal of metallic, tangy beef would almost turn my stomach. I was putting away about a pound and a half of meat most days, and even that was well below “maintenance” — or the amount of calories my body would need before turning elsewhere for fuel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拋開發酵食品的奇妙功效不談，這種飲食法似乎也遵循著直截了當的數學原理。泡菜裡幾乎沒有任何熱量，而且一個人實際上很難吃下那麼多牛肉，即使——或者說尤其是——在只吃牛肉的情況下。牛肉的飽腹感幾乎與任何蛋白質同樣高。這週越是往後，想到下一頓還要吃那種帶有金屬味和酸味的牛肉，我就幾乎要反胃了。大多數日子裡我能吃下約700克肉，即使如此，這個攝入量也遠低於「維持量」——也就是我的身體在轉而消耗其他能量之前所需的熱量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I ran the basics of the diet by Marion Nestle of New York University, whose views on nutrition are more mainstream than O’Mara’s. While she questioned his claims about fermented foods improving metabolism, Nestle agreed the diet would be effective as a temporary route to weight loss, provided you kept your caloric intake below maintenance. “I can’t think of any nutrients that would be missing from this,” she said. “But it just sounds boring to me.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我向紐約大學的馬利昂·內斯特爾請教了這種飲食法的基本原理，她在營養學方面的觀點比奧馬拉更為主流。雖然對奧馬拉關於發酵食品能改善新陳代謝的說法表示質疑，但內斯特爾同意，只要將熱量攝入控制在維持量以下，這種飲食作為一種短期的減肥途徑是有效的。「我想不出這種飲食法會缺乏什麼營養素，」她說。「但對我來說，這聽起來太無聊了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I was still running — or trying to. One interesting thing about carbohydrates: They really do supply your body with a readily available source of energy, and if you don’t eat them, exercising will feel as if someone has turned the gravity up. You can feel the weight of your legs, your shoes, everything. Your body adjusts eventually, but you’re never as fast. Eating pasta, by contrast, makes you feel spring-loaded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我仍在堅持跑步——或者說試圖堅持。關於碳水化合物，有一點很有意思：它們確實能為你的身體提供隨時可用的能量來源，如果不攝入碳水，運動時就會感覺像是有人調大了重力。你能感受到雙腿、鞋子以及一切東西的沉重感。你的身體最終會適應，但你再也跑不了那麼快了。相比之下，吃點意大利麵會讓你感覺全身裝了彈簧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At home, my son complained about the miasma of beef smoke coming from my cast-iron pan twice a day, but I had total control over what I ate, drank and didn’t. That control is perhaps the primary appeal of this sort of diet: Because there’s no room for compromise, you never have to bargain with yourself about anything. You’re like a monk or a prisoner — shackled, but free of temptation. And, as they often are, trim, and a little penitent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在家裡，兒子每天都要抱怨兩次，說我用鑄鐵鍋煎牛肉時散發的油煙太重，但是對於自己吃什麼、喝什麼，乃至不吃什麼、不喝什麼，我擁有絕對的控制權。這種掌控感或許正是這類飲食法的核心吸引力：正因為沒有任何妥協的餘地，你永遠不必和自己討價還價。你就像一個修道士或囚犯——雖身受束縛，卻擺脫了誘惑。而且，和他們常有的狀態那樣，身材精幹，且帶著一絲懺悔之意。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To O’Mara, the diet is not just a temporary means of losing weight but a way to eat for good. He has been doing it for 10 years, and credits it with turning his life around. At one point in our conversation he pulled up the Bristol Stool Chart, which ranges from Type 1 (“separate, hard pellets”) to Type 7 (“watery, no solid pieces”). O’Mara is consistently delivering Type 4 (“smooth, soft, like a snake”), with pointed ends, indicative of healthy rectal function, he told me. “When you start eating healthy, you don’t need toilet paper,” he claimed. “Animals in the wild have no residual stool on their anus.” He described a proper bowel movement to me this way: odorless, wipe-free, over in three to seven seconds and “nearly orgasmic.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在奧馬拉看來，這種飲食法不僅是一種暫時的減肥手段，而是一種終身的飲食方式。他已經堅持了10年，並且認為正是它改變了自己的生活。在我們的交談中，他一度談起「布裡斯托糞便分類法」，該方法將大便分類，從第一型（「顆粒狀、堅硬」）到第七型（「水樣，無固體凱瑞」）。奧馬拉告訴我，他總是能排出第四型（「光滑、柔軟，像蛇一樣」），而且末端呈尖狀，表明直腸功能健康。「一旦你開始健康飲食，就不需要衛生紙了，」他聲稱。「野生動物的肛門上就不會殘留糞便。」他向我這樣描述一次理想的排便狀態：無異味、無需擦拭、在三到七秒內結束，且「幾乎像是性高潮」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I could have a bowel movement behind a sheet at a dinner party in the corner of the room,” he said, “and nobody would know.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「即使在晚宴上，如果我躲在房間角落一塊帘子後面排便，也不會有人察覺，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIj5jN20jZYDFZ3EwgQdvywHuQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As it happened, I had a dinner party to go to on Friday, the last full day of my diet. I felt good. I was taut and energetic, in control; I had some fresh ideas about this whole Strait of Hormuz situation. Then I had two martinis and situated myself at the dinner table. So my guard was down when before me landed a glistening bowl of linguine with clams, a panzanella salad, a heaping platter of roast vegetables and bread baked by the host, with butter softened in the July heat. My last 18 meals had been beef and ferments; the scent of the clams was intoxicating.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巧合的是，週五——也就是我進行這種飲食法的最後一天——我正好要參加一個晚宴。我感覺很好。我肌肉緊緻，精力充沛，掌控感十足；我對整個霍爾木茲海峽的局勢甚至有了些新的見解。然後我喝了兩杯馬丁尼，在餐桌旁坐了下來。因此，當一碗閃閃發光的蛤蜊義大利細面、一份意式麵包沙拉、一整盤烤蔬菜以及主人親自烘焙、蘸著7月酷暑中化開的黃油的麵包擺在我面前時，我的防線崩潰了。我最近的18頓飯全都是牛肉和發酵食品；蛤蜊的香氣令人陶醉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I caved within 10 seconds, eating all of it heartily. I barely had room for the main course, which was — what else — steak.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我在10秒之內就敗下陣來，大口吃光了一切。我甚至幾乎吃不下主菜了——而主菜偏偏是，牛肉。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Willy Staley是《紐約時報雜誌》編輯。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260806/trump-rfk-steak-kimchi-diet/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
