@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機器人能拯救老齡化的日本嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">機器人能拯救老齡化的日本嗎？</h1>
+    <h2 class="en-headline">Can Robots Save an Aging Japan?</h2>
+    <div class="meta-line">HANNAH BEECH, KIUKO NOTOYA <span style="margin: 0 8px;">•</span> 2026-08-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="西西川町櫻花種植者協會負責人金子光哉使用機器人為櫻花園除草。" height="700" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-03-vhql/00int-japan-robot-03-vhql-master1050.jpg" width="1050"/><figcaption><span>西西川町櫻花種植者協會負責人金子光哉使用機器人為櫻花園除草。</span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The color of the cherry blossom hovers between pink and white. The blooms peak briefly. It’s hard to explain why Japanese love the sakura. But they do, deeply.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">櫻花的顏色介於粉紅與雪白之間。花期短暫，轉瞬即逝。很難解釋日本人為何如此鍾愛櫻花，但他們確實愛得深沉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Robots do not appreciate the soft evanescence of the sakura. Nor do they understand why a snowbound town in northern Japan has dedicated itself to the cultivation of a winter variety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">機器人不懂得欣賞櫻花稍縱即逝的柔美，它們也不明白，為什麼日本北部一個冰雪覆蓋的小鎮會致力於培育一個冬季櫻花品種。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the residents of Nishikawa have discovered — at least they thought they had discovered — that they need robots for their sakura. There are not enough workers in town. The average age of a Nishikawa farmer is 73. Who else will work in the most depopulated town in one of the most depopulated prefectures in one of the most depopulated nations on earth, if not for an amalgamation of aluminum, steel and hard plastic?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，西川町的居民們發現——至少他們自認為發現——他們的櫻花需要機器人。鎮上的勞動力已經嚴重不足。西川町農民平均年齡高達73歲。日本是世界上人口減少最嚴重的國家之一，山形則是日本人口下降最快的縣之一，西川町又是山形人口減少最嚴重的小鎮，如果不依靠由鋼鋁和硬塑料構成的機器，還能靠誰來幹活呢？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We had to do something,” said Mitsuya Kaneko, the head of the Nishikawa cherry blossom farmers’ union, whose parents, aged 75 and 84, still plod through the snow to prune and package winter sakura in a largely unheated shed. “We cannot just die out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「我們必須想點辦法，」西川町櫻花種植者協會負責人金子光彌說道。他的父母一個75歲，一個84歲，至今還要艱難地走過積雪，在一個幾乎沒有取暖設施的棚子裡修剪和包裝冬季櫻花。「我們不能就這樣坐以待斃。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Kaneko, at 53 years old, is tech savvy. He pushes his glasses down his nose to peer at his iPhone from which he can check the temperature and humidity of his sakura orchards, as well as catch a livestream of cherry trees being cherry trees. After watching his hometown shrink and its farmers stoop ever steeper with age, Mr. Kaneko worked with the local government to bring technology to Nishikawa.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">53歲的金子光彌精通科技。他把眼鏡沿著鼻樑推下來，凝視著iPhone螢幕——通過手機，他可以查看櫻花園的溫度和濕度，還能觀看櫻花樹生長的實時監控。目睹家鄉人口不斷縮減、農民隨著年齡增長腰背愈發佝僂，金子光彌與當地政府合作，將科技引入西川町。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="西川町的居民致力於培育一種深受日本人喜愛的冬櫻品種。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-01-vhql/00int-japan-robot-01-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-01-vhql/00int-japan-robot-01-vhql-master1050.jpg"/></div><figcaption><span>西川町的居民致力於培育一種深受日本人喜愛的冬櫻品種。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Agricultural officials installed sensors detecting minute temperature variations to determine the best time for harvesting the winter sakura. (That turns out to be after 500 hours of temperatures below 8 degrees Celsius, or 46 degrees Fahrenheit.) They deployed grass-mowing robots. And as their triumphal act, they ordered a robot that would allow the farmers to more easily transport and load bundles of cherry blossoms onto trucks. Pochi, as the robot was named, was to arrive last November.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">農業官員安裝了能夠探測微小溫度變化的傳感器，以確定採收冬櫻的最佳時機。（結果表明，最佳時機是在氣溫低於八攝氏度的環境下，累計達到500小時之後。）他們部署了除草機器人。作為最大的創舉，他們還訂購了一台機器人，能讓農民更輕鬆地運送成捆的櫻花枝，並裝載到卡車上。這台被命名為「波奇」的機器人原本應該在去年11月到貨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then the farmers of Nishikawa waited. November came and went. In a nation that has made punctuality a high art form, the delay was embarrassing. Pochi finally arrived on Christmas Day, a cheery yellow container on wheels that looks less like a sophisticated robot and more like an oversized Lego construction. The price tag was about $15,000.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨後，西川町的農民們開始了漫長的等待。11月過去了。在一個將守時視為至高藝術的國家裡，這樣的延期令人尷尬。「波奇」終於在聖誕節當天抵達——一個帶輪子的亮黃色箱子，與其說像一台精密的高科技機器人，不如說更像一塊超大號樂高積木。它的售價約為1.5萬美元。</div></div></div></div></div><div class="big_ad" data-google-query-id="COnXvZblj5YDFVCLcgAdBywRUg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since then, well, that’s the story. For all the buildup and excitement from robot boosters and local politicians from Yamagata Prefecture eager to uncork central government funds for rural revitalization, Pochi has mostly slumbered unloved in a corner of a greenhouse. The prevailing attitude toward the robot, which can negotiate mountain terrain and carry 600 pounds, was encapsulated by Hideki Shida, 84, another Nishikawa farmer. Even as Mr. Kaneko showed off how Pochi, with the slightest flick of a wrist, followed him like an obedient dog, Mr. Shida trundled past conspicuously, pushing stacks of cherry blossoms on a metal cart, his body angled with effort.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從那以後，嗯……故事是這樣的。儘管機器人支持者，以及山形縣那些渴望從中央政府申請農村振興資金的地方政界人士大造聲勢，充滿熱情，「波奇」大部分時間都備受冷落，在溫室的一個角落裡沉睡。從在84歲的西川町農民志田秀樹（音）身上，當地人對這款能夠翻越山地、承重約270公斤的機器人的普遍態度充分可見：儘管金子光哉正在得意地展示，只需他手腕輕輕一揮，「波奇」就能像聽話的狗一樣跟在身後，志田秀樹卻推著一輛裝滿櫻花枝的金屬手推車醒目地從旁緩慢經過，身體因用力而微微前傾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I do things the old way,” he said, casting a dismissive look at Pochi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我還是靠老辦法，」他不屑地瞥了「波奇」一眼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not one of Mr. Shida’s three children is a farmer. He is widowed. He lives alone and farms alone, hiking up to his mountain fields to shovel the sakura out of the snow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">志田秀樹的三個孩子沒有一個務農。喪偶後他獨自生活，獨自務農，徒步爬上山裡的田地，用鐵鍬將積雪中的櫻花枝剷出來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Snow Country</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>雪國</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not so long ago, Nishikawa slumbered in the snow. Mr. Kaneko’s parents remember how the family farmhouse in the mountains above the town was inaccessible for months at a time, even into the early 1970s. The only way to get anywhere was by sled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就在不久前，西川町還沉睡在冰雪之中。金子光彌的父母還記得，即使到了20世紀70年代初，他們位於鎮子北部的山間農舍每年總有幾個月與世隔絕，唯一的出行方式就是坐雪橇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By the 1980s, Nishikawa, like much of the rest of Japan, had grown fast. Families moved to the snowy backcountry, eager to cultivate farmland. Japan’s agricultural ministry helped to protect them from overseas competition. Throughout rural Japan, cement mixers churned to make roads, tunnels and bridges. Yamagata Prefecture — Yamagata means “mountain shape” — dedicated itself to growing luxury crops, like La France pears and perfect cherries. Japan’s boom times were symbolized by the $100 melon, a literal fruit of postwar prosperity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">到了20世紀80年代，和日本許多其他地方一樣，西川町經歷了快速增長。許多家庭遷入積雪覆蓋的偏遠山區，熱切地開墾農田。日本農林水產省提供幫助，保護他們抵禦海外競爭的衝擊。在日本各地的農村，水泥攪拌機轟鳴著，修建道路、隧道和橋樑。山形縣致力於種植高級農作物，比如法蘭西梨和精品櫻桃。標價100美元的甜瓜象徵著日本的繁榮時代，堪稱戰後繁榮的真正果實。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNOgvpblj5YDFQaZpgQdZqUCYA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Japan’s economic bubble burst in 1992, the same year that the bullet train finally arrived in Yamagata. Discount shops offering goods for 100 yen, about 80 U.S. cents back then, popped up alongside the vendors of expensive fruit. Japan’s farming population, which had already dwindled because of industrialization and economic development, shrunk further, just as Japan’s demographics fell off a cliff.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1992年，日本經濟泡沫破裂，同年，新幹線終於開通到山形縣。昂貴水果攤販的旁邊湧現出銷售100日元（當時約合80美分）商品的折扣店。由於工業化和經濟發展，日本的農業人口本就已經萎縮，而隨著日本人口結構的急劇變化，農業人口進一步減少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nishikawa lost its high school in 1991. The last supermarket closed about 20 years ago. Factories for camera lenses and cellphone parts both closed. The country’s birthrate hit a record low in 2025, and the Japanese population, now 123.8 million, is projected to fall below 100 million by 2060.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1991年，西川町唯一的高中關閉。最後一家超市也在約20年前關門。相機鏡頭廠和手機零件廠相繼停產。2025年，日本出生率創下歷史新低；目前日本人口為1.238億，預計到2060年將降至1億以下。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="山形縣的地方政界人士一直熱切希望爭取中央政府用于振興農村的資金。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-05-vhql-copy/00int-japan-robot-05-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-05-vhql-copy/00int-japan-robot-05-vhql-master1050.jpg"/></div><figcaption><span>山形縣的地方政界人士一直熱切希望爭取中央政府用于振興農村的資金。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="西川町町長菅野大志在某活動上發表講話。他已為「波奇」及其他「智能農業」創新項目爭取到了4萬美元資金。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-06-vhql/00int-japan-robot-06-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-06-vhql/00int-japan-robot-06-vhql-master1050.jpg"/></div><figcaption><span>西川町町長菅野大志在某活動上發表講話。他已為「波奇」及其他「智能農業」創新項目爭取到了4萬美元資金。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="金子光哉正在使用機器人「波奇」搬運物品。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-07-vhql/00int-japan-robot-07-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-07-vhql/00int-japan-robot-07-vhql-master1050.jpg"/></div><figcaption><span>金子光哉正在使用機器人「波奇」搬運物品。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Across Yamagata, local officials have tried out various robot — and robot-aspiring — solutions to the precipitous demographic decline. The 48-year-old mayor of Nishikawa, Daishi Kanno, secured $40,000 in funding for Pochi and other “smart agriculture” innovations. Like other prefectural leaders, he has chosen technology over another potential fix to the nation’s labor shortage: welcoming more foreign workers. The Japanese government is cracking down on visas. In all of Yamagata, there are only 145 foreign farm laborers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在整個山形縣，地方官員一直在嘗試多種機器人及准機器人的解決方案，以應對人口銳減。48歲的西川町町長菅野大志為「波奇」及其他「智慧農業」創新項目爭取到了4萬美元的資金。與其他縣內官員一樣，為緩解勞動力短缺，他選擇的方法是科技，而非另一個潛在方案——接納更多外籍勞工。日本政府正在收緊簽證政策。整個山形縣僅有145名外籍農業勞工。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Finding people who can take over for the next generation is difficult,” Mr. Kanno said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「很難找到能接班的下一代，」菅野大志說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Cherry Picking</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>採摘櫻桃</b><b></b></span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="金子光哉的父母——84歲的慶一郎（右）和75歲的富佐子——正在處理櫻花枝條。和當地許多農民一樣，他們年事已高，仍在辛勤勞作。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-08-vhql/00int-japan-robot-08-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-08-vhql/00int-japan-robot-08-vhql-master1050.jpg"/></div><figcaption><span>金子光哉的父母——84歲的慶一郎（右）和75歲的富佐子——正在處理櫻花枝條。和當地許多農民一樣，他們年事已高，仍在辛勤勞作。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="金子光哉父母的家。鎮上廢棄房屋正日益增多。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-09-vhql/00int-japan-robot-09-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-09-vhql/00int-japan-robot-09-vhql-master1050.jpg"/></div><figcaption><span>金子光哉父母的家。鎮上廢棄房屋正日益增多。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The promise of robots has excited Yamagata researchers for years. The prefecture produces about 70 percent of Japan’s cherries, and there is a chronic shortage of harvesting labor. Searching for solutions, a local fruit magnate contacted Yuichi Tsumaki, a professor of robotics and mechatronics at Yamagata University, about designing a cherry-picking robot. The government kicked in with funding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，機器人的前景一直讓山形的研究人員感到興奮。該縣出產了日本約70%的櫻桃，但採收勞動力卻長期短缺。為了尋找解決方案，當地一位水果大亨聯繫了山形大學機器人與機電一體化教授妻木勇一，探討設計一款採摘櫻桃機器人。政府也為此提供了資金支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I said I was not confident, but we would try,” Professor Tsumaki said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我說我沒有把握，但我們可以試一試，」妻木說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CI7Gvpblj5YDFeOkcgAdap03mA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He explained the delicate mechanics of cherry picking: Without the stem, the harvested fruit spoils quickly, yet picking it with the stalk depends on the gentle rotational pressure of a human hand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他解釋了採摘櫻桃過程中精細的力學原理：如果摘掉果梗，收割下來的水果很快就會變質；但要帶著果梗摘下需要依靠人手輕柔的旋轉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In anticipation, Zenyu Saito, the fruit magnate, had trained his cherry trees to grow on trellises, like grapevines, so that a robot could more easily access the fruit. Mr. Saito’s farm is now filled with flat-topped cherry trees that dangle fruit at a pleasing, consistent height. All that is missing is the cherry-picking robot. He had given Professor Tsumaki four years to develop the robot. It has now been 10.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了配合這一計劃，水果大亨斉藤善雄已經將他的櫻桃樹修剪成類似葡萄藤一樣在棚架上生長，以便機器人更容易接觸到果實。現在，齋藤的農場裡種滿了平頂櫻桃樹，果實懸掛在令人愉悅的一致高度上。萬事俱備，只欠採摘機器人。他最初給了妻木四年的時間來研發這台機器人，但現在已經過去了十年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One morning in his laboratory, the professor looked decidedly nervous. After a delay of several months, he and his student researchers were about to show what a decade of robot innovation could do for Yamagata. One graduate student donned a face mask, black gloves and a hard hat. He bumped his head on metal scaffolding then carefully attached five magnetized fake cherries to a fake tree. A robotic arm slid forward and plucked the ersatz cherries with their stems. Professor Tsumaki gave a small bow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一天早晨，在他的實驗室裡，教授明顯有些緊張。在延期了幾個月之後，他和作為研究人員的學生們即將展示這十年的機器人創新能為山形縣帶來什麼。一名研究生戴著口罩、黑手套和安全帽。他頭頂著金屬棚架，小心翼翼地將五個帶磁性的假櫻桃固定在一棵假樹上。一隻機械臂滑向前方，連帶著果梗摘下了這些假櫻桃。妻木微微鞠了一躬。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the second attempt, the robot stalled with a cherry suspended in midair. On the third, the robot got stuck in a fruitless spiral, plucking the air with nothing in its gripper. The fourth effort failed, too. On the fifth, five fake cherries were again harvested.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二次嘗試，機器人停了下來，一顆櫻桃懸在半空中。第三次，機器人陷入了徒勞的空轉，夾爪在空中什麼也沒抓到。第四次嘗試也失敗了。到了第五次，五個假櫻桃再次被成功摘下。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="齋藤善右將他的櫻桃樹修剪成類似葡萄藤一樣在棚架上生長，以方便機器人採摘。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-17-vhql/00int-japan-robot-17-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-17-vhql/00int-japan-robot-17-vhql-master1050.jpg"/></div><figcaption><span>齋藤善右將他的櫻桃樹修剪成類似葡萄藤一樣在棚架上生長，以方便機器人採摘。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="山形大學機器人與機電一體化教授妻木勇一設計了這款櫻桃採摘機器人。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-19-vhql/00int-japan-robot-19-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-19-vhql/00int-japan-robot-19-vhql-master1050.jpg"/></div><figcaption><span>山形大學機器人與機電一體化教授妻木勇一設計了這款櫻桃採摘機器人。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mikito Misawa, one of the graduate students, said he was not very hopeful that robots would save Yamagata’s agriculture. Ever since his family invested in his robotics studies, his father, a cherry farmer, has advised him to leave the prefecture for better job opportunities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究生三澤美希人（音）表示，他對機器人拯救山形農業並不抱太大希望。自從家裡出資供他學習機器人技術以來，他那位種櫻桃的父親就一直勸他離開山形縣去尋找更好的工作機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“He says there’s nothing good about here,” Mr. Misawa said, of his father’s perspective.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他說這地方沒什麼好的，」三澤在談及父親的觀點時說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM7Ovpblj5YDFbytpgQdizEo6w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Saito, the fruit magnate, is now 80. He is weak and on kidney dialysis. Helped by his grandson, he hobbled out to his flat-topped cherry trees and surveyed his fruit empire, 16 generations strong. His son, who is taking over the business, isn’t interested in robots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">水果大亨齋藤今年已經80歲了。他身體虛弱，正在接受透析治療。在孫子的攙扶下，他步履蹣跚地走到他的平頂櫻桃樹前，審視著他那傳承了16代的水果帝國。他那即將接手生意的兒子對機器人並不感興趣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, at a global cherry summit in Yamagata, Chinese researchers showed interest in Mr. Saito’s flat-topped cherry orchards. They had heard about the cherry-picking robot and wanted to see it in action.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，在山形縣舉行的全球櫻桃峰會上，中國研究人員對齋藤的平頂櫻桃園表現出了興趣。他們聽說了採摘機器人的事，想看一看它的實際操作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I saw on TV the other day that China’s robots are incredibly advanced, right?” Mr. Saito said. “I heard that, so I didn’t show them Yamagata University’s harvesting robot because I thought they might use that technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「前幾天我在電視上看到，中國的機器人非常先進，對吧？」齋藤說。「我聽說了這件事，所以我沒有給他們展示山形大學的採摘機器人，因為我覺得他們可能會利用那項技術。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Japan may have once led the world in robotics, creating the first humanoid robot in 1973, but it has fallen far behind China, with its soccer-playing, somersault-flipping machines. In March, a robot developed by Nanjing Agricultural University trundled through strawberry fields in China, picking fruit with 84 percent accuracy, using A.I. models built on the rotational movements of sea anemones, at least according to Chinese state news media, which tends to report on domestic innovations in glowing terms. The researchers are tweaking the robot’s cloud data platform for tomatoes and cherries next. Chinese robots already harvest lychees and goji berries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">日本或許曾經在機器人領域引領全球——它在1973年創造了世界上第一個人形機器人，但現在它已經遠遠落後於中國，中國的機器人能踢足球、能翻跟頭。據中國國家新聞媒體報導（中國媒體往往傾向於用充滿讚美的詞彙報導國內的創新），今年3月，南京農業大學研發的一款機器人穿行在中國的草莓田中，利用基於海葵旋轉運動建立的AI模型採摘水果，準確率高達84%。研究人員下一步正準備針對番茄和櫻桃微調機器人的雲數據平台。而中國的機器人已經能夠採摘荔枝和枸杞了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even Pochi, the supposed savior of Nishikawa’s cherry blossom farmers, harbors an embarrassing origin story: The robot was made in South Korea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就連被認為是西川町櫻花農救星的「波奇」，也有著一個令人尷尬的出身：這台機器人是在韓國製造的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The Next Generation</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>下一代</b><b></b></span></div></div></div></div></div><div class="big_ad" data-google-query-id="CLTavpblj5YDFZetpgQd2fkYpA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pochi isn’t the only unloved robot in Nishikawa. A grass-cutting robot meant to trim the sakura orchards keeps getting foiled by weeds. Local authorities say they are experimenting with a deployment of pesticide-spraying drones, but things haven’t progressed far. And an earlier, clunkier version of Pochi — a machine that doesn’t even merit a name — is even less respected than its cousin is.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在西川町，「波奇」並不是唯一受冷落的機器人。一台用於修剪櫻花園的除草機器人總是被雜草纏住。地方當局表示，他們正在試驗部署噴灑農藥的無人機，但進展不大。而「波奇」的早期版本——一台甚至不配擁有名字的笨重機器——比它的兄弟更不受人待見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, one local farmer likes Pochi very much. Osamu Shida, 74, named the robot after the Shiba dog he once owned. He, practically alone among the workers, stacks his cherry branches on the machine and marvels at how easy it is to transport his sakura.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，當地一位農民卻非常喜歡「波奇」。74歲的志田修用他曾經養過的一隻柴犬的名字給這台機器人命了名。在所有工人中，幾乎只有他把櫻花枝堆在機器上，並驚嘆於運輸櫻花變得如此輕鬆。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I feel like Pochi’s papa,” Mr. Shida said. “I like to have Pochi follow me around.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我覺得我像『波奇』的爸爸，」志田說。「我喜歡讓『波奇』跟在我身邊。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="志田君江拿著用塑料膜包裹的櫻花。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-20-vhql/00int-japan-robot-20-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-20-vhql/00int-japan-robot-20-vhql-master1050.jpg"/></div><figcaption><span>志田君江拿著用塑料膜包裹的櫻花。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="74歲的志田修回到西川家中。和其他農民不同，他喜歡機器人「波奇」。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-21-vhql/00int-japan-robot-21-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-21-vhql/00int-japan-robot-21-vhql-master1050.jpg"/></div><figcaption><span>74歲的志田修回到西川家中。和其他農民不同，他喜歡機器人「波奇」。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="志田太太在家中烤紅薯，她的孫女們準備去上空手道課。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-22-vhql/00int-japan-robot-22-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-22-vhql/00int-japan-robot-22-vhql-master1050.jpg"/></div><figcaption><span>志田太太在家中烤紅薯，她的孫女們準備去上空手道課。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Late one afternoon, Mr. Shida was out in his fields with his snow blower, clearing a field for future planting. The snow hung high above him, more than 30 feet tall in places. As the sun set, Mr. Shida returned to his family farmhouse. The air was cozy from a wood-burning stove and the toasty aroma of sweet potatoes being roasted by his wife, Kimie, an ethnic Korean originally from China whom he met through a matchmaker 25 years ago. Her granddaughters, also born in China, sprawled on the couch, scrolling on their phones, like preteens anywhere.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一天傍晚，志田在田裡用除雪機為未來的種植清理場地。雪比他人還高，有些地方超過九米厚。夕陽西下，信田回到了他的農舍。屋裡燃木壁爐散發出愜意的氣息，他的妻子公玉子正在烤紅薯，空氣中瀰漫著焦香。君江是一名出生在中國的朝鮮族人，25年前通過相親與他結識。她同樣出生在中國的孫女們懶洋洋地坐在沙發上划著手機，就像世界各地青春期前的孩子一樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are old already,” Mrs. Shida said. She has had surgeries on her knees and her hands. Everything aches.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們已經老了，」志田太太說。她的膝蓋和手都做過手術。渾身上下都在痛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike most others in Nishikawa, though, the couple hopes they can pass on the farm to the younger generation. Perhaps they’ll export winter sakura across Asia. They are certainly less wary of robots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，與西川町的大多數人不同，這對夫婦希望能把農場傳給年輕一代。也許他們會將冬季櫻花出口到整個亞洲。顯然，他們對機器人的戒心要小得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Maybe we should just retire and live a peaceful life and look out at the snow,” Mrs. Shida said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「也許我們該退休了，過平靜的生活，看看外面的雪景，」志田太太說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Shida grunted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">志田咕噥了一聲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Not yet,” he said. “We still have work to do.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「還不行，」他說。「我們還有工作要做。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="志田在西川一間倉庫裡處理櫻花枝。" data-src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-23-vhql/00int-japan-robot-23-vhql-master1050.jpg" src="https://static01.nyt.com/images/2026/06/26/multimedia/00int-japan-robot-23-vhql/00int-japan-robot-23-vhql-master1050.jpg"/></div><figcaption><span>志田在西川一間倉庫裡處理櫻花枝。</span> <cite></cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Chang W. Lee</p><p class="cn-p">Hannah Beech是《紐約時報》記者，常駐曼谷。她報導亞洲新聞超過25年，主要進行深度和調查報導。</p><div class="" data-poster=""><p class="cn-p">Kiuko Notoya是一名常駐東京的記者/研究員，報導日本新聞。</p><div class="" data-poster=""><p class="cn-p">Chang W. Lee為《紐約時報》擔任攝影師長髮30年，報導過世界各地的事件。他目前常駐首爾。歡迎在Instagram上關注他：@nytchangster </p><p class="cn-p">翻譯：晉其角、經雷</p></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260807/japan-ai-robot-cherry-blossoms/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

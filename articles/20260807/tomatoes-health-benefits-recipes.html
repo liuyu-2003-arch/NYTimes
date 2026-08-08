@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">番茄有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Tomatoes?</h2>
+    <div class="meta-line">CAROLINE HOPKINS <span style="margin: 0 8px;">•</span> 2026-08-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2024/07/17/multimedia/WELL-HEALTHY-TOMATOES1-blhp/WELL-HEALTHY-TOMATOES1-blhp-jumbo.jpg" width="683"/><figcaption><span></span> <cite>Christopher Simpson for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tomatoes have come a long way since the 16th century, when some Europeans called them “poison apples” because they were mistakenly believed to be toxic. Now, they’re the second-most consumed vegetable in the United States (behind only potatoes) and recognized for a range of health benefits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自16世紀以來，番茄走過了漫長的歷程——那時，一些歐洲人將其稱為「毒蘋果」，誤以為它有毒。如今，番茄已成為美國消費量第二大的蔬菜（僅次於馬鈴薯），其多種健康功效也得到了廣泛認可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what nutrition experts say about tomatoes, along with some simple summer recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是營養專家對番茄的評價，以及《紐約時報》烹飪版推薦的幾道簡單夏日食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re hydrating.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>番茄有助於補水。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tomatoes are 95 percent water. One cup of chopped raw tomatoes has nearly 6 ounces of water, making them even more hydrating than watermelon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">番茄的含水量高達95%。一杯切碎的生番茄約含170毫升水分，補水效果甚至超過西瓜。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLjc7pnlj5YDFZ2BpgQdfsA41A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fresh, raw tomatoes have the highest water content, said John Erdman, a professor emeritus of nutrition and food science at the University of Illinois Urbana-Champaign. When they’re cooked, they tend to lose a bit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊利諾大學厄巴納-香檳分校營養與食品科學榮休教授約翰·厄德曼說，新鮮生番茄的含水量最高。烹飪後水分會有所流失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Their lycopene may help protect against cancer.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>番茄中的番茄紅素或有助於防癌。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tomatoes pack a hefty dose of the antioxidant lycopene, whether they’re raw, cooked or sun-dried. Tomatoes and tomato products (ketchup, spaghetti sauce, tomato juice) provide more than 80 percent of the lycopene in the U.S. diet, Dr. Erdman said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論生食、熟飪還是曬制，番茄都含有大量抗氧化劑番茄紅素。厄德曼博士介紹，番茄及番茄製品（番茄醬、義麵醬、番茄汁）提供了美國人飲食中80%以上的番茄紅素攝入量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Antioxidants like lycopene can help counteract oxidative stress in our bodies, he said. Over time, that stress can cause chronic inflammation, which in turn can increase the risk for many types of cancers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，番茄紅素等抗氧化物質有助於對抗體內的氧化應激，氧化應激若長期積累可導致慢性炎症，進而增加多種癌症的患病風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scientists haven’t definitively found that eating foods high in lycopene — or any antioxidant, for that matter — can directly stave off cancer, said Rachel Kopec, an associate professor of human nutrition at the Ohio State University. But human and animal studies — some using tomatoes, some using other sources of lycopene, like supplements — have suggested links between high lycopene levels and lower risk of prostate and lung cancers, among others.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">俄亥俄州立大學人類營養學副教授雷切爾·科佩克說，科學家尚未最終證實，食用富含番茄紅素的食物（或者任何抗氧化劑）能直接預防癌症。不過，一些針對人類和動物的研究——有些使用番茄，有的則使用補充劑等其他番茄紅素來源——已經發現，體內較高的番茄紅素水平可能與較低的前列腺癌、肺癌等癌症風險存在關聯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some studies have also suggested that lycopene could help prevent heart disease, liver disease and other chronic health conditions. But researchers haven’t proven cause and effect here, either, Dr. Kopec said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分研究還提示番茄紅素或許有助於預防心臟病、肝病及其他慢性病，但科佩克博士表示，因果關係同樣尚未獲得證實。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNKJ75nlj5YDFZWFpgQd8L0Lnw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The redder the tomato, the higher the lycopene level, Dr. Erdman said. Orange and yellow tomatoes have a different type of lycopene that presumably has similar health benefits, but researchers haven’t studied it enough to know for sure. Green tomatoes do not contain lycopene.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">厄德曼博士說，番茄顏色越紅，番茄紅素含量越高。橙色和黃色番茄含有另一種類型的番茄紅素，推測具有類似的健康功效，但研究尚不充分，暫無定論。綠色番茄則不含番茄紅素。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cooked tomatoes contain more lycopene than raw ones, added Alice H. Lichtenstein, a professor of nutrition science and policy at Tufts University. That’s because cooked tomatoes become more concentrated when they lose some water. One cup of cooked tomatoes has about 7,300 micrograms of lycopene, as opposed to about 4,600 in raw tomatoes. What’s more, Dr. Lichtenstein said, the heat involved in cooking tomatoes breaks down their cell walls, making the lycopene more accessible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">塔夫茨大學營養科學與政策教授愛麗絲·利希滕斯坦補充說，經過烹飪的番茄比生番茄含有更多番茄紅素。這是因為，失去一部分水分後，營養成分會更加集中。一杯烹飪後的番茄約含7300微克番茄紅素，生番茄約含4600微克。此外，利希滕斯坦博士說，烹飪過程中的高溫會破壞番茄的細胞壁，使番茄紅素更容易被人體吸收。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And because lycopene is fat-soluble, eating tomatoes along with a bit of healthy fat can help your body absorb the lycopene, Dr. Kopec said. She recommended drizzling tomatoes with olive oil, or pairing them with avocado.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科佩克博士說，由於番茄紅素是脂溶性的，將番茄搭配少量健康脂肪有助於人體吸收番茄紅素。她建議在番茄上淋上橄欖油，或與酪梨搭配食用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re abundant in vitamins and minerals.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>番茄富含多種維生素和礦物質。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tomatoes are a good source of potassium, said Pinkin Panchal, a dietitian and assistant teaching professor of nutritional sciences at Rutgers University. One large, raw tomato has 431 milligrams of potassium, about as much as a medium-size banana.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">羅格斯大學營養科學系助理教學教授、營養師平金·潘查爾說，番茄是鉀的良好來源。一個大的生番茄含有431毫克鉀，與一根中等大小的香蕉大致相當。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Panchal also noted that tomatoes have decent amounts of folate, a vitamin that helps your cells divide (especially important during pregnancy) and vitamin K, which helps with blood clotting and bone health.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">潘查爾還指出，番茄含有相當數量的葉酸。葉酸是一種有助於細胞分裂的維生素，孕期尤為重要。番茄還富含維生素K，它有助於凝血和骨骼健康。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJin75nlj5YDFa2WcgAd6nYL5g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>How to Enjoy Them</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>怎麼吃番茄最好</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fresh tomatoes are most nutritious when they’re picked off the vine at peak ripeness, so buying them locally and in season is best, Ms. Panchal said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">潘查爾說，番茄在完全成熟後再採摘的營養價值最高，因此最好購買本地出產的當季番茄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All of the experts said that while it isn’t necessary to buy organic, rinsing raw tomatoes before eating them can help to remove any lingering pesticides or residue. Ms. Panchal said she likes to rinse hers with a capful of distilled white vinegar mixed with water. Vinegar can remove more residue than water alone, she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所有受訪專家都表示，沒有必要特意購買有機番茄，但生食前用沖洗乾淨有助於去除可能殘留的農藥或其他附著物。潘查爾說，她喜歡用一瓶蓋蒸餾白醋加水稀釋後沖洗，這比單純用水的去殘留效果更好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some ways to savor tomatoes in all their summer glory, from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是《紐約時報》烹飪版推薦的幾道食譜，讓你盡享番茄的夏日風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Curry Tomatoes and Chickpeas With Cucumber Yogurt</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 咖哩番茄鷹嘴豆配黃瓜酸奶 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/07/09/multimedia/05WELL-Healty-Tomatoes-Curried-Chickpeas/AS-curried-chickpeas-with-tomatoes-and-yogurtrex-ktvc-master1050.jpg" src="https://static01.nyt.com/images/2024/07/09/multimedia/05WELL-Healty-Tomatoes-Curried-Chickpeas/AS-curried-chickpeas-with-tomatoes-and-yogurtrex-ktvc-master1050.jpg"/></div><figcaption><span></span> <cite>Rachel Vanni for The New York Times. Food Stylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A quick turn in a hot pan intensifies tomatoes’ natural sweetness. This chickpea curry is set over savory cucumber yogurt — a combination inspired by chana masala eaten with raita.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在熱鍋中快速翻炒一下，可以進一步激發番茄天然的甜味。鷹嘴豆咖哩鋪在鹹香的黃瓜酸奶上，靈感來自將印度鷹嘴豆咖哩搭配酸奶黃瓜醬一起食用的吃法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Curry Tomatoes and Chickpeas With Cucumber Yogurt</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：咖哩番茄鷹嘴豆配黃瓜酸奶 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Tomatoes Vinaigrette</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 油醋汁拌番茄 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/08/06/multimedia/05WELL-Healthy-Tomatoes-tomatoes-vinaigretterex-qbvk-copy/ct-tomatoes-vinaigretterex-qbvk-master1050.jpg" src="https://static01.nyt.com/images/2024/08/06/multimedia/05WELL-Healthy-Tomatoes-tomatoes-vinaigretterex-qbvk-copy/ct-tomatoes-vinaigretterex-qbvk-master1050.jpg"/></div><figcaption><span></span> <cite>Armando Rafael for The New York Times. Food Stylist: Cyd Raftus McDowell.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Salting tomatoes directly on the serving plate and splashing them with a mix of oregano, vinegar and olive oil brings out their quintessential summery tang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">直接給盤中的番茄撒鹽，再淋上由牛至、醋和橄欖油調製的醬汁，可以充分帶出它標誌性的夏日酸香風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Tomatoes Vinaigrette</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：油醋汁拌番茄</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Skillet Chicken With Peppers and Tomatoes</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 甜椒番茄煎雞</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2023/09/13/multimedia/05WELL-Healthy-Tomato-skillet-chicken-with-peppers-vcmj-copy/yk-skillet-chicken-with-peppers-vcmj-master1050.jpg" src="https://static01.nyt.com/images/2023/09/13/multimedia/05WELL-Healthy-Tomato-skillet-chicken-with-peppers-vcmj-copy/yk-skillet-chicken-with-peppers-vcmj-master1050.jpg"/></div><figcaption><span></span> <cite>Kelly Marshall for The New York Times. Food Stylist: Samantha Seneviratne. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bell peppers — which are at their peak, too — complement the juicy tomatoes in this one-pan dinner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣當季的甜椒與多汁番茄相得益彰，一鍋搞定一頓晚餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Skillet Chicken With Peppers and Tomatoes</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：甜椒番茄煎雞</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Tomato-Watermelon Salad With Anchovy Bread Crumbs</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 番茄西瓜沙拉配鳳尾魚麵包糠 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2024/08/05/multimedia/05WELL-Healthy-Tomato-Watermelon-Salad-gvqh/05WELL-Healthy-Tomato-Watermelon-Salad-gvqh-master1050.jpg" src="https://static01.nyt.com/images/2024/08/05/multimedia/05WELL-Healthy-Tomato-Watermelon-Salad-gvqh/05WELL-Healthy-Tomato-Watermelon-Salad-gvqh-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two summer classics — tomato and watermelon — are showered with savory, garlicky bread crumbs. For anyone wary of anchovies: They melt into the olive oil and give the crumbs an irresistible umami flavor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩種經典的夏日食材——番茄和西瓜——撒上咸鮮蒜香麵包糠。如果你不太喜歡鳳尾魚，也不用擔心：鳳尾魚會融入橄欖油中，為麵包糠增添一種令人慾罷不能的鮮味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Tomato-Watermelon Salad With Anchovy Bread Crumbs</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：番茄西瓜沙拉配鳳尾魚麵包糠</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Grated Tomato Pasta</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 碎番茄義麵</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2023/07/14/multimedia/05WELL-Healthy-Tomato-grated-tomato-pasta-kzhw-copy/05WELL-Healthy-Tomato-grated-tomato-pasta-kzhw-copy-master1050.jpg" src="https://static01.nyt.com/images/2023/07/14/multimedia/05WELL-Healthy-Tomato-grated-tomato-pasta-kzhw-copy/05WELL-Healthy-Tomato-grated-tomato-pasta-kzhw-copy-master1050.jpg"/></div><figcaption><span></span> <cite>Armando Rafael for The New York Times. Food Stylist: Cyd Raftus McDowell.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gently heated with olive oil and garlic, grated ripe tomatoes retain their freshness in this vegetarian pasta. If you don’t have fat, juicy tomatoes, you can use cherry tomatoes instead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將磨碎的熟透番茄與橄欖油、大蒜一同小火加熱，在這道素食義麵中保留了新鮮風味。若手邊沒有飽滿多汁的大番茄，可用聖女果代替。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Recipe: <strong>Grated Tomato Pasta</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">· 食譜：碎番茄義麵</div></div></div></div></div><div class="big_ad" data-google-query-id="CPzN75nlj5YDFSWkcgAdwCkrYQ" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260807/tomatoes-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
