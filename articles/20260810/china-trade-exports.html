@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國出口繼續「狂飆」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國出口繼續「狂飆」</h1>
+    <h2 class="en-headline">China’s Export Boom Rolls On Despite Trade Backlash</h2>
+    <div class="meta-line">DAISUKE WAKABAYASHI <span style="margin: 0 8px;">•</span> 2026-08-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="7月，中國寧海一家工廠的生產車間。" height="700" src="https://static01.nyt.com/images/2026/08/07/multimedia/07Biz-China-Trade-gcbq/07Biz-China-Trade-gcbq-master1050.jpg" width="1050"/><figcaption><span>7月，中國寧海一家工廠的生產車間。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another month, another trade surplus of more than $100 billion for China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國又一次錄得超過1000億美元的月度貿易順差。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even as countries around the world move to curb the flood of Chinese goods, China’s export machine continues to steam ahead. The country posted a trade surplus of $112.5 billion in July, according to data released Friday by the General Administration of Customs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管世界各國都在採取措施遏制中國商品大量湧入，中國的出口機器仍在全速運轉。中國海關總署週五公布的數據顯示，7月份的貿易順差達1125億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was the third straight month in which China’s exports exceeded its imports by more than $100 billion — a staggering sum that puts the country on pace to surpass last year’s record $1.19 trillion trade surplus. In July, China’s exports rose 23.9 percent in U.S. dollar terms, while imports climbed 27.5 percent in July.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這已經是中國連續第三個月出口額超過進口額1000億美元——這一驚人的數字意味著，中國今年的貿易順差很可能超過去年創紀錄的1.19萬億美元。7月份，以美元計價的出口增長23.9%，進口增長27.5%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The figures show that the “boom in Chinese trade” is “still going strong,” Julian Evans-Pritchard, head of China economics for Capital Economics, a research firm, said in a research note.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些數據表明，「中國貿易的繁榮」「依然勢頭強勁」，研究機構凱投宏觀的中國經濟主管朱利安·埃文斯-普裡乍得在一份研究報告中表示。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNKMjOjplJYDFTiXgwgdrL0tmg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The war in Iran has disrupted oil and gas shipments through the Strait of Hormuz, helping spur demand for Chinese electric vehicles and renewable-energy products. China’s manufacturers, hurt by overcapacity and relentless price competition that have squeezed their profits, have sought growth abroad by inundating overseas markets with low-cost goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊朗戰爭擾亂了通過霍爾木茲海峽的石油和天然氣運輸，從而推動了對中國電動汽車和可再生能源產品的需求。中國製造商受到產能過剩和持續不斷的價格競爭影響，利潤空間受到擠壓，已將目光投向海外，以低價商品大舉搶佔國際市場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The widening trade surplus has intensified frustration in the West over the growing dominance of Chinese companies across a range of industries. The European Union has imposed tariffs on electric vehicles imported from China, arguing that state subsidies give Chinese manufacturers an unfair advantage over European rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不斷擴大的貿易順差加劇了西方對中國企業在多個行業日益佔據主導地位的不滿情緒。歐盟已對中國進口電動汽車加徵關稅，稱國家補貼使中國製造商相對於歐洲競爭對手獲得了不公平的優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s export strength also masks persistent weakness in the domestic economy, which continues to suffer from the lingering effects of a yearslong property downturn and stubbornly weak consumer spending. In the second quarter, the economy grew at its slowest rate in three years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國出口的強勁表現也在一定程度上掩蓋了國內經濟的持續疲軟。中國經濟仍然受到持續多年的房地產低迷以及消費者支出長期疲軟的拖累。二季度，中國經濟增速降至三年來最低水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite threats from President Trump at the start of his second term, China has weathered its trade confrontation with the United States and emerged in a position of relative strength. Last month, the Trump administration imposed a tariff rate of 12.5 percent on Chinese goods, roughly in line with the rates applied to dozens of other countries. In July, Chinese exports to the United States rose 17 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管川普在第二任期初對中國發出威脅，但中國經受住了與美國的貿易對抗，並處於相對有利的地位。上個月，川普政府對中國商品加徵12.5%的關稅，大致與其他數十個國家的稅率持平。7月份，中國對美出口增長17%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in the past few weeks, there have been signs of an escalation in trade tensions between Beijing and Washington ahead of an expected visit by Xi Jinping, China’s top leader, to the United States in September. Last month, the United States announced a ban on new Chinese humanoid robots, citing national security concerns. China responded by announcing a series of retaliatory measures, including export restrictions on drone technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但過去幾週，隨著中國領導人習近平預計於9月訪美，北京與華盛頓之間的貿易緊張態勢出現升級跡象。上個月，美國以國家安全為由宣布禁止進口新的人形機器人。中國則宣布了一系列反制措施作為回應，包括對無人機技術實施出口限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese exports are also benefiting from the global spending spree for artificial intelligence. Shipments of electronics tied to A.I., including semiconductors and data-center equipment, have surged.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，人工智慧領域的全球支出熱潮同樣助力中國出口增長。與人工智慧相關的電子產品出貨量——包括半導體和數據中心設備——大幅攀升。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNjUjOjplJYDFaSOgwgdLngPng" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I.-related spending, alongside higher prices for raw materials and commodities, also helped lift imports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧相關支出疊加原材料和大宗商品價格的上漲也幫助推高了中國的進口額。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s oil imports rebounded in July from the previous month when shipments fell to decade lows. Typically the world’s largest importer of oil, China slashed purchases in the spring as prices jumped and flows from the Persian Gulf slowed significantly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國7月的石油進口量較上月出現反彈。此前一個月，中國石油進口量跌至十年來的低點。中國通常是全球最大的石油進口國，但今年春季由於油價大幅上漲、波斯灣石油運輸量明顯下降，中國大幅削減了石油採購。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Oil imports rose 22 percent in July from June, though they remained nearly 25 percent below their level a year earlier. The pullback in purchases underscored both the scale of China’s stockpile of oil reserves and the progress it has made in reducing its reliance on fossil fuels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月，中國石油進口量環比增長22%，但仍比去年同期低近25%。採購量的回落既凸顯了中國石油儲備的規模，也反映了中國在減少化石燃料依賴方面取得的進展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meanwhile, China’s exports of refined petroleum products rose for a fourth straight month in July, reaching their highest levels this year. China imposed controls on refined-fuel exports around March to protect domestic supplies, but has eased those restrictions in recent months.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國成品油出口連續第四個月增長，7月已達到今年以來的最高水平。中國在3月前後對成品油出口實施管控，以保障國內供應，近幾個月來已逐步放寬了這些限制。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-155wybs-print" data-poster=""><p class="cn-p">Li You對本文有研究貢獻。</p><p class="cn-p"><span>Daisuke Wakabayashi是時報駐首爾亞洲商業記者，報導區域經濟、公司和地緣政治新聞。</span></p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260810/china-trade-exports/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
