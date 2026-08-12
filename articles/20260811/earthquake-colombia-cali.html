@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哥倫比亞發生7.4級強震，上百人死亡 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">哥倫比亞發生7.4級強震，上百人死亡</h1>
+    <h2 class="en-headline">Major Quake Hits Colombia, Killing at Least 111</h2>
+    <div class="meta-line">JULIE TURKEWITZ, Genevieve Glatsky, MICHAEL LEVENSON <span style="margin: 0 8px;">•</span> 2026-08-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一，哥倫比亞卡利市發生地震後，救援人員和居民正在廢墟中搜尋。" height="700" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-colombia-quake-1-mcpb/10int-colombia-quake-1-mcpb-master1050.jpg" width="1050"/><figcaption><span>週一，哥倫比亞卡利市發生地震後，救援人員和居民正在廢墟中搜尋。</span> <cite>Santiago Saldarriaga/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A powerful earthquake rocked western Colombia on Monday morning, rattling much of the country and setting off a desperate search for survivors in the rubble of collapsed buildings in several major cities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一上午，一場強烈的地震襲擊了哥倫比亞西部，震動了該國大部分地區，人們在幾座主要城市中倒塌建築的廢墟裡急切地尋找生還者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least 111 people were killed and 87 others were injured, according to Colombia’s president, Abelardo De La Espriella, who said that at least 1,575 homes, 18 health centers and 52 schools had been damaged. The death toll was likely to rise as rescue crews and residents continued to dig through flattened buildings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哥倫比亞總統阿韋拉多·德拉埃斯普列拉表示，至少有111人遇難，另有87人受傷。他還表示，至少有1575所房屋、18個醫療中心和52所學校受損。隨著救援人員和居民繼續在被夷為平地的建築物中挖掘，死亡人數可能還會上升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 7.4-magnitude earthquake, which struck at 7:34 a.m. local time, was the strongest recorded in Colombia in the last decade, according to the Colombian Geological Survey. The agency said that two aftershocks with magnitudes of 2.8 and 4.8 had been recorded and that the quake was felt in neighboring countries, including Panama, Ecuador and Venezuela, which is still recovering from devastating twin quakes just weeks ago that killed more than 6,000 people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據哥倫比亞地質調查局稱，這場7.4級地震發生在當地時間上午7點34分，是哥倫比亞過去十年來錄得的最強地震。該機構表示，已錄得兩次餘震，震級分別為2.8級和4.8級，巴拿馬、厄瓜多和委內瑞拉等鄰國均有震感。委內瑞拉幾週前剛遭遇毀滅性的雙重地震，造成6000多人死亡，目前仍在恢復之中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The epicenter, according to the U.S. Geological Survey, was about 3 miles east of San José del Palmar, a town of about 5,000 people in the Chocó region, one of the poorest parts of Colombia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據美國地質調查局稱，震中位於聖何塞德爾帕爾馬以東約五公里處，這是喬科省一個約有5000人口的城鎮，該省是哥倫比亞最貧窮的地區之一。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM7ZlPHumZYDFZGUgwgdhVQk8A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Videos showed partially collapsed buildings in Cali, Colombia’s third largest city, with about two million residents, as well as in Pereira and Manizales, two cities that are hubs of Colombia’s coffee-growing region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">影片顯示，卡利以及佩雷拉和馬尼薩萊斯都有建築物部分倒塌。卡利是哥倫比亞第三大城市，有約200萬居民；佩雷拉和馬尼薩萊斯是哥倫比亞咖啡種植區的兩個中心城市。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the town of Calima El Darién, three children were killed when a wall collapsed, according to the region’s governor, Dilian Francisca Toro. Ms. Toro said that one hospital had also collapsed, another had been overwhelmed with victims and that patients had been evacuated from a third hospital.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據該地區行政長官迪利安·弗朗西斯卡·托羅稱，在卡利馬埃爾達裡恩鎮，一面牆倒塌導致三名兒童喪生。托羅說，一家醫院倒塌，另一家醫院人滿為患，第三家醫院的患者已被疏散。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The city of Pereira, which is home to about 500,000 people and lies just 35 miles from the epicenter, was also hard hit. The mayor, Mauricio Salazar, told a national radio station that at least 18 people had been killed there.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">擁有約50萬人口、距離震中約56公里的佩雷拉市也遭到了重創。市長毛裡西奧·薩拉查對國家廣播電台表示，該市至少有18人遇難。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Cali, Francisco González, 34, said he was riding on his motorbike when he saw a motel called the Molino Rojo crash to the ground in a cloud of dust. He immediately became part of a volunteer rescue effort involving 20 to 30 people clawing through the rubble to find survivors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在卡利，34歲的弗朗西斯科·岡薩雷斯說，他當時正騎著摩托車，突然看到一家名為「紅磨坊」的汽車旅館在塵土中轟然倒塌。他立即加入了一個由20至30人組成的志願者救援隊，他們在廢墟中奮力挖掘，尋找倖存者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A young woman, she had fractures in her legs, and she was the first one we got out,” he said. “Her husband came out from under her. He was in worse shape. He had passed out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「一位年輕女士的腿骨折了，她是我們救出的第一個人，」他說。「她的丈夫從她身下被拉了出來。他的情況更糟，已經昏迷了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Four survivors were pulled from the rubble, but Mr. González was worried that others might still be buried underneath. By midmorning, rescue workers were clambering over the rubble, calling down into holes, “Is there anyone there?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有四名倖存者從廢墟中被救出，但岡薩雷斯擔心可能還有其他人被埋在下面。到了上午十點左右，救援人員在廢墟上攀爬，向下面的洞穴裡呼喊：「有人在嗎？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least 26 buildings in Cali had collapsed, according to its mayor, Alejandro Eder. He said that officials had dispatched rescue teams and were asking for donations of helmets, work gloves, water and safety goggles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據卡利市長亞歷杭德羅·埃德爾稱，該市至少有26棟建築物倒塌。他表示，官方已派出救援隊，並呼籲公眾捐贈頭盔、工作手套、水和護目鏡。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLaClfHumZYDFbGTgwgdYUI8wQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the scene of one collapsed apartment building in Cali, residents used wooden poles and their bare hands to move slabs of broken concrete.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在卡利一棟倒塌的公寓樓現場，居民們用木棍和雙手搬開破碎的混凝土板塊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everyone went running to help,” said Eder Figueroa, 48, who said he lived in the building next door. “The lady who sells ice cream, the lady who sells juices.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大家都跑去幫忙，」48歲的埃德爾·菲格羅亞說，他說自己住在隔壁那棟樓。「賣冰淇淋的女士，賣果汁的女士，大家都去了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He added, “We think there are three people alive inside, because we can’t find them, including two children.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還說：「我們認為裡面還有三個人活著，因為我們找不到他們，其中有兩個孩子。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Cali, searches at several collapsed buildings were punctuated by calls for silence as rescue workers and civilians strained to hear the cries of survivors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在卡利，幾棟倒塌建築的搜救現場不時響起保持安靜的呼聲打斷，救援人員和市民們正竭力傾聽倖存者的呼救聲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The quake presented an immediate challenge for the president, Mr. De La Espriella, a right-wing lawyer with no previous political experience, who took office on Friday. He had campaigned on a promise to shrink government and crack down on resurgent armed groups and rampant crime and earned the endorsement of President Trump, who had repeatedly clashed with Mr. De La Espriella’s leftist predecessor, Gustavo Petro.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場地震給總統德拉埃斯普列拉帶來了一項迫在眉睫的挑戰。他是一位此前毫無從政經驗的右翼律師，於週五剛剛上任。他在競選時承諾精簡政府，嚴厲打擊死灰復燃的武裝團體和猖獗的犯罪活動，並獲得了川普總統的支持——川普曾與德拉埃斯普列拉的左翼前任古斯塔沃·佩特羅多次發生衝突。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. De La Espriella said on social media on Monday that he had “personally assumed leadership” of the emergency response to the quake. “You are not alone,” he wrote. “The state is present and taking action.” He later briefed the public at a news conference and promised to provide updates every few hours.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德拉埃斯普列拉週一在社群媒體上表示，他已「親自接管」應對地震的緊急響應領導工作。「你們並不孤單，」他寫道。「國家就在這裡，正在採取行動。」隨後他在新聞發布會上向公眾通報了情況，並承諾每隔幾小時通報一次最新情況。</div></div></div></div></div><div class="big_ad" data-google-query-id="CNCvlfHumZYDFVSDgwgdDBIptg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Secretary of State Marco Rubio said on social media that the Trump administration “stands ready to support the people of Colombia” and the De La Espriella administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國國務卿魯比奧在社群媒體上表示，川普政府「準備好支持哥倫比亞人民」以及德拉埃斯普列拉政府。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the capital, Bogotá, about 150 miles from the epicenter, Mayor Carlos Fernando Galán said preliminary inspections had found no structural damage from the earthquake. He added that Bogotá was preparing to send 100 rescuers and rubble-removal equipment to harder-hit cities. “Now is a moment for solidarity,” he said in a video on social media. “Bogotá is ready to help however it can.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在距離震中約240公里的首都波哥大，市長卡洛斯·費爾南多·加蘭表示，初步檢查未發現地震造成的結構性破壞。他補充說，波哥大正準備向受災更嚴重的城市派遣100名救援人員和廢墟清理設備。「現在是團結的時刻，」他在社群媒體上的一段影片中說。「波哥大已準備好盡其所能提供幫助。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-155wybs-print" data-poster=""><p class="cn-p">Jaír F. Coll、Annie Correal、Anushka Patil和Richard Pérez-Peña對本文有報導貢獻。</p><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Julie Turkewitz是《紐約時報》安第斯山脈分社社長，常駐哥倫比亞波哥大，報導哥倫比亞、委內瑞拉、玻利維亞、厄瓜多和秘魯。</p><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Genevieve Glatsky 是《紐約時報》記者，常駐哥倫比亞波哥大。</p><div class="css-aao5n7-print" data-poster=""><div class="css-1fjlpyx-Bio-bioTreatmentStyles-print eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Michael Levenson自紐約為時報報導突發新聞。</p><p class="cn-p">翻譯：晉其角</p></div></div></div></div></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260811/earthquake-colombia-cali/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

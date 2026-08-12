@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣演練「斷網」危機 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">台灣演練「斷網」危機</h1>
+    <h2 class="en-headline">Taiwan Gingerly Tests How It Would Cope if China Choked Its Internet</h2>
+    <div class="meta-line">儲百亮, AMY CHANG CHIEN <span style="margin: 0 8px;">•</span> 2026-08-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-01-vkfc-promo/10int-taiwan-internet-01-vkfc-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For half an hour on Monday, mobile data was throttled across central Taiwan, leaving millions of people unable to stream videos or share photos or make video calls on their cellphones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一，台灣中部地區的移動數據被限速了半個小時，導致數以百萬計的人無法在手機上觀看流媒體影片、分享照片或進行影片通話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The interruption was deliberate: Taiwan was testing, for the first time on a mass scale, how the island might cope if a Chinese attack disrupted its communications.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種中斷是有意為之：台灣在進行首次大規模測試，以評估若中國發動攻擊導致通信中斷，該島將如何應對。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The activity was part of Taiwan’s annual civil defense exercise, when the government tries to give citizens a sense, albeit a fleeting one, of how they should respond if China tried to seize the self-governed island by force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項活動是台灣年度民防演習的一部分，在演習中，政府試圖讓民眾體驗——儘管為時短暫——如果中國試圖武力奪取這座自治島嶼，他們應該如何應對。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The exercise is held in different regions, on different days. On Monday, in Taichung, a city of nearly 3 million people in central Taiwan, the government held an air-raid drill in which sirens were sounded at 2:30 p.m. telling people to seek shelter. Streets emptied as people filed into basements or stayed still in homes, shops, malls and train stations. Then a message flashed on phones across the city.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">演習在不同地區、不同日期分批舉行。週一，在台灣中部擁有近300萬人口的城市台中，政府舉行了防空演習，下午2點30分拉響防空警報，要求民眾尋找掩護。街道變得空無一人，人們排隊進入地下室，或留在家裡、商店、商場和火車站內。隨後，全市的手機上都閃爍出一條通知。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="有人躲進了一個地下停車場。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-03-vkfc/10int-taiwan-internet-03-vkfc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-03-vkfc/10int-taiwan-internet-03-vkfc-master1050.jpg"/></div><figcaption><span>有人躲進了一個地下停車場。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Due to simulated air attacks on communications infrastructure, mobile network access will be affected,” it said, reminding residents to switch to fixed-line broadband internet access or indoor Wi-Fi, and listed emergency hotline numbers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「因我通訊設施遭受空襲，行動網路將受影響，」信息中寫道，並提醒居民切換到固定寬帶網路或室內Wi-Fi，並列出了緊急熱線號碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taichung was one of 14 cities and counties designated for the internet-disruption exercise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台中是此次指定進行網路中斷演習的14個縣市之一。</div></div></div></div></div><div class="big_ad" data-google-query-id="CM-MvO_umZYDFd0SDAIdvhU9JQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the LaLaport mall, most shops went dark and closed for the 30-minute drill, while shoppers and diners stayed in place. Some people took naps. Others chatted or played games and watched videos that were already on to their phones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在LaLaport購物中心，大多數商店在30分鐘的演習期間熄燈停業，而購物者和就餐者則留在原地。一些人小憩片刻。其他人聊天、玩遊戲、觀看手機上已經緩存好的影片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think it’s needed for sure,” said Yu Chun-hsuan, a dental nursing student sitting in the mall’s food court. “Nowadays we’re all so attached to our phones. If there’s a war or something, they really might resort to cyber warfare or cutting communications.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「應該算蠻有必要的，」坐在商場美食廣場的牙科護理專業學生尤俊旋說。「現在大家都蠻喜歡手機。如果之後可能真的有戰爭之類的，可能會真的利用網路戰，斷通信啊這些。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government of President Lai Ching-te has stepped up the publicity about this year’s civilian exercises, emphasizing the danger posed by China — which under Xi Jinping has expanded its multitudes of warships, landing vessels and missiles that could support an invasion of Taiwan. Mr. Xi says he hopes to absorb Taiwan peacefully but will not rule out using force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賴清德政府加強了對今年民防演習的宣傳，強調了中國構成的危險——在習近平的領導下，中國擴充了可用於支持入侵台灣的大量軍艦、登陸艦和導彈。習近平表示希望和平統一台灣，但不排除使用武力的可能性。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="當局向手機用戶發送了一條通知，警告稱正在限制移動數據流量。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-04-vkfc/10int-taiwan-internet-04-vkfc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-04-vkfc/10int-taiwan-internet-04-vkfc-master1050.jpg"/></div><figcaption><span>當局向手機用戶發送了一條通知，警告稱正在限制移動數據流量。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="在LaLaport購物中心，大多數店鋪在30分鐘的演習期間熄燈關閉，而購物者和就餐者留在原地。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-05-vkfc/10int-taiwan-internet-05-vkfc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-05-vkfc/10int-taiwan-internet-05-vkfc-master1050.jpg"/></div><figcaption><span>在LaLaport購物中心，大多數店鋪在30分鐘的演習期間熄燈關閉，而購物者和就餐者留在原地。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The exercise cautiously tested a problem that Taiwan sees as central to its defense: how the island would function if its communications with the world were degraded. Taiwan relies heavily on subsea cables for telecommunications and officials have said that commercial ships linked to China have sabotaged cables between Taiwan and some of its outer islands. A broader loss of connectivity could seriously disrupt all of Taiwan, and sow panic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此次演習謹慎地測試了一個被台灣視為防禦核心的問題：如果該島與外界的通信質量下降，它將如何運轉。台灣的電信高度依賴海底光纜，有官員曾表示，與中國有關聯的商船曾經破壞台灣與其部分外島之間的光纜。更大範圍的網路連接中斷可能會嚴重擾亂整個台灣，散布恐慌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, the civil defense drills, held alongside the military’s 10-day annual drills, have become a yearly reminder of how differently people view the threat from China. Some residents in Taichung said that the risk of an attack by China was real and urgent. Others said the chances of war were slim, or that Taiwan’s government was at least partly to blame for the heightened tensions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，與軍方為期10天的年度演習同時舉行的民防演習已成為每年一次的提醒，凸顯出人們對中國威脅的看法存在多大差異。台中一些居民表示，中國襲擊的風險是真實且迫在眉睫的。也有人表示，發生戰爭的可能性微乎其微，或者台灣政府至少應對緊張局勢加劇承擔部分責任。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If both sides could get along in peace, there wouldn’t be these high, over-the-top levels of tension,” said Yang Yu-chen, a former soldier, now in his sixties, who owns a store selling children’s shoes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「兩邊如果大家和平相處的話，就不會產生那麼大的（緊張感），太過於緊張，」年過六旬、開了一家童鞋店的退伍軍人楊語宸說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLyzvO_umZYDFWSmWgUd62oFjg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Huang Chiung-chu, a 70-year-old selling steamed buns at a stall nearby, said China was a dire threat and the drill was the least that the Taiwanese people could do to protect themselves. It was being more strictly enforced than past years, she added, pointing to an instruction sheet that a police officer had handed her.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在附近攤位賣包子的70歲老人黃瓊珠說，中國是一個可怕的威脅，演習是台灣民眾為保護自己所能做的最起碼的事情。她指著警察遞給她的一份指示單補充說，今年的演習執行得比往年更嚴格。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Taiwan can’t be too weak, it needs to be a bit stronger,” she said. “Because that way, people won’t look at us as a little country and try to annex or bully us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「台灣不能太軟弱，要強一點，」她說。「因為這樣才不會被人家看得說你是小國，然後要來侵吞你、欺負你。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="賣包子的黃瓊珠說：「台灣不能太軟弱，要強一點。」" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-08-vkfc/10int-taiwan-internet-08-vkfc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-08-vkfc/10int-taiwan-internet-08-vkfc-master1050.jpg"/></div><figcaption><span>賣包子的黃瓊珠說：「台灣不能太軟弱，要強一點。」</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="演習期間，台中街頭空無一人，人們躲進地下室，或留在家中、商店、商場和火車站裡。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-06-vkfc/10int-taiwan-internet-06-vkfc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-06-vkfc/10int-taiwan-internet-06-vkfc-master1050.jpg"/></div><figcaption><span>演習期間，台中街頭空無一人，人們躲進地下室，或留在家中、商店、商場和火車站裡。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of the annual military drill appears to be to reassure the public that the island can defend itself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">年度軍事演習的部分目的似乎是為了向公眾保證，該島有能力保衛自己。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On its first night, last Wednesday, Taiwanese military police simulated whisking Mr. Lai to safety from a simulated attempt by Chinese forces to “decapitate,” or eliminate, him. Television footage showed troops escorting him out of the presidential building and into a convoy of armored vehicles that rushed him through empty streets to an underground command center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在演習的第一天晚上，即上週三，台灣憲兵模擬了從中國軍隊的「斬首」行動中將賴清德護送到安全地帶。電視畫面顯示，部隊護送他走出總統府，進入裝甲車車隊，車隊在空曠的街道上疾馳，將他送往地下指揮中心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The bigger question is how Taiwan’s population would react during a real invasion or blockade. A 30-minute drill offers only a brief picture, but for some residents it helped them feel more mentally prepared.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">更大的問題是，在真正的入侵或封鎖期間，台灣民眾會作何反應。30分鐘的演習只能提供一個短暫的縮影，但對一些居民來說，這幫助他們做好了更充分的心理準備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The cost we bear from an exercise like this isn’t that high, and if we really have a situation like war, I would then be a little better equipped to handle it,” said Liao Mei-hsiu, a pig farmer who was at the food court in Taichung during the drill, eating ice cream with her husband and their four-year-old daughter.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我感受（演習帶來）的成本不大，然後如果遇到像戰爭這種狀況的話，我能夠更有辦法去應對，」養豬戶廖美秀（音）說。演習期間，她正和丈夫以及四歲的女兒在台中的美食廣場吃冰淇淋。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government also sought to avoid stirring panic, or seriously disrupting business, and held the drill after Taiwan’s stock exchange closed for the day. Later on Monday, the city government said the drill went well and that calls to the emergency hotline and fire brigade had not been disrupted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府也力圖避免引起恐慌或嚴重擾亂商業，並將演習安排在台灣證券交易所當日休市後舉行。週一晚些時候，市政府表示演習進行得很順利，撥打緊急熱線和消防隊的電話沒有受到干擾。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="左起依次為廖美秀、她的丈夫和四歲的女兒，防空演習期間，他們正在一家購物中心的美食廣場。" data-src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-01-bqwc/10int-taiwan-internet-01-bqwc-master1050.jpg" src="https://static01.nyt.com/images/2026/08/10/multimedia/10int-taiwan-internet-01-bqwc/10int-taiwan-internet-01-bqwc-master1050.jpg"/></div><figcaption><span>左起依次為廖美秀、她的丈夫和四歲的女兒，防空演習期間，他們正在一家購物中心的美食廣場。</span> <cite></cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Lam Yik Fei </p><p class="cn-p">儲百亮(Chris Buckley<span>)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。<br/></span></p><p class="cn-p">Amy Chang Chien是《紐約時報》記者/研究員，常駐台北，報導台灣和中國新聞。</p><div class="" data-poster=""><br/></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260811/taiwan-internet-china-invasion-drill/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

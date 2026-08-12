@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta發布開放權重AI模型Muse Glimmer - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">Meta發布開放權重AI模型Muse Glimmer</h1>
+    <h2 class="en-headline">Meta Unveils an Open Version of Its Most Powerful A.I. Model</h2>
+    <div class="meta-line">ELI TAN, MIKE ISAAC <span style="margin: 0 8px;">•</span> 2026-08-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/08/10/multimedia/10biz-meta-ai-vmbl/10biz-meta-ai-vmbl-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, Mark Zuckerberg, Meta’s chief executive, boldly came out in support of “open source” artificial intelligence models that are publicly available to download and modify without payment or approval. The way forward, he said, was through “openness and putting the power of tech into more people’s hands, not fewer.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上月，Meta首席執行官馬克·祖克柏高調錶態支持「開源」人工智慧模型，即允許公眾在無需付費或獲得許可的情況下下載和修改的人工智慧模型。他表示，未來的發展方嚮應該是「開放性，讓技術力量掌握在更多人而非少數人手中」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Monday, Mr. Zuckerberg doubled down on that support.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一，祖克柏進一步重申了這一立場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meta released an open version of its most powerful A.I. model, Muse Spark. Called Muse Glimmer, it is nearly identical to Muse Spark and can generate code, text and images. Muse Spark, which debuted in July as a “closed” A.I. model that people pay to access, will remain closed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Meta發布了其最強大人工智慧模型Muse Spark的開放版本，名為Muse Glimmer。它與Muse Spark幾乎完全相同，可以生成代碼、文本和圖像。而於今年7月推出的Muse Spark是一種「閉源」人工智慧模型，用戶需要付費才能使用，它仍將維持現狀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Muse Glimmer is an “open weights” model, which means its weights, or the underlying calculations that determine how the model works, are made public. It is not fully open source, which is when the entirety of the model’s underlying code is made public.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Muse Glimmer屬於「開放權重」模型，這意味著模型的權重——也就是決定模型如何運行的底層計算參數——被公開了。但它並不屬於完全意義上的「開源」，因為完全開源意味著模型的全部底層代碼都必須公開。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJKGnPbumZYDFUASDAIdGNEIyw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new model was accompanied by a 14-page essay from Mr. Zuckerberg laying out his vision for A.I. The technology should not be feared, he said, and the United States needs to retain its primacy over China in the A.I. race. Without naming Anthropic and OpenAI, the rival A.I. companies that have called for tight controls on the technology, he criticized their approaches, saying that concentrating A.I. power in the hands of just a few companies is hazardous.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伴隨這一新模型發布的還有一篇由祖克柏撰寫的14頁文章，闡述了他對人工智慧未來的設想。他說，人類不應該害怕這項技術，並強調美國需要在人工智慧競賽中保持相對於中國的領先地位。在文章中，他沒有點名Anthropic和OpenAI這兩家主張對人工智慧實施嚴格管控的競爭對手，但批評了它們的做法，認為若把人工智慧權力集中在少數幾家公司手中是危險的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Rather than centralizing superintelligence, we should distribute it,” Mr. Zuckerberg, 42, wrote in the essay, which he titled “The Future Is for Everyone.” He added, “This has the potential to begin a new era of personal empowerment.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「與其把超級智能集中在少數人手中，我們更應該讓它廣泛普及，」42歲的祖克柏在題為《未來屬於所有人》的文章中寫道。他還說：「這有望開啟一個個人賦能的新時代。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meta’s new model is likely to add to a contentious Silicon Valley debate over the direction of A.I. development. Anthropic and OpenAI have argued that A.I. should be restricted because it is dangerous and needs to be safely developed in a contained fashion. But Meta, Nvidia, Microsoft, Google and others have backed open-source, saying the technology must be freely available so that people can further develop A.I. and build new businesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Meta的新模型可能會加劇矽谷關於人工智慧發展方向的激烈爭論。Anthropic和OpenAI認為人工智慧具有危險性，因此應該受到限制，需要以受控方式安全開發。但Meta、英偉達、微軟、谷歌等公司則支持開源，認為這項技術必須能夠自由獲得，這樣人們才能進一步開發人工智慧，並創建新的企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The debate was turbocharged last month when Chinese start-ups released powerful open A.I. models that appeared to threaten the technological edge held by U.S. companies. Officials in Washington became embroiled in the debate, with OpenAI and Anthropic raising concerns about Chinese open-source A.I. models with regulators, while Nvidia and others pushed against restrictions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，中國初創公司發布了一批功能強大的開源人工智慧模型，似乎威脅到美國企業的技術優勢，這場爭論隨之急劇升溫。華盛頓的官員也捲入了這場爭論：OpenAI和Anthropic向監管機構表達了對中國開源人工智慧模型的擔憂，而英偉達等公司則反對施加限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news articles. The two companies have denied the claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已就新聞文章版權侵權問題起訴OpenAI和微軟。兩家公司均否認相關指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meta has long supported open-source A.I. and was for years one of the few American tech giants to give away their top A.I. models for free. That changed last spring, after Meta fell behind Anthropic and OpenAI in the A.I. race. It began developing a closed A.I. model instead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Meta長期以來一直支持開源人工智慧，多年來也是少數願意免費提供頂尖人工智慧模型的美國科技巨頭之一。但去年春天這一情況發生了變化。當時，Meta在人工智慧競賽中落後於Anthropic和OpenAI，於是開始開發一種閉源人工智慧模型。</div></div></div></div></div><div class="big_ad" data-google-query-id="CIGqnPbumZYDFeUWDAIdaa8Lbg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That model, Muse Spark, was developed under Alexandr Wang, 29, an A.I. entrepreneur whom Meta hired last year to be its chief A.I. officer. The company began selling access to Muse Spark for the first time last month. Last week, Meta also released Muse Code, a stand-alone coding assistant powered by Muse Spark.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該模型即Muse Spark，由29歲的人工智慧創業者汪滔主導開發，Meta於去年聘請他擔任首席人工智慧官。上個月，該公司首次開始向用戶出售Muse Spark的訪問權限。上週，Meta還發布了Muse Code——一款以Muse Spark為底層驅動的獨立編程助手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Muse Spark does not perform as well as leading A.I. models from Anthropic and OpenAI on measures such as coding, reasoning and writing, according to leaderboards that track A.I. benchmarks. Meta has positioned the model as a cheaper alternative to its rivals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據追蹤人工智慧基準測試的排行榜，在編程、推理和寫作等方面，Muse Spark的表現並不如Anthropic和OpenAI的領先人工智慧模型。Meta將這款模型定位為一種價格更低的競爭替代方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That strategy is similar to that of Chinese A.I. companies and their inexpensive open-source models. The Chinese models have become increasingly popular in the United States as companies seek to cut their A.I. bills, as well as in developing nations such as Kenya and Uganda.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種策略與中國人工智慧企業的做法頗為相似，後者推出了價格低廉的開源模型。隨著企業尋求削減人工智慧方面的支出，這些中國模型在美國越來越受歡迎，在肯亞、烏干達等發展中國家也同樣受到追捧。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his essay, Mr. Zuckerberg also expanded on Meta’s vision for superintelligence, which includes giving people personal “agents,” the A.I. bots that can “work 24/7 on your behalf to improve your relationships, health, career, finances, home management, hobbies, and more.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在文章中，祖克柏還詳細闡述了Meta對超級智能的願景，其中包括為每個人提供個人「代理」——即能夠「全天候代表你，持續改善你的人際關係、健康狀況、職業發展、財務管理、家居生活、興趣愛好等方方面面」的人工智慧機器人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His 8-year-old daughter has been using A.I. to code and create videos, he added, and he is using A.I. with her to design a robot. “Everyone will soon have invention superpowers,” Mr. Zuckerberg said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還說，自己八歲的女兒已經在使用人工智慧進行編程和製作影片，而他正在和女兒一起利用人工智慧設計一個機器人。「每個人很快都將擁有發明創造的超能力，」祖克柏說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has advantages in the A.I. race, Mr. Zuckerberg added, such as the ability to build data centers and nuclear power facilities quickly and with fewer regulations. He called for a new process for government oversight of A.I. development, and defended distillation, a practice in which A.I. labs use rival models to help train their own. Meta also said it would create a $1 billion fund to invest in communities where its data centers were built.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">祖克柏還指出，中國在人工智慧競賽中擁有某些優勢，例如能夠以更快的速度建設數據中心和核電設施，而且受到的監管更少。他呼籲建立一種新的政府監管機制，對人工智慧的發展進行監督；同時為蒸餾辯護——所謂蒸餾，是指人工智慧實驗室利用競爭對手的模型來幫助訓練自己的模型。Meta還表示，將設立一項10億美元的基金，投資於其數據中心所在的社區。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLS6nPbumZYDFYuzWgUdG_Qb_g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the coming months, Meta plans to release a cutting-edge A.I. model, internally called Watermelon, that will be more powerful than Muse Spark. Mr. Zuckerberg did not say if the model would be open or closed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">未來幾個月，Meta計劃發布一款尖端人工智慧模型，內部代號為「Watermelon」（西瓜），該模型將比Muse Spark更強大。祖克柏並未透露該模型是開源還是閉源。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Eli Tan自舊金山為時報報導科技業新聞。</p><div class="" data-poster=""><span><p class="cn-p">Mike Isaac是《紐約時報》矽谷記者，常駐舊金山。他報導全球最具影響力的科技公司，以及它們如何塑造互聯網和現實世界的文化。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260811/meta-ai-open-source/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
