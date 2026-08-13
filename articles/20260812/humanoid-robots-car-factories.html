@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會走路、會說話的機器人即將進入汽車工廠 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">會走路、會說話的機器人即將進入汽車工廠</h1>
+    <h2 class="en-headline">Robots That Walk and Talk Are Coming to Car Factories</h2>
+    <div class="meta-line">JACK EWING <span style="margin: 0 8px;">•</span> 2026-08-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="752" src="https://static01.nyt.com/images/2026/08/03/multimedia/00biz-auto-robots-promo-ghzw/00biz-auto-robots-promo-ghzw-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Will Crooks for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At a BMW factory in South Carolina, a human-shaped robot with a screen for a face recently stepped from a charging station toward a stack of green plastic boxes. It grasped an auto part from one of the boxes, pivoted, placed the part in a trolley, then pulled the trolley across the floor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在南卡羅來納州的一家寶馬工廠，一個有著螢幕臉的人形機器人最近從一個充電站走向一堆綠色塑料箱。它從一個箱子中抓取了一個汽車零件，轉動身體，將零件放入手推車中，然後拉著推車穿過車間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The robot’s slow, stiff movements suggested a worker with a bad hangover rather than a technological revolution.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">機器人的動作緩慢而僵硬，看起來更像是一個宿醉未醒的工人，而不是一場技術革命。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They’re still slower than humans,” Ulrich Wieland, a BMW vice president in charge of logistics at the factory, in Spartanburg, told reporters invited to see the robot in June. But, he added, “they’re advancing fast.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它們仍然比人類慢，」寶馬位於斯帕坦堡工廠負責物流的副總裁烏爾裡希·維蘭德在6月邀請記者參觀該機器人時表示。但他補充說，「它們進步很快。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Automakers have used robots for decades, but they are usually powerful, one-armed machines that are fixed in place and perform repetitive tasks like welding body frames or applying adhesives to door panels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">汽車製造商使用機器人已經有幾十年的歷史，但它們通常是強大的單臂機器，固定在某個位置，執行重複性任務，比如焊接車身框架或在車門面板上塗抹粘合劑。</div></div></div></div></div><div class="big_ad" data-google-query-id="CLyu-6qxnJYDFTm0gwgdjz4xCA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, most major automakers are betting that robots designed to resemble human beings, known as humanoids, will usher in a new wave of automation and efficiency. Equipped with artificial intelligence, they are expected to move around and do tasks now done by humans without any modifications to factories or heavy equipment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，大多數主要汽車製造商都寄望於這種外形類似人類、被稱為人形機器人的設計能帶來新一輪自動化和效率提升。配備人工智慧後，它們有望在無需對工廠或重型設備進行任何改造的情況下，四處移動並完成目前由人類完成的工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike most of the robots now in use, humanoids would respond to voice commands and theoretically solve problems and react to unforeseen events. They would never take a lunch break, join a union or require health insurance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與目前使用的大多數機器人不同，人形機器人將能夠響應語音指令，並且理論上能夠解決問題並應對突發事件。它們永遠不會午休、加入工會或需要醫療保險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To optimists, robots could rescue U.S. manufacturing by increasing productivity, solving shortages of skilled workers and giving Western carmakers a fighting chance at competing with Chinese rivals that enjoy lower costs. Boring but important jobs like sorting parts would be done by robots, freeing humans for more interesting and specialized work.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於樂觀者來說，機器人可以通過提高生產率、解決熟練工人短缺的問題來拯救美國製造業，讓西方汽車製造商在與成本更低的中國競爭對手競爭時有一線生機。分揀零件這樣枯燥但重要的工作將由機器人完成，從而將人類解放出來，從事更有趣、更專業的工作。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="寶馬工廠裡的一台人形機器人。一個長期困擾機器人專家的問題是如何複製人手所具有的靈活性與觸覺敏感度。" data-src="https://static01.nyt.com/images/2026/08/04/multimedia/00biz-auto-robots-tzjk/00biz-auto-robots-tzjk-jumbo.jpg" src="https://static01.nyt.com/images/2026/08/04/multimedia/00biz-auto-robots-tzjk/00biz-auto-robots-tzjk-jumbo.jpg"/></div><figcaption><span>寶馬工廠裡的一台人形機器人。一個長期困擾機器人專家的問題是如何複製人手所具有的靈活性與觸覺敏感度。</span> <cite>Will Crooks for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But many experts who have studied the use of robots and other automation tools caution that there is also a gloomier scenario.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但許多研究過機器人和其他自動化工具應用的專家警告說，也存在一種較悲觀的可能性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“With any kind of automation, you generally reduce the amount of labor you need per widget that you make, and that’s generally a gain for society,” said Susan Helper, a professor of economics at Case Western Reserve University who testified on robotics before a congressional committee in April.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「任何形式的自動化通常都會減少生產每一個零件所需的勞動力，而這通常對全社會是有益的，」凱斯西儲大學經濟學教授蘇珊·赫勒弗表示，她曾在4月就機器人技術向一個國會委員會作證。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But,” she added, “how do you use that extra time that’s freed up? You can use it to just take away the interesting work and leave the human workers with the boring work. And have fewer workers that you pay less.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「但是，」她補充道，「你如何利用這些節省出來的額外時間？你可以用它來直接剝奪有趣的工作，而把枯燥的工作留給人類工人。並且用更少的工人，付給他們更少的工資。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And Chinese companies already have a head start after their government made robot technology a national priority. Robot makers in China can draw on a network of suppliers for actuators, a part that enables movement, and sensors that are hard to find in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且，在中國政府將機器人技術列為國家優先發展事項之後，中國企業已經取得了先發優勢。中國的機器人製造商可以利用一個供應商網路獲取執行器（一種實現運動的部件）以及在美國很難找到的傳感器。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJzt-6qxnJYDFWPAZQMdMA4qhg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The cost of deploying a robot in China is just a fraction of what it is to deploy a robot in the U.S.,” said Ben Armstrong, the executive director of M.I.T.’s Industrial Performance Center. “They have this extremely dense ecosystem of toolmakers and equipment providers<i>.”</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在中國部署機器人的成本只是在美國的一個零頭，」麻省理工學院工業性能中心執行主任本·阿姆斯壯說。「他們擁有極其密集的工裝製造商和設備供應商生態系統。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Federal Communications Commission last month banned the import of humanoids and other advanced robots from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國聯邦通信委員會上個月禁止從中國進口人形機器人和其他先進機器人。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Automakers already use conventional robots more than other industries and are likely to be among the biggest users of humanoids.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">汽車製造商對傳統機器人的使用已經超過其他行業，並且很可能成為人形機器人的最大用戶之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hyundai Motor is one of the companies pursuing robotics most aggressively. At the company’s factory about half an hour from Savannah, Ga., autonomous carts have largely replaced forklifts for moving materials around the plant. Four-legged robots that look like dogs search for flaws by peering under car bodies. Flat, wheeled robots the size of queen beds slide under Ioniq 5 or Ioniq 9 electric vehicles as they come off the assembly line, lift them from below and transport them to testing stations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現代汽車是最積極研發機器人的公司之一。在該公司位於喬治亞州薩凡納以西約半小時車程的工廠裡，自動搬運車已大量取代叉車在廠區內搬運材料。看起來像狗的四足機器人通過探視車底來查找缺陷。當Ioniq 5或Ioniq 9電動汽車下線時，車輪驅動的平板式機器人（大小與一張雙人床相當）會滑到車底，從下方將其抬起，並運送到測試站。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In most car factories, workers drive the vehicles to testing. Being human, they occasionally drive into pillars and other objects. That’s not a problem with Hyundai’s transport robots, said Jerry Roach, a senior manager in charge of general assembly at the Georgia factory, which began producing cars in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在大多數汽車工廠裡，工人會將車輛開到測試點。作為人類，他們偶爾會撞上柱子和其他物體。喬治亞州工廠負責總裝的高級經理傑裡·羅奇表示，現代汽車的運輸機器人不存在這個問題。這家工廠自2024年起投產。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’ve never hit a pole,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們從未撞過柱子，」他說。</div></div></div></div></div><div class="big_ad" data-google-query-id="COna_KqxnJYDFezGZQMdUJ8lFw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2021 Hyundai acquired Boston Dynamics, which is developing humanoid robots that the carmaker plans to use initially for arranging components in a specified order for humans to install in vehicles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2021年，現代汽車收購了從事人形機器人研發的波士頓動力公司。這家汽車製造商計劃首先用這些機器人按指定順序排列零部件，供人工安裝到車輛上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is the same basic task that the BMW robot, made by Figure AI, demonstrated in Spartanburg. Mercedes-Benz, which is testing robots made by Apptronik in Austin, Texas, also plans to use them for handling and sorting materials. Carmakers say they have trouble retaining workers to perform such basic tasks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這與Figure AI公司為寶馬製造的機器人在斯帕坦堡展示的基本任務相同。梅賽德斯-奔馳正在測試由Apptronik公司在得克薩斯州奧斯汀製造的機器人，也計劃將其用於物料搬運和分揀。汽車製造商表示，他們很難留住工人來執行這類基礎任務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brent Stubbs, chief administrative officer of the Hyundai factory, is adamant that robots will create better automotive jobs, especially for young people raised on video games. The company has established an apprenticeship program in robot maintenance that Mr. Stubbs said would lead to high-paying jobs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現代汽車工廠首席行政官布倫特·斯塔布斯堅信，機器人將創造更好的汽車行業工作崗位，尤其是對在電玩遊戲中長大的年輕人而言。公司已經建立了一個機器人維護的學徒計劃，斯塔布斯稱這將帶來高薪工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That presents a unique opportunity now for more people to get involved in manufacturing, where a lot of the stereotypes of who it fits are totally out the door,” Mr. Stubbs said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這為更多人參與製造業提供了一個獨特的機會，而許多關於製造業適合誰的老套觀念已經完全過時了，」斯塔布斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Labor representatives are extremely skeptical of such claims and fear that robots will simply replace humans. Hyundai workers in South Korea went on strike last month, demanding a voice in how the company uses robots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">工會代表對此類說法存在很大的懷疑，他們擔心機器人只會取代人類。上個月，現代汽車在韓國的工人舉行了罷工，要求在公司如何使用機器人方面擁有發言權。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shawn Fain, the president of the United Automotive Workers union, has called humanoid robots and artificial intelligence a “profound threat” to workers and a tool that will make billionaires richer. “The human race has to master technology and not let it master us,” he told delegates to the union’s annual convention in June.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國汽車工人聯合會主席肖恩·費恩稱人形機器人和人工智慧是對工人的「嚴峻威脅」，是讓億萬富翁更富有的工具。「人類必須掌握技術，而不是讓技術掌握我們，」他在6月工會年度大會上對代表們說。</div></div></div></div></div><div class="big_ad" data-google-query-id="CJyd_KqxnJYDFW6hgwgdiQ8zRw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Companies are most successful when they develop the skills of their workers as they deploy new technology, Mr. Armstrong of M.I.T. said. Firms that combined worker training with automation achieved the greatest increases in productivity, according to his research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">麻省理工學院的阿姆斯壯表示，企業在部署新技術的同時發展員工技能往往能取得最好的效果。根據他的研究，將員工培訓與自動化相結合的公司，生產率提升幅度最大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are often simpler and less expensive ways to automate basic tasks like sorting parts than with humanoid robots, Mr. Armstrong added, saying, “Humanoids are a million-dollar solution to a one-hundred-dollar problem.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿姆斯壯補充說，對於分揀零件等基本任務，通常有比人形機器人更簡單、更便宜的自動化方式，他說：「人形機器人是百萬美元解決100美元問題的方案。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most prominent robot enthusiast in the auto business is Elon Musk, the chief executive of Tesla. He has made humanoid robots a central part of the company’s strategy to remake itself as an artificial intelligence powerhouse. The company has developed a humanoid called Optimus that it plans to use in its factories and to sell to other businesses and consumers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">汽車行業中最著名的人形機器人愛好者是特斯拉首席執行官伊隆·馬斯克。他已將人形機器人作為公司戰略的核心部分，旨在將自身重塑為人工智慧領域的一股強大力量。該公司開發了一款名為Optimus的人形機器人，計劃在其工廠中使用，並出售給其他企業和消費者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Optimus robots have been used at the Tesla Diner in Los Angeles and to serve drinks at company events. Mr. Musk has said they will someday be able to perform surgery and babysit children. This year Tesla stopped producing the Model S and Model X cars in a California factory to make room for Optimus production.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Optimus機器人已在洛杉磯的特斯拉餐廳使用，並在公司活動中提供飲品服務。馬斯克曾表示，它們將來能夠進行手術和照看孩子。今年，特斯拉停止在加利福尼亞一家工廠生產Model S和Model X汽車，為Optimus生產騰出空間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Optimus will be the biggest product ever,” Mr. Musk said during a conference call with investors and analysts last month. But he has also acknowledged challenges.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「Optimus將是有史以來最重大的產品，」馬斯克在上個月與投資者和分析師的電話會議上表示。但他也承認存在挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the most confounding is how to duplicate the dexterity and sensitivity of the human hand — a problem that has long stumped robotics experts. “The more you study the human hand, the more you realize how amazing hands are,” Mr. Musk said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中最難的問題是如何複製人類手部的靈活性和敏感性——這個問題長期以來一直困擾著機器人專家。「越研究人類的手，就越會意識到手有多麼神奇，」馬斯克說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="特斯拉研發出了一款名為Optimus的人形機器人，已在洛杉磯的特斯拉餐廳投入使用。" data-src="https://static01.nyt.com/images/2026/08/04/business/00biz-auto-robots-04/00biz-auto-robots-04-master1050.jpg" src="https://static01.nyt.com/images/2026/08/04/business/00biz-auto-robots-04/00biz-auto-robots-04-master1050.jpg"/></div><figcaption><span>特斯拉研發出了一款名為Optimus的人形機器人，已在洛杉磯的特斯拉餐廳投入使用。</span> <cite>Patrick T. Fallon/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not all automakers are on the humanoid robot bandwagon. General Motors is experimenting with what the company calls cobots, short for “collaborative robots,” which have arms and hands but no legs. They are more flexible than the robots typically found in factories, but decidedly not human shaped.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">並非所有汽車製造商都加入了人形機器人的潮流。通用汽車正在試驗其所謂的「協作機器人」，它們有手和臂，但沒有腿。它們比工廠中常見的機器人更靈活，但絕對不是人形。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While hands are very useful in a car factory, “it’s not clear that legs are,” Sterling Anderson, chief product officer at G.M., told reporters last year, adding that wheels can be much more useful.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">手在汽車工廠中非常有用，但「腿是否有用還不明確」，通用汽車首席產品官斯特林·安德森去年對記者表示，並補充說輪子可能要有用得多。</div></div></div></div></div><div class="big_ad" data-google-query-id="CMKH_aqxnJYDFc-Tgwgd6hUPJA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We don’t need to replace the humans,” Mr. Anderson, a former Tesla executive, said. “What we need to do is make their job better, make it easier, make our products better and more efficient.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們不需要取代人類，」曾任特斯拉高管的安德森說。「我們需要做的是讓他們的工作更好、更輕鬆，讓我們的產品更好、更高效。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jack Ewing撰寫關於汽車產業的報導，重點關注電動車領域。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260812/humanoid-robots-car-factories/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

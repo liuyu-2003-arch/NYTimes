@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬鈴薯有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">馬鈴薯有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Potatoes?</h2>
+    <div class="meta-line">ALEXANDRA PATTILLO <span style="margin: 0 8px;">•</span> 2026-08-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2025/11/18/well/10WELL-HEALTHY-POTATOES2/10WELL-HEALTHY-POTATOES2-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Suzanne Saroff</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sweet potatoes tend to get most of the nutritional glory, but regular potatoes (russets, fingerlings, red and Yukon Golds) deserve another look. The tubers help to support your immune system, aid in various bodily functions and keep you energized.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">甘薯往往因營養價值備受推崇，但普通馬鈴薯（如褐皮馬鈴薯、拇指馬鈴薯、紅皮馬鈴薯和育空金馬鈴薯）同樣值得我們重新審視。這種塊莖類蔬菜有助於增強免疫系統，促進身體各項機能，讓你保持精力充沛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Potatoes often get a bad reputation” because they’re commonly eaten in the form of French fries or potato chips, said Tal Kleiner, a clinical nutrition manager at NYU Langone Health. But when they’re prepared in a healthy way, potatoes are an “amazing, nutrient-dense” food, she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約大學朗格尼健康中心的臨床營養經理塔爾·克萊納表示：「馬鈴薯經常名聲不佳」，因為人們通常以炸薯條或薯片的形式食用它們。但她補充道，如果以健康的方式烹飪，馬鈴薯其實是一種「非常棒、營養豐富」的食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what to know, along with some recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是您需要了解的知識，以及來自《紐約時報》烹飪頻道的一些食譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They stoke your energy.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>馬鈴薯能夠補充能量</b></div></div></div></div></div><div class="big_ad" data-google-query-id="COLAxa6xnJYDFa-1gwgd4001jw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potatoes are high in carbohydrates (a medium-size peeled russet potato has about 35 grams), but that doesn’t make them “inherently bad,” explained Tara Schmidt, a dietitian and instructor of nutrition at the Mayo Clinic in Rochester, Minn. — it just means they may not be considered an “unlimited” food.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明尼蘇達州羅切斯特市的梅奧診所的營養師兼營養學講師塔拉·施密特解釋說，馬鈴薯含有大量的碳水化合物（一個中等大小、去皮的褐皮馬鈴薯約含35克碳水化合物），但這並不意味著它們「天生不好」，只是說明它們不能被視為可以「無限量食用」的食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potatoes are complex carbs that take longer for the body to break down and digest than simple carbs, so they provide a steadier source of energy, which helps you feel fueled and fuller for longer, Ms. Kleiner said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">克萊納表示，馬鈴薯屬於複合碳水化合物，身體分解和消化它們的時間比簡單碳水化合物更長，因此它們能夠提供更穩定的能量來源，幫助你更持久地保持精力充沛和飽腹感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But certain varieties do have a high glycemic index, meaning they can rapidly spike blood sugar, Ms. Kleiner said. Diets rich in foods with a high G.I. have been linked to an increased risk of diabetes and heart disease. Waxy potatoes, like fingerlings and red potatoes, tend to have a lower G.I. than russet or Idaho potatoes, she explained, and boiled and roasted potatoes have a lower G.I. than fried or mashed ones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但克萊納也指出，某些品種的升糖指數確實很高，這意味著它們會導致血糖迅速飆升。富含高升糖指數食物的飲食習慣已被證實會增加患糖尿病和心臟病的風險。她解釋說，蠟質馬鈴薯（如拇指馬鈴薯和紅皮馬鈴薯）升糖指數通常低於褐皮馬鈴薯或愛達荷馬鈴薯，而且煮馬鈴薯和烤馬鈴薯的升糖指數也低於炸馬鈴薯或馬鈴薯泥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To help manage blood sugar spikes and slow digestion, Ms. Schmidt suggested “meal balancing” by pairing potatoes with lean protein, healthy fats and nonstarchy vegetables.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了幫助控制血糖驟升並減緩消化，施密特建議通過「飲食平衡」的方式，將馬鈴薯與瘦肉蛋白、健康脂肪和非澱粉類蔬菜搭配食用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They support a healthy immune system.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>馬鈴薯有助於維持健康的免疫系統</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potatoes are a surprisingly solid source of vitamin C. One medium peeled russet potato offers about 25 percent of the recommended daily amount. Vitamin C is essential for the growth and repair of tissue. It also acts as an antioxidant, keeping your immune system strong and helping to protect against chronic diseases such as heart disease and cancer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">令人驚訝的是，馬鈴薯是維生素C的優質來源。一個中等大小、去皮的褐皮馬鈴薯大約能提供每日推薦攝入量的25%。維生素C對組織的生長和修復至關重要。它還具有抗氧化作用，保持免疫系統強健，有助於預防心臟病和癌症等慢性疾病。</div></div></div></div></div><div class="big_ad" data-google-query-id="CKXhxa6xnJYDFUnbZQMdzoE5Tw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potatoes are also full of phenolics, a type of polyphenol that helps reduce inflammation, regulate immune function and protect cells from damage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬鈴薯還富含酚類物質，是一種有助於減輕炎症、調節免疫功能並保護細胞免受損傷的多酚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And they contain a modest amount of vitamin B6, which is needed for cardiovascular, immune and mental health, said Mary Ellen Camire, a professor of food science and human nutrition at the University of Maine who has studied potatoes’ health benefits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，緬因大學食品科學與人類營養學教授瑪麗·艾倫·卡米爾說，它們還含有適量的維生素B6，這對於心血管、免疫系統和心理健康都是必不可少的，，她曾深入研究過馬鈴薯的健康益處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They have more potassium than a banana.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>馬鈴薯的鉀含量比香蕉還高</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potassium is an electrolyte that the cells in your nerves and muscles need to function, and it helps keep blood pressure in check. But few people get enough potassium in their diet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">鉀是一種電解質，是神經和肌肉細胞維持正常功能所必需的，它也有助於控制血壓。但很少有人能夠通過日常飲食攝入足夠的鉀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One medium peeled russet potato has about 900 milligrams, compared with 650 milligrams in a similar serving of banana. That’s roughly 30 percent of the recommended daily amount.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個中等大小、去皮的褐皮馬鈴薯大約含有900毫克鉀，大約佔到每日推薦攝入量的30%，相比之下，同等份量的香蕉含量只有650毫克。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>And don’t forget the skin.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>別忘了馬鈴薯皮</b></div></div></div></div></div><div class="big_ad" data-google-query-id="CP6Vxq6xnJYDFcWHgwgdGtAyvA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potato skins contain much of the vegetable’s phenolics, as well as its fiber. One medium baked potato with the skin on has about 10 to 20 percent of the recommended daily amount of fiber, depending on a person’s age and sex.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬鈴薯皮中含有它大部分的酚類物質以及膳食纖維。一個帶皮烤制的中等大小馬鈴薯大約含有每日推薦膳食纖維攝入量的10%到20%（具體比例取決於個人的年齡和性別）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The darker the color of the skin and flesh, the more nutritious the potato, said Mary Ellen DiPaola, a senior outpatient dietitian at the University of California, San Francisco.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加州大學舊金山分校的高級門診營養師瑪麗·艾倫·迪保羅表示，馬鈴薯的皮和肉顏色越深，營養就越豐富。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Purple and red potatoes are packed with pigments called anthocyanins, which can promote cardiovascular health, slow starch digestion and help stave off cognitive problems, Dr. Camire said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡米爾博士說，紫色和紅色馬鈴薯富含一種叫做花青素的色素，可以促進心血管健康、延緩澱粉消化，並有助於預防認知障礙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Is there a best way to eat potatoes?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>吃馬鈴薯有最佳方法嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To fully reap the nutritional benefits, preparation is the key. When baked, roasted or boiled with minimal add-ons, potatoes are virtually fat-free. But piling them with butter or sour cream or frying them can quickly torpedo their nutritional profile. Instead, experts recommend a drizzle of olive oil or hot sauce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要想充分獲得其營養價值，烹飪方法是關鍵。若以烘烤、炙烤或水煮，且僅添加極少配料，馬鈴薯的脂肪含量幾乎為零。但若在其上堆滿黃油、酸奶油，或使用油炸，就會立刻破壞其的營養成分。專家建議，淋上少許橄欖油或辣醬即可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Potatoes are a more nutrient-dense option than processed white starches like rice or pasta, Ms. DiPaola said. “And who doesn’t like potatoes?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">迪保羅表示，與大米或意大利麵等加工過的白色澱粉相比，馬鈴薯是一種營養密度更高的選擇。「況且，誰不愛吃馬鈴薯呢？」</div></div></div></div></div><div class="big_ad" data-google-query-id="COuZxq6xnJYDFcm_gwgdxRIx7g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With that, here are some recipes from NYT Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">說了這麼多，以下是幾道來自《紐約時報》烹飪版的食譜：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. One-Pan Chicken With Golden Potatoes</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 單鍋黃金馬鈴薯烤雞</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HOW-HEALTHY-POTATOES-Chicken-czwj/10WELL-HOW-HEALTHY-POTATOES-Chicken-czwj-master1050.jpg" src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HOW-HEALTHY-POTATOES-Chicken-czwj/10WELL-HOW-HEALTHY-POTATOES-Chicken-czwj-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Hadas Smirnoff.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this family-friendly dinner, turmeric lends its yellow hue and earthy aroma to red potatoes, onions and chicken thighs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道適合全家享用的晚餐中，薑黃為紅皮馬鈴薯、洋蔥和雞腿染上了金黃的色澤，帶來了泥土般的芬芳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>One-Pan Chicken With Golden Potatoes</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：單鍋黃金馬鈴薯烤雞</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Olive Oil Mashed Potatoes</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 橄欖油馬鈴薯泥</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Olive-Oil-Mashed-fvpg/10WELL-HEALTHY-POTATOES-Olive-Oil-Mashed-fvpg-master1050.jpg" src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Olive-Oil-Mashed-fvpg/10WELL-HEALTHY-POTATOES-Olive-Oil-Mashed-fvpg-master1050.jpg"/></div><figcaption><span></span> <cite>Christopher Testani for The New York Times. Food Stylist: Rebecca Jurkevich.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Simmering whole garlic cloves with Yukon Golds gives these creamy, Thanksgiving-worthy potatoes a nice bite (as does good olive oil).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將整瓣大蒜與育空金馬鈴薯一起慢燉，賦予這款適合感恩節的奶油馬鈴薯泥極佳的口感（優質的橄欖油同樣功不可沒）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Olive Oil Mashed Potatoes</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：橄欖油馬鈴薯泥</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Chermoula Potato and Fish Stew</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 查莫拉醬馬鈴薯燉魚</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Fish-Stew-pglt/10WELL-HEALTHY-POTATOES-Fish-Stew-pglt-master1050.jpg" src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Fish-Stew-pglt/10WELL-HEALTHY-POTATOES-Fish-Stew-pglt-master1050.jpg"/></div><figcaption><span></span> <cite>Mark Weinberg for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Moroccan chermoula — a fragrant blend of warm spices, herbs, lemon and garlic — makes mild russet potatoes and white fish taste big and bold.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">摩洛哥查莫拉醬（一種混合了溫和香料、香草、檸檬和大蒜的芳香醬料）讓味道清淡的褐皮馬鈴薯和白肉魚散發出濃郁奔放的風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Chermoula Potato and Fish Stew</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：查莫拉醬馬鈴薯燉魚</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. Greek Lemon Potatoes</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 希臘風味檸檬馬鈴薯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Greek-Lemon-hcqb/10WELL-HEALTHY-POTATOES-Greek-Lemon-hcqb-master1050.jpg" src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Greek-Lemon-hcqb/10WELL-HEALTHY-POTATOES-Greek-Lemon-hcqb-master1050.jpg"/></div><figcaption><span></span> <cite>Andrew Purcell for The New York Times. Food Sylist: Barrett Washburne.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Using the Greek method of roasting potatoes in olive oil, lemon juice and stock results in potatoes that are crispy outside, creamy inside and deeply flavorful throughout.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">採用希臘式做法，將馬鈴薯放在橄欖油、檸檬汁和高湯中烤制，成品外酥裡嫩，且由內而外充滿濃郁的風味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Greek Lemon Potatoes</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：希臘風味檸檬馬鈴薯</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. Citrusy Roasted Salmon and Potatoes</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 柑橘烤鮭魚配馬鈴薯</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Roast-Salmon-hwtz/10WELL-HEALTHY-POTATOES-Roast-Salmon-hwtz-master1050.jpg" src="https://static01.nyt.com/images/2025/11/10/multimedia/10WELL-HEALTHY-POTATOES-Roast-Salmon-hwtz/10WELL-HEALTHY-POTATOES-Roast-Salmon-hwtz-master1050.jpg"/></div><figcaption><span></span> <cite>Bobbi Lin for The New York Times. Food Stylist: Monica Pierini.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Roasting a whole slab of salmon over thinly sliced Yukon Golds enriches the citrus-sauced spuds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將整塊鮭魚放在切成薄片的育空金馬鈴薯上烤制，讓裹著柑橘醬汁的馬鈴薯充分吸收魚肉的鮮美。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Citrusy Roasted Salmon and Potatoes</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">食譜：柑橘烤鮭魚配馬鈴薯</div></div></div></div></div><div class="big_ad" data-google-query-id="COi-xq6xnJYDFU7kZQMdIRQn0w" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260812/potatoes-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
