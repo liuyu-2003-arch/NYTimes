@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我是一名醫生，川普看起來身體不太好 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">我是一名醫生，川普看起來身體不太好</h1>
+    <h2 class="en-headline">I Was Dick Cheney’s Cardiologist. Trump Has Not Looked Well, and We Should Know Why.</h2>
+    <div class="meta-line">JONATHAN REINER, M.D. <span style="margin: 0 8px;">•</span> 2026-08-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/08/11/multimedia/11reiner-jhlm/11reiner-jhlm-jumbo.jpg" width="683"/><figcaption><span></span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dick Cheney’s heart problems were never a national secret.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">迪克·錢尼的心臟問題從來都不是什麼國家機密。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I was Mr. Cheney’s cardiologist for 27 years, including his two terms as vice president. During his time in the White House, he needed stents, a defibrillator and medical treatment for an arrhythmia and a blood clot in his leg. After the defibrillator was implanted in his chest in 2001, he would frequently show visitors to his West Wing office a sample device provided to him by the manufacturer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我曾擔任錢尼的心臟科醫生長達27年，包括他的兩屆副總統任期。任職期間，他曾需要安裝支架、除顫器，並接受心律失常和腿部血栓的醫治。2001年胸腔植入除顫器後，他經常向西翼辦公室的訪客展示製造商提供給他的樣品設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Cheney’s candor about his health was an anomaly for an American politician. Grover Cleveland underwent secret cancer surgery while he was president (on board a yacht for maximum privacy). Franklin Delano Roosevelt hid his use of a wheelchair from the public. Ahead of his campaign for a fourth term, he struggled with severe hypertension and congestive heart failure, but the public was told that the president’s health was “excellent in all respects.” Joe Biden’s disastrous debate performance raised concerns that the White House had attempted to conceal the president’s decline. For weeks after his hospitalization this summer, Senator Mitch McConnell shared almost no details about why he was absent from office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">錢尼對其健康狀況的坦率在美國政治人物中實屬異類。格羅弗·克利夫蘭在擔任總統期間曾祕密進行過癌症手術（並且是在遊艇上進行，以求最大程度保密）。富蘭克林·德拉諾·羅斯福向公眾隱瞞了他使用輪椅的事實。在競選第四任期之前，他飽受嚴重高血壓和充血性心力衰竭的困擾，但公眾被告知總統的健康狀況「在所有方面都非常出色」。喬·拜登災難性的辯論表現引發了人們的擔憂，認為白宮試圖掩蓋總統的衰退。今年夏天，參議員米奇·麥康乃爾在數週住院治療期間沒有分享任何關於他為何無法履職的細節。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In June, President Trump celebrated his 80th birthday, and at the end of this term he will be the oldest person ever to serve as this nation’s leader. After Mr. Trump’s medical evaluation in May, Dr. Sean Barbabella, the physician to the president, wrote that Mr. Trump “remains in excellent health” and that his “demanding daily schedule, including multiple high-level meetings, public engagements and regular physical activity, continues to support his overall well-being.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年6月，川普總統慶祝了他的80歲生日，在本任期結束時，他將成為有史以來擔任美國領導人最年長的人。在川普5月份接受體檢後，總統醫生肖恩·巴貝拉博士寫道，川普「仍然非常健康」，並且他「繁重的每日日程——包括多次高層會議、公共活動和規律的體育鍛煉——繼續支持著他的整體健康」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ_7n_HynpYDFUCV7gEdAg0Z4Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite reassurances from the White House to the contrary, at times over the past year, the president has not looked well. I am not Mr. Trump’s doctor, and have only reviewed his records that have been made public. But Mr. Trump is probably the most photographed president in American history, and a variety of physical ailments are easy to see. He’s had large bruises on both hands, swelling in his legs and episodes when it appears that he is struggling to stay awake. He’s also had advanced imaging performed for unclear reasons. The public is again left to wonder whether the nation’s leader is OK.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管白宮一再作出保證，但在過去一年中，總統有時看起來狀態並不好。我不是川普的醫生，只查閱過已公開的病歷。但川普可能是美國歷史上被拍照最多的總統，各種身體上的不適很容易被看到。他的雙手都有大片瘀傷，腿部腫脹，並且曾出現過難以保持清醒的情況。他還因不明原因接受過高級影像檢查。公眾再次不得不想知道，國家領導人是否安好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite the unparalleled power afforded to the president of the United States, there is no formal requirement for the commander in chief to certify his fitness for duty. That’s a mistake. Members of the military, Secret Service agents, commercial pilots, school bus drivers and air traffic controllers all must periodically demonstrate that they are well enough to perform their work. The current practice of reporting the results of a yearly medical examination for the president began in the Nixon administration, but it’s only a custom, not a formal obligation. And, as history has shown, it can be unreliable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國總統被賦予無與倫比的權力，但並沒有某種正式規定要求三軍統帥必須證明其履職能力。這是一個錯誤。軍人、特勤局特工、商業飛行員、校車司機和空中交通管制員都必須定期證明他們身體狀況良好，能夠勝任工作。目前向公眾報告總統年度體檢結果的做法始於尼克森政府，但這只是一種慣例，並非正式義務。而且，正如歷史所表明的那樣，這種做法可能並不可靠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This does not mean that every detail about a president’s health must be disclosed. It’s appropriate to withhold elements of a medical history that could be exploited by an adversary. In 2007, when we replaced Mr. Cheney’s defibrillator, we didn’t share information about a new wireless feature of the device that I considered a security threat to the vice president. (We ultimately were able to get the manufacturer to disable that capacity.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這並不意味著總統健康狀況的每一個細節都必須被披露。保留病歷中可能被對手利用的部分是恰當的。2007年更換錢尼的除顫器時，我們沒有分享該設備新增無線功能的信息，因為我認為這對副總統構成安全威脅。（我們最終成功讓製造商禁用了該功能。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 25th Amendment to the Constitution allows for the best solution to this problem: It permits Congress to establish a panel outside the executive branch to assess the health and fitness of the president. In April of this year, Representative Jamie Raskin introduced a bill to create a congressional commission that would do just that. Ideally, such a panel would be empowered to review data from routine presidential physical examinations, as well as assessments performed when medical concerns emerge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">憲法第二十五條修正案為這個問題提供了最佳解決方案：它允許國會在行政部門之外設立一個小組來評估總統的健康和履職能力。今年4月，眾議員傑米·拉斯金提出一項法案，旨在設立一個國會委員會來專門處理此事。理想情況下，這樣一個小組應有權審查總統常規體檢的數據，以及在出現醫療問題時進行的評估。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If such a commission were in place today, these are some of the medical questions it could clarify concerning Mr. Trump’s health. The American public deserves answers to all of them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果今天就有這樣一個委員會，以下這些關於川普健康問題的醫療疑問或許就能得到澄清。美國公眾理應得到所有這些問題的答案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">1. Dr. Barbabella’s recent report states that the president was evaluated by 22 consultants, an extraordinary number of specialists for even the most extensive executive health evaluation. Why were so many physicians summoned, and what were their specialties?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1. 巴貝拉博士近期的報告稱，總統接受了22位會診醫生的評估，即便對於最全面的行政健康評估來說，這個專家數量也是非同尋常的。為什麼要召集這麼多醫生？他們的專業領域是什麼？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJWLoPHynpYDFQmI7gEdcdIYEw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">2. Mr. Trump often shows prominent bruising on his hands, which the White House attributes to frequent handshaking and frequent use of aspirin. Trauma from handshaking has never seemed plausible, and it doesn’t explain why the president’s left hand is often similarly discolored. Also, why would the president take a dose of aspirin four times as high as the dose typically recommended by doctors?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2. 川普的手上經常出現明顯的瘀傷，白宮將其歸因於頻繁握手和經常使用阿司匹林。握手造成創傷似乎從來都說不通，也無法解釋為什麼總統的左手也經常有類似的變色。此外，總統為什麼要服用醫生通常推薦劑量四倍之多的阿司匹林？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">3. Swelling in the president’s legs last summer led to an unscheduled medical evaluation. The president’s physician described the problem as “chronic venous insufficiency,” a condition common in older people, that results from leaky valves in the veins of the legs. It usually develops gradually over a long period. But during Mr. Trump’s comprehensive physical examination just a few months earlier, Dr. Barbabella documented no swelling in the president’s legs. If that’s true, his swelling would be by definition acute, not chronic. Acute leg swelling is a potentially much more consequential finding that can be caused by issues such as heart and kidney disease. What’s the reason for this discrepancy?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3. 去年夏天，總統腿部腫脹導致了計劃外的醫療評估。總統醫生將這一問題描述為「慢性靜脈功能不全」，這是一種常見於老年人的疾病，由腿部靜脈瓣膜洩漏引起。它通常是長期逐漸發展的。但在僅僅幾個月前川普接受全面體檢時，巴貝拉博士的記錄中並沒有顯示總統腿部有腫脹。如果那是真的，那麼他的腫脹根據定義就應該是急性的，而非慢性的。急性腿部腫脹是一個潛在嚴重得多的發現，可能由心臟和腎臟疾病等問題引起。這一差異的原因是什麼？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">4. The president often appears to struggle to stay awake, signs of a condition doctors refer to as excessive daytime somnolence. This problem, which is sometimes evident during Oval Office events, was not addressed in the report after Mr. Trump’s comprehensive physical exam in May. Although the president is a renowned night owl, his sleepiness seems relatively new. There are several possible causes for the president’s symptoms, some of which could have serious complications if left untreated. Has the president’s medical team identified the source of this issue? And how are they addressing it?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4. 總統經常看起來在努力保持清醒，這是醫生稱之為日間過度嗜睡的跡象。這個問題在橢圓形辦公室的活動中有時也很明顯，但在川普5月份全面體檢後的報告中並未提及。儘管總統是出了名的夜貓子，但他的嗜睡似乎是相對較新的情況。總統的癥狀可能有多種原因，其中一些如果不加以治療，可能會導致嚴重併發症。總統的醫療團隊是否已確定此問題的根源？他們又是如何處理的？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">5. In October 2025, Mr. Trump underwent advanced imaging of his heart and abdomen at Walter Reed National Military Medical Center. The president’s physician offered a vague description of the reason for the tests: “to identify issues early, confirm overall health and ensure he maintains long-term vitality and function.” He said the tests did not reveal any abnormalities. Was there a specific symptom or clinical event that prompted this testing?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">5. 2025年10月，川普在沃爾特·里德國家軍事醫療中心接受了心臟和腹部的高級影像檢查。總統醫生對檢查原因給出了模糊的描述：「及早發現問題，確認整體健康狀況，並確保他維持長期的活力和機能。」他說檢查未發現任何異常。是否有特定的癥狀或臨床事件促使了這項檢查？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">6. Past Trump medical reports have disclosed the president’s use of the drug finasteride, which prevents hair loss. The drug was not mentioned in the report after Mr. Trump’s most recent medical examination. In response to a query from The Washington Post about its absence, the White House responded, “The current report reflects all medications deemed clinically relevant to disclose at this time.” It does not matter, in any material way, if the president is or isn’t taking a hair-loss drug. The more important question is, what medications prescribed for Mr. Trump, if any, has the White House decided to withhold from the public?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">6. 以往的川普醫療報告曾披露總統使用非那雄胺，這是一種防脫髮藥物。在川普最近一次體檢後的報告中並未提及該藥。針對《華盛頓郵報》就此提出的詢問，白宮回應稱：「當前報告反映了此時被認為臨床相關且應予披露的所有藥物。」總統是否服用脫髮藥物在任何實質性方面都不重要。更重要的問題是，白宮決定對公眾隱瞞哪些為川普開的處方藥（如果有的話）？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">7. The president has spoken about how well he performs on cognitive testing. However, the exam that Mr. Trump describes, the Montreal Cognitive Assessment, is a brief and basic screening tool, with simple questions (draw a clock, identify a camel), often performed in response to a concern from the patient or a member of the family. Why has the president undergone this test numerous times, and have there been more sophisticated neurocognitive assessments performed?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7. 總統曾談到他在認知測試中表現如何出色。然而，川普所描述的蒙特婁認知評估是一種簡短而基礎的篩查工具，包含簡單問題（畫一個鍾、識別駱駝等等），通常是在患者或家屬有擔憂時進行。為什麼總統多次接受這項測試？是否進行過更複雜的神經認知評估？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COfQoPHynpYDFVIHvAEdYP8UaA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some people would argue that these personal medical details are more than the public deserves to know: After all, Buckingham Palace has not revealed many details about King Charles’s cancer or his treatment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有些人會認為，這些個人醫療細節超出了公眾理應知曉的範圍：畢竟，白金漢宮並未透露查爾斯國王癌症病情或其治療的許多細節。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the United States does not have a king. In a representative democracy, the people must have confidence in the health of their leader, and in the leader’s capacity to guide the nation. We have been kept in the dark too long.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但美國沒有國王。在代議制民主國家，人民必須對他們的領導人的健康以及領導人領導國家的能力有信心。我們被蒙在鼓裡太久了。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jonathan Reiner與錢尼和莉茲·錢尼合著了《心臟：一部美國醫學史》(Heart: An American Medical Odyssey)一書。該書詳細記述了這位美國前副總統與心臟病抗爭的歷程。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260813/trump-health-questions/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
