@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超級英雄都很無聊，除了這一個 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">超級英雄都很無聊，除了這一個</h1>
+    <h2 class="en-headline">Superheroes Are a Bore. Except This One.</h2>
+    <div class="meta-line">DAVID COLMAN <span style="margin: 0 8px;">•</span> 2026-08-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/08/16/opinion/16colman/16colman-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Kimberly Elliott</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">14 years after the first “Avengers” movie hit theaters, superheroes have become a bore. Their supernatural strength, their predictable near-indestructibility, their vehicles or magical powers that whoosh them in and out of multiverses galore. Can any of it stand up to what is happening to the world outside? And when the stakes are so ridiculous, does any of it actually resonate?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自第一部《復仇者聯盟》電影上映已過去14年，超級英雄早已令人厭倦。他們超凡的力量、可預見的近乎不滅之身，以及他們的載具或魔法能力讓他們在多元宇宙間呼嘯來去。所有這一切能跟外面的真實世界一較高下嗎？在生死攸關的時刻，這些東西真的能引發共鳴嗎？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We don’t need Mr. All-American-From-Krypton or a showboating billionaire with a bat attitude. Not with the federal government currently at war with itself, its populace, its Constitution, all common decency and Iran. Even Lex Luthor might cringe at the brazen corruption of our oligarchs. No, this is not a job for Superman. Nor is it one for several gaggles of superheroes — the Avengers, the X-Men, the New Avengers and sundry others. Sure, they know how to oust alien invaders, but they also tend to destroy entire cities in doing so, leaving the normies to clean up their messes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們不需要那個來自氪星的美國精英先生，也不需要那個自命不凡、帶著蝙蝠態度、花裡胡哨的億萬富翁。聯邦政府正與自己的人民、憲法、所有基本道義以及伊朗開戰——連萊克斯·盧瑟恐怕都會對我們寡頭們的無恥腐敗感到汗顏。不，這不是超人能解決的任務，也不是復仇者、X戰警、新復仇者及其他各路超級英雄團隊能搞定的。當然，他們知道如何驅逐外星入侵者，但過程中也往往毀掉整座城市，讓普通民眾來收拾殘局。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We need just a spider. Two weekends ago, the perpetually put-upon Peter Parker swung into action again in “Spider-Man: Brand New Day” in almost 4,500 theaters across North America, frantically juggling supernatural, romantic, financial and psychological battles. He doesn’t get through them with ease, but along the way he handily broke the domestic box-office record for a movie’s opening week, surpassing $500 million. The worldwide gross may well reach $2 billion this weekend. The success affirmed what many of us felt in our gut: If you want or need any superhero right now, you’re better off with Spider-Man.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們只需要一隻蜘蛛。兩週前，永遠焦頭爛額的彼得·帕克在《蜘蛛人：嶄新之日》中再次登場，登陸北美近4500家影院，瘋狂地周旋於超自然、愛情、財務和心理等多重戰鬥之間。他並未輕鬆過關，但一路輕鬆打破了北美影史首周票房紀錄，突破5億美元。全球票房本週末可能達到20億美元。這一成功印證了我們許多人的直覺：如果你現在想要或需要任何超級英雄，蜘蛛人是更好的選擇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Which is funny because, by most Marvel measures, Spider-Man is not particularly impressive. He can scamper up walls, can shoot and swing from sticky webbing and has superhuman strength and that spider sense. That’s about it. He can’t fly; one of the reasons he is so identified with New York City is that he needs the architecture to get around. Plunk him down in an Iowa cornfield, and the guy has to walk. He’s not immortal or immune from injury. Bullets don’t bounce off him; he even gets shot in the new movie and ends up in the hospital.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">說來有趣，因為按漫威的大多數標準，蜘蛛人並不特別出眾。他能爬牆，能射出蛛絲並藉助它們的粘性盪行，擁有超強力量和蜘蛛感應。僅此而已。他不會飛；他之所以與紐約市緊密相連，原因之一就是他需要藉助建築結構來移動。把他丟在愛荷華州的玉米地裡，他就只能步行。他不是不死之身，也會受傷。子彈不會從他身上彈開；新片中他甚至中槍住院。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNC0jqj1qJYDFfTMSgAdTwU4hQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He doesn’t have a hidden high-tech lair filled with an endless arsenal of deadly crime-fighting gadgets. In “Brand New Day” he has an attic workshop where he makes his own devices. And he’s not superhero hot. Yes, he’s impressively jacked in the new film, but when he has to strip off his kit to meet with Black Widow in a Russian bath, he still looks like a nervous teen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他沒有隱藏的高科技基地，沒有無窮無盡的致命犯罪打擊裝備庫。在《嶄新之日》裡，他只有一間閣樓工作室，自己製作裝備。他也不算超級英雄裡的帥哥。是的，新片中他有一身肌肉，但當他不得不在俄羅斯澡堂裡脫掉戰衣與黑寡婦會面時，他看起來仍然像個緊張的少年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Believe it or not, Spider-Man was almost doomed to the wastebasket before he ever existed. In the early 1960s, Stan Lee pitched his publisher the idea. The response: “Stan, that is the worst idea I have ever heard,” Mr. Lee recounted to BBC Radio 4 in 2015. “First of all, people hate spiders, so you can’t call a book ‘Spider-Man.’ Secondly, he can’t be a teenager — teenagers can only be sidekicks. And third, he can’t have personal problems if he’s supposed to be a superhero — don’t you know who a superhero is?” But Mr. Lee pulled together a story and published it in the final issue of a canceled comics title in the summer of 1962, and Spider-Man took off.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">信不信由你，蜘蛛人在誕生之前幾乎註定被扔進廢紙簍。20世紀60年代初，斯坦·李向他的出版商提出這個想法。得到的回應是：「斯坦，這是我聽過最糟糕的主意，」2015年李在BBC廣播4台回憶道。「首先，人們討厭蜘蛛，所以你不能把書叫作『蜘蛛人』。其次，他不能是青少年——青少年只能當跟班。再次，如果他是超級英雄，就不能有個人問題——你不知道超級英雄是什麼樣嗎？」但李拼湊出一個故事，並於1962年夏天在一本已停刊的漫畫書的最後一期上發表，蜘蛛人就此起飛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s because Spidey’s limitations make him more, not less, of a superhero. He’s finite right down to his crime-fighting brief and his classic territory — baddies in New York City, no more, no less. That’s a powerful part of his unspoken mission statement: Act locally. Be the friendly neighborhood Spider-Man. Plus, he’s entangled. Yes, he has archenemies like Green Goblin and Doctor Octopus. But he has friends and frenemies, a horrible boss, that on-again, off-again romance and a secret he does everything to protect. That pretty much describes me and everyone I know.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是因為蜘蛛人的局限性使他更稱得上超級英雄，而不是相反。他的有限性體現在犯罪打擊職責和經典活動範圍上——紐約市內的壞蛋，僅限於此。這是他未說出口的行動宣言中強有力的一部分：立足本地。做你的好鄰居蜘蛛人。而且，他身陷糾纏之中。是的，他有綠魔和章魚博士這樣的死敵。但他也有朋友和亦敵亦友之人，一個糟糕的老闆，分分合合的愛情，以及他竭盡全力保護的祕密。這幾乎描述了我以及我認識的每個人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s what made me love Spider-Man as a kid. When I was growing up in rural Wisconsin in the late ’70s, far from any place you could buy a 45 record or comic book, The Milwaukee Journal had “The Amazing Spider-Man.” He was the only superhero I ever imagined being — a young man living in the city, trying to keep it all together with a combination of frayed nerves and spider silk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這正是我小時候愛上蜘蛛人的原因。70年代末，我在威斯康辛州鄉村長大，那裡遠離任何能買到45轉唱片或漫畫書的地方，《密爾瓦基日報》上有《神奇蜘蛛人》。他是我唯一想像過自己成為的超級英雄——一個住在城裡的年輕人，用緊繃的神經和蜘蛛絲努力撐起一切。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was impossible to be Superman. I was never going to be as rich as Bruce Wayne. But, hey, I was good at science. For all I knew, I could visit a lab on a school trip, get bitten by a radioactive spider and start transforming. And this fantasy came with a bonus, which any teenage boy going through the agonizing social-sexual changes and perplexities of puberty could relate to. (If only every adolescence came with one supercool secret instead of 1,000 embarrassing ones.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成為超人是不可能的。我永遠不可能像布魯斯·韋恩那樣富有。但是，嘿，我擅長科學。說不定我可以在研學的時候參觀一個實驗室，被放射性蜘蛛咬一口，然後開始變異。這個幻想還有一個額外的好處，任何經歷青春期痛苦的社會性變化和困惑的少年男孩都能共鳴。（要是每個青春期都有一個超級酷的祕密，而不是一千個令人尷尬的祕密就好了。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peter Parker is finally an adult in “Brand New Day,” but he’s still fighting the same demons. That’s what makes him burn so bright right now: how refreshingly uninfected he is by the shallow, deluded fantasies of power being sold like snake oil on our national stage every day. He’s not a fitness influencer selling deep thoughts and peptides. He’s not a culture-warmonger pushing machismo and hate against a trumped-up enemy. He’s not a dark-money tech titan mythomaniac propping himself up on a pedestal as humanity’s savior. What these master of the universe wannabes have in common is that they are selling you a superhero fantasy you can’t afford — a dream of unlimited muscle, longevity, wealth or power, of living your true potential.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在《嶄新之日》中，彼得·帕克終於成年了，但他仍在與同樣的心魔鬥爭。這正是他此刻如此耀眼的原因：他令人耳目一新，沒有被那些每天都在國家舞台上像蛇油一樣兜售的膚淺、虛幻的權力幻想所感染。他不是販賣深度思考和肽類補品的健身網紅。他不是文化戰爭煽動者，教唆人們對著某個假想敵展示大男子主義和仇恨。他不是用黑錢撐起的科技巨頭妄想狂，把自己捧上神壇，自封為人類救世主。這些自封的宇宙之主們的共同點在於，他們向你兜售一種你負擔不起的超級英雄幻想——一個關於無限肌肉、長壽、財富或權力的夢，一個活出你真正潛力的夢。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COiQj6j1qJYDFZ7cSgAdspECiw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Spider-Man lives in the here and now — New York City, today, give or take — and he’s fully entangled with all the obligations that entails. It might seem that his stakes are low compared with the world’s. But then, he is actually interested in facing up to his mistakes. Doing the right thing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蜘蛛人活在此時此地——大致上就是在今天的紐約市——並且完全糾纏於隨之而來的所有責任。相比世界大事，他似乎無足輕重。但話說回來，他確實有興趣正視自己的錯誤，去做正確的事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The greatest challenge Spider-Man always has to contend with is the oft-repeated words of his ill-fated uncle Ben: “With great power comes great responsibility.” It’s something that those with great power today might want to consider.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蜘蛛人始終要面對的最大挑戰是他那不幸的本叔叔常說的那句話：「能力越大，責任越大。」這或許是當今那些手握大權之人應當考慮的事情。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">David Colman自1996年以來一直為《紐約時報》撰稿。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260817/spider-man-brand-new-day-superhero/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

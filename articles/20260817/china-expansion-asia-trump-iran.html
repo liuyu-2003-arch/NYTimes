@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國亞洲策略再受質疑 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國亞洲策略再受質疑</h1>
+    <h2 class="en-headline">As China Pushes to Expand in Asia, Trump Focuses on Iran</h2>
+    <div class="meta-line">黃安偉 <span style="margin: 0 8px;">•</span> 2026-08-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2023年，位於南中國海的菲律賓軍艦「馬德雷山」號。上個月，一艘中國海警船開始在這艘軍艦周圍游弋，並與菲律賓軍人發生對峙。" height="700" src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-01-vczm/00dc-trump-asia-01-vczm-master1050.jpg" width="1050"/><figcaption><span>2023年，位於南中國海的菲律賓軍艦「馬德雷山」號。上個月，一艘中國海警船開始在這艘軍艦周圍游弋，並與菲律賓軍人發生對峙。</span> <cite>Aaron Favila/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was the worst clash in years between China and the Philippines at a long-simmering flashpoint in the South China Sea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是多年來中國與菲律賓在南中國海一個長期緊張的爭議地點爆發的最嚴重衝突。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For decades, the Philippines has claimed a small reef in disputed waters and signaled its control of the territory by rotating troops to a World War II-era ship grounded there. An international tribunal ruling a decade ago supports the Philippines’ claim.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數十年來，菲律賓一直主張對爭議水域的一處小礁石擁有主權，並通過輪換駐守一艘坐灘於此的二戰時期軍艦來宣告其控制權。十年前，國際仲裁庭的一項裁決支持菲律賓的主張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But last month, a Chinese Coast Guard vessel began circling the ship, which is named the Sierra Madre. It was the latest in a long series of encounters between the two governments at the site, which is called the Second Thomas Shoal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但上個月，一艘中國海警船開始在這艘名為「馬德雷山」號的軍艦周圍游弋。這是兩國在第二托馬斯淺灘（中方稱仁愛礁）長期對峙中的最新一起事件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At one point, the Chinese Coast Guard used small boats to move in on Filipino service members and beat one of the men with a wooden baton, inflicting head injuries, according to Philippine and U.S. officials. China blamed the Philippines for provoking the clash.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據菲律賓和美國官員介紹，衝突期間，中國海警使用小艇逼近菲律賓軍人，並用木棍毆打其中一名菲方男子，致其頭部受傷。中方則指責菲律賓挑起了這場衝突。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLe09KL1qJYDFQkAtAMdqrU0mw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The American ambassador expressed outrage and declared that the United States stood with the Philippines, the oldest U.S. treaty ally in Southeast Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國大使對此予以強烈譴責，並宣稱美國與菲律賓站在一起——菲律賓是美國在東南亞歷史最悠久的條約盟友。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet no one expects China to curb its expansionist activities in the region anytime soon. And there are growing doubts among Asian nations over what the United States would be willing to do to deter China, given the enormous distraction and resource drain of the U.S.-Israeli war against Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，沒有人相信中國會短期內收斂在該地區的擴張活動。與此同時，由於美以聯合對伊朗發動戰爭所導致的精力轉移和資源消耗，對於美國究竟願意採取多大力度來遏制中國，亞洲各國的疑慮與日俱增。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States is running low on critical weapons, including air defense interceptors. Iran’s missile and drone attacks have forced U.S. troops to leave bases in the Middle East and destroyed the sites, an indication of what the Chinese military — which is much more powerful than Iran’s — could do in a conflict in Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國重要武器的庫存日益吃緊，包括防空攔截彈。伊朗的導彈和無人機攻擊不僅迫使美軍撤離中東的基地，還摧毀了相關軍事設施。這也預示著，一旦亞洲發生衝突，實力遠強於伊朗的中國軍隊可能造成何等局面。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="德黑蘭的謝里夫理工大學在4月的空襲中損毀。對於美國究竟願意採取多大力度來遏制中國，亞洲各國的疑慮與日俱增。" data-src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-02-vczm/00dc-trump-asia-02-vczm-master1050.jpg" src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-02-vczm/00dc-trump-asia-02-vczm-master1050.jpg"/></div><figcaption><span>德黑蘭的謝里夫理工大學在4月的空襲中損毀。對於美國究竟願意採取多大力度來遏制中國，亞洲各國的疑慮與日俱增。</span> <cite>Arash Khamooshi/Polaris for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And the Pentagon is moving an aircraft carrier from the Pacific to the Middle East to support operations against Iran. The U.S. Navy announced Wednesday that the ship, the U.S.S. George Washington, was heading out of Da Nang, Vietnam, after a port visit. Its departure for the Middle East leaves the Western Pacific without an American carrier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">五角大廈正將一艘航空母艦從太平洋調往中東，以支援針對伊朗的軍事行動。美國海軍週三宣布，「喬治·華盛頓」號航母在結束對越南峴港的訪問後啟程。它的離開將使西太平洋地區減少一艘美國航母。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In early July, China conducted a rare test firing of a nuclear-capable intercontinental ballistic missile that carried a dummy warhead, sending it into the Pacific Ocean from a nuclear-powered submarine. It is one of the most powerful elements in its arsenal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月初，中國進行了一次罕見試射，從核動力潛艇向太平洋發射了一枚搭載模擬彈頭的洲際彈道導彈。該導彈具備核打擊能力，是中國武器庫中最具威懾力的裝備之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While China tests its might, President Trump’s State Department is closing consulates in Japan and Indonesia, according to congressional officials briefed on the decision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國展示軍事實力同時，據獲悉相關決定的國會人士透露，川普總統領導下的國務院將關閉駐日本和印度尼西亞的一些領事館。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMbX9KL1qJYDFc0_tAMdFrAHiQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s second term “has been a colossal failure for U.S. interests in the Asia region,” Representative Gregory W. Meeks of New York, the top Democrat on the House Foreign Affairs Committee, said in a statement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">紐約州眾議員、眾議院外交事務委員會首席民主黨議員格雷戈裡·米克斯在一份聲明中表示，川普的第二個任期「對美國在亞洲地區的利益而言是一場巨大的失敗」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This strategy, if you can call it one, is a gift to China that is undermining U.S. credibility and harming our national security,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這套策略——如果還算得上一個策略的話——無異於拱手送給中國一份大禮，它正在損害美國的公信力，並危害我們的國家安全，」他補充道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump appointees say the administration is not ceding ground in Asia. In a speech in Manila on Aug. 10, Elbridge Colby, the under secretary of defense for policy, said the Trump administration aimed to “maintain a posture of deterrence by denial along the first island chain” — meaning it was willing to commit military resources to dissuade China from invading or attacking islands that include Taiwan and ones in the Philippines and Japan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普任命的官員則表示，政府並沒有放棄在亞洲的利益。8月10日，負責政策事務的戰爭部副部長埃爾布里奇·科爾比在馬尼拉的一次演講中表示，川普政府的目標是「沿第一島鏈維持『以拒止實現威懾』的態勢」，即政府願意投入軍事資源，讓中國不敢入侵或攻擊台灣以及菲律賓和日本所屬島嶼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Colby also said allies needed to spend more on defense and should try to integrate their militaries with that of the United States — and “not vainly and futilely seek to exclude or supplant us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但科爾比同時表示，盟友需要增加國防支出，並應努力將其軍隊與美軍整合——「而不是徒勞無益地試圖把我們排除在外或取代我們」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s global trade war, whose targets have included Southeast Asian nations, has also revealed to allies and partners that the United States can be a commercial antagonist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普發動的全球貿易戰波及多個東南亞國家，這也讓盟友和夥伴國意識到，美國完全可以成為一個商業層面的對手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government has lacked an economic vision for Southeast Asia for years, as Democratic and Republican politicians retreated from a Pacific Rim trade pact that President Barack Obama promoted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，美國政府一直缺乏針對東南亞的經濟戰略，民主共和兩黨的政治人物都退出了歐巴馬總統曾推動的環太平洋貿易協定。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在5月於北京舉行的峰會上，川普表達了對中國國家主席習近平的讚賞。" data-src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-03-vczm/00dc-trump-asia-03-vczm-master1050.jpg" src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-03-vczm/00dc-trump-asia-03-vczm-master1050.jpg"/></div><figcaption><span>在5月於北京舉行的峰會上，川普表達了對中國國家主席習近平的讚賞。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That has left countries in Southeast Asia wondering what happened to the U.S. drive to ensure that it remains a presence that balances against China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這使得東南亞各國不禁疑惑，美國確保自身在該地區存在、制衡中國的戰略意願究竟去了哪裡？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While Southeast Asian countries do not want to be trapped in a great-power clash between the United States and China, “they still want to feel the United States is a healthy counterweight to the P.R.C.,” said Mira Rapp-Hooper, who served on the National Security Council during the Biden administration and is now a visiting fellow at the Brookings Institution. She was using the initials for the formal name for China, the People’s Republic of China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾在拜登政府國家安全委員會任職、現為布魯金斯學會訪問研究員的米拉·拉普-霍珀說，儘管東南亞國家並不願捲入中美之間的大國較量，但「它們仍希望感受到美國是制衡中華人民共和國的有效力量」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPnptKP1qJYDFTtTnQYdvgkr5A" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“So the perception that the United States is drifting as an alternative has also left a real impression on many of these partners,” she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她補充說：「因此，其中一些夥伴國家深切地感受到，美國作為一個可替代選項正在逐漸淡出。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While Mr. Trump has talked about China as an economic rival, he also embraced the superpower after it successfully retaliated during his tariff war last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然川普一直把中國稱為經濟競爭對手，但去年在關稅戰中中國成功採取反制措施之後，他又開始對這個超級大國表示友好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During a summit in Beijing in May, Mr. Trump expressed admiration for President Xi Jinping of China, and he is preparing to host Mr. Xi at a state visit in Washington in late September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在5月於北京舉行的峰會上，川普表達了對中國國家主席習近平的讚賞。目前，他正準備於9月底在華盛頓接待習近平的國事訪問。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s move to build what he calls a “G2” — Group of Two — relationship with China has upended a growing bipartisan push in Washington in the last decade to confront China as a hostile rival.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普力圖構建他所謂的「G2」（兩國集團）的舉動，顛覆了華盛頓過去十年間逐步形成的兩黨共識：將中國視為敵對競爭對手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the Trump-Xi bonhomie grows, some Asian countries are feeling left out, yet are also opting to stay on China’s friendly side.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著川普與習近平之間的友好關係不斷升溫，一些亞洲國家感到被冷落，但同時也選擇與中國保持友好關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is especially true when China remains the largest trading partner for many of the countries, and the United States is not working on presenting economic alternatives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尤其在中國仍是許多亞洲國家的最大貿易夥伴、美國又未能提供經濟替代方案的情況下，情況更是如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re in a very difficult position because you know we want to have that maximal relationship with both sides,” said Richard Heydarian, a political scientist from the Philippines. “And then for countries like the Philippines, it’s even more impossible because the U.S. is a military ally. We need the U.S. when it comes to the China threat, but the U.S. is not giving us much love on anything beyond the military aspect.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">菲律賓政治學家理查德·海達裡安表示：「我們處在一個非常困難的境地，我們希望與雙方都保持盡可能好的關係。而對菲律賓這樣的國家來說，這更加不可能，因為美國是我們的軍事盟友。在應對中國威脅時我們需要美國，但除了軍事方面，美國在其他領域並未給予我們太多支持。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2022年11月，時任副總統哈利斯到訪菲律賓巴拉望島的一個漁村，並訪問了菲律賓海岸警衛隊在當地的一處設施。" data-src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-04-vczm/00dc-trump-asia-04-vczm-master1050.jpg" src="https://static01.nyt.com/images/2026/08/12/multimedia/00dc-trump-asia-04-vczm/00dc-trump-asia-04-vczm-master1050.jpg"/></div><figcaption><span>2022年11月，時任副總統哈利斯到訪菲律賓巴拉望島的一個漁村，並訪問了菲律賓海岸警衛隊在當地的一處設施。</span> <cite>Haiyun Jiang /The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Biden administration agreed to work with the Philippines on expanding a transportation network, called the Luzon Economic Corridor, to better integrate the country into global supply chains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登政府曾同意與菲律賓合作拓展一個名為「呂宋經濟走廊」的交通網路，以期將菲律賓更好地融入全球供應鏈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration is trying to bring the Philippines into its so-called Pax Silica initiative, with the notion of having the country work on semiconductor manufacturing and building artificial intelligence in a way that would benefit the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府則正努力將菲律賓納入其所謂的「硅和平」倡議，希望菲律賓參與半導體製造以及人工智慧建設，並以此惠及美國。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKaO9aL1qJYDFaQDPgMdLH4oiA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But those nascent steps pale next to U.S. efforts to keep up its military ties with the Philippines. The two countries have long had a close relationship, and they have tried to maintain military cooperation, though their ties have shifted at times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但與美國維持同菲律賓軍事關係的努力相比，這些剛剛起步的舉措顯得微不足道。兩國長期保持著密切關係，也一直努力維持軍事合作，儘管這種關係時有起伏。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United State made the Philippines its first colonial foothold in Asia after taking it from Spain in the Spanish-American War. And the Philippines is the only Southeast Asian nation that has a formal alliance treaty with the United States — one that requires their militaries to help with the defense of the other nation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國在美西戰爭後從西班牙手中奪取菲律賓，使其成為它在亞洲的第一個殖民地立足點。而菲律賓是東南亞唯一與美國簽有正式同盟條約的國家——根據該條約，兩國軍隊有義務在對方遭受攻擊時提供協防。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Secretary of State Marco Rubio told reporters in Manila last month during an annual forum of Southeast Asian nations that the U.S. military was determined to push back against China’s expansionist efforts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國國務卿魯比奧上個月在馬尼拉參加東南亞國家的一個年度論壇期間告訴記者，美國軍方決心遏制中國的擴張行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re never going to accept that international waterways are somehow under the control of other countries,” he said. “We’ll continue to sail through international waterways and freedom of navigation efforts of that kind, and we’ll continue to live up to our commitments — for example, with the Philippines and other countries — in terms of the treaty commitments that we have.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們永遠不會接受國際水道被其他國家控制，」他說，「我們將繼續在國際水道航行，並繼續推進此類航行自由的努力。我們將繼續履行我們對菲律賓和其他國家所作出的條約承諾。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During the Biden administration, the U.S. government took a hands-on approach to forging partnerships in Asia. It brought Japan into a security coalition with the Philippines. And President Joseph R. Biden Jr. got the Philippines to grant American troops expanded access to nine bases on islands near Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登政府執政期間，美國政府積極主動地在亞洲構築夥伴關係。美國將日本納入與菲律賓的安全合作體系。拜登還促使菲律賓擴大美軍對靠近台灣的九處軍事基地的使用權限。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In November 2022, Vice President Kamala Harris flew to the island of Palawan, east of the South China Sea, and visited a Philippine Coast Guard site there to send a signal to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年11月，副總統卡瑪拉·哈利斯飛往南海以東的巴拉望島，並訪問了菲律賓海岸警衛隊在當地的一處設施，以此向中國發出信號。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIim1KP1qJYDFVtVnQYdb3MhdA" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The military cooperation has continued under Mr. Trump, despite the resource drain of the Iran war. In May, the U.S. and Philippine militaries tested a Typhon missile launcher at one of the islands, a public show with a weapon that could be deployed against Chinese troops if they tried to invade Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管伊朗戰爭持續消耗美國的資源，美菲之間的軍事合作在川普政府任內仍在持續推進。5月，兩國軍隊在一座菲律賓島嶼上測試了「堤豐」導彈發射系統。這是一次公開展示，該武器可在台海衝突中用於對付中國軍隊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Philippines invited Japan to take part in multination military exercises in June, the first time since World War II that Japanese troops had been active on Philippine soil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">6月，菲律賓邀請日本參與多國聯合軍事演習，這是二戰結束以來日本軍隊首次在菲律賓領土上開展軍事行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The move is both a continuation of the coalition overseen by the Biden administration and a hedge by the Philippines to broaden its partnerships beyond the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此舉既是對拜登政府所主導的聯盟建設的延續，也是菲律賓為拓寬美國之外合作夥伴關係而採取的一種平衡策略。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Eric Schmitt自華盛頓對本文有報導貢獻。</p><p class="cn-p">黃安偉(Edward Wong)為《紐約時報》報導全球事務、美國外交政策和國務院新聞。</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260817/china-expansion-asia-trump-iran/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
