@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矽谷並沒有「右轉」，它本來就「右」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">矽谷並沒有「右轉」，它本來就「右」</h1>
+    <h2 class="en-headline">Silicon Valley Was Right From the Start</h2>
+    <div class="meta-line">SHARON WEINBERGER <span style="margin: 0 8px;">•</span> 2026-08-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/08/17/opinion/17weinberger/17weinberger-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Brendan Conroy</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many Americans watched with surprise as Silicon Valley’s most powerful entrepreneurs fell in behind Donald Trump when he returned to the White House last year. The same C.E.O.s and investors who once celebrated globalization and consumer apps were suddenly embracing patriotism and advanced weaponry such as killer drones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年唐納德·川普重返白宮後，矽谷最有權勢的企業家紛紛表態支持他，這讓許多美國人感到驚訝。突然之間，這些曾歌頌全球化和消費級應用軟體的首席執行官和投資者開始擁抱愛國主義以及殺手無人機等先進武器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Don’t misconstrue this as a thoughtful political shift, or a change of heart. Silicon Valley has always been fertile ground for mythmaking, and no myth is bigger than the notion that the ideological chasm between the Valley and the Pentagon is too vast to bridge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不要將此誤解為深思熟慮的政治轉向或態度轉變。矽谷向來是製造神話的沃土，而其中最大的神話莫過於認為矽谷與五角大廈之間有深不可測的意識型態鴻溝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For tech companies, the personality and politics of the person occupying the White House is less important than that person’s willingness to buy what Silicon Valley is offering. The federal government is, at base, a purchasing agent, and Silicon Valley’s pivot to the military — and to Mr. Trump — is less a story of political conversion than of market adaptation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於科技公司而言，白宮裡那個人的人格與政治立場遠不如這個人是否願意採購矽谷提供的產品重要。聯邦政府本質上是一個採購代理，而矽谷轉向軍工——以及轉向川普——與其說是一場政治上的「皈依」，不如說是一種市場適應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Silicon Valley’s values haven’t changed, just its customers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷的價值觀並沒有改變，改變的只是它的客戶。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIH49tC3q5YDFciKfwQdGPAANQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People seem to forget that Silicon Valley was largely born on the back of Pentagon funding during the Cold War. Fairchild Semiconductor, a company that became the wellspring of the computer chip industry’s growth, was one of those beneficiaries. Conventional wisdom held that, by 2016, many firms, not to mention their employees, found the idea of working on defense projects distasteful, if not unthinkable. Mr. Trump’s election that year seemed to widen the divide. In 2018, Google, under pressure from employees, pulled out of Project Maven, a Pentagon-funded A.I. project to advance drone warfare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們似乎忘記了，矽谷在很大程度上是在冷戰時期依靠五角大廈的資金建立起來的。作為計算機晶片行業發源地的仙童半導體(Fairchild Semiconductor)就是受益者之一。傳統觀念認為，一直到2016年，許多公司（更不用說它們的員工）都還是反感國防項目的，甚至覺得參與這樣的項目根本不可想像<span>。川普在那一年的當選似乎加劇了這種分歧。2018年，谷歌在員工壓力下退出了</span>馬文計劃(Project Maven)，這是五角大廈資助的一個旨在發展無人機戰爭技術的人工智慧項目。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The real dividing line between the tech industry’s bosses and the Pentagon had little to do with politics and a lot to do with markets. For more than three decades, tech industry leaders such as Apple and HP were focused on consumers, whether personal computers, smartphones or later, apps. That market is global, which in the 2000s led these companies to start selling their wares in China — where many of the firms were already basing their manufacturing — which offered access to more than one billion consumers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科技業的老闆們與五角大廈之間的真正界線與政治關係不大，而與市場密不可分。30多年來，蘋果和惠普等科技行業領頭羊一直專注於消費者——無論是個人電腦、智慧型手機還是後來的應用軟體。這個市場是全球性的，這使得這些公司在2000年代開始在中國銷售產品（許多公司當時已在中國設立了生產基地），從而可以觸及超過10億消費者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike today, China in the early 21st century represented more opportunity than threat, which led venture firms such as Sequoia Capital to make enormous investments there. Digital service companies, such as Uber, Airbnb and Facebook, chased the market. Investors marveled at China’s burgeoning tech economy, even as Washington was beginning to warn about the strategic threat from Beijing. “China should be another United States from an economic standpoint,” Marc Andreessen, a prophet of the venture capital world, said in 2013, the year China’s Communist Party leader, Xi Jinping, became president. “Beijing should be another Silicon Valley.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與今天不同，21世紀初的中國代表的是機遇而非威脅，這促使紅杉資本等風險投資公司在中國進行了巨額投資。Uber、Airbnb和Facebook等數字服務公司紛紛追逐這一市場。投資者對中國蒸蒸日上的科技經濟讚嘆不已，即便當時華盛頓已開始警告來自北京的戰略威脅。「從經濟角度來看，中國應該是另一個美國，」2013年——即中國領導人習近平就任國家主席那一年——風險投資界的預言家馬克·安德森曾表示。「而北京應該是另一個矽谷。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has since closed its doors to many American technology companies. Relations between Washington and Beijing deteriorated over the next decade. Recently, the Tesla C.E.O., Elon Musk, denied reports that he is considering jettisoning his China business to enable the merger of his electric vehicle company with SpaceX, a major Pentagon contractor. But he’s well aware of the difficulties his business there presents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，中國對許多美國科技公司關上了大門。接下來十年裡，華盛頓與北京關係惡化。最近，特斯拉首席執行官伊隆·馬斯克否認他正考慮放棄中國業務並推動其電動汽車公司與五角大廈主要承包商SpaceX合併。但他非常清楚自己的中國業務所帶來的困境。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, the shift from consumer markets to defense industries is clearly visible at Mr. Andreessen’s firm, which has a dedicated division, called American Dynamism, that focuses on investing in weapons and technologies aimed at competing with China. Or even, potentially, waging war with China. Sequoia, one of Silicon Valley’s most storied venture capital firms, has spun out its China business and joined the growing number of venture capital firms funding companies dedicated to building military weapons. Sequoia’s initial defense tech investment was in a start-up founded by a 19-year-old that is building killer drones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，從消費市場向國防工業的轉變在安德森的公司顯而易見，他的公司設立了一個名為「美國動能」(American Dynamism)的專門部門，專注於投資旨在與中國競爭、甚至可能與中國交戰的武器和技術。作為矽谷最傳奇風投公司之一的紅杉資本已分拆了其中國業務，並加入了越來越多資助軍用武器研發公司的風投行列。紅杉資本最初的國防科技投資是一家由一名19歲年輕人創立的初創公司，該公司正在製造殺手無人機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As for Google, it only took a few years for the company whose motto was once, “Don’t be evil,” to again pursue contracts with the Pentagon. Not because of patriotism, but apparently out of financial self-interest. The federal government, and particularly the Pentagon, has emerged as one of the world’s largest customers for A.I. and autonomous weapons — technologies needed for war in the future, especially the Pacific. Earlier this year, Google agreed to provide the Department of Defense with A.I. for classified networks after Anthropic became embroiled in a dispute with the Pentagon over how its A.I. models were being used.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至於谷歌，這家曾以「不作惡」為座右銘的<span>公司僅僅過了幾年就再次尋求與五角大廈合作。這並非出於愛國主義，而是顯而易見的財務自利。聯邦政府，尤其是五角大廈，已成為全球人工智慧和自主武器（未來戰爭所需的技術，特別是在太平洋地區）的最大客戶之一。今年早些時候，在Anthropic因其AI模型的具體使用方式與五角大廈爆發爭端後，谷歌同意向國防部提供用於機密網路的人工智慧。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNus99C3q5YDFcGQfwQdWpIYDg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Anthropic, the issue was never a choice between working for the Pentagon or competing with China, but a question of how much control it would have over its models and their use. Anthropic’s C.E.O. has frequently warned about the threat from Beijing, even saying that selling A.I. chips to China is like “selling nuclear weapons to North Korea.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對Anthropic而言，問題從來不是在為五角大廈服務和與中國競爭之間做出選擇，而是它對其模型及其使用擁有多少控制權的問題。Anthropic的首席執行官頻繁對來自北京的威脅發出警告，甚至表示向中國出售人工智慧晶片就像「向朝鮮出售核武器」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s quite the pivot. “Silicon Valley has changed partly because people realized you’re not going to make any money in China,” noted the Palantir Technologies C.E.O., Alex Karp, in 2024, as tech were again chasing defense business. Peter Thiel, the right-wing tech billionaire who co-founded Palantir with Mr. Karp more than 20 years ago, was early to recognize the potential and was long skeptical of China. (Not surprisingly, Mr. Thiel was also the first major Valley figure to back Mr. Trump in 2016, though he later soured on the Republican president.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這確實是個巨大的轉變。「矽谷的變化部分是因為人們意識到你在中國賺不到錢了，」帕蘭泰爾科技公司首席執行官亞歷克斯·卡普在2024年說，與此同時科技業再次開始爭奪國防業務。20多年前與卡普一同創立帕蘭泰爾的右翼科技億萬富翁彼得·蒂爾很早就意識到了這一潛力，並長期對中國持懷疑態度。（毫不意外，蒂爾也是2016年第一個支持川普的矽谷大牌人物，儘管他後來對這位共和黨總統失去了興趣。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Few things illustrate this dynamic better than the poster child for defense start-ups, Palmer Luckey, the Hawaiian shirt-clad founder of Anduril Industries, which makes A.I.-powered weapons. Mr. Luckey was just 19 when he co-founded Oculus Rift to build virtual reality headsets for consumers. The Oculus Rift development kit from 2013 ended with a single line: “Made in China.” But like other tech companies, Oculus grew disillusioned with China as a consumer market, even if it still needed it as a manufacturer. The following year, Oculus suspended sales to China, reportedly over aggressive scalpers who were reselling the company’s hardware.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒有什麼比國防初創公司的代表人物帕爾默·拉奇更能說明這種動態了。總是穿著夏威夷襯衫的拉奇是安杜里爾工業的創始人，該公司專門製造人工智慧驅動的武器。他在19歲時與人一起創立了為消費者打造虛擬現實頭戴設備的Oculus Rift。2013年的Oculus Rift開發套件末尾寫著一行字：「中國製造」。但與其他科技公司一樣，Oculus對作為消費市場的中國感到幻滅，儘管它仍需要以中國為製造基地。次年，據報導由於公司的硬件被黃牛大量採購轉售，Oculus暫停了對中國的銷售。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2014, Facebook bought Oculus, making Mr. Luckey a centi-millionaire. Facebook itself was then bullish about breaking into the Chinese market. That year, the Facebook founder Mark Zuckerberg swooned over a book by President Xi Jinping of China, “The Governance of China,” and recommended it to his employees.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2014年，Facebook收購了Oculus，使拉奇<span>躋身億萬富翁行列。當時Facebook本身對打入中國市場充滿信心。那一年，Facebook創始人馬克·祖克柏對中國國家主席習近平的書籍《習近平談治國理政》傾心不已，並將其推薦給員工。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Three years later, Mr. Zuckerberg’s company fired Mr. Luckey, who had become a Facebook executive after the Oculus deal, after it emerged that he donated to a pro-Trump group. (Mr. Zuckerberg has denied that the departure had anything to do with politics.) Mr. Luckey made what would become the most pivotal move of his career: He started an arms firm backed by Mr. Thiel’s Founders Fund, which had only just dropped language in its “vice clause” prohibiting investments in weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">三年後，在拉奇被曝光向一個支持川普的團體捐款後，祖克柏的公司解除了他在Oculus交易後擔任的Facebook高管職務。（祖克柏否認他的離職與政治有任何關係。）隨後拉奇走出了他職業生涯最關鍵的一步：他成立了一家軍工企業，得到了蒂爾旗下創始人基金的支持，而這家基金剛剛刪除了其「道德條款」中禁止投資武器的規定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Luckey once said his goal with Oculus was to make virtual reality “available to everyone.” A little more than a decade later, he wanted to make virtual reality available to everyone in uniform. “I strongly believe you are going to see augmented reality on every soldier’s head before you see it on every consumer’s head,” Mr. Luckey said last year. Facebook, today called Meta, is in fact now working with Anduril on a multibillion-dollar project to sell virtual reality headsets to the U.S. military.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉奇曾表示，他創辦Oculus的目標是讓虛擬現實「惠及每個人」。十多年後，他希望讓每一個身穿軍裝的人都能用上虛擬現實。「我強烈相信，在每一個消費者戴上增強現實設備之前，你會先看到每一個士兵戴上它，」拉奇去年說道。如今改名為Meta的Facebook實際上正與安杜里爾合作開展一個數十億美元的項目，向美軍出售虛擬現實頭戴設備。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CL-y99C3q5YDFdKGfwQdfS8tDw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The arc of Silicon Valley’s moral universe doesn’t seem to last longer than the next presidential election. In the end, it’s not bombs that Silicon Valley loves, but profits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷道德宇宙的弧線似乎總是止於下一屆總統大選。歸根結底，矽谷熱愛的不是炸彈，而是利潤。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Sharon Weinberger是《原子科學家公報》主編。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260818/silicon-valley-war-pentagon/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

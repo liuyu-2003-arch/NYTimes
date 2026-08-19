@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美科技人才爭奪戰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美科技人才爭奪戰</h1>
+    <h2 class="en-headline">China Hunts for Scientific Talent. The U.S. Is Making It Easier.</h2>
+    <div class="meta-line">袁莉 <span style="margin: 0 8px;">•</span> 2026-08-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/08/14/business/00nw-talent/00nw-talent-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Dongyan Xu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Who’s got the talent?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">誰擁有人才？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the competition for scientific and technological supremacy, that question rises above the rest. Not long ago, the answer was unequivocal: the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在科技霸主地位的競爭中，這個問題凌駕於一切之上。就在不久之前，答案還是毋庸置疑的：美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But while it remains the world’s leading destination for ambitious scientific minds, a combination of funding cuts, restrictive immigration policies and suspicion of Chinese-born scientists is eroding its advantage just as China, despite serious shortcomings of its own, is becoming a credible alternative.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但如今，美國雖然仍舊是全球最有抱負的科學人才嚮往的首選之地，但科研經費削減、限制性的移民政策以及對華裔科學家的猜疑正逐漸削弱美國的優勢；與此同時，中國儘管仍存在諸多嚴重不足，卻正在成為一個越來越有競爭力的替代選擇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The appeal of each country can be seen in two events of the past few months. The four winners of this year’s Fields Medal, one of mathematics’ highest honors, included two scholars born in China who had come to the United States for advanced studies. They flourished in — and remain in — the West.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去幾個月發生的兩件事恰好體現了兩國各自的吸引力。菲爾茲獎是數學領域的最高榮譽之一，今年該獎的四位得主中，有兩位是出生於中國、後來赴美深造的學者。他們在西方學術體系中取得了出色成就，並且目前仍留在西方。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPXas7a3q5YDFWwKpAYdoGwe6Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then there is Zhilin Yang. Like many Chinese, he came to the United States for his graduate degree. But rather than stay, he returned to China to start Moonshot AI. In July, his company released an impressive open-source A.I. model, called Kimi K3, that comes close to the performance of the best models made in America — at a lower cost.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然後是楊植麟。和許多中國人一樣，他赴美攻讀研究生學位。但與那些選擇留下來的人不同，他後來回到中國，創辦了月之暗面。今年7月，他的公司發布了一款相當出色的開源人工智慧模型Kimi K3，其性能已經接近美國最頂尖的模型，而成本卻更低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Yang had no shortage of opportunities in the United States when he received his Ph.D. from Carnegie Mellon in 2019. But he told Ruslan Salakhutdinov, a computer science professor and his doctoral thesis adviser, that he was determined to build a company in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">楊植麟2019年從卡內基梅隆大學獲得博士學位時，在美國並不缺機會。但他告訴他的博士生導師、計算機科學教授魯斯蘭·薩拉赫丁諾夫，他已經下定決心要在中國創辦一家企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. still has a big, big advantage. We get the best people,” Mr. Salakhutdinov said. “But China will become more attractive. In the A.I. space, it’s becoming very clear.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國仍然有非常大的優勢。我們能吸引到最好的人才，」薩拉赫丁諾夫說。「但中國會越來越有吸引力。在人工智慧領域，這一點已經變得非常明顯。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="楊植麟在卡內基梅隆大學獲得博士學位後決定回國，後來創辦了月之暗面。
+
+" data-src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-02-qwgp/Biz-Newworld-Talent-02-qwgp-master1050.jpg" src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-02-qwgp/Biz-Newworld-Talent-02-qwgp-master1050.jpg"/></div><figcaption><span>楊植麟在卡內基梅隆大學獲得博士學位後決定回國，後來創辦了月之暗面。 </span><cite>Tingshu Wang/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has also become more successful at recruiting academic scientists from abroad. Omar Yaghi, who shared last year’s Nobel Prize in Chemistry, left the University of California, Berkeley, for Tsinghua University, where he will lead an institute using A.I. to accelerate the discovery of new materials. Since last year, universities in mainland China and Hong Kong have recruited at least eight prominent mathematicians from Western institutions. Joshua Zahl, who collaborated with Hong Wang, one of the Fields Medal winners this year, took a full-time professorship at Nankai University. He declined to discuss his move.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在從海外招募學界科學家方面也變得更加成功。去年與他人共同獲得諾貝爾化學獎的奧馬爾·亞吉離開加州大學柏克萊分校，加入清華大學，將在那裡領導一個利用人工智慧加速新材料發現的研究所。自去年以來，中國大陸和香港的大學已從西方的學術機構招募了至少八位著名數學家。曾與今年菲爾茲獎得主之一王虹合作的約書亞·扎爾已全職受聘於南開大學。他拒絕就此次工作變動置評。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These are significant wins for a country where Tu Youyou was the only scientist working in mainland to have received a Nobel Prize in a scientific category.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於一個曾經只有屠呦呦一位在中國大陸工作的科學家獲得科學類諾貝爾獎的國家來說，這些都是意義重大的成果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The biggest change in China’s recruiting power is money, said Dong Jielin, who researches Chinese science and technology policy. Two decades ago, she said, scientists returning from abroad were expected to sacrifice financially in the name of serving the country. Now Chinese universities can offer salaries that are competitive with those in Europe, along with generous relocation packages.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究中國科技政策的董潔林說，中國吸引人才能力最大的變化在於資金。她說，20年前，從海外回國的科學家通常被期待以報國之名做出經濟待遇上的犧牲。而如今，中國大學提供的薪資已能與歐洲競爭，並提供優厚的安家補貼。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ3RtLa3q5YDFZsepAYdKAMDow" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, after the Fields Medal winners were announced, one question emerged in the extensive Chinese media coverage and an outpouring of online discussion: Can China’s academic system give unproven young researchers the freedom, patience and tolerance for failure they need to become exceptional?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，菲爾茲獎今年的得主公布後，在中國媒體的廣泛報導和網路熱議中，一個問題隨之浮現：中國的學術體系能否給予那些尚未證明自己的年輕研究人員足夠的自由、耐心，以及容忍失敗的空間，讓他們最終成長為傑出人才？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two Chinese-born winners, Ms. Wang and Yu Deng, entered Peking University in 2007. Mr. Deng, an International Mathematical Olympiad gold medalist, received direct admission to the university’s mathematics program. After his sophomore year, he transferred to M.I.T., earned his doctorate from Princeton and became a professor at the University of Chicago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩位華裔獲獎者王虹和鄧煜於2007年進入北京大學。鄧煜曾是國際數學奧林匹克競賽金牌得主，被直接保送到北大數院。大二結束後，他轉學到麻省理工學院，在普林斯頓獲得博士學位，並成為芝加哥大學教授。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="王虹（右）在7月領取菲爾茲獎。她和另一位獲獎者鄧煜（最左）多年前離開中國，赴海外繼續深造和發展。" data-src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-01-qwgp/Biz-Newworld-Talent-01-qwgp-master1050.jpg" src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-01-qwgp/Biz-Newworld-Talent-01-qwgp-master1050.jpg"/></div><figcaption><span>王虹（右）在7月領取菲爾茲獎。她和另一位獲獎者鄧煜（最左）多年前離開中國，赴海外繼續深造和發展。</span> <cite>Erin Blewett/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said pursuing doctoral study abroad was common among Chinese students in basic science at the time. Chinese mathematics has improved substantially since then, he said, and publications by China-based researchers in leading mathematics journals have risen markedly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，當時在基礎科學領域，赴海外念博在中國學生中很普遍。他表示，自那以後，中國的數學水平已經取得了長足進步，中國本土的研究人員發表在頂尖數學期刊上的論文數量也大幅增加。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Wang, 35, entered Peking University at 16 to study earth and space sciences and transferred into mathematics a year later.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">王虹今年35歲，16歲時進入北大，最初學習地球與空間科學，一年後轉入數學系。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She went to the École Polytechnique near Paris before doing further graduate studies at M.I.T. In a video, she described how her doctoral adviser at M.I.T. had listened patiently when she disagreed with others. “It helped me to gain confidence,” said Ms. Wang, now a professor at both New York University and the Institut des Hautes Études Scientifiques in France. She declined requests to be interviewed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她去了巴黎附近的巴黎綜合理工學院，隨後在麻省理工學院繼續研究生學習。在一段影片中，她講述了自己在麻省理工學院其他人意見不同時，她的博士導師會耐心地聽她解釋。「這幫助我建立了自信，」王虹說。她目前在紐約大學和法國高等科學研究所擔任教授。她拒絕接受採訪。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a video posted by the Simons Foundation after the Fields Medals were announced, she said she felt “a little discouraged” but found professors in France and the United States who helped her gain confidence. Ms. Wang was not criticizing Peking University, but her remark resonated widely in China, where many people treated “discouraged” as shorthand for their own experiences in a highly competitive education system shaped by punishment and shame. The hashtag “discouraged” remains censored on the social media platform Weibo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">菲爾茲獎公布後，西蒙斯基金會發布了一段影片。王虹在影片中說，自己曾經感到「有點discouraged（受挫）」，但後來在法國和美國都遇到了幫助她建立自信的教授。王虹並不是在批評北京大學，但她提到的「discouraged」一詞在中國引起了廣泛共鳴。許多人把這個詞當作是對自己在一個由懲罰和羞辱塑造的高度競爭教育體制中類似經歷的一種簡單概括。在社群媒體平台微博上，「discouraged」這一話題標籤至今仍受到審查。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CK7wtLa3q5YDFfQDpAYd5cknSQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If they had not left China at 20, would they still be standing on that prize stage today?” asked a YouTube commentator who goes by Laozhou Hengmei. China’s scientific achievements, he argued, still did not match its economic size and abundance of talent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果他們20歲時沒有離開中國，今天還能站在那個領獎台上嗎？」一位名為「老周橫眉」的YouTube評論員問道。他認為，中國的科研成就仍然與其經濟體量以及龐大的人才儲備不相匹配。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China can increasingly match the funding and infrastructure that attract prominent scientists. What it has more difficulty reproducing are the freedom, trust and institutional stability that allow young talent to flourish. Those remain among America’s strongest advantages, and the very advantages its current policies are putting at risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在資金和基礎設施上已越來越接近吸引頂尖科學家的水平。但更難複製的是那種讓年輕人才得以茁壯成長所需的自由、信任和制度穩定性。而這些仍然是美國最強大的優勢，也正是其當前政策正在危及的優勢。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="奧馬爾·亞吉去年在瑞典發表演講。他做了一個不同尋常的舉動——離開美國名校加州大學柏克萊分校，前往北京的清華大學任職。" data-src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-03-qwgp/Biz-Newworld-Talent-03-qwgp-master1050.jpg" src="https://static01.nyt.com/images/2026/08/14/multimedia/Biz-Newworld-Talent-03-qwgp/Biz-Newworld-Talent-03-qwgp-master1050.jpg"/></div><figcaption><span>奧馬爾·亞吉去年在瑞典發表演講。他做了一個不同尋常的舉動——離開美國名校加州大學柏克萊分校，前往北京的清華大學任職。</span> <cite>Pontus Lundahl/TT News Agency, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. used to be sort of the default, the no-brainer option,” Terence Tao, an Australian-born Fields medalist who is a professor at the University of California, Los Angeles, said in a video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「過去，美國有點像默認選項，是不用動腦筋的選擇，」出生於澳洲的菲爾茲獎得主、加州大學洛杉磯分校教授陶哲軒在一段影片中說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, the Trump administration’s suspension of federal funding to U.C.L.A. affected both his personal grant and an institute he helps lead. The funding was reinstated after a successful lawsuit. But he has warned that abrupt funding disruptions can derail multiyear projects and damage researchers’ trust in the system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，川普政府暫停對加州大學洛杉磯分校的聯邦資助，這一舉措影響了他個人的研究經費，也影響到了他參與領導的一個研究所。後來，在一場訴訟獲勝後，這些經費得以恢復。但他警告說，科研經費突然中斷可能打亂持續多年的研究項目，也會損害科研人員對整個科研體系的信任。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The best and brightest may not automatically come to the U.S. as they have for decades,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「最優秀和最聰明的人可能不會再像過去幾十年那樣自然而然地來到美國了，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Foreign students received nearly 44 percent of the STEM doctorates awarded by American universities in 2023. Students from China earned 17 percent of all U.S. doctorates in science and engineering in 2020, and about 87 percent of Chinese recipients from 2005 to 2015 intended to stay, a 2023 study found.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2023年，美國大學授予的STEM博士學位中，外國學生所獲比例接近44%。2023年的一項研究發現，2020年，中國學生獲得了美國所有科學與工程博士學位的17%；在2005年至2015年間獲得博士學位的中國學生中，大約87%原本打算留在美國。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN6ztba3q5YDFcJ4mQIdMOkMiA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States is now making that pipeline less dependable. The number of visas issued to international students fell by roughly one-third in 2025.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而如今，美國正在讓這條人才輸送管道變得不再那麼可靠。2025年，美國向國際學生髮放的簽證數量下降了大約三分之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, the Trump administration finalized a rule limiting how long foreign students can remain without applying for an extension. Announcing the measure, Homeland Security Secretary Markwayne Mullin said it would keep them focused on their “primary purpose: completing their studies and returning home.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，川普政府最終確定了一項規定，限制外國學生在不申請延期的情況下可以留在美國的時間。國土安全部長馬克韋恩·馬林在宣布這一措施時表示，這項規定將讓外國學生專注於他們的「首要目的：完成學業並回國」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Deng, 37, the 2026 Fields medalist, said many universities in China, the United States and elsewhere had contacted him. He was considering his options but will remain at the University of Chicago for now. His research, collaborators and quality of life would all influence his decision, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年的菲爾茲獎得主、37歲的鄧煜表示，中國、美國以及其他國家的許多大學都聯繫過他。他正在考慮各種選擇，但目前仍將留在芝加哥大學。他說，自己的研究、合作夥伴以及生活質量都會影響最終決定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I asked whether, if he were 20 today, he would still leave China for the United States. He noted the cuts to research funding and knowledge of the people affected by visa problems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我問他，如果今天他20歲，他是否還會離開中國去美國。他提到了研究經費的削減，以及有人受到簽證問題的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If I were making the decision in China today,” he said, “I would think much more carefully about whether to come to the United States.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果我今天是在中國面臨這個選擇，」他說，「我會更加認真地考慮，是否還要來美國。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">袁莉為《紐約時報》撰寫「新新世界」專欄，專注中國及亞洲科技、商業和政治交叉議題。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260818/china-scientific-talent-competition/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
