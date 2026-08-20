@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戰爭和權力的新物理規律 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">戰爭和權力的新物理規律</h1>
+    <h2 class="en-headline">The New Physics of Power</h2>
+    <div class="meta-line">湯馬斯·佛里曼 <span style="margin: 0 8px;">•</span> 2026-08-19</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/08/18/multimedia/18friedman-fbzg/18friedman-fbzg-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Gregory Halpern for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If I were writing a book about the U.S. war with Iran, I know exactly what the title would be. It would be President Trump’s social media post of April 5, 2026, directed at the leaders of Iran: “Open the [expletive]<i> </i>Strait, you crazy bastards, or you’ll be living in Hell — JUST WATCH!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果要寫一本關於美國與伊朗戰爭的書，我很清楚書名會是什麼。那將是川普總統2026年4月5日在社群媒體上對伊朗領導人<span>的喊話</span>：「打開那個[髒話]海峽，你們這些瘋狂的混蛋，否則你們將活在地獄裡——等著瞧吧！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wars are a crucible that very often exposes changes in the physics of the world around us — who has power, who doesn’t have power and how power is being wielded. Nothing better captures the new power equation produced by this war than Trump’s unhinged and obscene rant at the Iranian leadership for not bending to his bombs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">戰爭就像一個熔爐，常常揭示我們周圍世界的力量格局變化——誰擁有權力，誰沒有權力，權力如何被運用。面對沒有被他的炸彈嚇倒的伊朗領導人，川普發出失控而粗鄙的咆哮，沒有什麼比這更能揭示這場戰爭所催生的新權力等式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This new physics of war is equally present in the conflicts between Ukraine and Russia, Hezbollah and Israel, Hamas and Israel and the Houthis and everyone else. My summary of this new dynamic is that the small can now act really big, really accurately and really inexpensively. And while the big can also act really small, really accurately, it is far more expensive for them to do that while bearing the burden of vast legacy arms systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種新的戰爭規律同樣存在於烏克蘭與俄羅斯、真主黨與以色列、哈馬斯與以色列、胡塞武裝與其他各方的衝突中。我對這種新動態的概括是：小角色如今能以極低成本、極高精度開展極具規模的行動。大角色雖然也能以極小規模、極高精度行動，但對他們而言，這樣做要昂貴得多，因為他們有著龐大的傳統武器系統的負擔。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The net advantage, for the moment, seems to be to the small. That should keep you up at night, when you think how the emerging revolution in artificial intelligence will surely supercharge this trend, enabling the small to act even bigger, mightier and less expensively.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就目前而言，凈優勢似乎在小角色一方。這應該讓你夜不能寐才對，因為想到正在興起的人工智慧革命必將進一步加速這一趨勢，讓小角色能以更低成本做出更大、更強有力的行動。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN_0vKT5rZYDFf9KnQYdWScA7A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not surprising that Trump is frustrated. After all, on March 11, less than two weeks after he and Israel started this latest bout of war with Iran with a large-scale bombing campaign, Trump declared: “We’ve won. Let me tell you, we’ve won. You know, you never like to say too early you won. We won. In the first hour it was over. But we won.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普感到沮喪並不奇怪。畢竟，在3月11日——即他和以色列以大規模轟炸行動開啟對伊朗的<span>最新一輪戰爭後不到兩週，川普就宣稱：「我們贏了。讓我告訴你們，我們贏了。你知道，你從來不喜歡過早說贏了。我們贏了。第一個小時就結束了。但我們贏了。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He was right about one thing: Never say you won too early.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說對了一件事：永遠不要過早說贏了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump didn’t realize that the Iranian government also has a say in when this war is won and lost. More important, and unlike Trump, Tehran had a Plan B for the morning after: use its newfound ability to act big, accurately and cheaply to seize control of the Strait of Hormuz — even though its military was a small fraction of the size of America’s and had been badly hammered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普沒有意識到，伊朗政府對於這場戰爭何時輸贏也有發言權。更重要的是，與川普不同，德黑蘭為次日早晨準備了B計劃：利用其新獲得的「大規模、高精度、低成本」的行動能力奪取霍爾木茲海峽的控制權，儘管其軍力跟美國相比微不足道，且已遭受重創。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I wish I could take delight in seeing our pompous, narcissistic, constantly bloviating president humbled by reality. But I truly do not — because this is getting scary. And it is going to get worse. The Iranians have inflicted real harm on America — on the battlefield and on our economy — the scale of which Trump and Defense Secretary Pete Hegseth have been hiding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我希望能幸災樂禍地看到我們這位自負、自戀、不斷夸夸其談的總統被現實打臉。但我做不到——因為情況正變得可怕，而且會變得更糟。伊朗人對美國造成了實實在在的傷害——在戰場上和經濟上，川普和國防部長彼特·海格塞斯一直在隱瞞損失的規模。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Iran has been under economic sanctions, on and off, since 1979. Yet it has managed to develop an arsenal of sophisticated but relatively inexpensive missiles and drones that has enabled it to fight both Israel and the United States to something of a draw — and do some significant damage to American military assets in the region along the way. Consider just a few stories that you may not have noticed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自1979年以來，伊朗時斷時續地遭受經濟制裁。然而它仍成功研製了精良且相對廉價的導彈和無人機庫，使其能夠與以色列和美國在某種意義上打成平手，並在此過程中對該地區的美國軍事資產造成重大破壞。只需要看看以下幾則你可能沒留意到的新聞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The reason the main U.S. aircraft carrier in the Persian Gulf, the U.S.S. Abraham Lincoln, has sometimes run low on supplies to sustain its almost 5,700-person complement is that after the first day of the war, Iranian missiles and attack drones destroyed much of the U.S. supply base in Bahrain. “As it went up in smoke, so did a major logistics hub that the Navy has relied on for decades,” The Times reported. This forced Trump and the even more smug Hegseth to increase reliance on a base under British command on the island of Diego Garcia as its supply hub, which is roughly 2,700 miles from Bahrain. How was the Bahrain base so unprotected against Iranian missiles on the first day of the war? If that is not worth hauling Hegseth before Congress, I don’t know what is.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國在波斯灣的主力航母「亞伯拉罕·林肯」號有時會補給不足，難以維持其近5700名人員的需求。這是因為，伊朗導彈和攻擊無人機在開戰第一天就摧毀了美國在巴林的大部分補給基地。時報報導寫道，「隨著基地被毀，海軍依賴了數十年的主要後勤樞紐也一同消失</span>。」這迫使川普和比他還要自鳴得意的海格塞斯<span>不得不更多依賴迪戈加西亞島上由英國控制的基地作為補給樞紐，該島距離巴林約2700英里。巴林基地在開戰第一天為何如此無力抵禦伊朗導彈？如果這都不足以讓</span>海格塞斯到國會接受質詢，那我不知道什麼才行。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMGyvaT5rZYDFdRFnQYdtn0Ygw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or maybe you missed this story in the journal Defence Security Asia commenting on a CNN report that sometime in the early days of March, an Iranian missile destroyed a $500 million radar vital to running a THAAD (Terminal High Altitude Area Defense) advanced missile defense system at Muwaffaq Salti Air Base in Jordan. The attack signaled “a potentially transformative moment” in the “strategic contest” between Iran and the United States and Israel, the journal said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>又或者你錯過了《國防安全亞洲》雜誌對CNN報導的評論：3月初某日，伊朗一枚導彈摧毀了約旦穆瓦法克·薩爾蒂空軍基地價值5億美元的雷達，後者對運行「薩德」（末段高空區域防禦）先進反導系統至關重要。該雜誌稱，此次襲擊標誌著伊朗與美國和以色列「戰略對抗」中的</span>一個「可能成為轉折點的時刻」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A senior Jordanian official told me he was stunned to learn that the Iranians somehow managed to send their missile at the THAAD’s radar system by maneuvering it — in flight — to make a flanking attack on the radar and evade detection and interception. This was against the most sophisticated antimissile system in the U.S. arsenal!</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位約旦高級官員告訴我，他震驚地得知，伊朗人竟設法讓導彈在飛行中機動，對薩德雷達系統實施側翼攻擊，從而規避探測和攔截。這針對的是美軍武器庫中最先進的反導系統！</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">John Arquilla, professor emeritus of defense analysis at the U.S. Naval Postgraduate School, explained to me that missile warfare is no longer just a matter of firing off a warhead on a predictable trajectory and then letting inertia and GPS smart guidance systems lead it to the target. The Russians have focused enormous resources on building missiles with midflight maneuverability, guided by better real-time information, increasingly propelled at hypersonic speeds, and capable of arriving from an angle a defender has not anticipated. Iran’s Fattah missiles reportedly have such capabilities, although it is still not clear whether they or drones took out the THAAD 500 miles from Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國海軍研究生院國防分析榮休教授約翰·阿奎拉向我解釋說，導彈戰不再僅僅是按可預測彈道發射彈頭，然後讓慣性和GPS智能制導系統將其引向目標。俄羅斯已投入巨資建造具有中途機動能力的導彈，由更好的實時信息引導，越來越多地以高超音速推進，並能以防禦方意想不到的角度抵達。據報導，伊朗的「法塔赫」導彈也具備此類能力，但目前尚不清楚是導彈還是無人機在距離伊朗約800公里處摧毀了薩德系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is making the missile the pre-eminent weapon of the 21st century, with the potential to undermine deterrence and stability” in many different kinds of battles, said Arquilla, the author of the new book “The Troubled American Way of War: From Hiroshima to the Age of Algorithms.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「這讓導彈成為21世紀的首要武器，可能在許多不同類型的戰鬥中削弱威懾和穩定，」阿奎拉說。他是新書《陷入困境的美國戰爭方式：從廣島到算法時代》的作者。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has been deploying maneuverable hypersonic DF-17 missiles for several years now in its live-fire exercises in Chinese waters near Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國近年來已在台灣附近中國水域的實彈演習中部署了可機動的高超音速DF-17導彈。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On March 3, two one-way attack drones struck the U.S. Embassy compound in Riyadh, Saudi Arabia, at about 1:30 a.m. The first drone flew straight into the floor housing the C.I.A. station at the Riyadh embassy; the second drone flew directly into the entry hole created by the first, causing an extensive blast and a fire that burned for hours. Later reports suggested this Iranian attack may have been aided by Russian satellite intelligence provided by Vladimir Putin. Trump has seemingly done nothing about that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3月3日凌晨1時30分左右，兩架單向攻擊無人機襲擊了位於沙烏地阿拉伯利雅得的美國大使館院落。第一架無人機徑直飛入利雅得大使館內中央情報局駐地所在樓層；第二架無人機飛入第一架撞出的洞口<span>，引發大爆炸和持續數小時的大火。後續報導表明，這次伊朗襲擊可能得到了弗拉基米爾·普丁提供的俄羅斯衛星情報支持。川普對此似乎毫無作為。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ3OvaT5rZYDFQpEnQYddyYrtg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For generations, Arquilla noted, wars were “won by mass and energy.” Warfare followed a simple physical law: The more distance you fired your projectile, the less accurate it was. So, distance had to be overcome “with mass and energy.” Not today. “Now wars are won by information,” said Arquilla.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿奎拉指出，幾代人以來，戰爭「靠質量和能量取勝」。戰爭遵循一條簡單的物理定律：射程越遠，精度越低。因此必須「用質量和能量」來克服距離的劣勢。如今不同了。「現在戰爭靠信息取勝，」阿奎拉說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And even the little guys now have access to it. You just have to look at how Hezbollah has inflicted significant harm on Israeli communities and the Israeli Army, with its huge U.S.-made military platforms; how badly Ukraine has bloodied a big bad Russia; and how Iran is fighting the United States and Israel to a stalemate to see how inexpensive, precision weapons buildable in a basement workshop with components that can be found on Amazon have severed the old link between range and accuracy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就連小角色如今也能獲得信息。只需看看真主黨如何給擁有巨量美製軍事平台的以色列社區和軍隊造成重大傷害、烏克蘭如何重創了龐大而兇惡的俄羅斯，以及伊朗如何與美國和以色列打成僵局，你就能明白，那些可在作坊裡用亞馬遜上能買到的零件製造的廉價精確武器如何切斷了射程與精度之間的舊有聯繫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ukraine, Arquilla added, “has become a sea power without a traditional navy. It has used drone boats and armed Jet Skis” to push Russia’s conventional Black Sea fleet far enough away from Ukraine’s coastline so it can keep exporting its grain and fertilizer to world markets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿奎拉補充說，烏克蘭「在沒有傳統海軍的情況下成為了海上力量」。它使用無人艇和武裝水上摩托將俄羅斯的常規黑海艦隊推離烏克蘭海岸足夠遠，從而能繼續向世界市場出口糧食和化肥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These new technologies allow “the many and the small” — Iranians, Houthis, Hezbollah, Hamas — “to slip the heavy punches of their opponents, because they are well hidden and can strike back with accurate blows of their own,” Arquilla said. The U.S. military, meanwhile, has just 11 big lumbering divisions and 11 carrier groups.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些新技術使「為數眾多但弱小」的一方——伊朗人、胡塞武裝、真主黨、哈馬斯——能夠「躲避對手的重拳，因為他們隱藏得很好，並能用自己的精確打擊進行反擊，」阿奎拉說。與此同時，美軍僅有11個龐大笨重的師和11個航母群。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is why defenders now have a real advantage over attackers, Arquilla concluded. Trump and Hegseth kept focusing on “scaling up the war” — adding more tempo and more tonnage — and the Iranians focused on “scaling out the war,” hiding small units with precision missiles in more places and attacking U.S. bases and Arab oil facilities all over the Gulf.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這就是為什麼阿奎拉得出結論，防禦方現在相對於進攻方擁有真正的優勢。川普和海格塞斯一直專注於「擴大戰爭規模」——加快節奏和增加噸位，伊朗人則專注於「擴展戰爭範圍」，在更多地點隱藏配備精確導彈的小型單位，並襲擊整個海灣地區的美軍基地和阿拉伯石油設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Their job is to survive long enough to shoot and scoot. On land, a few big formations of Abrams tanks matter less than the many and the small with cheap weapons they can build and modify in a week,” Arquilla said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們的任務是存活足夠長時間，打完就跑。在陸地上，幾支由艾布拉姆斯坦克組成的大型編隊遠不如那些能用一週時間製造和改裝廉價武器的多個小型作戰單位重要，」阿奎拉說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI_VvaT5rZYDFedanQYdFiwLTw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These new weapons amplify another advantage the small have over the big: They don’t have to win. They just have to avoid losing. We have to win, end the war, go home and never look back. Good luck with that now.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些新武器放大了小對大的另一個優勢：他們不必取勝。他們只需避免失敗。我們必須取勝，結束戰爭，回家，永不回頭。現在做到這一點可就難了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the Iranians and Hezbollah get too smug, though, they should remember the other half of my equation: While the small can now act really big, the big can now act really small<i>.</i> On the first day of the war, Israeli airstrikes with precision weapons — aided by U.S. intelligence — killed over 40 senior Iranian leaders gathered in a high-level leadership meeting in a single compound in Tehran. In other words, with precise information, Israel wiped out much of Iran’s national security elite with one shot.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，伊朗人和真主黨也別過於自得，他們應記住我這個等式的另一半：小角色如今能做出大規模行動，大角色如今也能做出極小規模行動。開戰第一天，在美軍情報協助下，以色列使用精確制導武器發動空襲，在德黑蘭一處高層領導會議場所擊斃了40多名伊朗高級領導人。換言之，憑藉精確信息，以色列一擊致命，消滅了伊朗大批國家安全精英。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And then there was the Israeli pager attack on Hezbollah. On Sept. 17 and 18, 2024, Israel detonated the pagers and other hand-held electronic devices used by Hezbollah members, fighters, officers, medics and civilian supporters, killing dozens of people and wounding some 3,000 others. An estimated 1,500 Hezbollah fighters were reportedly put out of action because of injuries, mostly affecting their hands, faces and hips. Using a relatively small quantity of explosives and a huge dollop of information, Israel killed and wounded a significant number of Hezbollah fighters in a few hours.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外還有以色列對真主黨的尋呼機攻擊。2024年9月17日和18日，以色列引爆了真主黨成員、戰鬥人員、軍官、醫護人員和平民支持者使用的尋呼機及其他手持電子設備，造成數十人死亡，約3000人受傷。據報導，約1500名真主黨戰士因傷失去作戰能力，主要傷及手部、面部和臀部。以色列用相對少量的炸藥和大量的信息在幾小時內殺傷了大批真主黨戰鬥人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S.-Israel Stuxnet attack on Iran’s Natanz enrichment facility that began in 2009 was another version of this. Instead of bombing the facility, the United States and Israel inserted a small computer worm — a few lines of code — to disable a big number of Iran’s IR-1 centrifuges, though the centrifuges were quickly replaced and the disruption was ultimately minimal. (The United States and Israel have never acknowledged responsibility for the virus.) That was the big acting small, using just malware, but you can bet that the development of that code, and the whole joint operation, cost a lot of money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2009年開始的美以對伊朗納坦茲濃縮設施的「震網」攻擊也是另一種版本。美以並未轟炸該設施，而是植入了一個小型計算機蠕蟲——幾行代碼，就使大量伊朗IR-1離心機癱瘓，不過離心機很快被更換，破壞效果最終甚微。（美以從未承認對該病毒負責。）這就是「大角色以小規模行動」，僅使用了惡意軟體，但可想而知，開發該代碼以及整個聯合行動耗費了大量資金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is truly alarming today is how easy it is becoming for the small to act big — and by “small,” I don’t just mean in size, but also in age. A teenager with a laptop, a Starlink connection and an open-weight A.I. model can now disrupt a municipal water or power system by identifying and exploiting old software vulnerabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今真正令人警惕的是，小角色以大規模行動變得如此容易——這裡的「小」不僅指規模，也指年齡。只要有筆記型電腦、星鏈連接和開源人工智慧模型，一名青少年就能通過識別和利用舊軟體漏洞破壞市政供水或電力系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So don’t be surprised if one day soon you hear your mayor sounding like Trump: “Turn my water back on, you crazy …”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所以，如果不久的某天你聽到你的市長像川普那樣說話，不要驚訝：「恢復我們的自來水，你們這些瘋狂的……」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">湯馬斯·L·佛里曼(Thomas L. Friedman)是外交事務方面的專欄作者。他1981年加入時報，曾三次獲得普立茲獎。他著有七本書，包括贏得國家圖書獎的《從貝魯特到耶路撒冷》(From Beirut to Jerusalem)。歡迎在X和Facebook上關注他。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260819/us-israel-gaza-hezbollah-hamas-houthis/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
