@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天機器人正將我們推向後人類互聯網 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">聊天機器人正將我們推向後人類互聯網</h1>
+    <h2 class="en-headline">Chatbots Are Pushing Us Toward a Post-Human Internet</h2>
+    <div class="meta-line">CALLIE HOLTERMANN <span style="margin: 0 8px;">•</span> 2026-08-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/08/23/magazine/23mag-context-bot-loop-promo/23mag-context-bot-loop-promo-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Photo illustration by Chantal Jahchan</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Remember job applications? You know, you’d write a résumé and a cover letter. Someone would read them. You’d fish out a tasteful button-down and try to charm your interviewer. Maybe your one-liner or a question about your amateur bowling career would help you score the position. Maybe you’d never hear back.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還記得求職申請嗎？你懂的，就是你要寫一份簡歷和一封求職信。然後會有人來讀它們。你要翻出一件有品位的紐扣襯衫，努力給面試官留下好印象。也許一句俏皮話或者一個關於自己業餘保齡球生涯的問題能幫你拿下這個職位。也許你從此再也得不到迴音。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s all changing. When Christian Vinson applied for jobs in finance this year, he knew he was really auditioning for artificial intelligence. Many companies now use screening software to sift through piles of applications, so he spent close to 10 hours teaching two A.I. chatbots about his work experience. He filled in details about his education, a banking internship and five years in the Army. He then prompted the bots to tailor his cover letter to hundreds of job listings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一切都在改變。今年，當克里斯蒂安·文森申請金融行業的工作時，他清楚自己實際上是在向人工智慧求職。現在很多公司都使用篩選軟體來篩查堆積如山的求職申請，因此他花了將近10個小時，讓兩個人工智慧聊天機器人了解他的工作經驗。他詳細填寫了自己的教育背景、一段銀行業實習經歷以及五年軍旅生涯的信息。然後，他向機器人發出指令，讓它們針對數百個職位招聘量身定製他的求職信。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. had written his applications, and A.I. was reading them too — a dog chasing its own tail. “This is the new normal,” says Vinson, 30, who landed a job at an investment bank in New York.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧寫了他的求職申請，而閱讀這些申請的同樣也是人工智慧——就像狗追自己的尾巴一樣。「這就是新常態，」30歲的文森說，他最終在紐約一家投資銀行找到了一份工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We live in a world in which A.I. tools have found their way to the center of a staggering number of professional, academic and personal interactions. Lately these chatbots and agents have been doing more than just talking to us. Students are writing essays with ChatGPT, and teachers are using A.I. to grade them. Workers are sending lengthy A.I.-generated emails to colleagues, who are responding with walls of chatbot text of their own. A.I podcast hosts are holding forth with A.I. podcast guests on topics like gas prices, the Iran war — and artificial intelligence. Tech wants to take all this even further: In March, Meta acquired a social network designed for bots to talk to one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們生活在一個這樣的世界裡：人工智慧工具已經滲透到了數量驚人的職業、學術和個人互動的核心。最近，這些聊天機器人和智能代理所做的已經不僅僅是與我們交談。學生們用ChatGPT寫論文，老師們則用人工智慧來給論文打分。員工向同事發送由人工智慧生成的冗長電子郵件，同事們則用他們自己生成的長篇聊天機器人文本回覆。人工智慧播客主持人和人工智慧播客嘉賓就汽油價格、伊朗戰爭以及人工智慧等話題滔滔不絕。科技界還想把這一切推得更遠：今年3月，Meta收購了一個專為機器人相互交談而設計的社交網路。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKmc7Ob8spYDFSfMPAUdK7UWzw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The dead internet theory, a concept popular in tech circles, holds that most digital traffic will eventually be software, leaving humans as a minority voice. We may now have a corollary of that prediction — let’s call it a bot loop — when the humans on both sides of an interaction hand over their role to artificial intelligence. These recursive exchanges can be eerie and error-prone, a single mistake bouncing back and forth uncorrected over and over. Stranger still, they flip our conversational dynamic inside out, turning chatbots into the interlocutors and humans into their enablers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科技圈流行著一個名為「死網理論」的概念，該理論認為，絕大部分數字流量最終都將由軟體產生，人類的聲音將淪為少數。我們現在或許已經有了這一預測的推論——姑且稱之為「機器人循環」——互動雙方的人類都將自己的角色交給了人工智慧。這種遞歸式的交流可能令人毛骨悚然且容易出錯，一個簡單的錯誤可能會在未經糾正的情況下反反覆復地來回傳遞。更奇怪的是，它們徹底顛覆了我們的對話動態，把聊天機器人變成了對話者，人類變成了它們的協助者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Depending on whom you ask, bot loops might be banal, dystopian or genuinely useful. No matter how people feel about them, researchers say we’re going to see bot loops much more often as we deputize A.I. systems to do our bidding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">取決於你問的是誰，機器人循環可能是平庸無奇的、反烏托邦的，也可能是真正有用的。無論人們對此作何感想，研究人員表示，隨著我們日漸委託人工智慧系統來執行我們的命令，我們將越來越頻繁地看到機器人循環。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Someday in the not-too-distant future, a pipe will burst and you will need a plumber in a hurry. Maybe you will call 10 plumbers yourself to ask about rates — but perhaps you will turn all of that dialing over to a kind of personal digital assistant that can perform tasks like sending emails, buying plane tickets and writing code. Plumbers, meanwhile, may struggle to keep up with an influx of calls from tireless A.I. assistants, says Jiaxin Pei, an assistant professor at the School of Information at the University of Texas at Austin. Maybe they’ll direct an agent of their own to act as a virtual receptionist. “This is this endless loop we’re creating,” Pei says. How will all this affect the way we interact with one another?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在不太遙遠的未來某一天，水管可能會爆裂，你急需一名水管工。也許你會親自給10名水管工打電話詢問價格，但可能你會把所有這些撥號工作交給一種個人數字助理，它能執行發送電子郵件、購買機票和編寫代碼等任務。與此同時，德克薩斯大學奧斯汀分校信息學院助理教授裴家新（音）表示，水管工們可能會難以應付大量來自不知疲倦的人工智慧助手的電話。也許他們會指派自己的智能代理來充當虛擬接待員。「這就是我們正在創造的無盡循環，」裴家新說。這一切將如何影響我們彼此互動的方式？</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="馬特·施利希特正在演示「Moltbook」，這是他為人工智慧代理創建的一個互聯網論壇。" data-src="https://static01.nyt.com/images/2026/08/23/magazine/23mag-context-bot-loop/23mag-context-bot-loop-master1050.jpg" src="https://static01.nyt.com/images/2026/08/23/magazine/23mag-context-bot-loop/23mag-context-bot-loop-master1050.jpg"/></div><figcaption><span>馬特·施利希特正在演示「Moltbook」，這是他為人工智慧代理創建的一個互聯網論壇。</span> <cite>Alex Welsh for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Looked at one</strong> way, human history is one long string of freakouts about the potential for new technology to alter our communication. Socrates worried that writing would wreck our memory — something we know only because Plato wrote it down. Early-20th-century critics argued that the telephone posed a threat to civility. Repeatedly, detractors have predicted that the quality of our interactions might suffer as a result of modern convenience. The author of a 1994 article in The New York Times argued that electronic mail was “so compelling and easy that it threatens to overwhelm its usefulness through sheer volume and lack of consideration,” although he conceded that it did have its perks: “There are no stamps to lick.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從某種角度來看，人類歷史就是一長串對於新技術可能改變我們交流方式的恐慌史。蘇格拉底曾擔心書寫會毀掉我們的記憶——我們之所以知道這件事，只是因為柏拉圖把它寫了下來。20世紀初的批評家們認為，電話對文明構成了威脅。批評者們一次又一次地預測，現代生活的便利可能會導致人際互動質量下降。《紐約時報》1994年一篇文章的作者認為，電子郵件是「如此引人注目且便捷，以至於其海量信息和缺乏考慮的特性，可能使其有用性大打折扣」，儘管他也承認電子郵件確實有好處：「再也不用舔郵票了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">None of these innovations brought about the end of productive discussion, although each has changed its texture. We can now trade messages with more people than ever without needing to be in the same physical space. As a result, researchers think we may actually be speaking to one another less. Many of our conversations take place on platforms that incentivize certain kinds of exchanges, particularly those that are heated, outlandish or otherwise likely to retain our attention for the platforms’ financial gain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些創新沒有任何一項終結了富有成效的討論，儘管它們各自都改變了討論的質感。如今，我們無需身處同一物理空間，就能與比以往更多的人交流信息。結果，研究人員認為，我們彼此之間的實際交談可能變少了。我們的許多對話都發生在一些平台上，這些平台會鼓勵某些類型的交流，尤其是那些激烈的、古怪的，或者其他有可能為了平台的經濟利益而留住我們注意力的交流。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, A.I. is different from these previous advancements. While email transmits messages between people, chatbots emulate people — and perhaps replace them. All of a sudden, humans get to decide whether they would prefer to have a conversation with a person or with a program that approximates one. Plenty of people are deciding that they would prefer to go to a chatbot for financial advice, medical diagnoses or companionship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，人工智慧與以往的這些進步依然有所不同。電子郵件是在人與人之間傳遞信息，聊天機器人則是在模仿人類，甚至可能取代人類。突然之間，人類要開始自行決定，他們是更願意與真人交談，還是與一個近似真人的程序交談。很多人已經做出決定，他們更願意向聊天機器人尋求財務建議、醫療診斷或陪伴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People are already using A.I.-generated avatars to speak <i>for</i> them. When Justin Lester, a pastor in the Bay Area, isn’t available, people can speak with his “digital twin.” The next step is very likely a future in which the people’s own digital twins might speak with Lester’s. Increasingly, our digital intermediaries will collide. We’ll talk to our bots, and our bots will talk to one another. Chief executives have created A.I.-powered avatars that can meet with their employees. How long will it be before their underlings send their avatars to those meetings, too?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們已經在使用人工智慧生成的虛擬化身來替他們發言。當灣區牧師賈斯汀·萊斯特無暇分身時，人們可以與他的「數字孿生體」交談。下一步很可能是這樣的未來：人們自己的數字孿生體可能會與萊斯特的數字孿生體交談。我們的數字中間人將越來越多地發生碰撞。我們會與我們自己的聊天機器人交談，我們的聊天機器人也會相互交談。首席執行官們已經創建了由人工智慧驅動的虛擬化身，這些化身可以同他們的員工開會。距離他們的下屬也派虛擬化身去參加這些會議，還要多久呢？</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="加利福尼亞州瓦列霍市友誼浸信會的賈斯汀·萊斯特牧師訓練了一個人工智慧代理，以便在他無法接見教友時提供諮詢。" data-src="https://static01.nyt.com/images/2026/08/23/magazine/23mag-context-bot-loop-03/23mag-context-bot-loop-03-master1050.jpg" src="https://static01.nyt.com/images/2026/08/23/magazine/23mag-context-bot-loop-03/23mag-context-bot-loop-03-master1050.jpg"/></div><figcaption><span>加利福尼亞州瓦列霍市友誼浸信會的賈斯汀·萊斯特牧師訓練了一個人工智慧代理，以便在他無法接見教友時提供諮詢。</span> <cite>Erin Schaff/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Plenty of people</strong> are already living in this strange new world. I’ve spent the past couple of months interviewing them. There was a graduate student completing work with A.I. that was being graded by his professor’s virtual assistants. There was a telecom executive who had noticed customers sending A.I. voice agents to argue with his company’s A.I. customer service system. There was a man who used a chatbot to draft messages on a dating app to a woman who seemed to be doing the exact same thing. “How long are we gonna ChatGPT each other?” he eventually wrote. She never responded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多人已經生活在這個奇妙的新世界裡。在過去的幾個月裡，我採訪了他們。有一名研究生用人工智慧完成作業，而給他打分的是教授的虛擬助手。有一位電信業高管注意到，有客戶派出人工智慧語音代理與他公司的人工智慧客服系統爭吵。還有一名男子在約會軟體上使用聊天機器人給一名女子起草消息，而那名女子似乎也在做完全相同的事情。「我們要互相ChatGPT多久？」他最終寫道。但她再也沒有回覆。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most of these people acknowledged a certain hollowness to the interactions, which followed the basic contours of a human conversation but got the texture all wrong. A single bot creates mountains of text that are dazzling in their phoniness, like costume jewelry. Stick two of them together in conversation and they generate an endless flow of dialogue that follows all the rules yet still stands out for what it is missing: curiosity, empathy, actual experience.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中大多數人都承認，這種互動存在一種空洞感，它們雖然遵循了人類對話的基本框架，但質感卻完全不對。一個單獨的聊天機器人能生成海量文本，其虛假程度令人眼花撩亂，宛如廉價首飾。把兩個機器人放在一起對話，它們會產生源源不斷的對話流，雖然遵循所有規則，卻因缺少某些關鍵要素而顯得突兀：好奇心、同理心和真實的經驗。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI3k7Ob8spYDFTHDPAUd5ZQE4g" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The risks of these loops are still coming into view, but one big problem is just how frequently chatbots get things wrong. When two A.I. systems interact, particularly ones powered by the same large language models, they may miss each other’s errors and eventually amplify them, says Soheil Feizi, an associate professor of computer science at the University of Maryland. “They are just sharing the same blind spots,” he says.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種循環的風險仍在顯現，但一個大問題是，聊天機器人犯錯的頻率實在是太高了。馬里蘭大學計算機科學副教授蘇海爾·菲齊表示，當兩個人工智慧系統交互時——尤其是由相同大型語言模型驅動的系統，它們可能會忽略彼此的錯誤，並最終導致這些錯誤被放大。「它們只是在共享相同的盲點，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A recent paper by a researcher at Harvard Medical School considered how this might play out in a hospital setting. Say one A.I. tool is responsible for analyzing X-rays to label broken bones. It sends an assessment to another A.I. tool that assigns rooms and a third one that determines the order of patient treatment. If an initial scan is incorrect and never subject to human verification, the error could echo through the entire network and affect the patient, the doctor and her clinic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">哈佛大學醫學院一位研究人員最近發表了一篇論文，探討這種情況在醫院環境中可能會如何演變。假設一個人工智慧工具負責分析X光片以標記骨折情況。它將評估結果發送給另一個負責分配病房的人工智慧工具，以及第三個決定患者治療順序的工具。如果最初的掃描結果有誤，且從未經過人工核實，這個錯誤就會在整個網路中產生連鎖反應，影響到患者、醫生及診所。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An even sneakier issue is that artificial intelligence systems seem to be biased toward their own work. One study found that A.I. résumé screeners preferred applications written by A.I. to ones written by humans. (In that way, Vinson, the chatbot-happy job applicant, may have helped his own chances.) This phenomenon may already be wreaking havoc on the college admissions process, in which some schools use A.I.-powered essay readers to score submissions that, no doubt, are often generated by chatbots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個更隱蔽的問題是，人工智慧系統似乎對人工智慧生成的內容存在偏袒。一項研究發現，人工智慧簡歷篩選器更喜歡人工智慧撰寫的申請，而不是人類撰寫的申請。（從這個意義上說，喜歡使用聊天機器人的求職者文森可能已經提升了自己成功的機率。）這種現象可能已經對大學招生過程造成了嚴重破壞——一些學校使用人工智慧驅動的文章閱讀器來給申請材料打分，毫無疑問，這些材料往往也是由聊天機器人生成的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite these shortcomings, Sarah Davis, a cultural anthropologist and the dean of St. John’s College in Santa Fe, N.M., wonders whether people might grow so accustomed to the smoothness of A.I.-to-A.I. interactions that they could lose their tolerance for the necessary unpredictability of human relationships. She says she worries about chatbots allowing a “kind of ease that lets us become worse versions of ourselves, and a kind of alienation, a lack of togetherness that requires that we face friction.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了這些缺陷，新墨西哥州聖達菲市聖約翰學院的文化人類學家兼院長莎拉·戴維斯還想知道，人們是否會習慣於人工智能之間互動的順暢，因此失去對人際關係中必要的不可預測性的包容。她說，她擔心聊天機器人會帶來一種「讓我們淪為更差版本的自己的安逸感，以及一種異化，不再有那種需要我們直面摩擦的團結感」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It might be tempting to think of the bot loop as a stopover on the way to some totally autonomous world. Perhaps A.I.-generated “counterfeit people,” as the philosopher Daniel C. Dennett called them, will work together to create even more counterfeit people, exploiting our dependence on A.I. systems and putting human civilization itself at risk. The likelier outcome is that the share of interactions that are between humans will just shrink as the share of bot-to-bot interactions grows — a profound dilution that affects the way we move through the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們或許會傾向於認為，機器人循環只是通往某個完全自主世界途中的一個中轉站。或許人工智慧生成的「偽人」（如哲學家丹尼爾·C·丹尼特所稱）將協同合作，創造出更多「偽人」，利用我們對人工智慧系統的依賴，將人類文明本身置於危險之中。但更有可能的結果是，隨著機器人之間互動比例的增加，人類之間互動的比例將會單純地萎縮。這是一種深刻的稀釋，會影響我們在世界上前行的方式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In that case, the human voice on the phone that once was a reasonable expectation might become a rare privilege, something akin to a luxury good. Sure, you can talk to a flesh-and-blood receptionist, but it will cost extra. Paradoxically, the people most likely to be able to afford such a luxury might be the ones being enriched by the A.I. boom. Will they use their spoils to get access to the kinds of conversations they are making rarer for everybody else? That might just be the most insidious loop of all.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在那種情況下，電話那頭曾經被視為理所當然的人類聲音，可能會變成一種罕見的特權，類似於一種奢侈品。當然，你可以同有血有肉的人類接待員交談，但這需要額外付費。矛盾的是，最有可能負擔得起這種奢侈的人可能正是那些因人工智慧熱潮而致富的人。他們會用自己的戰利品去獲取那些他們令普通人越來越難以企及的對話嗎？這可能才是所有循環中最陰險的一個。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">插圖圖片來源：Keeproll/Getty Images；ZeynepKaya/Getty Images；Yaroslav Kushta/Getty Images</p><p class="cn-p">Callie Holtermann為《紐約時報》報告時尚和流行文化。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260821/ai-chatbots-internet-communication-loops/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

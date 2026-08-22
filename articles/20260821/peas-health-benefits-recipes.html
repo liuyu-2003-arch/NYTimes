@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豌豆有多健康？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">豌豆有多健康？</h1>
+    <h2 class="en-headline">How Healthy Are Peas?</h2>
+    <div class="meta-line">AMANDA SCHUPAK <span style="margin: 0 8px;">•</span> 2026-08-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/06/08/well/08WELL-HEALTHY-PEAS3/08WELL-HEALTHY-PEAS3-jumbo.jpg" width="820"/><figcaption><span></span> <cite>David Chow for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The humble pea has a lot going for it. Gregor Mendel, the “father of genetics,” used pea plants to study how heritable traits were passed from parents to offspring. The plants are also friendly to the environment, with a low carbon footprint and roots that naturally nourish the soil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不起眼的豌豆其實好處多多。「遺傳學之父」格雷高爾·孟德爾曾用豌豆植株來研究可遺傳性狀如何從親代傳給子代。這種植物對環境也十分友好，碳足跡低，其根系還能天然滋養土壤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And, love them or hate them, “peas are powerhouses of nutrition,” said Rebecca McGee, a plant geneticist at Washington State University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且，無論你喜不喜歡吃，「豌豆都是重量級的營養來源，」華盛頓州立大學植物遺傳學家麗貝卡·麥吉說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peas, which are members of the legume family, are high in protein and fiber, she said. And though they taste sweet, they are full of complex carbohydrates that won’t spike your blood sugar. Garden peas (also sometimes called sweet peas or English peas) are the most common type to be found in grocery stores, often sold frozen, fresh or canned. Other common varieties, usually eaten with their pods intact, are snow peas and snap peas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>她說，豌豆屬於豆科植物，富含蛋白質和膳食纖維。雖然嘗起來很甜，但它們含有複合碳水化合物，不會讓血糖急劇升高。菜園豌豆（有時也稱為甜豌豆或英國豌豆）是雜貨店中最常見的品種，通常以冷凍、新鮮或罐裝形式出售。其他常見品種還有荷蘭豆和甜脆豆，通常連豆莢一起食用。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s a taste of what’s great about peas, no matter the variety, along with recipes from New York Times Cooking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不論哪個品種，以下概括了<span>豌豆的諸多好處，隨附來自紐約時報烹飪頻道的食譜。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJCYy-j8spYDFVWmpgQduKAVcA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Peas are a good source of protein.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>豌豆是優質蛋白質來源。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While peas don’t pack the same protein punch as other legumes like lentils or beans, they still rank high among plant sources, said Gary Frost, a professor of nutrition and dietetics at Imperial College London.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>倫敦帝國理工學院營養與膳食學教授加里·弗羅斯特表示，雖然豌豆的蛋白質含量不如</span>其他一些豆類，比如小扁豆或各種乾豆，但在植物性來源中仍位居前列。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A standard half-cup portion of cooked garden peas, for instance, contains about four grams of protein. You’ll get even more if you center them in your meal. One cup has around as much protein as you’d get from a three-ounce serving of firm tofu. A cup of cooked snow peas has about five grams of protein.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>例如，標準半杯煮熟的菜園豌豆約含四克蛋白質。如果以豌豆為主菜，攝入量會更多。一杯豌豆的蛋白質含量大約相當於一份三盎司</span>（約85克）老豆腐。一杯煮熟的荷蘭豆約含五克蛋白質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tom Warkentin, a professor of plant sciences at the University of Saskatchewan, said the relatively high protein content of peas makes them an ideal source for protein powders, alternative meat products and plant milks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>薩斯喀徹溫大學植物科學教授湯姆·沃肯廷表示，豌豆相對較高的蛋白質含量使其成為蛋白粉、替代肉製品和植物奶的理想來源。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re packed with ‘good’ carbohydrates.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>它們富含「好」碳水化合物。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One cup of cooked garden peas has about nine grams of fiber — supplying about a quarter of the 38 grams per day that is recommended for men and nearly a third of the recommended 25 grams per day for women.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>一杯煮熟的菜園豌豆約含九克膳食纖維——約為男性每日推薦攝入量38克的四分之一，接近女性每日推薦攝入量25克的三分之一。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJGLy-j8spYDFfiEpgQd2iQMLw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most of that is insoluble fiber, which passes through the gut undigested and helps prevent constipation by bulking up stool. The rest is soluble fiber, which slows digestion by attracting water and forming a gel in the intestines. Eating 5 to 10 grams of soluble fiber per day, research suggests, can help lower LDL (or “bad”) cholesterol; one cup of frozen green peas has just over 2.5 grams.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中大部分為不溶性纖維，這種纖維不經消化通過腸道，通過增加糞便體積來預防便秘。其餘的<span>可溶性纖維在腸道中吸水形成凝膠，從而延緩消化。研究表明，每天攝入五至10克可溶性纖維有助於降低低密度脂蛋白（「壞」膽固醇）；一杯冷凍青豌豆</span>的含量略高於2.5克。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peas also contain what’s called resistant starch, which passes through the small intestine undigested and — along with the soluble fiber — feeds the good bacteria in the colon. The bacteria, in turn, produce molecules that suppress hunger, keeping you feeling full, Dr. Frost said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">豌豆還含有所謂的抗性澱粉，會不經消化通過小腸，並與可溶性纖維一起餵養結腸中的有益細菌。弗羅斯特說，這些細菌反過來會產生抑制飢餓感的分子，讓你保持飽腹感。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peas are relatively high in amylose, a component of starch that is digested slowly, so it doesn’t cause a sharp rise in blood sugar, Dr. Warkentin added. Over time, glucose spikes increase the risk of insulin resistance, which can lead to Type 2 diabetes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>沃肯廷補充說，豌豆中的直鏈澱粉含量相對較高，這種澱粉成分消化緩慢，因此不會引起血糖急劇升高。長期血糖飆升會增加胰島素抵抗的風險，進而可能導致2型糖尿病。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>They’re beneficial for your eyes.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>它們對眼睛有益。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As with other legumes, peas contain vitamins and minerals like folate (important for fetal development), magnesium (beneficial for nerve and muscle function) and zinc (necessary for immune health and wound healing).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與其他豆類一樣，豌豆含有維生素和礦物質，如葉酸（對胎兒發育重要）、鎂（有益於神經和肌肉功能）和鋅（對免疫健康和傷口癒合必不可少）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One cup of cooked garden peas has just over four milligrams of lutein and zeaxanthin, two antioxidants that are important for eye health. Research suggests that getting about six milligrams of both antioxidants from your diet each day may reduce the risk of age-related macular degeneration, a progressive eye disease that can cause blurry vision.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>一杯煮熟的菜園豌豆含有略高於四毫克的葉黃素和玉米黃質，這兩種抗氧化劑對眼睛健康至關重要。研究表明，每天從飲食中攝入約六毫克這兩種抗氧化劑，可降低患老年性黃斑變性的風險，這是一種可能導致視力模糊的進行性眼病。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CO73y-j8spYDFeCIcgAdy_gzBg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>What’s the best way to enjoy peas?</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>享用豌豆的最佳方式是什麼？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You can get the nutritional benefits of peas by eating them fresh, frozen, canned or raw. For a complete mix of amino acids (the building blocks of protein), pair them with corn, rice or other whole grains, which are high in the amino acids that peas lack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你可以通過新鮮、冷凍、罐裝或生食豌豆來獲取其營養益處。要獲得全面的氨基酸成分（蛋白質的構成單元），可將豌豆與玉米、大米或其他全穀物搭配，這些穀物富含豌豆所缺乏的氨基酸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some recipes from New York Times Cooking to get you started.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>以下是來自《紐約時報烹飪》的一些食譜，供您參考。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sautéed Peas With Anchovies and Scallions</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>鯷魚蔥香炒豌豆</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Sauteed-peas-pfvb/08WELL-HEALTHY-PEAS-Sauteed-peas-pfvb-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Sauteed-peas-pfvb/08WELL-HEALTHY-PEAS-Sauteed-peas-pfvb-master1050.jpg"/></div><figcaption><span></span> <cite>James Ransom for The New York Times. Food Stylist: Maggie Ruggiero.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The peas end up almost shockingly sweeter when cooked with salty, punchy anchovies and aromatic garlic in this lovely spring side dish.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道可愛的春季配菜中，豌豆與咸鮮濃郁的鯷魚和芳香的大蒜一同烹製，甜味幾乎令人驚艷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Sautéed Peas With Anchovies and Scallions</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b> 鯷魚蔥香炒豌豆</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One-Pot Salmon and Dill Rice With Peas</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>鮭魚蒔蘿豌豆燜飯</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Salmon-and-Peas-pzqm/08WELL-HEALTHY-PEAS-Salmon-and-Peas-pzqm-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Salmon-and-Peas-pzqm/08WELL-HEALTHY-PEAS-Salmon-and-Peas-pzqm-master1050.jpg"/></div><figcaption><span></span> <cite>Rachel Vanni for The New York Times. Food Stylist: Spencer Richards.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peas and coriander-rubbed salmon steam together over rice for an elegant meal that feels both light and satisfying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">豌豆和抹了香菜籽的鮭魚在米飯上一同蒸制，成就一道既清淡又滿足的優雅餐食。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>One-Pot Salmon and Dill Rice With Peas</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b> 鮭魚蒔蘿豌豆燜飯</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pan-Seared Chicken With Peas and Prosciutto</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>香煎雞胸配豌豆火腿</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Chicken-Cutlets-kphw/08WELL-HEALTHY-PEAS-Chicken-Cutlets-kphw-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Chicken-Cutlets-kphw/08WELL-HEALTHY-PEAS-Chicken-Cutlets-kphw-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In this easy, restaurant-worthy dish, peas become a silky pan sauce for chicken breasts when cooked with the surprising addition of tender butter lettuce leaves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道簡單且堪稱餐廳品質的菜肴中，豌豆與嫩黃油生菜葉一同烹煮，化為絲滑的醬汁，澆在雞胸肉上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Pan-Seared Chicken With Peas and Prosciutto</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b> 香煎雞胸配豌豆火腿</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cauliflower, Cashew, Pea and Coconut Curry</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>花菜腰果豌豆椰香咖哩</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Cauliflower-Cashew-pea-curry-fpck/08WELL-HEALTHY-PEAS-Cauliflower-Cashew-pea-curry-fpck-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Cauliflower-Cashew-pea-curry-fpck/08WELL-HEALTHY-PEAS-Cauliflower-Cashew-pea-curry-fpck-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews. Prop Stylist: Paige Hicks.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The earthiness of peas shines in this vegan meal. Cumin and coriander add warmth, while ginger, garlic and chile make it vibrant, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在這道純素餐食中，豌豆的泥土芬芳得以充分展現。孜然和香菜增添溫暖風味，姜、蒜和辣椒則使其充滿活力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Cauliflower, Cashew, Pea and Coconut Curry</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b> 花菜腰果豌豆椰香咖哩</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lamb Meatballs With Pea Pesto</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>羊肉丸配豌豆青醬</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Lamb-Meatballs-hjvg/08WELL-HEALTHY-PEAS-Lamb-Meatballs-hjvg-master1050.jpg" src="https://static01.nyt.com/images/2026/06/08/multimedia/08WELL-HEALTHY-PEAS-Lamb-Meatballs-hjvg/08WELL-HEALTHY-PEAS-Lamb-Meatballs-hjvg-master1050.jpg"/></div><figcaption><span></span> <cite>David Malosh for The New York Times. Food Stylist: Simon Andrews.</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Puréeing peas with basil, garlic and olive oil turns them into a verdant sauce that tastes like spring when paired with these lamb meatballs. It is just as delicious with chicken or pasta.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將豌豆與羅勒、大蒜和橄欖油一起打成泥，製成翠綠的醬汁，搭配這些羊肉丸時嘗起來就像春天的味道。搭配雞肉或意大利麵也同樣美味。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Recipe: </strong><strong>Lamb Meatballs With Pea Pesto</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>食譜：</b> 羊肉丸配豌豆青醬</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLnwy-j8spYDFQ-GpgQdjJAfXg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260821/peas-health-benefits-recipes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
