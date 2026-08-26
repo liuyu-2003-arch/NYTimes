@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國機器人「跑贏」博爾特，這意味著什麼？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國機器人「跑贏」博爾特，這意味著什麼？</h1>
+    <h2 class="en-headline">A Chinese Robot Beat Usain Bolt’s 100-Meter Record. Should We Be Impressed?</h2>
+    <div class="meta-line">YAN ZHUANG <span style="margin: 0 8px;">•</span> 2026-08-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="634" src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-cover-lptq/24int-china-robot-games-cover-lptq-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Achmad Ibrahim/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2009, Usain Bolt set the men’s 100-meter dash world record of 9.58 seconds at the World Athletics Championships in Berlin. On Saturday, a humanoid robot developed by the Chinese company X-Humanoid beat that record by 0.19 seconds, according to Chinese state media. The robot ended its sprint by slamming full speed into a padded wall, falling down and being carried away by human assistants.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2009年，尤塞恩·博爾特在柏林世界田徑錦標賽上創造了9.58秒的男子100米短跑世界紀錄。據中國官方媒體報導，上週六，由中國公司北京人形機器人創新中心有限公司(X-Humanoid)開發的一款人形機器人以0.19秒的優勢打破了該紀錄。這台機器人在全速撞上一堵軟墊牆後結束了衝刺，隨後倒在地上，被人類助手抬走。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">High-profile feats of robotic athleticism have become increasingly common in China, where a humanoid robotics industry has flourished, aided by generous state support and billions in investment. Robots have danced and performed martial arts at the country’s top events.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，機器人展示運動天賦的高調壯舉正變得越來越普遍。在國家的大力支持和數十億資金的投資下，中國的人形機器人產業蓬勃發展。在該國的重要活動中，機器人曾表演過舞蹈和武術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the World Humanoid Robot Games in Beijing over the weekend, they boxed and participated in soccer matches. One played tennis against a human opponent, moving across the court and angling itself to return volleys. Earlier this year, a robot ran a marathon faster than any human in history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在上週末於北京舉行的世界人形機器人運動會上，它們進行了拳擊和足球比賽。其中一台機器人與人類對手進行了網球比賽，它在球場上移動，調整角度回擊截擊球。今年早些時候，一台機器人以超越歷史上任何人類的速度跑完了一場馬拉松。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But what do these robotic superhuman feats amount to?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，這些機器人超越人類的壯舉究竟意味著什麼呢？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPD5m92EvZYDFTE8RAgdjwEO0A" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Most of the sports the humanoids are doing don’t directly translate into utility for many of the mundane tasks people are trying to get humanoids to perform, like being useful around the house,” said Michael Milford, a professor and director of the robotics center at Queensland University of Technology in Australia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲昆士蘭科技大學教授兼機器人中心主任麥可·米爾福德表示：「人形機器人參與的大多數體育項目並不能直接轉化為人們希望它們完成的大量日常任務的實用價值，比如在家庭中提供幫助。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The robots are “capable in very specific and somewhat contrived events,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這些機器人「在非常具體、且有些刻意安排的賽事中表現出色」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese media has also acknowledged the gulf between athleticism and real-world applications in its coverage of the games.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國媒體在報導本屆賽事時也承認了競技表現與實際應用之間存在的鴻溝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A factory robot does not need to win a sprint, nor does a service robot need a medal,” read a commentary in Xinhua, the state news agency. “But every gain in speed, stability and precision on the competition floor can bring robots one step closer to becoming genuinely useful beyond it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國家通訊社新華社的一篇評論寫道：「工廠機器人不需要贏得短跑比賽，服務機器人也不需要獎牌。但是，在賽場上速度、穩定性和精度的每一次提升，都能讓機器人距離在賽場外變得真正實用更近一步。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even without significant and proven real-world applications, these high-profile displays and the attention they have attracted are already paying some dividends. Unitree Robotics — a humanoid robotics company whose videos of robots performing kung fu, kickboxing and back flips have attracted millions of views online, and whose robots featured heavily at the Humanoid Robot Games last year — debuted on the Shanghai stock market last week. Its shares ended their first day of trading up by more than 460 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即使沒有重大且經過驗證的實際應用，這些高調的展示以及它們所吸引的關注也已經帶來了一些紅利。宇樹科技是一家人形機器人公司，其機器人表演功夫、踢拳和後空翻的影片在網上吸引了成百上千萬次觀看，其機器人還在去年的人形機器人運動會上大放異彩。該公司上週在上海證券交易所上市。其股票在首個交易日收盤時上漲了超過460%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Progress and Imperfection</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>進步與不完美</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COO0nN2EvZYDFd0GRAgdoH8xcQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alan Fern, a robotics professor at Oregon State University, was part of a research team that set the Guinness World Record for the fastest 100-meter run by a robot on two legs in 2022. That robot ran it in 24.73 seconds. To go from that, in four years, to X-Humanoid’s 9.39 seconds was an “enormous achievement,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧勒岡州立大學機器人學教授艾倫·費恩曾參與一個研究團隊，該團隊在2022年創造了雙足機器人100米跑最快的吉尼斯世界紀錄。當時那台機器人的成績是24.73秒。他表示，在四年內從那個成績提升到X-Humanoid的9.39秒是一項「巨大的成就」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But he noted that robotics companies have become relatively experienced in making robots that can run, jump and do acrobatics in controlled environments. He added that incremental improvements in these sports are mostly related to developing better hardware and refining the controls, rather than any significant technological breakthrough.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他指出，機器人公司在製造能夠在受控環境中跑、跳和做雜技的機器人方面已經變得相對有經驗。他還說，在這些運動項目上的漸進式改善主要歸功於開發了更好的硬件和改進了控制系統，而不是因為任何重大的技術突破。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The robot at the games in Beijing that could play tennis against a human was more impressive, he said, because that involved interacting with something unpredictable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，在北京運動會上那台能與人類打網球的機器人更令人印象深刻，因為這涉及到與不可預測的事物進行交互。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most robots struggle in situations where they need to adapt to changing situations. Yet the tennis robot had to track a fast-moving ball, decide where to move, coordinate its body and time the strike.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數機器人在需要適應不斷變化的情境時都會遇到困難。然而，這台網球機器人必須追蹤快速移動的球，決定移動方向，協調身體，把握擊球時機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The robots are still far from perfect, with accidents abounding at the games. Robots fell down, sparked small fires and crashed into objects, according to videos of the event. The unusual running style of one machine, with its arms up near its face, earned it the nickname “shy robot” on the social media platform Weibo. Many of the racing robots did not seem capable of slowing down on their own and instead stopped by running into a padded barrier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">機器人距離完美仍有很長的路要走，運動會上事故頻發。根據賽事的影片，機器人出現了摔倒、引發小火和撞上物體的情況。一台機器人的跑步姿勢十分奇特，雙臂舉在臉部附近，在社群媒體平台微博上被戲稱為「害羞機器人」。許多參加賽跑的機器人似乎無法自行減速，而是要撞向軟墊護欄才停下來。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="上週六在北京舉行的「世界人形機器人運動會」上，來自銀河通用的一台機器人在與人類選手的表演賽中打網球。" data-src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-pqtl/24int-china-robot-games-pqtl-master1050.jpg" src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-pqtl/24int-china-robot-games-pqtl-master1050.jpg"/></div><figcaption><span>上週六在北京舉行的「世界人形機器人運動會」上，來自銀河通用的一台機器人在與人類選手的表演賽中打網球。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="週六在北京舉行的世界類人機器人運動會100米預賽中，一台機器人在衝過終點線後摔倒並起火。" data-src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-bwgk/24int-china-robot-games-bwgk-master1050.jpg" src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-bwgk/24int-china-robot-games-bwgk-master1050.jpg"/></div><figcaption><span>週六在北京舉行的世界類人機器人運動會100米預賽中，一台機器人在衝過終點線後摔倒並起火。</span> <cite>Lintao Zhang/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The vision of humanoid robots eventually being able to do anything a human can do is still far away, Mr. Fern said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">費恩表示，讓人形機器人最終能夠做到人類能做的任何事情，這樣的願景仍然很遙遠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Outside entertainment and a limited number of tightly constrained industrial settings, these robots do not yet have the general-purpose intelligence and reliability needed to operate in messy real-world environments,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「除了娛樂和少數受到嚴格限制的工業環境之外，這些機器人目前還不具備在雜亂無章的現實世界環境中運行所需的通用智能和可靠性，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNXcnN2EvZYDFcY3RAgdo4oy-w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Milford said that it could take many years before robots can safely and reliably perform in everyday settings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">米爾福德表示，可能還需要許多年，機器人才能在日常環境中安全可靠地運行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He drew a comparison to self-driving cars: Three or four decades ago, a self-driving car could drive across a continent on highways. But only in recent years has the technology become advanced and safe enough for such cars to be deployed widely and largely without incident.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他以自動駕駛汽車為例進行類比：三四十年前，自動駕駛汽車就可以在高速公路上橫跨一個大陸。但直到最近幾年，這項技術才變得足夠先進和安全，使得這類汽車能夠被廣泛部署且基本上不發生事故。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Car racing may be another good analogy, Mr. Fern said. “We still marvel at the engineering achievements in Formula 1, and some of those advances eventually transfer elsewhere, but we do not interpret every faster lap as a revolution in transportation,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賽車可能是另一個很好的類比，費恩說。「我們仍然對一級方程式賽車的工程成就感到驚嘆，其中一些進步最終也轉移到了其他領域，但我們並沒有將每一次單圈速度的提升都視為交通運輸領域的革命，」他說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2009年，尤塞恩·博爾特（中）在柏林參加男子100米決賽，他在這裡創造了世界紀錄。" data-src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-tlcw/24int-china-robot-games-tlcw-master1050.jpg" src="https://static01.nyt.com/images/2026/08/24/multimedia/24int-china-robot-games-tlcw/24int-china-robot-games-tlcw-master1050.jpg"/></div><figcaption><span>2009年，尤塞恩·博爾特（中）在柏林參加男子100米決賽，他在這裡創造了世界紀錄。</span> <cite>Olivier Morin/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Similarly, beating Usain Bolt does not mean that the robot has surpassed humans at locomotion in any general sense,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「同樣，擊敗尤塞恩·博爾特並不意味著機器人在一般意義上的運動能力已經超越了人類，」他還說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Bolt did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">博爾特沒有回應置評請求。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><p class="cn-p">Yan Zhuang是時報駐首爾記者，報導突發新聞。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260825/chinese-robot-100-meter-usain-bolt/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
