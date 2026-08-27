@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>那些顯示你正在變老的「奇怪」跡象 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">那些顯示你正在變老的「奇怪」跡象</h1>
+    <h2 class="en-headline">5 (More) Surprising Signs You’re Getting Older</h2>
+    <div class="meta-line">JANCEE DUNN <span style="margin: 0 8px;">•</span> 2026-08-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/08/20/well/20WELL-NL-WEIRD-SIGNS-AGING-image/20WELL-NL-WEIRD-SIGNS-AGING-image-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Matt Chase</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I’ve noticed two odd things about my feet lately: They’ve grown a shoe size, and walking barefoot hurts on flat surfaces such as my kitchen floor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我最近注意到自己的腳有兩個問題：鞋要買大一碼了，而且在廚房地板這樣的平坦表面上光腳走路會痛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, I wrote a column about weird signs that you’re getting older, including shifting teeth and changes in your voice.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>去年，我寫了一篇關於變老的奇怪跡象的專欄文章，這些跡象包括牙齒移位和聲音變化。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I’ve spotted plenty more since then — like the foot changes. So I called Sabrina Minhas, assistant clinical professor at the Temple University School of Podiatric Medicine, and asked her if both experiences were common.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那之後，我還發現了更多跡象，比如腳的變化。於是我致電天普大學足病醫學院助理臨床教授薩布麗娜·明哈斯，問她這兩種情況是否普遍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Absolutely,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當然，」她說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COe2xJSGwJYDFYk9HAAde7EVtw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Minhas explained that as we age, the ligaments, tendons and muscles that support the arches in our feet can weaken, causing the arch to gradually descend.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明哈斯解釋說，隨著年齡增長，支撐足弓的韌帶、肌腱和肌肉會減弱，導致足弓逐漸下塌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As a result, our feet can become longer and wider, which may require a larger shoe size.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>結果，我們的腳會變得更長更寬，可能需要更大尺碼的鞋子。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gaining weight later in life or becoming pregnant can also cause arches to lower, Dr. Minhas said. “I tell patients, ‘Don’t get too attached to the shoe you wore when you were 15 years younger,’” she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明哈斯說，晚年體重增加或懷孕也會導致足弓降低。「我告訴患者，『別太迷戀你15年前穿的那雙鞋，』」她補充道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As for the pain of walking on flat surfaces, she said, with age, the fat pads under your heel and the ball of your foot tend to diminish and are less effective at cushioning the bones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至於在平坦地面上行走的疼痛，她說，隨著年齡增長，足跟和足底的脂肪墊往往會變薄，緩衝骨骼的效果降低。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My older patients have very little fat on their feet, and they will tell me that walking barefoot on a hard floor feels as though they are walking directly on their bones or on pebbles,” Dr. Minhas said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我的老年患者腳上脂肪很少，他們會告訴我，光腳在硬地板上走感覺就像直接走在骨頭上或鵝卵石上，」明哈斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She advises patients to wear slippers or sandals with sturdy foot support at home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她建議患者在家穿有穩固足部支撐的拖鞋或涼鞋。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I wondered, What else can surprise us with age? I asked experts to find out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我想知道，隨著年齡增長，還有什麼會讓我們驚訝？我請教了專家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Your skin might be itchier</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>你的皮膚可能更癢</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As we age, our skin gets drier, thinner and can develop tiny cracks, leading to inflammation and itchiness, said<strong> </strong>Dr. Saranya P. Wyles, a dermatologist and specialist in regenerative medicine at the Mayo Clinic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著年齡增長，我們的皮膚變得更乾、更薄，可能出現微小裂縫，導致炎症和瘙癢，梅奧診所皮膚科醫生兼再生醫學專家薩拉尼亞·P·懷爾斯博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to the American Academy of Allergy, Asthma &amp; Immunology, itchy skin is one of the most common reasons older adults see a dermatologist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>據美國過敏、哮喘與免疫學會稱，皮膚瘙癢是老年人看皮膚科最常見的原因之一。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COTJxZSGwJYDFVonHAAdM1AJVw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I have some patients who say, ‘I don’t sleep a wink at night, I’m so uncomfortable,’” said Daniel C. Butler, director of the Inflammatory and Aging Skin Research Program at the University of Arizona College of Medicine-Tucson.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我有些患者說，『我晚上根本睡不著，太難受了，』」亞利桑那大學圖森醫學院炎症與老化皮膚研究項目主任丹尼爾·C·巴特勒說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Wyles suggested bathing in lukewarm water, rather than hot water, “which can strip the skin of natural oils,” and moisturizing right after bathing. Use products that contain skin-calming ingredients, such as ceramides and colloidal oatmeal, she said, which can help repair and build the skin barrier and reduce inflammation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">懷爾斯建議用溫水而非熱水洗澡，「熱水會導致皮膚失去天然油脂，」並在洗澡後立即保濕。她說，使用含神經酰胺和膠體燕麥等舒緩皮膚成分的產品，有助於修復和構建皮膚屏障，減輕炎症。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Butler has found in his research on chronic itching that the causes are a complex interplay of a broken skin barrier, the immune system and the nerve system beneath our skin — all of which, he said, are significantly influenced by aging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>巴特勒在其關於慢性瘙癢的研究中發現，病因是皮膚屏障受損、免疫系統和皮下神經系統之間複雜的相互作用——他說，所有這些都受衰老顯著影響。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you have chronic itching, meaning six weeks or more, a dermatologist can often help treat it, Dr. Butler said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巴特勒說，如果你有慢性瘙癢（持續六週或更久），皮膚科醫生通常可以幫助治療。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Itching without a rash can also be a sign of conditions such as chronic kidney disease or liver disease, Dr. Wyles added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">懷爾斯補充說，無皮疹的瘙癢也可能是慢性腎病或肝病等疾病的徵兆。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Your heart can beat more slowly during exercise</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>運動時你的心跳可能變慢</b><b></b></span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMO7xZSGwJYDFZ4dHAAd_5YPSw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While your resting heart rate largely stays the same as you age, your maximum heart rate will slow during physical activity, said<strong> </strong>Dr. James Sawalla Guseh, director of the Cardiovascular Performance Program in the Mass General Brigham Heart &amp; Vascular Institute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">麻省總醫院布裡格姆心臟與血管研究所心血管表現項目主任詹姆斯·薩瓦拉·古什博士說，雖然隨著年齡增長，靜息心率基本保持不變，但你的最大心率在進行運動時會減慢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The causes are not completely understood, Dr. Guseh said. It might be that “your heart’s natural pacemaker, called the sinus node, has a tendency to slow down with age,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">古什說原因尚不完全清楚。可能是「你心臟的天然起搏器（稱為竇房結）隨年齡增長有變慢的趨勢，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Your heart’s ability to respond to signals from your nervous system may also slow as you get older, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外他還說，隨著年齡增長，心臟對神經系統信號的響應能力也可能減慢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">See a doctor if you notice a sudden and unexplained change in heart rate during exercise, shortness of breath, or feel as if “your heart rate is consistently higher than usual for the same amount of effort,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，如果你在運動中發現心率突然不明原因變化、呼吸急促，或感覺「在相同運動量下心率持續高於往常」，那就去看醫生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Your sense of taste may diminish</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>你的味覺可能減退</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Lately I’ve noticed that my constant companion at dinner is a shaker of salt. Or, I’ll slop more hot sauce on my food than usual.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近我注意到，晚餐時我的常伴是一罐鹽。或者我會在食物上倒更多的辣醬。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMuWxpSGwJYDFRIdHAAdXO0sAA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sometimes when we age, our sense of taste can diminish, said Dr. Lisa M. Walke, professor and chief of geriatric medicine at the University of Pennsylvania Perelman School of Medicine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有時隨著年齡增長，我們的味覺會減退，賓夕法尼亞大學佩雷爾曼醫學院老年醫學教授兼主任麗莎·M·沃克博士說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a 2025 study, researchers conducted taste tests with 1,392 healthy people ranging in age from 10 to 94, and found that the ability to perceive flavors began to decline in the 30s — and dropped substantially after 60.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在2025年的一項研究中，研究人員對1392名年齡在10至94歲之間的健康人進行了味覺測試，發現感知味道的能力在30多歲時開始下降，60歲後大幅下降。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If, like me, you notice that your food is more bland, adding more salt may not be the answer, Dr. Walke said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果你和我一樣發現食物在變淡，多加鹽可能不是解決辦法，沃克說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You want to be mindful if you do this, particularly if you have medical conditions such as high blood pressure,” she said. If you need to add flavor, explore safer options like herbs and spices, lemon or salt substitutes, Dr. Walke advised.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你這樣做，要注意，特別是如果你有高血壓等疾病，」她說。如果需要增加風味，她建議可以探索更安全的選擇，如香辛料、檸檬或代鹽產品。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jancee Dunn為時報撰寫每週健康資訊簡報，她從事健康和科學報導已有20多年。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260826/more-aging-signs/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

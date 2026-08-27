@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智譜AI新人工智慧模型再次引發網路安全爭論 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">智譜AI新人工智慧模型再次引發網路安全爭論</h1>
+    <h2 class="en-headline">By Opening a Model, a Chinese A.I. Lab May Test the World’s Cybersecurity</h2>
+    <div class="meta-line">CADE METZ <span style="margin: 0 8px;">•</span> 2026-08-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="一家名為智譜AI的中國實驗室正準備將類似的人工智慧技術作為「開放權重」軟體發布。" height="700" src="https://static01.nyt.com/images/2026/08/20/multimedia/00SCI-AI-CYBERSECURITY-01-khcj/00SCI-AI-CYBERSECURITY-01-khcj-master1050.jpg" width="1050"/><figcaption><span>一家名為智譜AI的中國實驗室正準備將類似的人工智慧技術作為「開放權重」軟體發布。</span> <cite>Laurie Chen/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In mid-July, as OpenAI was testing new artificial intelligence technologies, these unusually powerful systems broke out of their digital containers, found a path to the open internet and successfully hacked into a popular online service called Hugging Face.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月中旬，當OpenAI測試新的人工智慧技術時，這些異常強大的系統突破了它們的數字容器，找到了一條通往公共互聯網的路徑，成功侵入了一個名為Hugging Face的知名在線服務平台。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For many researchers and other experts, the incident proved that A.I. technologies were growing increasingly dangerous and that the leading A.I. labs should maintain strict control over how these systems are used.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對許多研究人員和其他專家而言，這一事件證明人工智慧技術正變得越來越危險，領先的人工智慧實驗室應當對這些系統的使用方式保持嚴格管控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, little more than a month later, a Chinese lab called Z.ai is preparing to release similar A.I. technology as “open weight” software, which means anyone will be free to use the technology however they wish.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，短短一個多月後，一家名為智譜AI的中國實驗室正準備以「開放權重」軟體的形式發布類似的人工智慧技術，這意味著任何人都可以隨意使用該技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The planned release on Friday of the new Chinese system, called GLM 5.3, will cut to the heart of a debate that has roiled A.I. researchers for years. Although many experts believe that the latest A.I. technologies are too dangerous to openly share with the public, others argue that open sharing is the safest path forward.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這個名為GLM 5.3的新型中國系統計劃於週五發布，它將直擊一場困擾人工智慧研究人員多年的爭論的核心。儘管許多專家認為最新的人工智慧技術過於危險，不應向公眾公開發布，但也有專家認為，公開分享才是最安全的出路。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKDv7pKGwJYDFboWDAIdGRUipA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Open weight models have a very important part to play,” said Dan Lahav, chief executive of Irregular, a cybersecurity company whose technologies have been used by OpenAI to test new A.I. systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「開放權重模型可以發揮非常重要的作用，」網路安全公司Irregular的首席執行官丹·拉哈夫說，OpenAI曾使用該公司的技術來測試新的AI系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The disclosure that OpenAI’s technologies had unexpectedly hacked into Hugging Face, a digital library popular among software developers, confirmed what cybersecurity experts have been saying for months: The leading A.I. systems are now shockingly good at identifying and exploiting vulnerabilities in computer software. In other words, they can streamline and accelerate cyberattacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">OpenAI的技術意外入侵廣受軟體開發者歡迎的數字圖書館Hugging Face被曝光，證實了網路安全專家幾個月來一直在強調的觀點：領先的人工智慧系統如今在識別和利用計算機軟體漏洞方面表現得異常出色，令人震驚。換言之，它們可以簡化並加速網路攻擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company also put the spotlight on another inconvenient truth: A.I. technologies often do things even their designers do not want, including strange, counterintuitive, completely unexpected cybersecurity attacks. OpenAI did not realize its systems had gone rogue until after Hugging Face publicly revealed the hack and notified law enforcement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司還凸顯了另一個令人不安的真相：人工智慧技術經常做出連它們的設計者都不希望發生的事情，包括奇怪的、反直覺的、完全出乎意料的網路安全攻擊。直到Hugging Face公開披露了這起駭客攻擊並通知執法部門後，OpenAI才意識到其系統已經失控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This was a watershed moment for security,” said George Kurtz, chief executive of the security company CrowdStrike, which served as an adviser to OpenAI as the company sought to understand the attack. “It was a very public incident that clearly identifies the autonomous nature of what these A.I. models can do.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是安全領域的一個分水嶺，」安全公司CrowdStrike的首席執行官喬治·庫爾茨說，在OpenAI試圖弄清這起攻擊時，該公司擔任了其顧問。「這是一起非常公開的事件，清晰地展示了這些人工智慧模型行為的自主性。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon, two of OpenAI’s domestic rivals, Anthropic and Meta, revealed that their systems had exhibited similar behavior.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">很快，OpenAI的兩家國內競爭對手Anthropic和Meta也透露，他們的系統表現出了類似的行為。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="這款名為GLM 5.3的新型中國系統是一款「開放權重」軟體，這意味著任何人都可以自由地按自己的意願使用該技術。" data-src="https://static01.nyt.com/images/2026/08/20/multimedia/00SCI-AI-CYBERSECURITY-02-hfmt/00SCI-AI-CYBERSECURITY-02-hfmt-jumbo.jpg" src="https://static01.nyt.com/images/2026/08/20/multimedia/00SCI-AI-CYBERSECURITY-02-hfmt/00SCI-AI-CYBERSECURITY-02-hfmt-jumbo.jpg"/></div><figcaption><span>這款名為GLM 5.3的新型中國系統是一款「開放權重」軟體，這意味著任何人都可以自由地按自己的意願使用該技術。</span> <cite>Justin T. Gellerson for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But for many experts, the incident was not as scary as it might seem. Businesses and individuals, these experts say, can use the same A.I. technologies to defend themselves against cyberattacks. If an A.I. system can identify and exploit holes in software, it can patch those holes, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但許多專家認為，這起事件並不像看起來那麼可怕。這些專家表示，企業和個人可以使用同樣的人工智慧技術來防禦網路攻擊。如果一個人工智慧系統能夠識別並利用軟體中的漏洞，它同樣也能夠修補這些漏洞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When a company like Z.ai releases its technology as open weight software, anyone is free to adjust the weights — the mathematical calculations that define how the system operates — and potentially remove guardrails that prevent the use of the system for cyberattacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當智譜AI這樣的公司將其技術作為「開放權重」軟體發布時，任何人都可以自由調整權重——即決定系統如何運行的數學計算——並可能移除那些防止系統被用於網路攻擊的安全護欄。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIK575KGwJYDFbmsWgUdHFE4ig" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That means anyone can use these systems to hack a computer network, and anyone can also use them for defense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這意味著任何人都可以使用這些系統來黑入計算機網路，同時任何人也可以使用它們進行防禦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Indeed, when Hugging Face was trying to defend itself against the July attacks — which only later became traceable to OpenAI — Anthropic’s systems refused requests for help because of their guardrails. Hugging Face instead turned to GLM 5.2, an earlier open weight model from Z.ai.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實上，當Hugging Face試圖防禦7月的攻擊時（這些攻擊直到後來才被追蹤到源頭是OpenAI），Anthropic的系統受安全防護機制限制，拒絕了求助請求。Hugging Face轉而使用智譜AI早期發布的開放權重模型GLM 5.2。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Z.ai’s new open weight model goes public this week, many researchers fear that incidents like the Hugging Face attack could become more frequent. But other experts point out that publicly available A.I. technologies have exhibited similar behavior for months or even years. Though these systems have gotten much better at pinpointing security holes in recent months, cyberattacks have not spiked in any significant way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著智譜AI新的開放權重模型於本週公開發布，許多研究人員擔心類似Hugging Face遭攻擊的事件可能會變得更加頻繁。但其他專家指出，公開可用的人工智慧技術表現出類似行為已有數月甚至數年之久。儘管近幾個月來這些系統在精準定位安全漏洞方面變得出色得多，但網路攻擊事件並沒有出現任何顯著激增。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of the issue is that the strange and unexpected behavior exhibited by A.I. systems can alert defenders to unwanted activity on their networks. Although A.I. systems are becoming more stealthy, they still have a tendency to set off alarm bells.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分原因在於，人工智慧系統表現出的奇怪且出乎意料的行為可以提醒防禦者注意其網路上存在的異常活動。儘管人工智慧系統正變得越來越隱蔽，但它們仍然很容易觸發警報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“People talk about the Hugging Face incident as being the result of this guardrails-off crazy model that OpenAI hasn’t yet released to the public. But in our research, we have seen this sort of behavior since GPT-4o,” said Rishi Jha, an A.I. researcher at Cornell University, referring to a system OpenAI released in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">康乃爾大學的人工智慧研究員裡希·賈在提到OpenAI於2024年發布的一個系統時表示：「人們談論Hugging Face事件時，認為這是由OpenAI尚未向公眾發布的這款解除了安全護欄的瘋狂模型所導致。但在我們的研究中，自GPT-4o以來，我們就已經看到了這類行為。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if these incidents do become more frequent, Mr. Jha and other experts argue, the proliferation of defensive A.I. techniques will eventually balance the scales. Open weight systems like GLM 5.3 will allow everyone to defend themselves — not just a chosen few.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">賈和其他專家認為，即使這些事件確實變得更加頻繁，防禦性人工智慧技術的激增最終也將使天平恢復平衡。像GLM 5.3這樣的開放權重系統將讓每個人都有能力保護自己——而不僅僅是少數人。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKjO75KGwJYDFW20WgUdqHo18Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/science_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And as the A.I. systems get even better at generating computer code, experts say, they will help software developers build online services that contain fewer vulnerabilities from the start. Researchers are now building technologies that use mathematical techniques to “verify” generated code, so that it does not contain the kind of logical errors that hackers can exploit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家們表示，隨著人工智慧系統在生成計算機代碼方面變得更加強大，它們將幫助軟體開發人員從一開始就能構建出包含更少漏洞的在線服務。研究人員目前正在開發使用數學方法，「驗證」生成代碼的技術，以確保其中不包含駭客可以利用的那種邏輯錯誤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Lahav, the Irregular chief executive, sees a future in which A.I. serves more as a defender than an attacker. “There is a strong case for optimism,” he said. “Over time, A.I. is going to build such strong cybersecurity defenses, the picture will actually look better.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Irregular公司首席執行官拉哈夫預見，未來人工智慧將更多地扮演防禦者而非攻擊者的角色。「我們有充分的理由保持樂觀，」他說。「隨著時間的推移，人工智慧將建立起極其強大的網路安全防線，整體局面實際上會變得更好。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Cade Metz是時報記者，撰寫有關人工智慧、無人駕駛汽車、機器人、虛擬現實和其他新興技術領域的報導。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/science/20260826/cybersecurity-zai-open-weights/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國人為何熱情擁抱人工智慧？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國人為何熱情擁抱人工智慧？</h1>
+    <h2 class="en-headline">Why China Loves A.I.</h2>
+    <div class="meta-line">ALICIA P.Q. WITTMEYER <span style="margin: 0 8px;">•</span> 2026-08-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/08/21/multimedia/27int-theworld-china-ai-index-promo/2026-04-08-china-ai-daily-life-index-master1050.jpg" width="1050"/><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">My social media feeds this week — at least before they were taken over by tributes to Dolly Parton — were filled with scenes from the humanoid robot games. Robots running fast and then smashing into walls. Robots lifting weights above their heads. Robots playing football, very badly. Where was all this unfolding? In China, of course.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本週我的社群媒體信息流——至少在它們被緬懷<span>多莉·帕頓的內容佔據之前——滿是人形機器人運動會的場面。機器人飛奔然後撞上牆壁。機器人舉重過頭頂。機器人踢足球，踢得非常糟糕。這一切在哪裡上演？當然是在中國。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s relationship with A.I. is like no other country’s. Some of my colleagues recently published a story looking at the extent to which A.I. has infiltrated daily life in Beijing that, for me, was genuinely eye-opening. More on that below.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國與人工智慧的關係與其他任何國家都不同。我的一些同事最近發表了一篇文章，探討人工智慧滲透在北京日常生活中的程度，對我來說確實大開眼界。下文會有更多相關介紹。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But first, my colleague Vivian Wang, one of the reporters on that story, writes about why a technology that has proved so contentious in the West has been embraced so readily in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但首先，我的同事王月眉(Vivian Wang)——這篇文章的記者之一——會談談為什麼一項在西方備受爭議的技術在中國如此輕易地被接受。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-01/27int-theworld-china-ai-01-jumbo.gif" src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-01/27int-theworld-china-ai-01-jumbo.gif"/></div><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Where are China’s A.I. doomers?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧末日論者在哪？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By Vivian Wang</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">撰文：王月眉</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIqy7I2GwJYDFUeLWgUdqIUBlg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the A.I. video-generation tool Seedance 2.0 debuted earlier this year, it prompted drastically different reactions on opposite sides of the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧影片生成工具Seedance 2.0今年早些時候發布時，在地球兩端引發了兩種截然不同的反應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, many in the movie industry responded with fear. After a shockingly realistic Seedance-generated video purporting to show a fight scene between Brad Pitt and Tom Cruise spread widely online, Hollywood filmmakers and writers said their jobs were becoming obsolete.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國，電影行業的許多人對此感到恐懼。在Seedance生成的一段逼真程度令人驚訝的布萊德·彼特和湯姆·克魯斯打鬥場面在網上熱傳後，好萊塢的電影製作人和編劇們表示，他們的工作要過時了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in China — home to Seedance’s parent company, ByteDance — many were excited. Stocks in short-video companies surged. One of China’s most famous directors, Jia Zhangke, shared a short film he made using Seedance, in which his real self and an A.I. version of himself discussed moviemaking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在中國——Seedance的母公司所在的地方——許多人的反應是興奮。短片公司的股票大漲。中國最著名的導演之一賈樟柯分享了他使用Seedance製作的短片，片中真實的自己與一個人工智慧版本的自己討論電影創作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’m not worried about technology replacing movies,” Jia wrote on social media. “From the very beginning, movies have coexisted with new technology. What really matters is how people use technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我並不擔心技術會不會『取代』電影，」賈樟柯在社群媒體上寫道。「電影從誕生之初，就一直在和新技術共處，真正重要的，還是人如何使用技術。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The different reactions reflect a broader split between China and much of the West: Chinese people seem way more eager for the A.I. future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種截然不同的反應揭示了中國與西方大部分國家在人工智慧問題上更廣泛的分歧：中國人似乎對人工智慧更加樂觀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People in China are among the most optimistic in the world about A.I., according to a survey of 47 countries last year. While 69 percent of people in China said the technology’s benefits outweighed its risks, only 35 percent of Americans agreed. Other polls have shown similar disparities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>畢馬威諮詢去年對47個國家進行的一項調查顯示，中國人是對人工智慧最</span>樂觀<span>的人群之一。在中國，69%的受訪者認為該技術的好處大於風險，而持同樣看法的美國人只有35%。其他民調也顯示出類似的差距。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What’s driving this difference? The answer may be related to how the technology has been deployed in each country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為什麼會有這樣的差異？答案可能與這項技術在各國的應用方式有關。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-04/27int-theworld-china-ai-04-jumbo.gif" src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-04/27int-theworld-china-ai-04-jumbo.gif"/></div><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>A.I. everything, everywhere</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>AI瞬息全宇宙</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Driverless taxis roam more than a dozen Chinese cities, and service robots putter through hotels and restaurants. Chinese tech companies have rolled out medical chatbots to help users avoid long lines at hospitals. A.I. assistants are embedded in popular apps, so users can ask their mapping apps to help them decide where to eat or ask their shopping apps to help them choose between pairs of shoes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無人駕駛計程車在中國十多個城市穿行，服務機器人在酒店和餐館裡緩緩駛過。中國科技公司推出了醫療聊天機器人，幫助用戶避免在醫院排長隊。他們還把人工智慧助手嵌入各種熱門應用中，用戶可以讓地圖應用幫助他們決定去哪裡吃飯，或讓購物應用幫他們在幾雙鞋之間做出選擇。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLfO7I2GwJYDFfW3WgUd-kkGDA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ubiquity of the technology is hard to envision unless you see it for yourself. We recently published an interactive piece to allow readers to feel as if they were walking through the A.I.-filled streets of Beijing; to judge by the reader comments, many people outside of China found both the amount of A.I., and people’s attitudes toward it, surprising.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這種技術的普及程度若非親眼所見很難想像。我們最近發布了一篇互動式報導，讓讀者彷彿親身走在AI遍布的北京街頭；從讀者評論來看，許多中國以外的人都對AI的數量以及人們對它的態度感到驚訝。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The widespread deployment of A.I. in everyday life has been an explicit focus for the Chinese government and for Chinese tech companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">AI在日常生活中的廣泛部署一直是中國政府和中國科技公司明確的重點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Xi Jinping has said that China’s A.I. industry should “prioritize practical application.” Officials say A.I. could help solve China’s thorniest problems, such as inequalities in health care or an aging work force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平曾表示，中國的人工智慧產業應「全面推進賦能應用」。官員們表示，人工智慧可以幫助解決中國一些最棘手的問題，如醫療資源不均衡，或勞動力老齡化。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By contrast, many leading American tech companies have been focused on more abstract goals, like developing the most cutting-edge model or achieving artificial general intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>相比之下，許多領先的美國科技公司一直專注於更抽象的目標，比如開發最前沿的模型，或實現通用人工智慧。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One result of all this is that Chinese consumers are feeling the benefits of A.I. more than those in the West, one professor who studies the digital economy told me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由此帶來的一個結果是，中國消費者比西方消費者更能感受到AI帶來的好處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A lot of things can already be helped by A.I., and people find that interesting,” said Bai Guo, a professor at China Europe International Business School in Shanghai. “So there are quite a lot of positive and active feelings toward it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「很多事情已經可以得到AI的幫助，人們覺得這很有趣，」上海中歐國際工商學院教授白果說。「所以對它抱有相當多積極、主動的情緒。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-02/27int-theworld-china-ai-02-jumbo.gif" src="https://static01.nyt.com/images/2026/08/26/multimedia/27int-theworld-china-ai-02/27int-theworld-china-ai-02-jumbo.gif"/></div><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>A few notes of caution</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>一些謹慎信號</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There have been signs, though, in recent months of growing concerns about A.I., even in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而近幾個月來，即便在中國，對AI的擔憂也有所增加。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPXp7I2GwJYDFSaPWgUdUy8tFw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Several workers have sued their employers in Chinese courts after they said they were replaced by A.I. Judges sided with the workers, saying that introducing A.I. does not justify mass layoffs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>數名工人在聲稱被AI取代後將僱主告上中國法庭。法官支持了工人的訴求，表示引入AI不能成為大規模裁員的正當理由。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government doesn’t want mass job loss, because that could lead to protests. It also doesn’t want A.I. to generate content that challenges censorship, or to empower hackers. In a recent speech, Xi warned that there would need to be measures to avoid “loss of control.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府不希望出現大規模失業，因為這可能導致抗議。它也不希望AI生成挑戰審查制度的內容，或為駭客所用。在最近的一次講話中，習近平警告說需要採取措施避免「失控」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s also possible that there are more critics of A.I. in China than we see. Chinese officials have censored information about crashes involving autonomous driving, for example. And China also does not permit independent labor unions, which have been some of the most vocal critics of A.I. in the West.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國的AI批評者可能也比我們看到的要多。例如，中國官員已審查了有關自動駕駛事故的信息。此外，中國也不允許獨立的工會存在，而在西方，工會一直是人工智慧最直言不諱的批評者之一。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the prevailing sentiment remains enthusiasm. Maybe it’s because of how much A.I. has already been integrated into daily life. But some of the scholars, investors and entrepreneurs I spoke with also cited a more abstract reason for the optimism that I found worth considering.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但主流情緒依然是熱情。也許是因為AI已經如此深入地融入了日常生活。但我採訪的一些學者、投資者和企業家也提到了一個更抽象的原因，我認為值得深思。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Simply put, China has modernized so quickly in recent decades that many Chinese are used to groundbreaking change. Technology has been key to that change, and it still stands as proof of how far China has come.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">簡而言之，中國近幾十年來現代化速度如此之快，以至於許多中國人已經習慣於劃時代的變革。技術是這種變革的關鍵，至今仍是中國已經取得的成就的證明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Afra Wang, a technology writer from China, wrote in a newsletter this year about her grandmother, who once walked five hours to buy a clock so that her children could get to school on time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國科技作者阿芙拉·王（音）最近在一篇通訊中寫到了她的祖母。當年祖母曾經為了買鬧鐘走了五個小時路，就為了讓孩子們能夠按時上學。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLiw7Y2GwJYDFRq_WgUdBYYBmA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Today her Xiaomi phone has given her an online shopping addiction, and delivery drones fly above her apartment,” Wang wrote. “A.I. simply looks like the next turn of a wheel that has only ever spun forward.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「而今天，她的小米手機讓她沉迷於網購，送貨無人機在她的公寓上空飛行，」王女士寫道。「人工智慧看起來不過是那隻一直向前滾動的車輪的下一次轉動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>And don't miss this:</strong> <i>I really encourage you to</i> <i>check out the story Vivian mentioned about A.I. in Beijing, which is both fun and revealing. </i><i>This link is free</i><i>. — Alicia</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>還有</b></span><b>一篇文章不可錯過</b><span><b>：</b>我</span>真心推薦大家去讀月眉對北京AI的報導，充滿了趣味和<span>啟發性。此鏈接可免費閱讀。——Alicia</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文節譯自《紐約時報》全球新聞通訊The World。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260827/china-ai-nepal-tibet-flood/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
