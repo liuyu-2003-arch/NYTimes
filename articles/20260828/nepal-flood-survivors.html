@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「一轉眼就被吞沒了」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「一轉眼就被吞沒了」</h1>
+    <h2 class="en-headline">Survivors of Nepal Floods Describe a Devastating Force That Turned Everything Upside Down</h2>
+    <div class="meta-line">BINOD GHIMIRE <span style="margin: 0 8px;">•</span> 2026-08-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/08/27/multimedia/27nepal-hospital-promo-gwqp/27nepal-hospital-promo-gwqp-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Sabrina Dangol/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The numbers alone reflect the scale of the destruction: Hundreds of people are reported dead so far, with over a thousand others missing, and entire towns have been wiped out after floods swept the Himalayan region on the border between Nepal and Tibet on Wednesday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">僅從數字就能反映出破壞的規模：據報導，週三喜馬拉雅地區尼泊爾與中國西藏交界處發生洪水後，已有數百人遇難，另有千餘人失蹤，多座城鎮被夷為平地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But for the survivors, it is the force of the deluge that haunts them. One minute, their lives were routine. The next, the world turned upside down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對於倖存者來說，縈繞在他們心頭的是洪水的威力。前一分鐘，他們的生活還一如往常。下一分鐘，世界天翻地覆。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rajan Khatri, 41, a police officer posted at Syabrubesi, one of the riverside villages worst affected by the floods, said he had received a call around 9:10 a.m. local time from a friend warning him that a massive flash flood was heading downstream.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">41歲的拉詹·卡蒂是受洪水影響最嚴重的河畔村莊之一夏布魯貝西的駐警。他說，當地時間上午9點10分左右，他接到一位朋友打來的電話，警告他一場大規模山洪正在向下游襲來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He and his colleagues had no time to react. As soon as he hung up, high waves swept through the police station.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他和同事們根本來不及反應。他剛掛斷電話，巨浪就席捲了警察局。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJTRpLziwpYDFUQRRAgdz1IfPQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The water flung him out of the building, and he lost consciousness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洪水把他衝出了大樓，他失去了知覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“One of my senior officers and I were together when the wave struck. I was thrown out, but he was unlucky and was buried or swept away,” he said from a hospital bed in Kathmandu.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「巨浪襲來時，我和一位高級警官在一起。我被甩了出來，但他運氣不好，被掩埋或沖走了，」他在加德滿都的病床上說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I cannot explain how big the waves were. They engulfed several-meters-high buildings in a fraction of seconds,” he said. “It wasn’t just water. It was a combination of boulders, sand and thick sludge.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我無法形容那浪有多大。幾米高的建築一轉眼就被吞沒了，」他說。「不只是水，而是巨石、泥沙和濃稠淤泥的混合物。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of the seven people who had been working at his police station, Mr. Khatri is one of three to have been found alive. He said he was worried about whether the other four had survived.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在他所在警察局的七名工作人員中，卡蒂是倖存的三人之一。他說他很擔心其他四人的安危。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After regaining consciousness, he looked around and saw nothing but debris. He said at least 100 houses had been swept away, along with the office of a hydropower project, schools and other government facilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">恢復意識後，他環顧四周，只見一片廢墟。他說至少有100棟房屋被沖走，此外還有一座水電站項目的辦公室、學校和其他政府設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Khatri waited amid the debris until his rescue on Thursday morning. He had sustained chest injuries from the force of the floodwaters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡蒂在廢墟中等待，直到週四早上獲救。他被洪水的衝擊力傷到了胸部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Smriti Ojha, 17, was getting ready for school in Trishuli, in Nepal’s Nuwakot district, when she felt a tremor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">17歲的斯姆裡蒂·奧賈正在尼泊爾努瓦科特縣特里舒利的家中準備上學，突然感到一陣震動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Initially, she thought it was an earthquake — not unlike the one in 2015 that destroyed her family’s home. She rushed out of the rented house where she lives with her friends. Just as she came out, she saw enormous waves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">起初她以為是地震——與2015年摧毀她家房屋的那次地震差不多。她衝出和朋友們合租的房子。剛一出來，她就看到了巨大的波濤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everyone in the house got out before it was too late, but we couldn’t save anything,” she said from her hospital bed, where she was receiving treatment for a cut on her right foot. Her immediate family, which lives more than five miles from the destruction, is safe, but four of her relatives are missing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「屋裡所有人都及時跑了出來，但我們什麼也沒能帶出來，」她在病床上說，她的右腳被劃傷，正在接受治療。她的直系親屬住在離災區約10公里的地方，沒有受到影響，但有四名親屬失蹤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was terror,” she said. “I cannot believe everything was swept away before my eyes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「太可怕了，」她說。「我不敢相信一切都在我眼前被沖走了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNazpbziwpYDFacORAgdDiQu5Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Mujib Mashal對本文有報導貢獻。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260828/nepal-flood-survivors/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

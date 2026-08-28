@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美加貿易戰，中國坐收漁利 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美加貿易戰，中國坐收漁利</h1>
+    <h2 class="en-headline">The Real Winner of the Trade War With Canada</h2>
+    <div class="meta-line">CHAD P. BOWN <span style="margin: 0 8px;">•</span> 2026-08-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="694" src="https://static01.nyt.com/images/2026/08/26/multimedia/26bown1-pzbw/26bown1-pzbw-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Ioulex for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The keenest observer of the all-out trade war between the United States and Canada is surely President Xi Jinping of China. If Washington doesn’t change course, he’s probably going to be its winner, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最熱切的美加全面貿易戰觀察者莫過於中國國家主席習近平。如果華盛頓不改變方向，他很可能也將成為這場衝突的贏家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi already has monopoly power over components that are vital to hundreds of thousands of American and Canadian jobs. His April 2025 restrictions on rare-earth magnets temporarily shut down a Ford Explorer plant in Chicago. In Ontario later that year, Honda briefly reduced and suspended production of Civics and CR-Vs after he closed off access to semiconductors, which disrupted parts supply.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平已經對事關美加數十萬就業崗位的一些關鍵部件擁有壟斷性權力。他於2025年4月對稀土磁鐵實施的限制曾<span>一度導致芝加哥的一家福特探索者組裝廠停產</span><span>。同年晚些時候在安大略省，當他切斷半導體供應、擾亂零部件供應後，本田一度減少和暫停了思域和CR-V的生產。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These sorts of attacks and those sorts of vulnerabilities should bring allies together. In a normal world, Washington and Ottawa would be laser focused on how much and how quickly they could manufacture together to prevent that kind of Chinese economic coercion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些攻擊以及這種面對攻擊的脆弱性本應讓盟友團結起來。在一個正常的世界裡，華盛頓和渥太華本應專注於它們能以多快的時間、多大的程度共同生產，以防範此類中國經濟脅迫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead, President Trump has framed his tussle with Canada as a fight over how much manufacturing the country should be prepared to yield to the United States. And Mr. Trump wants almost all of it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，川普總統給這場與加拿大的爭端制定的目標是，要由此明確加拿大應向美國讓出多少製造業。而且川普想要的是幾乎全部。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COrj6MfiwpYDFVIFMwAdQR4Fxw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Mark Carney of Canada walked away from Mr. Trump’s latest offer and then escalated with fresh tariffs. Former Deputy Prime Minister Chrystia Freeland was correct to say it was even “a bad deal for the United States.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>加拿大總理馬克·卡尼拒絕了川普的最新提議，並以新的關稅進行升級對抗。前副總理克里斯蒂婭·弗裡蘭說這甚至「</span>是一筆對美國來說也很<span>糟糕的交易」，她說得對。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump cannot allow Canada to abandon the negotiations. Like it or not, Washington needs a resilient Canadian manufacturing sector working in concert with America’s companies in the much bigger and more consequential battle against Chinese market dominance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普不能讓加拿大放棄談判。不管喜歡與否，華盛頓需要一個有韌性的加拿大製造業，在這場與中國爭奪市場主導地位的較量中，與美國的公司協同作戰。這是一場遠為重大的對抗，將產生深遠的影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ottawa rebuffed Mr. Trump’s latest offer in part because it retained too many of his import tariffs on Canadian cars, heavy trucks, steel and aluminum. With tariffs that high, Americans will eventually stop buying Canadian-assembled vehicles, and Detroit will rework its supply chains to exclude Canadian parts. Cars and parts once moved seamlessly across the U.S.-Canada border between suppliers and buyers, much as they did over the U.S.-Mexico border.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>渥太華拒絕了川普的最新提議，部分原因是該提議保留了太多他對加拿大汽車、重型卡車、鋼鐵和鋁的進口關稅。在關稅如此之高的情況下，美國人最終會停止購買加拿大組裝的汽車，底特律將重新調整其供應鏈，排除加拿大零部件。曾經，汽車和零部件在美加邊境的供應商和買家之間無縫流動，就像它們穿越美墨邊境一樣。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Being shut out of the market next door will devastate the Canadian auto industry. Canada is not close enough to Asia or Europe to survive as part of their supply chains.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">被鄰國市場拒之門外將重創加拿大汽車業。加拿大離亞洲或歐洲不夠近，無法作為其供應鏈的一部分而生存。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We know what will probably happen next based on what took place in Australia after its automakers disappeared. By 2017, Toyota, General Motors and Ford closed their last Australian plants and caved to economic reality: The Australian market was too small and too remote to support the scale needed for globally competitive manufacturing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>根據澳洲汽車製造商消失後發生的情況，我們大致知道接下來會發生什麼。到2017年，豐田、通用汽車和福特關閉了在澳洲的最後一家工廠，</span>這是屈從於經濟現實：澳洲市場太小、太偏遠，無法支撐具備全球競爭力的製造業所需的規模。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Australians at first imported cars from manufacturing hubs across Japan, Korea, Thailand, Europe and the United States. Less than 10 years later, Australia looks very different. Nearly one in three new cars bought in Australia in the first half of 2026 was made in China, up from less than one in 250 back in 2017. (Only one in 50 Australian purchases in the first five months of 2026 was made in the United States.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">澳洲人起初從日本、韓國、泰國、歐洲和美國的製造業中心進口汽車。不到10年後，澳洲的情況已<span>大不相同。2026年上半年在澳洲購買的新車中，近三分之一是中國製造的，而2017年這一比例還不到250分之一。（2026年前五個月澳洲人購買的汽車中，只有50分之一是美國製造的。）</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIOw6sfiwpYDFfNWCAQdxak72w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump should expect Canadian consumers to go the same route. In January, Mr. Carney announced Canada would allow 49,000 Chinese electric vehicles to be sold in the country — less than 3 percent of new car sales — and would slowly increase that number. Any decision to further open the Canadian market would probably lead to a Chinese import surge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普應該預料到加拿大消費者也會走上同樣的道路。今年1月，卡尼宣布加拿大將允許銷售4.9萬輛中國電動汽車——佔新車銷量不到3%——並將逐步增加這一數字。任何進一步開放加拿大市場的決定都可能導致中國進口激增。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why is pure Econ 101. Buying higher-cost cars from the United States is easier to justify politically when there are offsetting benefits to the national economy, such as assembly jobs, profits to domestic parts suppliers and communities built around steel or aluminum plants. If local manufacturing disappears, so will the reasons for Canadians to accept paying higher prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">原因純粹是最基礎的經濟學。只有在國民經濟能得到補償性收益時，從美國購買更貴的汽車在政治上才是相對能接受的——比如組裝工作崗位、國內零部件供應商的利潤以及圍繞鋼鐵或鋁廠建立的社區。如果本地製造業消失，加拿大人接受更高價格的理由也將消失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Losing Canadian customers to China would be terrible for America for two reasons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">將加拿大客戶拱手讓給中國對美國來說將是可怕的，原因有二。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First, the total number of buyers matters for sectors such as automobiles, which have high fixed costs and substantial barriers to new entrants. Having more consumers means companies can learn how to lower costs and offer reduced prices to get even more customers. Losing Canadian car buyers will be one more step toward ceding the global automotive industry to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先，對汽車這樣一個固定成本高、入場門檻高的行業，買家總數是個重要指標。擁有更多的消費者意味著企業可以學習如何降低成本並提供更低的價格來獲得更多客戶。失去加拿大購車者將是向中國讓出全球汽車工業的又一步。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, Chinese companies sell low-priced cars. Tomorrow, the country could weaponize its newfound monopoly power. China also once offered the world great deals on rare-earth magnets and low-end semiconductors. Those prices allowed it to accumulate the market dominance that ultimately gave Mr. Xi the capacity to cut off Ford, Honda and many others last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今天，中國企業銷售低價汽車。明天，中國可能將其新獲得的壟斷力量武器化。中國也曾向世界提供過優惠價格的稀土磁鐵和低端半導體。那些價格使其積累了市場主導地位，最終賦予了習近平去年切斷福特、本田以及許多其他公司的能力。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has increasing market shares in sectors such as steel, aluminum, shipbuilding and telecommunications equipment. A recent O.E.C.D. report suggested that 60 percent of China’s global market share gains since 2005 could be attributed to its policy of supporting industries with generous subsidies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國在鋼鐵、鋁、造船和電信設備等領域的市場份額正在不斷增加。經合組織最近的一份報告表明，自2005年以來，中國在全球市場份額增長中有60%可歸因於其以慷慨補貼支持產業的政策。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJye6sfiwpYDFY-xOgUdgPodvQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Second, losing the Canadian commercial base could turn away, once and for all, one of Washington’s few remaining economic security allies. Before Mr. Trump started whacking Canada with tariffs in 2025, Ottawa matched many of Washington’s duties on Chinese electric vehicles, steel and aluminum. He has forced Canadians to ponder separating from America instead of working with America to separate from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其次，失去加拿大的商業基礎可能會讓華盛頓從此失去<span>為數不多的經濟安全盟友之一。在川普2025年開始用關稅打擊加拿大之前，渥太華在針對中國電動汽車、鋼鐵和鋁的關稅上與華盛頓保持了許多一致。川普迫使加拿大人思考與美國</span>脫離，而不是與美國合作，與中國脫離。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To fight the real trade war with China, Canadian consumers must continue to choose North American products, even though the Chinese versions are less expensive. Washington needs Canadians to accept today’s costs of a manufacturing sector integrated with the United States’.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了打贏與中國的真正貿易戰，加拿大消費者必須繼續選擇北美產品，即便中國產品更便宜。華盛頓需要加拿大人接受眼下與美國進行製造業一體化的成本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump, for his part, will have to moderate his “made in America” demands. He can’t kill off Canadian manufacturing and hope to retain access to the Canadian consumer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就川普而言，他必須緩和其「美國製造」的要求。他不能一邊扼殺加拿大製造業，一邊還指望保留對加拿大消費者的准入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To tackle the China challenge, the West requires more manufacturing clout than even an integrated North American economy can offer. Washington needs to rally all potential allies in the collective fight against China’s market dominance, and they are waiting to see whether Mr. Trump finds an offramp from his wrongheaded trade war before it is too late.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即便是一個一體化的北美經濟體都不足以提供西方應對中國挑戰所需的製造業實力。華盛頓需要團結所有潛在盟友，共同對抗中國的市場主導地位，而這些盟友正在觀望川普是否能找到一條從這場錯誤貿易戰中及時脫身的出路。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Chad P. Bown是彼得森國際經濟研究所的高級研究員，著有《如何贏得貿易戰》(How to Win a Trade War)一書。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260828/us-canada-trade-cars-trucks-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
