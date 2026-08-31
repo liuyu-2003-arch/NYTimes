@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國公布洪災受災統計 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國公布洪災受災統計</h1>
+    <h2 class="en-headline">China Says 261 Foreigners From 23 Countries Are Missing in Tibet Flood</h2>
+    <div class="meta-line">郭莉莉, PEI-LIN WU <span style="margin: 0 8px;">•</span> 2026-08-31</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上週四，尼泊爾拉蘇瓦縣境內，渾濁的特里舒利河蜿蜒流淌，圖為該河流的航拍圖。" height="700" src="https://static01.nyt.com/images/2026/08/30/multimedia/30int-TIBET-NEPAL-TOLLS-hfvm/30int-TIBET-NEPAL-TOLLS-hfvm-master1050.jpg" width="1050"/><figcaption><span>上週四，尼泊爾拉蘇瓦縣境內，渾濁的特里舒利河蜿蜒流淌，圖為該河流的航拍圖。</span> <cite>Atul Loke for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 260 foreign citizens from 23 countries are among the hundreds of people missing in Tibet after last week’s devastating flood, the Chinese authorities said on Sunday, offering their most detailed accounting yet of those caught in the disaster on their side of the border.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國當局週日表示，上週發生毀滅性洪災後，西藏數百名失蹤人員中包括來自23個國家的260多名外國公民。這是當局迄今為止對邊境中方一側受災人員所提供的最詳細統計。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The largest groups of missing foreigners were 104 Nepalis, 49 Indians, 33 Latvians, 18 Americans and 15 British citizens, according to Xinhua, China’s state news agency. In total, 546 people remained missing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據中國官方通訊社新華社報導，失蹤外國人中，人數最多的是尼泊爾公民，共有104名，此外還有49名印度公民、33名拉脫維亞公民、18名美國公民和15名英國公民。目前總計仍有546人下落不明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The death toll in the Tibet region of China has reached 16 people, the agency said, citing a news conference by the regional government.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該機構援引當地政府的新聞發布會稱，中國西藏地區的死亡人數已達16人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Nepal, 734 people had been confirmed dead as of Sunday morning, and nearly 2,500 remained missing, according to the country’s disaster relief authorities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尼泊爾災害救援部門表示，截至週日早上，該國已確認734人死亡，近2500人仍下落不明。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPuSnqnfyZYDFbGFpgQdfRERrw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tibet, which Beijing annexed in the 1950s and has been the site of protests and self-immolations by Tibetans calling for more autonomy, is one of the most tightly controlled parts of China. Since the flooding struck along the border between Nepal and Tibet on Wednesday, China has released few details about those affected on its side. Chinese social media platforms have censored much of the content not published by state news outlets, including photographs and videos of the disaster posted by bystanders and hikers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西藏是中國管控最嚴密的地區之一。北京在20世紀50年代吞併了該地區，呼籲獲得更大自治權的藏人在這裡進行抗議和自焚。自週三尼泊爾與西藏邊境發生洪災以來，中國幾乎沒有公布有關中方一側受災人員的具體細節。中國社群媒體平台對非官方媒體發布的大部分內容進行了審查，包括旁觀者和徒步者發布的災情照片及影片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese authorities often tightly control information after major disasters, seeking to manage public opinion and prevent discussion from turning into anger or criticism of the government.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國當局在重大災難發生後通常會嚴密控制信息，旨在引導輿論，防止討論演變成對政府的憤怒或批評。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國官方媒體發布的一張照片顯示，救援人員週六在西藏吉隆口岸附近清理瓦礫。" data-src="https://static01.nyt.com/images/2026/08/30/multimedia/30int-TIBET-NEPAL-TOLLS-lhft/30int-TIBET-NEPAL-TOLLS-lhft-master1050.jpg" src="https://static01.nyt.com/images/2026/08/30/multimedia/30int-TIBET-NEPAL-TOLLS-lhft/30int-TIBET-NEPAL-TOLLS-lhft-master1050.jpg"/></div><figcaption><span>中國官方媒體發布的一張照片顯示，救援人員週六在西藏吉隆口岸附近清理瓦礫。</span> <cite>China Daily, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials on Sunday presented their most detailed timeline yet of how the disaster unfolded. Remote-sensing data and field analysis indicated that a glacier on Langtang Lirung, a peak in Nepal, broke off at an elevation of 17,000 feet at about 10 a.m. local time, according to Su Pengcheng, a professor at the Chinese Academy of Sciences’ Institute of Mountain Hazards and Environment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週日，官員提供了迄今為止災難發生過程最詳細的時間線。中國科學院山地災害與環境研究所教授蘇鵬程表示，遙感數據和現場分析表明，當地時間上午10點左右，尼泊爾境內藍塘裡壤峰的一處冰川從海拔約5200米處斷裂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ice fell about 4,000 feet, eroding the mountainside and forming what Dr. Su described as a “massive landslide.” The debris traveled at high speed for about 13 miles before striking Gyirong Port, a border crossing between Nepal and China. Dr. Su said the disaster affected 172 acres and destroyed 27 buildings at the crossing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">冰體墜落了約1200米，侵蝕了山體，形成了蘇鵬程所說的「巨型土石流」。土石流高速移動了約22公里，隨後襲擊了中尼邊境口岸吉隆口岸。蘇鵬程說，這場災難波及了0.7平方公里的區域，並摧毀了口岸的27座建築。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese rescue workers arrived at the leveled border crossing on Friday afternoon, more than 50 hours after the landslide struck. Destroyed roads, rainfall and the threat of further flooding have made the site difficult to reach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國救援人員週五下午抵達了被夷為平地的邊境口岸，此時距離山體滑坡發生已過去50多個小時。被毀的道路、降雨以及可能發生進一步洪災的威脅令進入現場變得十分困難。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Embassy in Kathmandu, the capital of Nepal, said on Sunday that China had dispatched helicopters and rescued 94 Chinese nationals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國駐尼泊爾首都加德滿都大使館週日表示，中國已派出直升機營救了94名中國公民。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPT1nqnfyZYDFaG_pgQdQs8CxQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s leader, Xi Jinping, pledged on Friday to help Nepal with rescue efforts. The Chinese Embassy said in a Facebook post that China had sent five tunnel experts to a damaged hydropower station in Nepal and would soon send four more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領導人習近平週五承諾，將協助尼泊爾開展救援工作。中國駐尼泊爾大使館在Facebook上發文稱，中國已向尼泊爾一座受損的水電站派出了五名隧道專家，並將在近期增派四名。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Mujib Mashal對本文有報導貢獻。</p><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p><p class="cn-p">Pei-Lin Wu是《紐約時報》記者/研究員，報導台灣和中國新聞。</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260831/tibet-nepal-flood-death-toll-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
