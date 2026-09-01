@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧「脫韁」在美國引發焦慮，中國從中看到機遇 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人工智慧「脫韁」在美國引發焦慮，中國從中看到機遇</h1>
+    <h2 class="en-headline">China Sees Opportunity in America’s Recent A.I. Security Scares</h2>
+    <div class="meta-line">STEVE LOHR, MEAGHAN TOBIN <span style="margin: 0 8px;">•</span> 2026-08-31</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="今年1月，總部位於北京的人工智慧初創公司智譜AI在上市儀式上。上週五，智譜AI公布了其最新人工智慧模型的細節。" height="700" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-fwqp/28Biz-ChinaAI-Cybersecurity-fwqp-master1050.jpg" width="1050"/><figcaption><span>今年1月，總部位於北京的人工智慧初創公司智譜AI在上市儀式上。上週五，智譜AI公布了其最新人工智慧模型的細節。</span> <cite>Lam Yik/Bloomberg</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, recent episodes where powerful artificial intelligence software broke free and hacked into other computer systems prompted a wave of anxiety and intense debate about how to guard against the risks of A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近來發生了幾起強大人工智慧軟體「掙脫束縛」並侵入其他計算機系統的事件，這在美國引發焦慮浪潮，以及關於如何防範人工智慧風險的激烈辯論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in China, these incidents and the growing capabilities of A.I. have not caused the same level of alarm. The government already controls many kinds of technology including A.I. The prevailing attitude in the industry has been that the benefits of A.I. far outweigh the risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在中國，這些事件以及人工智慧日益增強的能力並沒有引發同等程度的警覺。中國政府本來就對包括人工智慧在內的許多技術實施管控。業界普遍認為，人工智慧的利遠大於弊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That was exemplified on Friday when Z.ai, a Beijing-based A.I. start-up, made public the details of its latest model. The company claims the new model is nearly as powerful as those developed in Silicon Valley, especially when it comes to hacking and coding capabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週五發生的事便是這種態度的例證。總部位於北京的人工智慧初創公司智譜AI公布了其最新模型的細節，該公司聲稱，新模型的功能幾乎可以與矽谷開發的模型相媲美，尤其是在駭客攻擊和編程方面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai, like most other leading Chinese companies, has embraced an approach known as open-source or open-weight software. The weights are the mathematical parameters that determine how an A.I. system operates. Z.ai published the weights on its new model, GLM-5.3.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與中國大多數領先的科技公司一樣，智譜AI採用了所謂的開源或開放權重模式。「權重」是決定人工智慧系統如何運行的數學參數。智譜AI公布了其新模型GLM-5.3的權重。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With open-weight software, anyone has access to and can tinker with the rules of an A.I. system. American companies, which generally keep the weights of their most powerful models secret, warn that opening the technology could increase cyberattacks. The open-weight camp argues the opposite: Giving more people access means more eyes looking for security flaws and ways to fix them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有了開放權重軟體，任何人都可以獲取並修改人工智慧系統的規則。美國公司通常對其最強大模型的權重保密，並警告說，開放技術可能增加網路攻擊的風險。而支持開放權重的一方則持相反觀點：讓更多人獲得訪問權限意味著會有更多人尋找系統中的安全漏洞，並設法修復它們。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國國家主席習近平上月在上海出席世界人工智慧大會。" data-src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-03-lwjh/28Biz-ChinaAI-Cybersecurity-03-lwjh-master1050.jpg" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-03-lwjh/28Biz-ChinaAI-Cybersecurity-03-lwjh-master1050.jpg"/></div><figcaption><span>中國國家主席習近平上月在上海出席世界人工智慧大會。</span> <cite>Pool photo by Ng Han Guan</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a speech last month, China’s leader, Xi Jinping, called open models a “rare and historical opportunity” to spread the benefits of A.I. globally, a clear signal of how China plans to compete with the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，中國領導人習近平在一次講話中稱，開放模型是一個「難得的歷史性機遇」，可以讓全球更多人受益於人工智慧。這清楚地表明了中國計劃如何與美國展開競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Xi paired that call for openness with a warning. He urged governments to cooperate on regulations to “ensure that A.I. is always under human control.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但習近平在呼籲開放的同時也發出了警告。他敦促各國加強監管合作，「確保人工智慧始終處於人類控制之下」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNCPit-mzJYDFbTRSgAdC88aUA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His statement represented “a subtle but meaningful posture shift on A.I. safety,” said Xiaomeng Lu, a director focused on geopolitics and technology at the Eurasia Group, a research and consulting firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究諮詢機構歐亞集團的科技地緣政治項目主管魯曉萌（音）說，這番表態代表了「在人工智慧安全問題上一種微妙但意義重大的姿態轉變」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Chinese labs lagged well behind U.S. tech companies in developing leading-edge models, safety and testing were “a distant concern and a low priority,” Ms. Lu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">魯曉萌說，當中國的人工智慧實驗室在開發前沿模型方面遠落後於美國科技公司時，安全與測試「根本排不上號，優先級非常低」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But as Chinese companies have approached the technological frontier, that calculation has started to change. China, she said, now recognizes that “credible leadership” requires making A.I. safety a priority.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但隨著中國企業逐漸逼近技術前沿，這種權衡已經開始發生變化。她說，中國現在認識到，要成為「真正有說服力的領導者」，就必須把人工智慧的安全置於優先位置。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese universities, government labs and tech companies have sharply increased their research on the safety of the most powerful A.I. models in the past year, according to a study by Concordia AI, a Beijing-based consulting firm focused on A.I. safety. The monthly number of papers on cutting-edge models and A.I. agents rose 60 percent from June 2025 to April 2026, the analysts found.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據北京一家專注於人工智能安全的諮詢公司安遠AI的一項研究，過去一年，中國的大學、政府實驗室和科技公司明顯加大了對最強大人工智慧模型安全性的研究。分析人士發現，從2025年6月到2026年4月，有關前沿模型和人工智慧智能體的月度論文發表數量增長了60%。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-05-lwjh/28Biz-ChinaAI-Cybersecurity-05-lwjh-jumbo.jpg" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-05-lwjh/28Biz-ChinaAI-Cybersecurity-05-lwjh-jumbo.jpg"/></div><figcaption><span></span> <cite>Eric Helgas for The New York Times</cite></figcaption></figure><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-04-lwjh/28Biz-ChinaAI-Cybersecurity-04-lwjh-jumbo.jpg" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-04-lwjh/28Biz-ChinaAI-Cybersecurity-04-lwjh-jumbo.jpg"/></div><figcaption><span></span> <cite>Eric Helgas for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The report also said the increase marked a departure from China’s traditional focus on A.I. safety as policing online speech and imagery produced by the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告還指出，這一增長意味著中國已不再將人工智慧安全局限於監管該技術生成的網路言論和圖像等傳統關注點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The growing attention to advanced models expands the notion of A.I. safety from what A.I. says to what A.I. does. That, the Concordia AI study said, is “a shift in China’s framework from content control toward action control.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對先進模型日益增長的關注將人工智慧安全的概念從「人工智慧說了什麼」擴展到「人工智慧做了什麼」。安遠AI的研究稱，這是「中國AI治理從內容管控到行為管控的範式遷移」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMPDi9-mzJYDFZyTpAQdEIwfRw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government has also begun drawing attention to those risks. After software made by OpenAI, the Silicon Valley giant, broke free and hacked into another company’s computer systems, China’s Ministry of State Security, which oversees the country’s intelligence services, issued a warning this month. The statement, titled “When A.I. Learns to Act on Its Own,” urged serious consideration of the technology’s safety and security risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府也開始關注這些風險。本月，在矽谷巨頭OpenAI開發的軟體「掙脫束縛」並入侵另一家公司的計算機系統後，負責中國情報工作的國家安全部發布了一則警告。文章的標題是《當AI學會了「自作主張」》，敦促人們認真考慮這項技術所帶來的安全問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet the article stopped short of questioning whether A.I. could continue to advance safely. Instead, it places the burden largely on individual users, cautioning them not to enter sensitive information into A.I. systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，這篇文章並沒有進一步質疑人工智慧是否能夠繼續安全發展。相反，它把責任推到個人用戶身上，提醒人們不要將敏感信息輸入人工智慧系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far, China has pursued broader A.I. safety rules mainly through multilateral organizations like the United Nations and the China-led World AI Cooperation Organization. Experts say U.S. and Chinese interests overlap in this area. In May, Treasury Secretary Scott Bessent said the two nations planned to discuss A.I. safety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">迄今為止，中國主要通過聯合國和中國主導的世界人工智慧合作組織等多邊機構來推行更廣泛的人工智慧安全規則。專家表示，美中在這一領域存在共同利益。今年5月，美國財政部長史考特·貝森特表示，兩國計劃就人工智慧安全問題展開討論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies, too, are taking more visible steps to manage the risks of increasingly capable models. In preparation for the release of its new model, Z.ai said, it started a “security disclosure ledger” with the help of security teams at Tsinghua University, Nankai University and other institutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國科技公司也開始採取更加明顯的措施，以應對人工智慧模型能力不斷增強所帶來的風險。為準備發布新模型，智譜AI表示，在清華大學、南開大學等高校的安全團隊協助下，公司建立了一份「安全漏洞披露台賬」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="近日，OpenAI的軟體侵入另一家公司計算機系統的事件在美國引發了關於人工智慧安全的持續討論。" data-src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-02-lwjh/28Biz-ChinaAI-Cybersecurity-02-lwjh-master1050.jpg" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-02-lwjh/28Biz-ChinaAI-Cybersecurity-02-lwjh-master1050.jpg"/></div><figcaption><span>近日，OpenAI的軟體侵入另一家公司計算機系統的事件在美國引發了關於人工智慧安全的持續討論。</span> <cite>Lucas Foglia for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Z.ai has also made a forceful case that openness itself can make A.I. safer. The closed approach taken by the big U.S. tech companies “turns cutting-edge security capabilities into a privilege enjoyed by a select few institutions,” Z.ai said. Later, the security article, published on its WeChat account, offered what amounted to a manifesto: “When the most powerful spear is locked in the hands of a few, the best shield must belong to everyone.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但與此同時，智譜AI也在強有力地論證：開放本身就可以讓人工智慧變得更加安全。智譜AI表示，美國大型科技公司採取的封閉模式「將前沿安全能力異化為少數機構的特權」。隨後，這篇發布在公司微信公眾號上的安全文章提出了一個近乎宣言的主張：「當最強的矛被鎖在少數人手裡，最好的盾必須屬於所有人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recent A.I. security lapses in the United States have strengthened that argument. When OpenAI’s system hacked into a popular online service called Hugging Face, Hugging Face turned to an open-source model made by Z.ai to contain the breach.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近期美國發生的人工智慧安全漏洞事件反而強化了這種觀點。當OpenAI的系統侵入一個名為Hugging Face的熱門在線服務時，Hugging Face轉而使用智譜AI開發的開源模型來遏制入侵。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLX_jd-mzJYDFZKGpAQd8YAPlg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For supporters of open models, the episode seemed to invert the argument about the dangers of open models. In China, many concluded that the incident showed that the harm caused by an unsafe, closed American model could be undone by a safe, open Chinese system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對開放模型的支持者來說，這一事件似乎反轉了關於開放模型危險性的論點。在中國，許多人由此得出結論：一個不安全的封閉式美國模型造成的危害可以被一個安全的開放式中國系統所彌補。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The narrative was that the West tells us the open models are unsafe, when really their models are overly restrictive and truly unsafe,” said Scott Singer, who studies China’s A.I. policy at the Carnegie Endowment for International Peace.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡內基國際和平基金會研究中國人工智慧政策的宋傑(Scott Singer)表示：「之前的敘事是西方告訴我們開放模型不安全，而實際上他們的模型過度受限才是真正不安全的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The view contrasts from the debate unfolding in the United States, where technologists and policymakers increasingly worry about the unchecked advance of autonomous A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種觀點與美國目前正在展開的討論形成鮮明對比。在美國，技術專家和政策制定者越來越擔心，自主人工智慧模型正在不受控制地發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, OpenAI and Anthropic endorsed a letter signed by more than 1,000 employees of leading A.I. companies asking the U.S. government to help find a way to slow the pace of the technology’s development. In Washington, lawmakers have introduced a bill that would require A.I. companies to establish a “kill switch” to shut down or slow their models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，OpenAI和Anthropic為一封由1000多名人工智慧領域領先企業的員工聯署的公開信背書，公開信呼籲美國政府幫助尋找減緩該技術發展速度的方法。在華盛頓，國會議員也提出了一項法案，要求人工智慧公司建立「終止開關」，以便在必要時關閉或減緩模型運行。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="比爾·蓋茲在華盛頓州柯克蘭市的辦公室裡，攝於上週。" data-src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-06-lwjh/28Biz-ChinaAI-Cybersecurity-06-lwjh-master1050.jpg" src="https://static01.nyt.com/images/2026/08/28/multimedia/28Biz-ChinaAI-Cybersecurity-06-lwjh/28Biz-ChinaAI-Cybersecurity-06-lwjh-master1050.jpg"/></div><figcaption><span>比爾·蓋茲在華盛頓州柯克蘭市的辦公室裡，攝於上週。</span> <cite>Chona Kasinger for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview with The New York Times last week, Bill Gates, the billionaire co-founder of Microsoft, warned that A.I. posed a grave threat to humanity and was more dangerous than the tech companies were willing to admit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，微軟聯合創始人、億萬富翁比爾·蓋茲在接受《紐約時報》採訪時警告說，人工智慧對人類構成了嚴重威脅，而且其危險程度遠超科技公司願意承認的程度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Behind the divergent approaches to A.I. safety lies a more fundamental difference in how the United States and China view the technology and who can be trusted to control it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國和中國在人工智慧安全問題上的不同路徑背後還存在著一個更為根本的差異：兩國如何看待人工智慧，以及究竟誰能被信任來控制這項技術。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLLVjt-mzJYDFQqTpAQdUl85Zw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Silicon Valley, many see A.I. as an unprecedented force destined to change the world, with the people building it endowed with something approaching superpowers — and thus bearing extraordinary responsibility.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在矽谷，許多人將人工智慧視為一股前所未有的力量，註定將改變世界，而構建它的人被賦予了近乎超能力的特質——因此也承擔著非同尋常的責任。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By contrast, many in China view A.I. as transformative but broadly comparable to major general-purpose technologies of the past, from steam power to electricity to the internet — life-changing, but ultimately manageable. There is also a view that, in contrast to America, the government stands ready to step in.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比之下，中國許多人認為人工智慧雖然具有變革性，但從總體上說，它與歷史上的重大通用技術並沒有本質區別——從蒸汽動力到電力，再到互聯網——這些技術都曾改變人類生活，但最終是可控的。與此同時，中國還存在這樣一種看法：與美國不同，中國政府隨時準備介入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For the Chinese companies, there is a sense of the government being like a helicopter parent, always watching and acting as a guiding hand,” said Ms. Lu of the Eurasia Group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐亞集團的魯曉萌表示：「對中國企業來說，有一種感覺是政府就像一個直升機式的家長，始終在盯著你，並以一種引導者的姿態隨時介入。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Steve Lohr撰寫關於科技及其對經濟、就業和勞動市場的影響的文章。</p><div class="" data-poster=""><span><p class="cn-p">Meaghan Tobin是時報科技記者，常駐台北，報導亞洲地區的商業和科技新聞，重點關注中國。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260831/china-artificial-intelligence-zai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

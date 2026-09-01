@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我研究成功人士，他們都有一個共同的習慣 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">我研究成功人士，他們都有一個共同的習慣</h1>
+    <h2 class="en-headline">I Study Successful People. They Have One Habit in Common.</h2>
+    <div class="meta-line">ANGELA DUCKWORTH <span style="margin: 0 8px;">•</span> 2026-08-31</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/08/28/opinion/28duckworth/28duckworth-jumbo.jpg" width="819"/><figcaption><span></span> <cite>Nyo Jinyong Lian</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I was once stranded with my 86-year-old mother in the Atlantic Ocean. We were on a snorkeling excursion off the coast of Miami, and the two of us were quickly swept behind our boat, my mother overtaken by the current. In her panic, she’d inhaled water into both lungs and lost consciousness. Attempting to tug her to safety, I thrashed and kicked with all my might, but the ocean swallowed my efforts whole. Lungs burning, legs heavy, I changed tactics. I used one hand to keep her head above water and waved the other wildly in the air, shouting for help as I did.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我曾和86歲高齡的母親一起被困在大西洋中。當時我們在邁阿密海岸附近參加一次浮潛遊覽，我們倆很快就被衝到了遊艇的後面，母親被海流捲走了。她在驚慌中把水吸入了雙肺，失去了意識。我拚命想把她拉回安全的地方，使出渾身解數掙扎踢水，但大海吞噬了我所有的努力。肺部灼燒般地疼，雙腿也越來越沉，我改變了策略。我用一隻手讓她的頭保持在水面之上，另一隻手則拚命揮舞，同時大聲呼救。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, what saved my mother’s life that day, and mine, too, was not fighting the current on my own. It was calling for help. The rescuers who came to our aid knew more than I did about how to handle this kind of emergency. Together, they got my mom onto the boat deck, then to solid ground and finally into the hands of expert medical staff who could care for her properly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最終，那天救了我母親和我一命的，不是我靠自己的力量與海流搏鬥，而是我開口呼救。趕來的救援人員比我更懂得如何處理這種緊急情況。他們合力把我母親救上了甲板，然後轉移到陸地上，最後交到專業的醫務人員手中，讓她得到了妥善的救治。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most people understand the importance of asking for help in a life-or-death crisis. We know we should wave to the lifeguard during a riptide or call 911 if our house catches fire. But in our personal and professional lives, Americans are encouraged to pursue rugged individualism over interdependency. “Help from without is often enfeebling in its effects. But help from within invariably invigorates,” wrote the journalist Samuel Smiles in his 1859 book “Self-Help,” which reached a wider audience in America than in his native Britain and spawned an entire literary genre of the same name. Heroic tales of self-made Americans abound — like Thomas Edison, who tested thousands of filaments in his quest to invent the lightbulb, or Steve Jobs, a loner who transformed technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數人都明白在生死攸關的危機中尋求幫助的重要性。我們知道在遇到激流時應向救生員揮手，或在房子著火時撥打911。但在我們的個人生活和職業生涯中，美國人被鼓勵追求極端的個人主義，而不是相互依賴。「來自外部的幫助往往會使人變得軟弱，而來自內心的幫助則總能振奮人心。」記者塞繆爾·斯邁爾斯在1859年出版的《自助》(Self-Help)一書中寫道。這本書在美國的讀者比在他的祖國英國還多，並由此催生了一個以「自助」為名的文類。美國有無數關於白手起家的英雄故事——比如托馬斯·愛迪生為了發明電燈泡測試了數千種燈絲；又比如史提夫·賈伯斯，一個獨來獨往的人，卻改變了整個科技行業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You might think I’d love the image of the solo striver triumphing over every challenge. After all, I’m a psychologist who wrote a book called “Grit<i>”</i> about the necessity of passion and perseverance for achieving long-term goals. The truth is, I hate it. Without exception, every high performer I’ve studied credits a host of supporters for success. Research has found that a willingness to ask for help is crucial to achievement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你可能會以為，我應該很喜歡這種一個人克服一切困難、最終取得勝利的形象。畢竟，我是一名心理學家，還寫過一本名為《堅毅》(Grit)的書，講的是激情和毅力對於實現長期目標的必要性。可事實恰恰相反：我討厭這種說法。無一例外，我所研究的每一位傑出人士都將自己的成功歸功於眾多支持者。研究也發現，願意尋求幫助是取得成就的關鍵因素。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMep6OCmzJYDFZ927QIdVwgjyA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Consider Nicolai Tangen, the chief executive of the world’s largest wealth fund. I interviewed him recently as he was putting the finishing touches on a book he’d been writing about leadership. After praising personal qualities like energy and grit, Mr. Tangen’s book spills more ink than you can believe about his assistant, Grete Starheim. He trusts her to speak on his behalf, and he believes her when she tells him he’s wrong. “Why should such important people end up in the shadows?” Mr. Tangen asked. “Is it embarrassing to admit that you need help?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以全球最大財富基金的首席執行官尼古拉·坦根為例。我最近採訪了他，他正在為自己寫的一本關於領導力的書做最後的收尾工作。他在書中先是稱讚了個人的精力、堅毅等品質，但接下來用了多得出人意料的篇幅來談他的助理格蕾特·斯塔海姆。「為什麼這些重要的人最終只能沒沒無聞？」坦根問道。「承認自己需要幫助是很丟臉的事嗎？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Or consider Conan O’Brien, who told Harvard’s graduating class that he always reminds himself that he’d done nothing alone. “If I could invite everybody, alive or dead, who has contributed to my being your commencement speaker today, all of Cambridge and half of Allston would be crammed shoulder to shoulder,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">再比如柯南·奧布萊恩。他曾對哈佛大學畢業生說，他總是提醒自己，自己從來不是憑一己之力走到今天的。他說：「如果我能把所有那些幫助我成為今天這個畢業典禮演講嘉賓的人——無論他們還活著還是已經去世——全都請來，那麼整個劍橋市，再加上半個奧爾斯頓，都會被他們擠滿。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Tangen and Mr. O’Brien aren’t just being modest. Studies show that knowing when to ask for help is an essential skill for children’s learning and achievement. College students who proactively seek assistance from others typically outperform those who avoid doing so. In adulthood, seeking support is an effective strategy for regulating our emotions, and having a support network is a reliable predictor of overall mental health.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">坦根和奧布萊恩並不只是在謙虛。研究表明，知道何時尋求幫助是兒童學習和成長的一項基本技能。那些主動向他人尋求幫助的大學生通常比迴避求助的學生表現更好。到了成年以後，尋求他人支持也是我們調節情緒的一種有效策略，而擁有支持網路是整體心理健康的可靠預測指標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Research also shows that entrepreneurs are more successful when brought together to learn from one another. That is why one venture capital firm, Y Combinator, favors funding co-founders over solo founders. It also links founders in what it calls batches, with group office hours, group dinners and an internal messaging platform for sharing knowledge. “Even if you could do all the work yourself, you need colleagues to brainstorm with, to talk you out of stupid decisions and to cheer you up when things go wrong,” Paul Graham, one of Y Combinator’s founders, once wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究還表明，讓創業者聚在一起互相學習會讓他們取得更大的成功。這也是為什麼風險投資公司Y Combinator更傾向於投資聯合創始人團隊，而不是單打獨鬥的創業者。它還把創業者分「批次」安排集體辦公時間、集體晚餐，並提供內部通訊平台，讓大家分享知識。Y Combinator聯合創始人之一保羅·格雷厄姆曾寫道：「即使你可以獨自完成所有工作，你仍然需要同事和你一起頭腦風暴，在你做出愚蠢決定時勸你回頭，在事情搞砸時給你打氣。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From an early age, we suffer from what cognitive psychologists call the illusion of self-sufficiency, overlooking how much we owe our skills to other people. In one experiment, two groups of children were given a machine they’d never seen before. In the first, none managed to figure out how it worked on their own. In the second, the vast majority succeeded after seeing someone else use the machine and getting hints along the way. Still, after the experiment, 70 percent of the second group claimed they would have learned to use the machine without help.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從小我們就會受到認知心理學家所說的「自給自足幻覺」的影響，忽視了我們有多少技能是得益於他人的。在一項實驗中，兩組孩子得到了一台他們從未見過的機器。第一組中，沒有孩子能獨自弄明白它是如何工作的。而在第二組中，絕大多數孩子在看到別人使用這台機器並得到提示後成功了。然而，實驗結束後，第二組中仍有70%的孩子聲稱他們即使沒有他人的幫助也能學會使用這台機器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Being a successful self-starter doesn’t mean pulling yourself up by your bootstraps. It’s raising your hand and asking a teacher to explain, once again, a concept you still don’t understand. It’s calling up a former boss for advice. It’s announcing to your team that you’re stuck on an important problem and need their collective brain to solve it. It’s not just stoically making the best of a bad situation — it’s proactively making your situation more supportive. Don’t assume you’re being a burden when you reach out asking for help. Research shows we consistently underestimate how happy it makes others to lend a hand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成為一個成功的自我驅動者並不意味著凡事都要靠自己單打獨鬥。它意味著舉起手來，請老師把你仍然沒有理解的概念再解釋一遍；意味著你可以給曾經的上司打電話尋求建議；意味著你可以坦率地告訴團隊，自己在某個重要問題上卡住了，需要大家集思廣益。這不是一味隱忍、獨自消化困境，而是主動去創造一個更能獲得支持的環境。不要以為開口求助就是在給別人添麻煩。研究表明，我們往往低估了別人在幫助我們時所感受到的那份快樂。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPHc6OCmzJYDFcN37QIdtVAKCg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Do it yourself” is no way to live. Take it from my mom, who, five<strong> </strong>years after a cry for help saved her life, recently celebrated her 91st birthday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「凡事靠自己」絕不是可取的生活方式。看看我母親的經歷吧——五年前，正是一次呼救救了她的命；而就在最近，她慶祝了自己的91歲生日。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Angela Duckworth是賓夕法尼亞大學的心理學教授，她的著作《定位：找到能讓你發揮最佳狀態的人和地方》(<span>Situated: Find the People and Places That Bring Out Your Best</span>)即將出版。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260831/successful-people-help/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
