@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>當普丁把鐵鎚揮向文學 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">當普丁把鐵鎚揮向文學</h1>
+    <h2 class="en-headline">In Russia, Nobody Knows Where the Lines Are Anymore</h2>
+    <div class="meta-line">NATASHA KISELEVA <span style="margin: 0 8px;">•</span> 2026-09-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/08/31/opinion/31Kiseleva-image/31Kiseleva-image-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Martha Verschaffel</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A novelist I know recently wanted to do something that is now forbidden in Russia: publish a story about two women in love.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我認識的一位小說家最近想做一件在俄羅斯已被禁止的事：發表一個關於兩名女子相戀的故事。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To do so, she had to hide her characters’ genders by writing in the present tense (present-tense verbs carry no gender in Russian) and by choosing names that both men and women use, Sasha, say, or Zhenya. Yet only a few years ago, none of these linguistic gymnastics were necessary. From the late 1980s through the first two decades of President Vladimir Putin’s rule, literature enjoyed near total freedom in Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了做到這一點，她不得不採取一些語言上的迂迴手段——用現在時寫作（俄語現在時動詞不區分性別），並選用薩沙或熱尼亞這類男女通用的名字來隱藏角色的性別。然而就在幾年前，這些語言上的閃躲騰挪還完全沒有必要。從1980年代後期到弗拉基米爾·普丁總統執政的前二十年，俄羅斯的文學創作享有幾乎完全的自由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That may surprise those familiar with the Kremlin’s systematic takeover of journalism, television, movies and more. But consider that before 2024, Ficbook, the internet’s largest Russian-language fan fiction archive, contained an easily accessible trove of gay fantasies depicting Mr. Putin getting intimate with other world leaders, including President Joe Biden and President Emmanuel Macron of France. My first book, “We Will Meet Again,” featured an array of anti-Kremlin and queer characters and was published in 2020 without a single cut.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些熟悉克里姆林宮如何一步步接管新聞、電視、電影等領域的人可能會對此感到意外。但想想看，直到2024年之前，互聯網上最大的俄語同人小說平台Ficbook上，還有<span>一批唾手可得的同性戀幻想故事，其中描繪了普丁與美國總統拜登、法國總統馬克宏等其他國家領導人的親密情節。我本人於2020年出版的第一本書《我們會再再次相遇》中有一系列反克里姆林宮和酷兒角色，當時未遭任何刪改。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But after Mr. Putin declared all-out war on Ukraine in 2022, he unleashed a devastating crackdown on free speech at home. That was initially confined to criticism of the war. Over time it spread, attacking a range of cultural expression. Now, for the first time since the Soviet era, the Kremlin is placing literature squarely in its cross hairs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>然而，2022年對烏克蘭發動全面戰爭後，普丁便在國內掀起了對言論自由的嚴厲打壓。起初，打壓的對象僅限於批評戰爭的聲音。但隨著時間推移，打擊面不斷擴大，開始針對各種文化表達形式。如今，自蘇聯時代以來，克里姆林宮首次將文學直接置於其準星之下。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKLQvuSi0ZYDFeR3qwIdq-MQoQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sept. 1, new professional standards go into effect in Russia, dictating what it means to be a writer. A writer, the standards say, is anyone who “realizes the artistic concepts in a literary work,” and those who “revise (process, dramatize) literature,” including proofreaders. If such a person wants to receive certain grants, be eligible for state-funded literary awards or receive a government pension, he or she must now possess state-sanctioned knowledge of Russian history and culture and receive a degree from a university.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">9月1日，俄羅斯將實施新的職業標準，對「作家」的身份作出明確定義。標準規定，凡是「在文學作品中實現藝術構思」的人，以及「對文學作品進行修改（加工、劇本化處理）」的人——包括校對員——均可稱為作家。但這類人士若要申請某些資助、獲得國家資助的文學獎項或領取政府養老金，就必須具備國家認可的俄羅斯歷史與文化知識，並持有大學學位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is not merely bureaucratic theater. The consequences will be far-reaching. After all, many of Russia’s literary giants — Joseph Brodsky, Anna Akhmatova and Ivan Bunin among them — never obtained a college degree. Lawmakers have made no secret of the reason these standards exist. Literature is “a matter of state importance,” they wrote, central to the country’s identity. The Kremlin must control it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這並非單純的官僚作秀，其影響將十分深遠。畢竟，俄羅斯許多文學巨匠——如約瑟夫·布羅茨基、安娜·阿赫瑪托娃和伊凡·蒲寧——都沒有大學文憑。立法者對於制定這些標準的用意也並不遮掩。他們寫道，文學是「具有國家重要意義的事業」，是國家認同的核心，因此克里姆林宮必須掌控它。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shortly after the full-scale invasion of Ukraine, Russia’s Parliament outlawed all forms of “L.G.B.T. propaganda,” and the authorities set up an “expert center” to determine whether books were in compliance. The center created lists of objectionable literature that included Russian classics by Fyodor Dostoyevsky, as well as works by Western authors like Susan Sontag and Stephen King. Last year, police used the law as a pretext to raid publishing houses in connection with a teen romance novel with L.G.B.T.Q. themes. Then prosecutors charged three employees with “extremism” for their role in distributing that book and others like it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在全面入侵烏克蘭後不久，俄羅斯議會便取締了一切形式的「LGBT宣傳」，並設立了一個「專家中心」來審查書籍是否合規。該中心開列了一份禁書清單，其中既包括陀思妥耶夫斯基等俄羅斯經典作家，也涵蓋了蘇珊·桑塔格和斯蒂芬·金等西方作者。去年，警方依據該法<span>突擊搜查了與一本涉LGBTQ主題的青少年愛情小說相關的出版社，隨後以「極端主義」罪名起訴了三名參與分發該書及類似書籍的員工。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The employees’ predicament became known as the Publisher’s Case, seemingly the first criminal case brought over the content of books since the collapse of the Soviet Union. The case ended this month after the employees spent a year under house arrest, pleaded guilty, surrendered tens of thousands of dollars in fines and received suspended prison sentences of up to four years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這三名員工的遭遇被稱為「出版社案」，這似乎是蘇聯解體以來第一起因書籍內容而引發的刑事案件。本月，該案宣告終結：三名員工被軟禁一年後認罪，繳納了數萬美元罰款，並被判處最高四年監禁的緩刑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Strikingly, the books at the heart of the case broke no laws at the time of their publication. Mr. Putin signed the “L.G.B.T. propaganda” law at least a year after they were published. That is precisely the point: The Kremlin is creating an environment of uncertainty and fear, based on arbitrary punishment. The aim, in the publishing industry and beyond, is to promote self-censorship and eliminate dissenting speech.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">值得注意的是，此案所涉書籍在出版時並未違反任何法律，普丁簽署「LGBT宣傳」法是在它們問世至少一年之後。而這恰恰是問題的關鍵：克里姆林宮正通過任意懲罰，營造一種充滿不確定性和恐懼的環境，其目的就是在出版界乃至更廣的範圍內，推動自我審查，剷除異見之聲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reporting this piece felt like a foray into investigative journalism. To communicate with writers still inside Russia, I exchanged voice messages that disappeared in an hour. One writer would speak to me only through an intermediary. A dozen others did not answer at all. No one explicitly refused to speak with me — a refusal would have had to be put into words — and the silence tells its own story.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在撰寫本文的過程中，我感覺自己像是在做調查報導。為了與仍留在俄羅斯的作家聯繫，我發送了閱後即焚的語音消息（一小時後自動消失）。有一位作家只肯通過中間人與我交談，還有十多人則乾脆不予回應。沒有人明確拒絕採訪——因為拒絕本身需要說出口——而沉默本身已經說明了一切。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CM6Nv-Si0ZYDFYWMLQkdQjoA8Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From relative safety abroad, Russian exiles can test the boundaries of free speech in their home country. When they speak openly and often about literary censorship, the government brands them “foreign agents.” (Russia’s Ministry of Justice did this to me 10 days ago.) At one point, the best-selling Russian author Alan Charoit, a transgender man who now lives in France, planned to send copies of his fantasy novels to friends to distribute at home. But after the Publisher’s Case he abandoned the idea, because he “refused to take part in the system,” he told me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在相對安全的海外，俄羅斯流亡者可以試探本國言論自由的邊界。一旦他們公開、頻繁地談論文學審查，政府就會給他們貼上「外國代理人」的標籤（俄羅斯司法部十天前就對我這麼做了）。俄羅斯暢銷書作家艾倫·查羅伊特是一位跨性別男性，現居法國。他曾計劃將自己的奇幻小說寄給國內的朋友分發，但在「出版社案」後放棄了這一念頭。他告訴我，因為他「拒絕參與這個</span>體制」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2022, the line between acceptable and unacceptable speech was clear. That year, three poets who performed antiwar verses at a monument to the poet Vladimir Mayakovsky were brutalized and imprisoned. When the writers Boris Akunin and Dmitry Glukhovsky became outspoken critics of the war from abroad, they received lengthy prison sentences in absentia. Today, you no longer need to speak publicly against war to fall afoul of the Kremlin. You no longer need to be a prominent person. You need only to be involved with a text — as a writer, an editor, a publisher, a distributor, a vendor — that the authorities take issue with, now or in the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年時，什麼話能說、什麼話不能說，界線還很清晰。那一年，三名詩人在詩人馬雅可夫斯基紀念碑前朗誦反戰詩歌，遭到毆打併被投入監獄。作家鮑里斯·阿庫寧和德米特里·格魯霍夫斯基在海外公開批評戰爭後，被缺席判處長期監禁。而如今，你甚至不需要公開發表反戰言論，就可能觸怒克里姆林宮；你甚至不需要是什麼名人——只要你和某份文本有關聯（無論是作為作者、編輯、出版商、發行商還是銷售商），而當局現在或將來對該文本不滿，你就有可能成為目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nobody knows where the lines are anymore. The rules must be interpreted not only for what they prohibit today but also for what they make possible tomorrow. When a law that expanded what constitutes “drug propaganda” took effect earlier this year, publishers started using artificial intelligence to review manuscripts and the books in their archives for compliance. The systems flagged classics by Alexander Pushkin, Mikhail Bulgakov and Leo Tolstoy, which suddenly appeared on Russian e-book platforms with drug-related warnings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今沒有人知道界線在哪裡。這些規則不僅要看它們今天禁止什麼，還要看它們為明天的打壓留下了怎樣的空間。今年早些時候，一項擴大「毒品宣傳」認定範圍的法律生效後，出版商開始用人工智慧來審查手稿和庫存書籍。系統給普希金、布爾加科夫和托爾斯泰的經典作品都做了標記，這些名著隨後在俄文電子書平台上紛紛出現了毒品相關警示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sept. 1, the danger is not that writers in Russia who fail to meet the state standards will suddenly be forbidden from writing books. The danger is that publishers will think twice before working with them. Unsanctioned writers books’ simply won’t be released, and a generation of new voices may disappear before they are ever heard.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在9月1日這一天，真正的危險並不是那些不符合國家標準的俄羅斯作家會被突然禁止寫書，而是出版商在與他們合作之前會三思而行。那些未經認可的作家的書，根本不會問世——一代新的聲音，可能在被人聽見之前就已經消失了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The novelist in Moscow used an old Soviet expression to explain that now writers must produce two books at once. There’s the one that can be published and the one “v stol” — “for the drawer.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那位身在莫斯科的小說家用一個蘇聯時期的老話解釋了當下的處境：現在作家必須同時寫兩本書，一本可以出版，另一本「в стол」——「放進抽屜裡」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Natasha Kiseleva是《我們會再次相遇》("We Will Meet Again」)和即將出版的《指控案件》(「Accusative Case」)的作者。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260902/russia-putin-writers-literature/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
