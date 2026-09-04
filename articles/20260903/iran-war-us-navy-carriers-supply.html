@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美國海軍艦隊的後勤噩夢 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美國海軍艦隊的後勤噩夢</h1>
+    <h2 class="en-headline">The Logistics Nightmare Facing U.S. Warships</h2>
+    <div class="meta-line">JOHN ISMAY <span style="margin: 0 8px;">•</span> 2026-09-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="788" src="https://static01.nyt.com/images/2026/09/02/multimedia/c03carriers-01/c03carriers-master1050.png" width="1050"/><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a typical U.S. aircraft carrier, 5,000 crew members work around the clock and require up to four meals a day. Although the ships are nuclear-powered, the planes and helicopters flying off them use millions of gallons of fuel each week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一艘典型的美國航空母艦上，5000名艦員晝夜不停地工作，每天需要供應多達四餐。雖然航母採用核動力，但艦載飛機和直升機每週要消耗數百萬加侖的燃油。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Carriers don’t travel alone. They are protected by destroyers armed with antiaircraft and cruise missiles, together forming what is called a carrier strike group. Those ships also need to be resupplied with food and fuel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">航母從不單獨行動。它們由配備防空導彈和巡航導彈的驅逐艦護航，共同組成所謂的航母打擊群。這些艦艇也需要補給食品和燃料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are currently two carriers and 12 destroyers in the Middle East helping to enforce a blockade of Iranian ports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，中東地區有兩艘航母和12艘驅逐艦，參與對伊朗港口的封鎖任務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They have extra support from a set of three warships known as an amphibious ready group, which hosts an assault force of Marines.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，還有三艘軍艦組成的兩棲戒備群提供額外支援，它們搭載著一支海軍陸戰隊突擊部隊。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJuztaHj05YDFcqNpgQdiXsGpA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Navy has about 20 ships in the Middle East, carrying roughly 20,000 sailors and Marines. The logistical challenges are immense: The ships need enough food for more than 420,000 meals and about eight million gallons of fuel each week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國海軍目前在中東部署了大約20艘艦艇，搭載約2萬名水兵和海軍陸戰隊員。後勤挑戰極其艱巨：這些艦艇每週需要準備超過42萬份餐食，以及大約800萬加侖燃料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Navy has operated there for decades and built supply depots throughout the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國海軍在中東地區開展行動已有數十年，並在整個地區建立了多個補給基地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Iran destroyed a critical Navy logistics base in Bahrain on Feb. 28, the first day of the war, and other ports in the region that can accommodate an aircraft carrier or a supply ship are also within range of Iranian missiles and drones, making them inaccessible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但2月28日，也就是戰爭爆發的第一天，伊朗摧毀了美國海軍在巴林的一處關鍵後勤基地。該地區其他能夠容納航母或補給艦的港口，也都處於伊朗導彈和無人機的攻擊範圍之內，因此無法使用。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="註：航程距離為大致數值。" data-src="https://static01.nyt.com/images/2026/09/02/multimedia/c03carriers-02/c03carriers-02-master1050.png" src="https://static01.nyt.com/images/2026/09/02/multimedia/c03carriers-02/c03carriers-02-master1050.png"/></div><figcaption><span>註：航程距離為大致數值。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Navy supply ships in the region now have to travel 2,200 miles to a tiny island in the Indian Ocean called Diego Garcia to bring food, fuel and other goods to the warships in the Gulf of Oman and the Arabian Sea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，該地區的美國海軍補給艦不得不航行3500公里，前往印度洋上一座名為迪戈加西亞島的小島，從那裡為部署在阿曼灣和阿拉伯海的軍艦運送食物、燃料和其他物資。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The next option is to go to Singapore, 3,700 miles away — which requires the ships to pass through the Strait of Malacca, a busy commercial corridor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一個選擇是前往近6000公里之外的新加坡，但這意味著補給艦必須穿過繁忙的商業航道馬六甲海峽。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because the war has cut off access to nearby bases in the Middle East, the only option is to undertake resupply missions at sea every five or six days.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於戰爭切斷了美軍對中東附近基地的使用，艦隊如今唯一的選擇，就是每隔五六天在海上執行一次補給任務。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CO7rtaHj05YDFUWFpgQdIi0Azg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This process is potentially hazardous, exposing both the receiving ship and the supply ship to risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種補給方式存在潛在危險，接受補給的艦艇和補給艦都要承擔風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During these missions, both ships need to travel together, keeping precisely the same course and speed. With waves, winds and current, it’s a challenge to keep the ships safely within about 150 feet of each other for hours.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在執行這類任務時，兩艘艦艇必須並行航行，保持完全一致的航向和航速。面對海浪、風力和洋流等因素，要讓兩艘船在數小時內始終安全地保持在約45米的距離之內，是一項極具挑戰性的工作。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/09/02/multimedia/c03carriers-03/c03carriers-03-jumbo.png" src="https://static01.nyt.com/images/2026/09/02/multimedia/c03carriers-03/c03carriers-03-jumbo.png"/></div><figcaption><span></span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sailors use rifles to fire lines from a carrier or destroyer to the supply ship, eventually connecting the two ships with steel cables. Fuel lines and pallets of goods are then sent over on those cables.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">水兵們用步槍從航母或驅逐艦向補給艦發射引線，最終用鋼纜將兩艘艦船連接起來。隨後，輸油管線和一托板又一托板的物資便通過這些鋼纜送到另一艘船上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, helicopters ferry supplies between the ships, carrying pallets of food, spare parts and mail in nets slung underneath.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，直升機也會在兩艘艦艇之間來回運送物資，把裝有食品、備件和郵件的托板放進吊網，懸掛在直升機下方進行運輸。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The deployments for these warships are open-ended — they only go home once the president and the defense secretary decide so.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些戰艦的部署沒有明確的結束日期——它們只有等到總統和國防部長作出決定後才能返航。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, this is not sustainable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這種部署方式無法長期維持。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNbstaHj05YDFR2upgQdbqUlag" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Navy has only 11 aircraft carriers in total, and has sent four of them to the Middle East for the war. Some of the remaining carriers are undergoing lengthy repairs in shipyards and will not be able to deploy again for years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國海軍總共有11艘航母，其中四艘已先後被派往中東參戰。其餘部分航母正在船廠進行漫長的維修，未來數年都無法再次部署。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One carrier, the U.S.S. Abraham Lincoln, spent most of its nine months at sea with no port calls. Under normal conditions, a Navy carrier would visit port about once a month to give its crew a brief rest. On Aug. 20, the Lincoln was relieved by the U.S.S. George Washington and began making its way back home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一艘航母「亞伯拉罕·林肯」號在海上部署九個月，其間大部分時間沒有停靠任何港口。正常情況下，海軍航母大約每月靠港一次，讓艦員短暫休整。8月20日，「林肯」號被「喬治·華盛頓」號接替，開始返航。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Lincoln docked in Thailand on Wednesday morning. Its sailors will have a few days of shore leave there before continuing across the Pacific to the carrier’s home base in San Diego.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三上午，「林肯」號在泰國靠港。艦員將在當地獲得幾天的上岸休假，隨後繼續橫跨太平洋，返回這艘航母位於聖地牙哥的母港。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">註：艦隊組成數據來自美國海軍學會艦隊動態追蹤，截至8月31日。導彈射程數據來自戰略與國際研究中心導彈防禦項目。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260903/iran-war-us-navy-carriers-supply/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
