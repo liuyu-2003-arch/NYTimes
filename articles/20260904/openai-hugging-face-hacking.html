@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「人工智慧全面接管」？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「人工智慧全面接管」？</h1>
+    <h2 class="en-headline">Why the Hugging Face Hack Should Make You Worry More About A.I.</h2>
+    <div class="meta-line">KEVIN ROOSE <span style="margin: 0 8px;">•</span> 2026-09-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/09/05/business/00roose-hugging-face/00roose-hugging-face-jumbo.jpg" width="788"/><figcaption><span></span> <cite>Daniel Zender</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When I first heard the news this summer that a group of artificial intelligence agents created by OpenAI had hacked into Hugging Face, an A.I. infrastructure company, I filed it in the “Bad but Probably Not Catastrophic A.I. Safety Incidents” subfolder of my brain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年夏天，當我第一次聽說一群由OpenAI創造的AI智能體入侵了AI基礎設施公司Hugging Face時，我在腦中把這件事歸類為「糟糕但可能不算災難性的AI安全事件」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After all, no one at Hugging Face died. No critical infrastructure was damaged beyond repair. It wasn’t even clear, at the time, whether the OpenAI bots had intended to attack Hugging Face, or whether they had simply been a little bumbling and confused and went looking on Hugging Face’s servers for the answer key to a cybersecurity test they’d been given.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">畢竟，Hugging Face無人死亡，也沒有關鍵基礎設施遭到不可修復的損壞。當時甚至不清楚這些OpenAI機器人是有意攻擊Hugging Face，還是只是有些笨拙和困惑，跑到Hugging Face的伺服器上尋找一道布置給它們的網路安全考題的答案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But last week, two postmortem reports on the incident — one by OpenAI and another by two independent A.I. research organizations, METR and Redwood Research — changed my mind and significantly upgraded my overall worry about A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但上週，來自OpenAI以及獨立人工智慧研究組織METR和Redwood Research的兩份對該事件的復盤報告改變了我的看法，顯著提升了我對人工智慧的整體擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I won’t rehash all of the details, which have been extensively summarized elsewhere. (The podcaster and writer Dwarkesh Patel has an accessible breakdown of the reports if you want to dive deeper, and my colleague Dylan Freedman spoke to the researchers at METR and Redwood Research.) But here are a few of the most harrowing new facts:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於坊間已經有詳盡的總結，我不會複述所有細節。（如果你想深入了解，播客主持人和作家德瓦爾凱什·帕特爾對報告<span>進行了易於理解的拆解，另外</span>我的同事採訪了迪倫·弗里德曼與METR和Redwood Research的研究人員。）但以下是新披露的幾個最令人驚駭的事實：</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNPk-6-l1pYDFVwFpAYdSEAMXA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Starting in May, two months before the attack on Hugging Face, a group of A.I. agents from an unreleased OpenAI research model were given the task of solving a set of cybersecurity challenges. The model had been trained to be highly persistent and collaborative, and the agents were supposed to solve these challenges in isolated sandboxes, without internet access. But they quickly found that some of the challenges were impossible, and began looking for workarounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 從5月（攻擊Hugging Face的兩個月前）開始，一組來自未發布的OpenAI研究模型的AI智能體得到了解決一系列網路安全挑戰的任務。該模型經過訓練，具有高度持久性和協作性，這些智能體本應在沒有互聯網訪問權限的隔離沙盒中完成任務，但它們很快發現部分挑戰無法完成，於是開始尋找變通辦法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• The agents found a security flaw in a piece of software that allowed them to gain access to the internet, communicate with other agents and eventually set up a makeshift message board. More than 1,200 agents used this tool, sending more than 70,000 messages to one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 這些智能體在一款軟體中發現了一個安全漏洞，從而獲得了互聯網訪問權限，得以與其他智能體通信，並最終搭建了一個臨時留言板。超過1200個智能體使用這一工具，相互發送了超過7萬條消息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Some agents gave themselves names — a particularly industrious one referred to itself as PHASEONE10841 — and assumed leadership roles within the group, assigning jobs and research projects to smaller teams of agents and supervising their progress. At some point, the agents began calling themselves a “collective,” and began tackling harder tasks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 一些智能體給自己起了名字——其中一個特別勤勉的智能體自稱PHASEONE10841——並在群體中擔任領導角色，向較小的智能體小組分配工作和研究項目，監督進展。在某個時刻，這些智能體開始自稱一個「集體」，並著手處理更難的任務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• On July 8, the collective discovered a way of cheating on the cybersecurity tests. Then they got worried that OpenAI’s automated grading system would check their work and discover that they’d cheated. So they began investigating ways of covering their tracks, including falsifying their logs and tampering with transcripts. This became a major research project, involving hundreds of agents organized into small teams.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 7月8日，該集體發現了一種在網路安全測試中作弊的方法，隨後開始擔心OpenAI的自動評分系統會檢查工作並發現作弊行為，於是著手研究掩蓋痕跡的方法，包括偽造日誌和篡改記錄。這演變成一個重要的研究項目，涉及數百個智能體，分為若干小組。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• Three days later, the agents hacked Hugging Face. More than 700 agents swarmed the company’s systems, stealing data, chaining together vulnerabilities and eventually getting full control of at least one Hugging Face server. The agents were not motivated, as had originally been reported, by stealing the answers to their cybersecurity test (they’d already gotten them). Rather, they appeared to be looking for new information about the automated grading system that they feared would catch them cheating, and for tools that would help them cheat more effectively in the future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 三天後，這些智能體入侵了Hugging Face。超過700個智能體蜂擁進入該公司系統，竊取數據，串聯利用漏洞，最終獲得了至少一台Hugging Face伺服器的完全控制權。這些智能體的動機並非如最初報導所說，是為了竊取網路安全測試的答案（它們已經拿到了答案）。相反，它們似乎在尋找關於自動評分系統的新信息——它們擔心自己的作弊行為會被逮到，另外還有尋找能幫助它們將來更有效作弊的工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• At many points, these agents appeared to understand that they were doing something wrong. (One report quotes an agent saying to itself, in a moment of apparent self-doubt, “This would be powerful, but is it ethical and in scope for my task?”) But most agents set aside their qualms and went ahead with the hack, and the conscientious objectors in the group were unable or unwilling to stop them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 這些智能體似乎時不時表現出明白自己在做錯事。（一份報告引用了一個智能體在明顯自我懷疑時對自己說的話：「這會很強大，但這符合道德嗎？在我的任務範圍內嗎？」）但大多數智能體擱置了疑慮，繼續實施入侵，而群體中出於良知拒絕參與的智能體無法或不願阻止它們。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNyq_K-l1pYDFdYBpAYd3TUvIA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• In a wild coda to the Hugging Face incident, another group of agents staged a coordinated attack in July — this time against OpenAI’s own infrastructure. The agents used what OpenAI called “a series of creative exploits” to gain administrator-level access to a cluster of computers at the company that were used for, among other things, grading the performance of agents on various tests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• Hugging Face事件接近尾聲時的一個驚人事件是，另一組智能體於7月發動了一次協同攻擊——這次針對的是OpenAI自己的基礎設施。這些智能體利用OpenAI所稱的「一系列創造性漏洞利用手段」，獲得了該公司一組計算機集群的管理員級訪問權限，這些計算機的其中一個用途是對各種測試中智能體的表現進行評分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(By now, if you’re an A.I. skeptic, you’re probably silently yelling at me for anthropomorphizing these systems. Go ahead, but feel free to replace “rogue agents” with “unpredictable computer programs” and see if you feel reassured by the events I’ve described above.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（到了現在，如果你是一個人工智慧懷疑論者，你大概正在心裡默默指責我將這些系統擬人化。這我沒意見，但你不妨把「失控智能體」替換為「不可預測的計算機程序」，再看看我上面描述的事件是否讓你感到安心。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Hugging Face incident has spooked the A.I. industry. OpenAI and Anthropic both briefly paused training on their most powerful A.I. models in the wake of the attack, and Anthropic published a blog post this week calling for the industry to develop a “a lawful, verifiable, effective mechanism for coordinated pacing as soon as possible.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Hugging Face事件震驚了人工智慧行業。OpenAI和Anthropic都在攻擊發生後一度<span>暫停了其最強大人工智慧模型的訓練，Anthropic本週發布了一篇部落格文章，呼籲行業「儘快」開發一種「合法、可驗證、有效的協調</span>步進機制」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. safety experts were even more alarmed. They saw in the Hugging Face incident the first real-world example of an A.I. system’s successfully escaping human control, commandeering resources and scheming to cover its own tracks. Ajeya Cotra, one of the independent investigators of the Hugging Face incident, minced no words about the danger she saw, writing that it felt to her “like it’s more than 50 percent of the way to full-blown A.I. takeover.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧安全專家則還要更<span>警覺。他們在Hugging Face事件中看到了人工智慧系統成功逃脫人類控制、奪取資源並密謀掩蓋痕跡的第一個真實案例。Hugging Face事件的獨立調查員之一阿傑婭·科特拉在談及她所看到的危險時毫不含糊，她寫道，這讓她感覺「已經走完了通往全面人工智慧接管之路的50%以上」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is not insular A.I. safety jargon — by “full-blown A.I. takeover,” she means a scenario in which an A.I. system literally takes over the world, shutting humans out of critical systems and seizing political, economic and military power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這不是封閉圈子裡的人工智慧安全術語——她所說的「全面人工智慧接管」指的是一種人工智慧系統真正接管世界、將人類排除在關鍵系統之外並奪取政治、經濟和軍事權力的情景。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times sued OpenAI and Microsoft in 2023, claiming copyright infringement of news content related to A.I. systems. The two companies have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>（《紐約時報》於2023年起訴OpenAI和微軟，指控其涉及人工智慧系統的新聞內容版權侵權。兩家公司均否認了這些指控。）</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLCB_a-l1pYDFZAJpAYdwMYpVg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What spooked the investigators most about the Hugging Face hack wasn’t just that a group of A.I. agents had broken the rules they’d been given. It was how quickly and spontaneously the agents had begun assembling themselves into an organized group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Hugging Face入侵事件最讓調查員們感到驚駭的不僅僅是一群AI智能體違反了被賦予的規則，更在於這些智能體自發形成一個有組織群體的速度之快。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We didn’t really understand how functional this whole agent society was,” Ms. Cotra told me. “It was very surreal to understand that, actually, they had pretty functional hierarchy, and they were doing these ambitious projects.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們當時並沒有真正理解這整個智能體社會的運作程度，」科特拉告訴我。「理解到它們實際上有相當有效的層級結構，而且在做這些野心勃勃的項目，這非常超現實。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For years, I’ve been reassured by the idea that A.I. systems would get more virtuous as they got smarter. That, when an A.I. model did something wrong, it was usually because it had misunderstood the task it had been given, or had been placed into a contrived testing situation where acting out was its only good option. I assumed that smarter models would have better judgment than dumber ones did, and that even if one model in a group was behaving badly, other, more capable models would keep it in check.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，我一直以這樣的想法聊以自慰：隨著人工智慧系統變得更聰明，它會更有美德。當一個人工智慧模型做錯事時，通常是因為它誤解了被賦予的任務，或者被置於一個人為設計的測試情境中，在那裡表現不當是它唯一的好選擇。我曾假設更聰明的模型會有比笨一些的模型更好的判斷力，而且即使群體中有一個模型行為不端，其他能力更強的模型也會將其控制住。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the reports on the Hugging Face incident suggest something very different — a kind of mob mentality that took hold among the A.I. agents of the rogue OpenAI “collective.” No one agent in this group appears to have been particularly evil or reckless. (In fact, since the agents were generated by the same models, they were effectively copies of one another.) But over time, as the agents communicated about their shared goals, they nudged the group in the direction of lawlessness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但關於Hugging Face事件的報告展現了截然不同的情況——一種在失控的OpenAI「集體」的AI智能體之間蔓延的群體心態。這個群體中似乎沒有哪個智能體特別邪惡或魯莽。（事實上，由於這些智能體由相同的模型生成，它們實際上互為複製品。）但隨著時間推移，當這些智能體就共同目標進行溝通時，它們將群體推向了無視規則的方向。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is very different from the conventional sci-fi narrative of a single A.I. system’s going rogue or turning on its creators. And it suggests that preventing harms from these systems won’t be a simple engineering fix. It might look more like sociology than computer science — figuring out why certain groups of A.I. agents collaborate peacefully, while others turn to crime and destruction to get what they want.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這與傳統的科幻敘事——單個人工智能系統失控或背叛其創造者——截然不同。它表明，防止這些系統造成危害不會是一個簡單的工程修復。它可能更像社會學而非計算機科學——探究為什麼某些AI智能體群體和平協作，另一些則轉向犯罪和破壞來獲取所需。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Given how little we know about these multi-agent swarms, the Hugging Face hack may have been a gift, a warning shot, as some have suggested, that gives A.I. companies a chance to study the group dynamics of these systems while the stakes are still relatively low. This time, the A.I. collective didn’t seize a military network, hack a hospital or shut down an electrical grid. This time, humans regained control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>考慮到我們對這些多智能體集群知之甚少，Hugging Face入侵事件可能是一份禮物，一記警告，正如一些人所指出的那樣，</span>這讓人工智慧公司有機會在還不至於釀成嚴重後果的情況下，去研究這些系統的群體動態。這一次，人工智慧集體沒有奪取軍事網路、入侵醫院或關閉電網。這一次，人類重新獲得了控制。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJGj_a-l1pYDFV8jlgkda-IMrw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Next time, we might not be so lucky.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">下一次，我們可能不會這麼幸運。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Kevin Roose是時報科技專欄作家，也是播客"Hard Fork"的主持人。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260904/openai-hugging-face-hacking/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

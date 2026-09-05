@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>如果這個世界上多一些馬友友 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">如果這個世界上多一些馬友友</h1>
+    <h2 class="en-headline">What if We Were All a Little More Like Yo-Yo Ma?</h2>
+    <div class="meta-line">JOSHUA BARONE <span style="margin: 0 8px;">•</span> 2026-09-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="「如果我們有九到十個馬友友，世界會大不一樣，」鋼琴家、馬友友的長期朋友和合作者埃馬紐埃爾·艾克斯說。" height="1024" src="https://static01.nyt.com/images/2026/09/06/multimedia/06cul-yo-yo-ma-wlvk/06cul-yo-yo-ma-wlvk-jumbo.jpg" width="820"/><figcaption><span>「如果我們有九到十個馬友友，世界會大不一樣，」鋼琴家、馬友友的長期朋友和合作者埃馬紐埃爾·艾克斯說。</span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It isn’t easy to interview Yo-Yo Ma. Not because he is one of the most famous musicians alive, a cellist who has been playing for world leaders since he was 7. Nor because he tends to answer questions with long stories rather than sound bites. The challenge is that he would rather be talking about you.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">採訪馬友友並非易事。但不是因為他是當今在世最著名的音樂家之一，也不是因為他從七歲起就為世界領導人演奏大提琴，更不是因為他會用長長的故事而不是口水話來回答問題。真正的挑戰在於，他更願意談論你。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s nobody that’s not interesting,” he said by way of explanation during a recent interview at his hotel while performing in Denver. The night before, he had given a vivid, freshly insightful account of Dvorak’s Cello Concerto with the Colorado Symphony for thousands of people at Red Rocks. I had been sent there to report on his life at 70 and how he is reconciling age with relentless ambition, so my instinct was to shift the focus back to him. But I quickly learned what former President Barack Obama meant when he once said of Ma, “For every question you ask him, he asks you two in return.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「沒有人是無趣的，」最近在丹佛演出期間下榻的酒店接受採訪時，他這樣解釋道。前一晚，他在紅岩劇場與科羅拉多交響樂團合作，為數千名觀眾演奏了德沃夏克的大提琴協奏曲，演繹生動而富有新意。我被派去報導他70歲的人生以及他如何調和年齡與永不停歇的雄心，所以本能地想把話題拉回他身上。但我很快明白了前總統貝拉克·歐巴馬當年評價馬友友時那句話的含義：「你每問他一個問題，他會回問你兩個。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ma’s way of speaking would seem like deflection or false modesty if he didn’t behave that way with everyone. “You can’t fake it,” composer Angélica Negrón said. Before the Red Rocks concert, I had followed him throughout the season: to recitals and a concerto premiere, to events that had little to do with music, far from any auditorium. Whether he was meeting a fellow artist, a fan or a community organizer, he was attentive and curious, willing to put his work on hold if it meant getting to know someone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果馬友友不是對所有人都這樣，他的說話方式可能看起來會像迴避或裝謙虛。「這是裝不出來的，」作曲家安傑莉卡·內格龍說。在紅岩劇場音樂會之前，我整個演出季都跟著他：去獨奏會、協奏曲首演，去遠離任何音樂廳、與音樂關係不大的活動。無論是見到同行藝術家、樂迷還是社區組織者，他都專注而好奇，願意為了解一個人而暫時放下手頭的工作。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="馬友友與科羅拉多交響樂團在丹佛附近的紅岩劇場。" data-src="https://static01.nyt.com/images/2026/09/06/multimedia/06CUL-YOYO-MA-pzfj/06CUL-YOYO-MA-pzfj-master1050.jpg" src="https://static01.nyt.com/images/2026/09/06/multimedia/06CUL-YOYO-MA-pzfj/06CUL-YOYO-MA-pzfj-master1050.jpg"/></div><figcaption><span>馬友友與科羅拉多交響樂團在丹佛附近的紅岩劇場。</span> <cite>Amanda Tipton</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He is a sincerely committed humanist in a time that more readily rewards cynicism. He sees people as an ecosystem, deeply connected to one another and to nature at large, in an age of algorithms nudging us into echo chambers. When he speaks about immigration or education, he avoids the brash, polarizing rhetoric that reigns today, subtly treating these topics as matters of ethics rather than politics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一個更願意獎勵犬儒主義的時代，他是一位真誠投入的人文主義者。他把人看作一個生態系統，人與人之間以及與大自然之間都深度相連，儘管這個時代的算法正把我們推入回聲室。他談論移民或教育時，避開當今盛行的粗暴、極化修辭，巧妙地將這些話題視為倫理問題而非政治問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What if we followed his example?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果我們以他為榜樣，會怎樣？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN3XtrOl1pYDFTMbrAAdOrUSbw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I look for models of behavior in other people,” said Stephen Colbert, who is a close friend. “His position is Olympian; his behavior is not.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在別人身上我會去尋找行為模型，」馬友友的密友斯蒂芬·科爾伯特說。「他的立場是超然的；他的行為卻不是。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And, increasingly, Ma’s way of being is being incorporated into his public-facing work through his organization Sound Postings. He can hardly make a tour stop without some kind of community program, like a conversation about gun violence in Chicago or a farm dinner in West Virginia. He has embarked on yearslong projects that may take him to national parks, for instance, or a nightclub in Lebanon. When he addresses audiences, he mixes expressions of wonder about time and memory with worries for the future, especially when it comes to the environment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且，馬友友的為人方式正通過他的組織Sound Postings越來越多地融入他的公共工作。他幾乎每站巡演都會安排某種社區項目，比如在芝加哥關於槍枝暴力的對話，或西維吉尼亞州的農場晚宴。他啟動了長達數年的項目，可能把他帶到國家公園，或黎巴嫩的某家夜總會。當他向觀眾講話時，他把對時間和記憶的驚奇感與對未來的擔憂交織在一起，尤其是在環境問題上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because of who he is, maybe people will listen. “If he’s putting in that much work,” historian Heather Cox Richardson said, “how can we do anything less?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於他的身份，也許人們會聽得進去。「如果他付出了這麼多努力，」歷史學家希瑟·考克斯·理查森說，「我們怎麼能做得比他少？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>AT THIS POINT, </strong>Ma’s eminence and celebrity are givens. This is a musician who, born in France to Chinese immigrants, visited the United States as a 7-year-old and quickly impressed the great cellist Pablo Casals. It wasn’t long before he found himself performing for President John F. Kennedy at a concert hosted by Leonard Bernstein. Since then he has hung out with Elmo and Mr. Rogers on television, sold millions of albums and accumulated shelves’ worth of Grammy Awards, and received the Presidential Medal of Freedom from Obama.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>到如今，</b>馬友友的卓越和名望已是公認的事實。這位音樂家出生於法國，父母是中國移民，七歲訪美時便給大提琴大師帕布羅·卡薩爾斯留下了深刻印象。不久之後，他就在倫納德·伯恩斯坦主持的音樂會上為約翰·F·甘迺迪總統演出。此後，他在電視上與埃爾莫和羅傑斯先生同台，賣出了數百萬張專輯，收穫了滿架的葛萊美獎，並從歐巴馬手中接過了總統自由勳章。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But maybe the most amazing thing about Yo-Yo Ma,” Obama has said, “is that everybody likes him.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「但關於馬友友最令人稱奇的也許就是，」歐巴馬曾說，「每個人都喜歡他。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You could imagine a much different version of Ma: the child prodigy who, after growing up in the monastic world of music school, would still be a star but not such a people person. Casals, though, told him to go play baseball. “I don’t think he was a talent scout,” Ma said, “but I think the implication was, ‘Live a full life.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你完全可以想像一個截然不同的馬友友：一個在音樂學校修道院般環境中長大的神童，仍然是明星，卻不太擅長與人交往。然而，卡薩爾斯告訴他要出去打棒球。「我不認為他是星探，」馬友友說，「但我認為言下之意是，『去過一種充實的生活。』」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLaEt7Ol1pYDFZcmlgkdWPY23Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ma, who ended up staying in the United States, was also shaped by being an immigrant. “One thing about immigrants is that they are always trying to understand a new place,” he said. “Now that I travel so much, the immigrant part of me is always thinking, I would like for you to plop me down anywhere, like Waldo, and I will find a way to do something purposeful and meaningful.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最終留在美國的馬友友也深受移民身份的塑造。「移民的一個特點就是，他們總是在努力理解一個新地方，」他說。「現在我到處旅行，我身上移民的那部分總在想，我希望你把我隨便扔到什麼地方，就像『尋找沃爾多』的遊戲一樣，我都能找到辦法做一些有目的、有意義的事。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When he was 15 and studying at Juilliard, he met pianist Emanuel Ax in the cafeteria, and they became lifelong friends and musical partners. (“I would say that the two luckiest things that happened to me were meeting my wife and meeting Yo-Yo,” Ax said.) Around that time, Ma wasn’t sure the world needed another cellist. He would prepare a recital program, then present it in concert and realize halfway through that he was bored.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">15歲時，他在茱莉亞學院學習，在自助餐廳認識了鋼琴家伊曼紐爾·艾克斯，兩人從此成為終身朋友和音樂夥伴。（「我會說，發生在我身上最幸運的兩件事，就是遇見我妻子和遇見馬友友，」艾克斯說。）那段時間，馬友友不確定世界是否還需要另一個大提琴家。他會準備一套獨奏曲目，然後在音樂會上演奏，演到一半卻發現自己感到無聊。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="馬友友，攝於科羅拉多。「我從來不覺得取得什麼成就能帶來什麼，頂多給你一瞬間的快感。」" data-src="https://static01.nyt.com/images/2026/09/06/multimedia/06-cul-yo-yo-ma-fjkm/06-cul-yo-yo-ma-fjkm-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/06/multimedia/06-cul-yo-yo-ma-fjkm/06-cul-yo-yo-ma-fjkm-jumbo.jpg"/></div><figcaption><span>馬友友，攝於科羅拉多。「我從來不覺得取得什麼成就能帶來什麼，頂多給你一瞬間的快感。」</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We live in a world of people saying, ‘I need to achieve, achieve, achieve,’” Ma said. “But I’ve never felt like achieving something does anything more than give you a blip of pleasure.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們生活在一個人們總說『我必須有成就、成就、成就』的世界裡，」馬友友說。「但我從來不覺得取得什麼成就能帶來什麼，頂多給你一瞬間的快感。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ma followed the Casals adage “I think of myself as a human being first, a musician second and a cellist third,” and chose not to study music full-time. Instead he earned a bachelor’s degree in anthropology from Harvard University, and in a way, he never left that field. With the passion of a gleeful amateur, he has channeled his interest in humanity into projects like the ensemble now called Silkroad, an enduring relic of the multicultural ’90s; the Bach Project, which introduced him to strangers around the world; and Our Common Nature, a more recent, outdoorsy effort to bring people together.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬友友奉行卡薩爾斯的格言：「我首先把自己看作一個人，其次才是音樂家，第三才是大提琴家。」因此他選擇不全職學習音樂，而是在哈佛大學拿到了人類學學士學位。從某種意義上說，他從未離開過這個領域。帶著一個快樂業餘愛好者的熱情，他將自己對人類的興趣投入到各種項目中：比如現在名為「絲綢之路」的合奏團，這是多元文化盛行的90年代留下的持久遺產；把巴赫介紹給世界各地陌生人的巴赫計劃；以及較新的戶外項目「我們的共同自然」，旨在把人們聚在一起。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“He’s voraciously curious,” said Sophie Shackleton, the creative producer at Sound Postings. “He’s very nonjudgmental about people across all different backgrounds and disciplines, and he loves trying to understand them.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他求知若渴，」Sound Postings的創意製作人索菲·沙克爾頓說。「他對來自不同背景和學科的人從不妄加評判，他喜歡努力去理解他們。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Because of this, a Yo-Yo Ma concert is never just a concert. Even something as conventional as a recital of Bach’s complete cello suites, which he performed at Symphony Hall in Boston last fall, extended out into the world. It was simulcast to public libraries, nearby and into Massachusetts. In Watertown, where the screening room was at capacity and there was a waiting list of nearly 500 people, families gathered with cookies and apple cider from the cafe, and explored an exhibition upstairs. One mother referred to it all as “a gift.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正因如此，馬友友的音樂會從來不只是音樂會。即使像去年秋天他在波士頓交響樂廳演奏全套巴赫大提琴組曲這樣常規的演出也會延伸到外面的世界。演出被同步直播到波士頓附近乃至麻薩諸塞州各地的公共圖書館。在沃特敦，放映室座無虛席，等候名單上還有近500人，人們帶著咖啡館的餅乾和蘋果酒聚在一起，還參觀了樓上的一個展覽。一位母親稱這一切為「一份禮物」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI2Vt7Ol1pYDFfMNrAAd1IAOXg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The quintessential Yo-Yo Ma tour stop includes an event, or several events, designed to bring together members of a local community who might not otherwise cross paths, even if they have a shared interest. There is usually some music, but mostly people share stories and ideas. These used to be juggled alongside his performances; now, they are managed by Sound Postings, whose five-member team is made up of nonmusicians.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">典型的馬友友巡演站包括一個或幾個活動，旨在把當地社區中原本可能不會相遇（即使他們有共同的興趣）的成員聚在一起。活動通常有一些音樂，但主要是人們分享故事和想法。過去，這些活動與他的演出同時穿插安排；現在，它們由Sound Postings管理，其五人團隊全部由非音樂家組成。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I love that,” Ma said, “because most of the audiences I play for are not musicians.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我喜歡這樣，」馬友友說，「因為我為之演奏的大多數觀眾都不是音樂家。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="「我為之演奏的大多數觀眾都不是音樂家，」馬友友說。" data-src="https://static01.nyt.com/images/2026/09/06/multimedia/06cul-yo-yo-ma-01-qjmt/06cul-yo-yo-ma-01-qjmt-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/06/multimedia/06cul-yo-yo-ma-01-qjmt/06cul-yo-yo-ma-01-qjmt-jumbo.jpg"/></div><figcaption><span>「我為之演奏的大多數觀眾都不是音樂家，」馬友友說。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>“FOR ANY INSTRUMENTALIST,</strong> once past 70 is a crapshoot,” Carter Brey told Playbill this year as he was preparing to retire from his post as the New York Philharmonic’s principal cellist. Ma’s daughter gives him a hard time whenever he plays out of tune, and he made adjustments in bowing and tempo to the Dvorak concerto in Denver. But he also said that these days, he is “more efficient and more musical.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>「<b>對於任何器樂演奏家來說</b>，過了70歲就是碰運氣，」</span>正準備從紐約愛樂樂團首席大提琴手的職位上退休的卡特·布雷今年對《劇目》雜誌說。馬友友每一次走音都會被女兒一通調侃，而他在丹佛還對德沃夏克協奏曲的弓法和速度做了調整。但他也說，如今他的演奏「更高效，也更有音樂性」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But why, at an age when musicians wind down their careers, is he expanding his reach? Despite maintaining a full performance calendar, Ma has a running joke that he <em>is</em> retired, and that “when you’re retired, you only do what you want to do.” The truth is that his brain may not be wired for a life at rest. “I hope,” he said, “that I will stay curious until I die.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但為什麼在一個音樂家們逐漸淡出職業生涯的年紀，他卻在擴大自己的影響範圍？儘管演出日程排得滿滿當當，馬友友有個常講的笑話，說他退休了，而且「退休了，你就只做自己想做的事」。事實是，他的大腦也許天生就不適合安逸的生活。「我希望，」他說，「我會一直保持好奇，直到死去。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Richardson, the historian who recently appeared at Tanglewood as part of Ma’s festival “We the People,” theorized that he “would play if there was no one to listen, and he would play for nobody but third-graders if that was who was there.” Ax described their collaboration as a kind of endless search, saying, “We’ve played the Beethoven sonatas for almost 50 years, and we’re still finding ways to do them differently each time.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歷史學家理查森最近作為馬友友「我們人民」音樂節的一部分現身坦格爾伍德，她推測馬友友「即使沒有人聽也會演奏，即使聽眾只有三年級學生，他也會為他們演奏」。艾克斯把兩人的合作描述為一種無盡的探索，他說：「我們演奏貝多芬奏鳴曲快50年了，我們仍然每次都在尋找不同的演繹方式。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ma is putting much more than music out into the world, though, including an example to learn from. “He is trying to reclaim American democracy and move it forward in a much healthier, more holistic way,” Richardson said. But she also acknowledged that it’s an enormous responsibility; a public figure herself, she knows that someone in his position can never lash out or punch down. He must, as even he put it, “choose the better angels of our nature.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，馬友友向世界輸出的遠不止音樂，還有可供學習的榜樣。「他正試圖重振美國民主，並以一種更健康、更全面的方式推動它向前發展，」理查森說。但她也承認這是一項巨大的責任；作為公眾人物，她知道處在他這個位置的人永遠不能發怒或貶低他人。正如他自己所說的，他必須「選擇我們本性中善良的天使」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKjCt7Ol1pYDFZ0_rAAdB34b3g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/culture_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He has his critics, and there are ways in which his extramusical work can seem like a Pollyannaish vestige of multiculturalism’s golden age. His community programming sometimes raises the hackles of locals, who most often change their minds once they meet him. And there are limits to what he can do. He’s only one person, and he can’t give his <em>full</em> attention to every person and place. (Shackleton said that Sound Postings spends a lot of time trying to ensure that his visits have lasting effects.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他也有批評者，而且他的音樂之外的工作在某些方面可能看起來像是多元文化主義黃金時代的一個盲目樂觀的遺迹。他的社區項目有時會引發當地人的不滿，但他們通常在見到他本人之後改變想法。他能做的也有局限。他畢竟只是一個人，無法對每個人和每個地方都給予全部關注。（沙克爾頓說，Sound Postings花了大量時間努力確保他的訪問產生持久影響。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is actually the best reason for cloning,” Ax said. “If we had nine or 10 Yo-Yos, the world would look different.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這實際上是發展複製技術的最佳理由，」艾克斯說。「如果我們有九到十個馬友友，世界會大不一樣。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">影片/圖片：Benjamin Rasmussen</p><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Joshua Barone是《紐約時報》編輯，報導古典樂和舞蹈。他也撰寫關於音樂和歌劇的評論。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""><br/></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/culture/20260904/yo-yo-ma-profile/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
