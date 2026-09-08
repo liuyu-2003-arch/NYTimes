@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>如何擁有「超級老人」的大腦 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">如何擁有「超級老人」的大腦</h1>
+    <h2 class="en-headline">The One Quality Most ‘Super-Agers’ Share</h2>
+    <div class="meta-line">DANA G. SMITH <span style="margin: 0 8px;">•</span> 2026-09-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="91歲的「超級老人」拉爾夫·雷博克是一個名為「梅爾音調」的男子合唱團的成員。他們每週都會聚一次。" height="1024" src="https://static01.nyt.com/images/2025/08/05/multimedia/WELL-SUPERAGERS-UPDATE-wjmv/WELL-SUPERAGERS-UPDATE-wjmv-jumbo.jpg" width="684"/><figcaption><span>91歲的「超級老人」拉爾夫·雷博克是一個名為「梅爾音調」的男子合唱團的成員。他們每週都會聚一次。</span> <cite>Lyndon French for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ralph Rehbock, age 91 and a Holocaust survivor, has a lot on his calendar. On the first Friday of every month, he joins a group of older men at a synagogue outside of Chicago for a meeting of MEL: Men Enjoying Leisure. Every Friday afternoon, he performs classics from the 1930s and 40s with the Meltones, the club’s singing group. And he’s shared his story of escape from Nazi Germany with thousands of school children over the years, through his work with the Illinois Holocaust Museum &amp; Education Center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">91歲的納粹大屠殺倖存者拉爾夫·雷博克把日程排得很滿。每月第一個星期五，他都會和一群老大爺在芝加哥郊外的一座猶太會堂參加MEL（「享受休閑的男士」首字母縮寫）聚會。每週五下午，他與俱樂部演唱組合「梅爾音調」(Meltones)一起表演20世紀30年代和40年代的經典曲目。多年來，通過在伊利諾州大屠殺博物館與教育中心的工作，他還向數千名學童講述了自己逃離納粹德國的經歷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Leigh Steinman, 82, spends much of his time working on art projects with the children who live in his Chicago neighborhood and watching the Cubs play at Wrigley Field, which is just a block away. Mr. Steinman worked at the stadium as a security guard for 17 years before retiring at the beginning of the pandemic (his prior career was as an advertising copywriter). But he still walks over three or four times a week during the summer to see former co-workers and fellow fans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">82歲的利·斯坦曼把大部分時間用於與住在他芝加哥街區的孩子們一起開展藝術項目，以及觀看小熊隊在瑞格利球場的比賽——球場離他家只有一個街區。斯坦曼退休前在體育場做了17年保安，新冠疫情開始時退休（他之前的職業是廣告文案）。但夏天他仍然每週步行過去三四次，看望以前的同事和棒球同好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Rehbock and Mr. Steinman are both considered “super-agers,” people 80 and up who have the same memory ability as someone 20 to 30 years younger. Scientists at Northwestern University have been studying this remarkable group since 2000, in the hopes of discovering how they’ve avoided typical age-related cognitive decline, as well as more serious memory disorders like Alzheimer’s disease. A new review paper published Thursday summarizes a quarter century of their findings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>雷博克和斯坦曼都被認為是「超級老人」，即80歲及以上、記憶與比自己年輕二三十歲的人相當的人。西北大學的科學家自2000年以來一直在研究這個非凡群體，希望發現他們是如何避免與年齡相關的典型認知衰退，以及避免阿爾茨海默病等更嚴重記憶障礙的。週四發表的一篇新綜述論文總結了四分之一個世紀</span>的研究發現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Super-agers are a diverse bunch; they don’t share a magic diet, exercise regimen or medication. But the one thing that does unite them is “how they view the importance of social relationships,” said Sandra Weintraub, a professor of psychiatry and behavioral sciences at the Northwestern Feinberg School of Medicine, who has been involved in the research since the start. “And personality wise, they tend to be on the extroverted side.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">超級老人是一個多樣的群體，並沒有什麼共通的神奇<span>飲食、鍛煉方案或藥物。但真正將他們聯繫在一起的是「他們如何看待社交關係的重要性」，從一開始就參與這項研究的西北大學范伯格醫學院精神病學與行為科學教授桑德拉·溫特勞布說。「在個性方面，他們</span>都偏外向。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNi7wL_r3ZYDFWSX7gEdLAQHhA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This doesn’t surprise Ben Rein, a neuroscientist and the author of the forthcoming book, “Why Brains Need Friends: The Neuroscience of Social Connection.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這並不讓神經科學家本·賴因感到意外，他是即將出版的《為什麼大腦需要朋友：社交聯繫的神經科學》(Why Brains Need Friends: The Neuroscience of Social Connection)一書的作者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“People who socialize more are more resistant to cognitive decline as they get older,” Dr. Rein said. And, he added, they “have generally larger brains.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「社交更多的人隨著年齡增長對認知衰退的抵抗力更強，」賴因說。他還說，他們「通常有更大的大腦」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers think that may be because socializing could help to protect against declines in brain volume that happen with age and isolation. Loneliness, which is particularly common in older adults, can increase levels of the stress hormone cortisol, and if cortisol is elevated for long periods of time it can lead to chronic inflammation. That, in turn, could damage brain cells and even increase the risk for dementia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>研究人員認為，這可能是因為社交活動有助於防止因年齡增長和孤立而發生的大腦體積萎縮。孤獨感在老年人中尤其常見，會提高壓力荷爾蒙皮質醇的水平，而如果皮質醇長期處於高位，就可能導致慢性炎症，從而反過來損傷腦細胞，甚至增加失智風險。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By being more social in old age, super-agers may avert some of the atrophy. An analysis included in the new paper backs this up: The brain volume of super-agers tends to be more on par with 50- and 60-year-olds than with their octogenarian and nonagenarian peers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過在晚年保持更多社交，超級老人可能避免了一部分萎縮。新論文中包含的一項分析支持了這一點：超級老人的大腦體積往往更接近五六十歲的人，而不是與他們同齡的八九十歲老人。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="「超級老人」利·斯坦曼的社交活動大多在瑞格利球場，他會在那裡觀看芝加哥小熊隊的比賽，並與老友們敘舊。" data-src="https://static01.nyt.com/images/2025/08/05/multimedia/WELL-SUPERAGERS-UPDATE-vkmj/WELL-SUPERAGERS-UPDATE-vkmj-jumbo.jpg" src="https://static01.nyt.com/images/2025/08/05/multimedia/WELL-SUPERAGERS-UPDATE-vkmj/WELL-SUPERAGERS-UPDATE-vkmj-jumbo.jpg"/></div><figcaption><span>「超級老人」利·斯坦曼的社交活動大多在瑞格利球場，他會在那裡觀看芝加哥小熊隊的比賽，並與老友們敘舊。</span> <cite>Lyndon French for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another notable difference is that super-ager brains tend to have more of a special type of cell, called von Economo neurons, that is thought to be important for social behaviors and is only found in highly social mammals — namely apes, elephants, whales and humans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>另一個顯著差異是，超級老人的大腦往往擁有更多一種被稱為馮·埃科諾莫神經元的特殊類型細胞，這種細胞被認為對社交行為很重要，並且只存在於高度社會性的哺乳動物中——即猿類、大象、鯨魚和人類。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All those von Economo neurons “probably help them build and maintain powerful, strong social connections and social networks,” said Dr. Bill Seeley, a professor of neurology and pathology at the University of California, San Francisco. And that may have “a far-reaching effect on their overall well-being and health.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所有這些馮·埃科諾莫神經元「可能幫助他們建立和維持強大、牢固的社交聯繫和社交網路」，加利福尼亞大學舊金山分校神經病學與病理學教授比爾·西利博士說。而這可能「對他們的整體福祉和健康產生深遠影響」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMeDwL_r3ZYDFRqX7gEd8I06FQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/health_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But, Dr. Seeley added, this is likely just one of “a whole suite of neurobiological advantages that puts them in such good shape at this stage in life.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，西利補充說，這可能只是「一整套神經生物學優勢中的一項，使他們在這個人生階段保持如此良好的狀態」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For example, almost all 80-year-olds have signs of Alzheimer’s disease in their brains (whether or not they have the condition), but some super-agers have little to none. In addition, in super-ager brains, the functioning of a neurochemical that is important for attention and memory is better preserved.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，幾乎所有80歲的人大腦中都有阿爾茨海默病的跡象（無論他們是否患有該病），但一些超級老人幾乎沒有或完全沒有。此外，在超級老人的大腦中，一種對注意力和記憶很重要的神經化學物質的功能得到了更好的保留。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Sofiya Milman, a professor of medicine and genetics at the Albert Einstein College of Medicine in New York, studies healthy centenarians. She said that they also tend to be extroverted and “have a positive outlook on life.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究<span>了健康百歲老人的</span>紐約阿爾伯特·愛因斯坦醫學院醫學與遺傳學教授索菲婭·米爾曼博士說，他們也往往外向，並且「對生活抱有積極態度」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is a “chicken and the egg” conundrum, though. A person with better cognitive functioning may be more eager to go out and socialize, compared with someone who feels like their memory is declining. “Whether it’s the socialization that leads to maintenance of better cognition, or whether it’s the better cognition that leads to more socialization, I think it’s still open to debate,” Dr. Milman said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，這裡存在一個「先有雞還是先有蛋」的難題。認知功能較好的人可能比感覺自己記憶力在衰退的人更願意出門社交。「究竟是社交促使認知能力得以更好地維持，還是更好的認知能力導致了更多社交，我認為這仍然有待討論，」米爾曼說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unfortunately, forcing yourself to be more social probably won’t be enough to turn you into a super-ager. Dr. Weintraub said super-agers’ preternatural ability likely comes down to their genetics and biology, as well as their behaviors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">遺憾的是，僅僅強迫自己去更多社交可能不足以讓你變成超級老人。溫特勞布說，超級老人的非凡能力很可能歸結於他們的遺傳和生物學因素，以及他們的行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But to Mr. Steinman, the importance of seeing his neighbors and friends at the ballpark is clear. “I think the sociability of Wrigley Field and where I live, my block, that’s what’s kept me going all this time,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對斯坦曼來說，在球場見到鄰居和朋友的重要性是明確的。「我認為瑞格利球場和我住的地方、我所在街區的社交性，是讓我一直堅持到現在的原因，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文最初發表於2026年8月7日。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/health/20260907/super-agers-social-connections/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

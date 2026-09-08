@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>她從東京的一家精神病院改變了世界 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">她從東京的一家精神病院改變了世界</h1>
+    <h2 class="en-headline">She Changed the World From an Asylum in Tokyo</h2>
+    <div class="meta-line">ALEXANDRA MUNROE <span style="margin: 0 8px;">•</span> 2026-09-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="草間彌生約10歲時，攝於日本松本。" height="1024" src="https://static01.nyt.com/images/2026/09/07/multimedia/O6Munroe-hqjc/O6Munroe-hqjc-jumbo.jpg" width="741"/><figcaption><span>草間彌生約10歲時，攝於日本松本。</span> <cite>Yayoi Kusama</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 1988, when I met her, Yayoi Kusama had been living in a psychiatric hospital in Tokyo for over a decade, and was nearly forgotten by the art world in New York. As a graduate student researching postwar Japanese art, I had been invited to curate the opening exhibition at a new institution in New York, the Center for International Contemporary Arts (CICA). I chose Ms. Kusama, with the ambition to wrest her from obscurity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1988年，我初次見到草間彌生時，她已在東京的一家精神病院生活了十多年，幾乎被紐約藝術界遺忘。當時我是研究戰後日本藝術的研究生，受邀為紐約的新機構國際當代藝術中心(CICA)策劃開幕展。我選擇了草間彌生，一心想把她從沒沒無聞中拉出來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When she died last month, 37 years later, Ms. Kusama — in her life and her art — was obscured, paradoxically, by too much fame.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">37年後，她在上個月去世時，草間彌生的人生及藝術反而被盛名所遮蔽，這實屬悖論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There has been an outpouring of tributes to her after her death, at 97, in Tokyo. Everyone notes how she had a role in the Minimalism and Pop Art movements of the 1960s avant-garde when she lived in New York City before moving back to Tokyo in 1973. And they mention her late-in-life career revival, with record-smashing auction prices as a female artist, the crowds lined up at her mirrored immersive installations and the signature range of polka-dot luxury goods she designed — twice — for Louis Vuitton.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她在東京去世，享年97歲，悼念如潮水般湧來。大家都提到，在1973年搬回東京之前，她曾在紐約生活，曾對20世紀60年代前衛藝術運動中的極簡主義和波普藝術發揮過重要作用。他們還提到她晚年的藝術生涯復興：作為女性藝術家創下破紀錄的拍賣價格，人們在她的鏡面沉浸式裝置前排起長隊，以及她兩次為路易威登設計的標誌性波點奢侈品系列。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Kusama’s madness is part of her legend, but mental illness is not artistry and its outcome is not always art. Writings on Ms. Kusama — including my own — see her work through the lens of a psychological distortion. This is fair, but it is not the distortion that made the artist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">草間彌生的瘋狂是她傳奇的一部分，但精神疾病不等於藝術才能，其結果也並非總是藝術。關於草間彌生的各種論述——包括我自己的——往往透過心理扭曲的透鏡來解讀她的作品。這固然有道理，但造就這位藝術家的並不是那種扭曲。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CP3GncHr3ZYDFUwBCAIdsYwQwA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The fame of Ms. Kusama’s later decades has eclipsed our appreciation of the fierce rage and the original genius that drove her to make incessant art — and to make it incessantly. It ignores how, from her early days, male artists commandeered her ideas. Her work seemed to have inspired Claes Oldenburg’s bulbous, sewn-and-stuffed sculptures, Andy Warhol’s repeating images as wallpaper and Lucas Samaras’s interactive mirrored chamber.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">草間彌生近幾十年的聲名遮蔽了我們對那股強烈憤怒和原創天才的欣賞，正是這些驅使她不停地創作藝術，而且持續不斷。這種名聲還忽略了這樣一個事實：從她早年時期起，男性藝術家就一直攫取她的創意。她的作品似乎啟發了克萊斯·奧登伯格的鼓脹縫製填充雕塑、安迪·沃荷作為牆紙的重複圖像，以及盧卡斯·薩馬拉斯的互動鏡面房間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I first met Ms. Kusama in a coffee shop in Tokyo. I had come with CICA’s director, Bhupendra Karia, and its research head, Reiko Tomii. Ms. Kusama walked fast and a little stooped, like a penguin. Her eyes were intense; she wore heavy lipstick, a bit of eyeliner, some rouge. Her brow was deeply furrowed. She leaned forward as she spoke, her rapid-fire English skipping verbs and tenses as she recited stories, betrayals, triumphs, beliefs. Occasionally, she would look up at us and smile as if a bird had alighted in her view. In these flashes, I would see her beauty. Her Japanese was equally staccato. It was barely conversational. But she always spoke with absolute conviction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我第一次見到草間彌生是在東京一家咖啡店。當時和我一起的有國際當代藝術中心的主任布彭德拉·卡裡亞和研究負責人富井玲子。草間彌生走路很快，略微佝僂著身子，活像一隻企鵝。她眼神熾烈；塗著濃重的口紅，畫了些許眼線和腮紅。額頭皺紋很深。她說話時身體前傾，用連珠炮似的英語講述著故事、背叛、勝利和信念，時常省略動詞和時態。偶爾，她會抬頭看著我們微笑，彷彿有隻小鳥棲息在她的視線之中。在那些瞬間，我看到了她的美。她的日語也同樣斷斷續續，幾乎算不上是交談。但她說話時總是帶著絕對的篤定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We were the first scholars to open the door of the studio near the psychiatric hospital where she had voluntarily lived since 1977. The place was packed with suitcases stickered with Pan Am logos and painted with polka dots. There were hatboxes and shoeboxes crowded onto every shelf, and racks of paintings, many of them rolled, just as they may have arrived from New York years before. What we found in the boxes became the source of the portraits, artwork and performance photographs of the global Kusama mania ever since — including files from her 1966 trip to the 33rd Venice Biennale, where she staged “Narcissus Garden,”<i> </i>an unauthorized protest of the commercialization of the art market<i>.</i> Dressed in a gold kimono, she set 1,500 mirrored plastic balls on the lawns and advertised them for sale at $2 a piece. (The authorities asked her to leave.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們是第一批打開她工作室大門的學者，那間工作室就在她自1977年起自願居住的精神病院附近。屋裡堆滿了貼有泛美航空標誌並繪有波點圖案的行李箱。每個架子上都塞滿了禮帽盒以及鞋盒，還有成架的畫作，許多仍然卷著，彷彿多年前從紐約運來時就一直是那樣。我們在箱子裡發現的東西，後來成為全球草間熱潮中那些肖像、藝術作品和表演照片的來源——包括她1966年參加第33屆威尼斯雙年展時的資料，當時她在未獲授權的情況下策划了《水仙花園》(Narcissus Garden)項目，抗議藝術市場的商業化。她身著金色和服，把1500個鏡麵塑料球擺放在草坪上，標價每個二美元出售。（主辦方隨後要求她離開。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Since then, major museums have organized bigger and bigger retrospectives, and her work has been included in hundreds of group shows, including some of my own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自那以後，各大博物館舉辦了規模越來越大的回顧展，她的作品被納入數百場群展，包括我自己策劃的一些展覽。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But something got lost along the way: where she came from. What drove her.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但一路走來，有些東西丟失了：她來自哪裡，是什麼驅動著她。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Kusama grew up in a conservative family during the military regime of wartime Japan. Her mother was so opposed to her art-making that she would sneak up from behind and snatch her sketches away. In the background, there was a philandering father and early sexual trauma. Her family cultivated flowers for its wholesale seed business. A swirling mass of florets is among the sources for Ms. Kusama’s obsession with “nets” of proliferating dots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">草間彌生成長於戰時日本軍事政權時期一個保守家庭。母親非常反對她搞藝術，會從背後悄悄靠近，搶走她的素描。她還有一個拈花惹草的父親，<span>她早年也遭受過性創傷</span>。她家為經營種子批發業務而種植花卉。那些旋渦狀的小花正是草間彌生對不斷增殖的圓點之「網」執念的來源之一。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CICrnsHr3ZYDFZM7CAId-O8YHA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Starting in the early 1950s, when a Japanese psychiatrist introduced Ms. Kusama as a “genius woman artist with schizophrenic tendency,” she described the effects of her visual and auditory hallucinations as “self-obliteration” — a dissolution into nothingness. Making things in the thousands saved her from total despair and probable suicide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">20世紀50年代初，一位日本精神科醫生稱草間彌生是「有精神分裂傾向的天才女藝術家」，從那時起，她把自己視幻覺和聽幻覺的效果描述為「自我消解」——消解為虛無。創作成千上萬的物品，使她免於徹底的絕望和可能的自殺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Kusama arrived in New York when she was 29 years old, in 1958 — just 16 years after Pearl Harbor and 13 since Hiroshima. Newspapers still called her compatriots “Japs.” Never married, she had left Japan to get away from its “shackles, the conventions, the prejudice,” claiming it was “too small, too servile, too feudalistic, too scornful of women” for an artist to thrive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1958年，29歲的草間彌生來到紐約——當時距珍珠港事件僅16年，距廣島原子彈爆炸僅13年。報紙上仍把她的同胞稱作「日本佬」。她終身未婚，離開日本是為了擺脫那裡的「枷鎖、陳規和偏見」，她說日本「太狹小、太順從、太封建、太輕視女性」，藝術家無法在那裡發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Kusama’s drive for recognition came from rage against the obstacles of patriarchy, militarism, conformity and, when she came to America, an art world dominated by male artists. In 1968, she competed with Andy Warhol for publicity. She won. It wasn’t Mr. Warhol she wanted to beat — it was the system she wanted to rebel against. Her anti-Vietnam War happenings with nude hippies she painted with polka dots to symbolize cosmic love were about the obliteration of ego, not exhibitionism. “Let’s forget ourselves, dearest Richard, and become one with the Absolute, all together in the altogether,” she wrote in an open letter to Richard Nixon when he was elected president in 1968.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">草間彌生對認可的渴望來自對父權制、軍國主義、從眾心理等障礙的憤怒；而到了美國後，又加上了對男性藝術家主導的藝術界的憤怒。1968年，她與安迪·沃荷爭奪公眾關注，她贏了。她想打敗的並不是沃荷，而是她想要反叛的那個體制。在她那些反越戰的偶發行為藝術中，裸體嬉皮士被她畫上波點，象徵宇宙之愛，旨在消解自我，而非炫耀身體。1968年理查德·尼克森當選總統時，她在給他的公開信中寫道：「讓我們忘掉自己，最親愛的理查德，與絕對融為一體，大家一起赤誠相見。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After she returned to Tokyo in 1973, Ms. Kusama became an idol of the youth culture. Within Japan, Ms. Kusama is among the most culturally influential women in modern history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1973年回到東京後，草間彌生成為青年文化的偶像。在日本國內，草間彌生是現代史上最具文化影響力的女性之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Globally, Ms. Kusama’s most iconic series is the Infinity Mirror Rooms. She first staged them in 1965, and returned to this theme in the 1990s, fabricating ever-larger kaleidoscopic environments that visitors enter one at a time. These “immersive artworks” have become art-world fun houses. There is often a line of people waiting to enter them, but few are there to consider the artist’s original vision, to create a semblance of her mental terrors, to make you see your own reflection splintered into endlessness. Instead, they take a selfie.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在全球範圍內，草間彌生最具標誌性的系列作品是「無限鏡屋」。她於1965年首次呈現這一系列作品，並在20世紀90年代重新回到這一主題，製造出越來越大的萬花筒式環境，參觀者一次只能進入一人。這些「沉浸式藝術作品」已成為藝術界的遊樂屋。經常有人排隊等候進入，但很少有人是為了體味藝術家最初的構想去體驗她內心深處的恐懼，或是凝視自己被無限分裂的倒影。相反，他們只是去自拍的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Yoko Ono was, as John Lennon said, “the world’s most famous unknown artist,” then Yayoi Kusama has become the world’s most unknown famous artist.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果正如約翰·藍儂所說，小野洋子是「世界上最著名的無名藝術家」，那麼草間彌生就成了世界上最無名的著名藝術家。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJaAnsHr3ZYDFUwBCAIdsYwQwA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People ask me: Did she ever love anyone? In those storage boxes, we found a trove of love letters, collaged with butterflies and drawings, from the artist Joseph Cornell to “Yayoi.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們問我：她愛過誰嗎？在那些儲物箱裡，我們找到了一批情書，上面拼貼著蝴蝶和圖畫，是藝術家約瑟夫·康乃爾寫給「彌生」的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She told me about the mornings he would call, and how she’d say, exasperated, “Joseph, I need to go get some coffee.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她告訴我，他常常早上打電話來，而她總會不耐煩地說：「約瑟夫，我得去買咖啡。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I’ll wait,” he’d say. And she would wander down the streets of Manhattan and forget all about his call — until she came back home to find the phone still lying where she had left it. “Yayoi?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我等你，」他會說。然後她就會在曼哈頓街頭閑逛，把他的電話忘得一乾二淨——直到回到家，發現電話還靜靜地躺在她離開時的位置。「彌生？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a recent visit to Tokyo, I wanted to visit Ms. Kusama. She was already too frail. Akira Tatehata, a trusted friend of hers who leads the Yayoi Kusama Museum, told me that on most days, she had on her lap a square canvas sized precisely to the reach of her arms. She chose to stay alone in her psychiatric-ward bed: beloved, but too consumed by her ferocious imagination to care much about love, or fame.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近一次去東京時，我想去看望草間彌生。她已經太過虛弱。她信賴的朋友、草間彌生美術館館長建畠晢告訴我，大多數日子裡，她膝上都放著一塊方形畫布，尺寸正好是她雙臂夠得到的範圍。她選擇獨自待在精神科病房的床上：她被愛著，但她那狂野的想像力已將她完全吞噬，以至於她對愛或名聲都無暇顧及。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Alexandra Munroe是古根漢博物館的高級策展人，她策划了草間彌生的首次回顧展。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260907/yayoi-kusama-art-tokyo/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

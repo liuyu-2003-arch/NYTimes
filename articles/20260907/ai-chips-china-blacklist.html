@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一家中國科技巨頭如何「逃過」美國黑名單 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">一家中國科技巨頭如何「逃過」美國黑名單</h1>
+    <h2 class="en-headline">How a Blacklisted Chinese Tech Giant Kept Buying America’s Best A.I. Chips</h2>
+    <div class="meta-line">ANA SWANSON, 孟建國, TRIPP MICKLE, KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-09-07</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="Aivres位於加利福尼亞州弗裡蒙特市的研發中心和生產基地。" height="700" src="https://static01.nyt.com/images/2026/09/01/multimedia/00biz-china-ai-smuggle-Aivres-lvjb/00biz-china-ai-smuggle-Aivres-lvjb-master1050.jpg" width="1050"/><figcaption><span>Aivres位於加利福尼亞州弗裡蒙特市的研發中心和生產基地。</span> <cite>Minh Connors for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For years, a sign outside one of Silicon Valley’s many nondescript offices said Inspur, the name of one of China’s most important technology companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在矽谷眾多不起眼的辦公樓中，有一棟門外多年來一直掛著「Inspur」（浪潮）的招牌——這是中國最重要的科技企業之一的名字。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in March 2023, the United States added Inspur Group to the so-called entity list, a blacklist with more than 3,000 companies that have been restricted from doing business with the United States because they are considered a security risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在2023年3月，美國將浪潮集團列入所謂實體清單。這是一份包含3000多家企業的黑名單，被列入其中的企業被認為存在安全風險，因此在與美國開展業務方面受到限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not long after, the Inspur sign was changed to Aivres, the name of Inspur’s new U.S. subsidiary. The subsidiary continued with its Chinese parent company’s work, helping it build a thriving global network to provide the computing power that supplies China’s growing artificial intelligence industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒過多久，浪潮的招牌就被換成了Aivres——浪潮新成立的美國子公司的名稱。這家子公司繼續開展中國母公司的業務，幫助其建立一個蓬勃發展的全球網路，為中國不斷壯大的人工智慧產業提供所需的算力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Silicon Valley subsidiary, which appears to be taking advantage of several loopholes in U.S. export law, has played a key role in Inspur’s sidestepping of American restrictions. Federal officials have begun looking into the subsidiary’s business, but it is not clear where that inquiry stands, said four officials who spoke on the condition of anonymity because they were not allowed to discuss it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這家矽谷子公司似乎利用了美國出口法律中的多個漏洞，在浪潮規避美國限制方面發揮了關鍵作用。四名官員透露，聯邦官員已經開始調查這家子公司的業務，但因無權公開討論此事而要求匿名。這四人表示，目前尚不清楚調查進展到了哪一步。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKvY4L3r3ZYDFfEwRAgdk28GbA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The New York Times examined thousands of shipment records, corporate documents and supply contracts to piece together how Inspur’s network works. Reporters also visited sites in China, Southeast Asia and California, and spoke with more than a dozen current and former officials, tech executives and industry analysts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》查閱了數千份出貨記錄、公司文件和供應合同，逐步還原了浪潮網路的運作方式。記者還走訪了中國、東南亞和加利福尼亞的多個地點，並採訪了十多位現任和前任官員、科技高管及行業分析師。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government prohibits the most advanced chips, like the Blackwell chip from the Silicon Valley giant Nvidia, from being sent to any company in China. And U.S. law bars any company anywhere in the world from buying restricted products made with American technology on behalf of a blacklisted company. But there are few restrictions on companies in China that bar them from remotely gaining access to A.I. data centers in Southeast Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府禁止將最先進的晶片——例如矽谷巨頭英偉達生產的Blackwell晶片——運往中國的任何企業。美國法律還規定，世界上任何地方的企業都不得代表被列入黑名單的企業購買採用美國技術製造的受限產品。但對於中國企業從遠程訪問位於東南亞的數據中心這一行為則幾乎沒有限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Whether Chinese firms are getting access to cutting-edge technology, particularly high-end computer chips made by Nvidia, has become a hot question in Silicon Valley and Washington, where executives and officials worry that China could use A.I. for hacking, surveillance and military operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國企業是否正在獲得尖端技術，尤其是英偉達生產的高端計算晶片，已經成為矽谷和華盛頓的一個熱門問題。企業高管和政府官員擔心，中國可能將人工智慧用於駭客攻擊、監控和軍事行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. companies are also closing the performance gap on systems made by their American competitors, raising concerns that the Chinese companies are using American technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧公司也正在縮小與美國競爭對手在系統性能上的差距，這引發了人們對中國公司正在使用美國技術的擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From April 2024 through February 2026, Aivres exported at least $5.6 billion of advanced technology from the United States to Southeast Asia, including more than $3 billion of computers containing cutting-edge Blackwell chips and equipment from Nvidia, according to trade records analyzed by ImportGenius, a data firm, and The Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據數據公司ImportGenius與《紐約時報》對貿易記錄的分析，從2024年4月至2026年2月，Aivres至少將價值56億美元的先進技術從美國出口至東南亞，其中包括價值超過30億美元、搭載英偉達最先進Blackwell晶片以及相關設備的計算機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That technology went to data centers and technology firms in Southeast Asia that serve China’s biggest tech firms, including Alibaba and ByteDance, trade records show. Megaspeed, a China-linked company that U.S. officials have been investigating over whether it smuggled restricted chips into China, was among that group of recipients. (One of Megaspeed’s subsidiaries has financial ties with Alibaba, according to Malaysian business documents.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">貿易記錄顯示，這些技術被運往東南亞的數據中心和科技企業，而這些企業為中國最大的科技公司提供服務，其中包括阿里巴巴和字節跳動。Megaspeed也屬於這些接收方之一。美國官員一直在調查這家與中國有關聯的企業，懷疑它曾將受限制的晶片走私進入中國。（根據馬來西亞的商業文件，Megaspeed的一家子公司與阿里巴巴存在財務關聯。）</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPjv4L3r3ZYDFYcvRAgdDt0CbQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other technology went from Inspur’s network of global subsidiaries to an electronics manufacturer in Malaysia, which has been shipping unlabeled but high-priced servers to China, according to trade records drawn mostly from Malaysia and Indonesia. The servers are sent to a new firm, Maginfra, which has supplied high-performance computers to Chinese universities and state-owned firms, according to Chinese contracts and procurement records.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據主要來自馬來西亞和印度尼西亞的貿易記錄，還有一些技術則從浪潮的全球子公司網路流向馬來西亞一家電子產品製造商，該製造商一直在向中國運送無標註品牌但價格昂貴的伺服器。這些伺服器被送往一家名為Maginfra的新公司，根據中國的合同和政府採購記錄，Maginfra一直向中國的大學和國有企業供應高性能計算機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Inspur, Aivres, Maginfra, Alibaba and ByteDance did not respond to requests for comment. Megaspeed did not provide a comment. John Rizzo, a spokesman for Nvidia, said the company did not support “diverted products,” and sold to well-known partners “who work with us to ensure that all sales comply with U.S. export control rules.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">浪潮、Aivres、Maginfra、阿里巴巴和字節跳動均未回應置評請求。Megaspeed也沒有發表評論。英偉達發言人約翰·裡佐表示，該公司不支持「產品被轉用」，並稱英偉達向知名合作夥伴銷售產品，而這些合作夥伴「與我們合作，以確保所有銷售都符合美國出口管制規定」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration rolled back Biden-era restrictions on remote access by Chinese companies to data centers in other countries, and both the administration and Congress have been weighing new rules to replace them. Nvidia’s Mr. Rizzo said the business brought “tens of billions of dollars and high-paying jobs home.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府撤銷了拜登時代對中國企業遠程訪問他國數據中心的相關限制，政府和國會一直在醞釀製定新的規則來取代這些限制。英偉達的裡佐表示，該業務「為美國帶回了數百億美元和高薪工作崗位」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration has also taken a more cautious approach to placing sanctions on Chinese firms, after attempts last year to expand the entity list drew blowback from China. Inside the Commerce Department, which enforces the list, six current and former officials described an agency that had lost its appetite for cases involving China or Nvidia. Ten months have passed without a firm’s being added to the entity list, the longest stretch in 18 years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在去年擴大實體清單的嘗試招致中國反擊後，本屆政府在制裁中國企業方面也採取了更為審慎的態度。在負責執行該清單的商務部內部，六名現任和前任官員形容，如今該部門已經對涉及中國或英偉達的案件失去了興趣。截至目前，已經有10個月沒有任何一家企業被列入實體清單，這是18年來最長的一段空窗期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A White House official said the Trump administration had enacted the most rigorous export control regime in modern history and was committed to safeguarding America’s national security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位白宮官員表示，川普政府已實施現代史上最嚴格的出口管制制度，並致力於維護美國國家安全。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Jordan Nanos, an analyst at SemiAnalysis, a tech research firm, who has studied Aivres’s business, said that the firm operated in the United States with the same servers, employees and offices as its parent company, Inspur, and that federal officials seemed to have done little about it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但科技研究公司SemiAnalysis研究過Aivres業務的分析師喬丹·納諾斯表示，該公司在美國運營時使用的伺服器、員工和辦公室與其母公司浪潮完全相同，而聯邦官員似乎對此舉措甚少。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CK-F4r3r3ZYDFV4MRAgddgUI4w" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Are they trying to ban them, or are they not?” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們到底是想禁止這家公司，還是不想？」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Different Country, Same Tactic</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>不同的國家，同樣的手法</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Most Americans have never heard of Inspur, but the company is among the world’s largest makers of computer servers. It has also dodged one sanction after another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大多數美國人從未聽說過浪潮，但這家公司是全球最大的計算機伺服器製造商之一，並且一次次避開了制裁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the U.S. blacklisted Inspur in 2023, it got a new name in the United States. In China, Inspur got a new address.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當美國於2023年將浪潮列入黑名單後，它在美國換了個新名字。在中國，浪潮則換了個新地址。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The entity list, which the United States uses to block trade to targeted companies, applies to the specific company name and address designated by the government. Just days after its 2023 listing, Inspur registered its main business to a building down the road.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國用來阻斷與被制裁公司貿易的實體清單適用於政府指定的具體公司名稱和地址。在被列入清單僅數天後，浪潮將其主要業務註冊到了不遠處的另一棟樓。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Four months ago, a Times reporter visited that address, in the eastern Chinese city Jinan. It was a nondescript building with no signage beyond a bank on the ground floor. A security guard confirmed that Inspur had an office there, but said not many people worked in it. He said Inspur was really based at the industrial park down the street.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">四個月前，一位《紐約時報》記者前往中國東部城市濟南的那個地址。那是一棟不起眼的建築，除了一樓的一家銀行外沒有任何標識。一名保安確認浪潮在那裡有辦公室，但說裡面工作人員不多。他說浪潮真正的總部在同一條街的工業園區裡。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIK64b3r3ZYDFdUuRAgdAO0nkg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That compound was busy. A series of dark gray high-rises stood inside a vast enclosure ringed by a hedge of roses and rows of motorbikes. Inside the gates, a red sign flashed a key slogan from China’s leader, Xi Jinping: “Chinese dream.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那個園區十分繁忙。在一大片由玫瑰樹籬和成排摩托車環繞的圍牆內，矗立著一些深灰色高樓。大門內，一塊紅色標牌閃爍著中國領導人習近平的關鍵口號：「中國夢」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Inspur, which is majority-owned by Shandong Province, began as a state-owned electronics factory. It developed the world’s first pager capable of displaying Chinese characters. More than a decade ago, the Chinese military and state turned to Inspur’s servers to reduce the reliance on foreign companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由山東省政府控股的<span>浪潮最初是一家國有電子廠。它研發出了世界上第一台能顯示漢字的傳呼機。十多年前，中國軍方和國家開始轉向浪潮的伺服器，以減少對外國公司的依賴。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That made Inspur an American target. In 2020, the Trump administration included it on a list of Chinese military companies. In 2023, the Biden administration said Inspur Group had sought U.S. technology to make military supercomputers and put it on the entity list. That meant U.S. firms could no longer ship to it without a special license.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這讓浪潮成為美國的目標。2020年，川普政府將其列入中國軍工企業名單。2023年，拜登政府稱浪潮集團尋求利用美國技術製造軍用超級計算機，並將其列入實體清單。這意味著美國企業未經特別許可不得再向其發貨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A loophole quickly opened. Companies like Intel had been selling to Inspur’s subsidiary, not the parent company, which the order did not cover.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個漏洞很快出現。英特爾等公司一直在向浪潮的子公司（而非母公司）銷售產品，而該命令並未覆蓋子公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two years later, the second Trump administration closed a part of the loophole, adding some of Inspur’s subsidiaries to the blacklist. Aivres was not among them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>兩年後，第二屆川普政府堵住了部分漏洞，將浪潮的一些子公司列入黑名單。但Aivres不在其中。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Standout Connection</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>一個引人注目的聯繫</b><b></b></span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPHF473r3ZYDFa-V7gEdHGQEZg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Records show that billions of dollars of advanced servers and other technology have flowed from Aivres and Inspur’s other global subsidiaries to cloud-computing and assembly firms across Southeast Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">記錄顯示，價值數十億美元的先進伺服器及其他技術從Aivres和浪潮的其他全球子公司流向了東南亞的雲計算和組裝公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One connection stands out. Maginfra was created in China last year, and quickly began doing brisk business with a Malaysian electronics firm that transacts with Inspur’s companies in Hong Kong, mainland China, the United States and Singapore.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一個聯繫尤為突出。Maginfra去年在中國成立，並迅速開始與一家馬來西亞電子公司開展大量業務，該公司與浪潮在香港、中國大陸、美國和新加坡的公司有交易往來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maginfra imported more than $700 million of servers from Malaysia into China in a six-month period, including more than 1,500 servers that were priced consistently with high-end A.I. capabilities, ImportGenius data shows. These entries do not include detailed descriptions of the servers or chips inside them, but they do indicate per-unit prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">ImportGenius數據顯示，Maginfra在六個月內從馬來西亞向中國進口了價值超過7億美元的伺服器，其中包括1500多台價格與高端人工智慧算力相符的伺服器。這些進口記錄沒有包含伺服器或內部晶片的詳細描述，但顯示了單價。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maginfra has a scant public profile and no direct link to Inspur on paper. It is also government-owned, and it is down the street from Inspur’s headquarters. Corporate records show that the legal representative of Maginfra’s parent company has held positions at companies affiliated with Inspur subsidiaries or investment partners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Maginfra在公開資料中鮮有記錄，在紙面上與浪潮無直接關聯。它也是一家國有企業，且與浪潮總部在同一條街。公司記錄顯示，Maginfra母公司的法定代表人曾在浪潮子公司或投資夥伴關聯公司任職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to Wirescreen, a data platform, many of the patents that Maginfra has registered were filed by inventors who have worked for Inspur. The two firms’ websites also share striking similarities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據數據平台Wirescreen，Maginfra註冊的許多專利的發明人都有在浪潮工作的經歷。兩家公司的網站也有著驚人的相似之處。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When a reporter from The Times visited Maginfra’s listed address in China on Tuesday, it appeared deserted. A few chairs and empty desks sat inside a small locked room with no signs. Workers on the floor said they had not seen anyone use the office, and building receptionists said they had not heard of Maginfra.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當《紐約時報》記者週二前往Maginfra在中國的註冊地址時，發現那裡是閑置狀態。一間上鎖的小房間裡放著幾把椅子和空桌子，沒有任何標識。該樓層的工作人員表示沒見過有人使用該辦公室，大樓前台也表示沒聽說過Maginfra。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週二，《紐約時報》記者前往Maginfra的註冊地址探訪，發現那裡處於閑置狀態。" data-src="https://static01.nyt.com/images/2026/09/01/multimedia/00biz-china-ai-smuggle-office-wzkc/00biz-china-ai-smuggle-office-wzkc-master1050.jpg" src="https://static01.nyt.com/images/2026/09/01/multimedia/00biz-china-ai-smuggle-office-wzkc/00biz-china-ai-smuggle-office-wzkc-master1050.jpg"/></div><figcaption><span>週二，《紐約時報》記者前往Maginfra的註冊地址探訪，發現那裡處於閑置狀態。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Public filings analyzed by C4ADS, a Washington research nonprofit, show Chinese universities, some with ties to defense research, seeking and sometimes obtaining servers containing advanced computer chips built by Maginfra and Inspur.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓非營利研究機構C4ADS分析的公開文件顯示，中國高校（部分與國防研究有關聯）會尋找並有時的確購得了由Maginfra和浪潮製造、搭載先進計算機晶片的伺服器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maginfra also inked a contract in November to sell $165 million of high-performance computing technology to a division of a Chinese state-owned bank, according to a filing on the Hong Kong Stock Exchange.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據香港聯交所的一份文件，Maginfra去年11月還簽署了一份合同，向一家中國國有銀行的一個部門出售價值1.65億美元的高性能計算技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s very hard to look at this and not see a state-sponsored Chinese network for bypassing export controls,” said William George, the director of research at ImportGenius, who analyzed the trade records.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析貿易記錄的ImportGenius研究總監威廉·喬治表示：「很難不把這看作一個由中國政府支持、用於規避出口管制的網路。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the Trump administration approved Maginfra this year for a license for Nvidia’s less powerful H200 chips, according to documents viewed by The Times. Reuters previously reported the license.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但根據《紐約時報》看到的文件，川普政府今年已批准Maginfra獲得英偉達性能較低的H200晶片的許可。路透社此前曾報導過該許可。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The subsidiary Aivres remains very visible in Silicon Valley. It advertised A.I. servers using AMD’s technology and was listed as an “elite” partner of Nvidia and a sponsor of its annual conference in San Jose, Calif. (AMD declined to comment.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>子公司Aivres在矽谷仍然十分活躍。它曾推廣其使用AMD技術的人工智慧伺服器，並被列為英偉達的「精英」合作夥伴，以及英偉達在加利福尼亞州聖何塞年度會議的贊助商。（AMD拒絕置評。）</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In May, Nvidia announced that Aivres was among the more than two dozen companies in full-scale production of the servers that would supply its next generation of A.I. technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年5月，英偉達宣布Aivres是二十</span>余家大規模生產伺服器的公司之一，這些伺服器將為其下一代人工智慧技術提供算力支持。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Ana Swanson報導貿易和國際經濟新聞，常駐華盛頓。她從事新聞工作已超過十年。</p><div class="" data-poster=""><span><p class="cn-p">孟建國(Paul Mozur)是時報全球科技記者，常駐台北。此前，他自香港、上海和首爾報導亞洲科技與政治的交叉議題。</p><p class="cn-p">Tripp Mickle報導英偉達、谷歌和蘋果等全球最大的科技公司。他也報導整個科技行業的趨勢，包括裁員、生成式AI和機器人計程車等。</p><p class="cn-p"><span>Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</span></p><div class="" data-poster=""><br/></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260907/ai-chips-china-blacklist/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>悲觀、沮喪與黑色幽默 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">悲觀、沮喪與黑色幽默</h1>
+    <h2 class="en-headline">Social Media in China Is Getting Really Dark</h2>
+    <div class="meta-line">袁莉 <span style="margin: 0 8px;">•</span> 2026-09-08</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="735" src="https://static01.nyt.com/images/2026/09/02/business/00newworld-shame/00newworld-shame-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Dongyan Xu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the hottest videos on the popular Chinese site Bilibili in the past two weeks is a quasi-serious guide on how to survive as a homeless person.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去兩週，中國熱門網站嗶哩嗶哩上最火的影片之一是一份半開玩笑半認真的流浪漢生存指南。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sleep near garbage bins where “supplies” are replenished, use cardboard to insulate yourself from the damp and avoid surveillance cameras, the video suggested. It was viewed more than six million times and was briefly ranked the site’s No. 2 video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">影片建議睡在能得到「物資」補充的垃圾桶附近，用紙板隔絕潮氣，並避開監控攝像頭。該影片的觀看次數超過600萬次，並一度躍居該網站熱門影片的第二名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Viewers jokingly called it “Youth Study,” the name of the Communist Youth League’s political education program, and “a required course for young people in 2026.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">觀眾戲稱其為「青年大學習」（共青團政治教育項目的名稱），並稱其為「2026年年輕人的必修課」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese Communist Party has spent years trying to make “positive energy” the dominant mood of the country’s internet. Online platforms, it dictates, should amplify narratives of economic achievement, gratitude toward the party and confidence in China’s future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國共產黨多年來一直試圖讓「正能量」成為中國互聯網的主導情緒。它規定，網路平台應大力宣傳經濟成就、對黨的感恩以及對中國未來的信心。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKmB27jr3ZYDFekPRAgdtck8uQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Discontent has occasionally erupted after disasters, scandals or particularly brutal government actions. But something feels different lately. The pessimism is persistent. It has become part of the everyday social media feed, and can sometimes turn subversive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在災難、醜聞或特別粗暴的政府行動之後，不滿情緒偶爾會爆發。但最近的情況感覺有所不同。這種悲觀情緒是持續的。它已經成為日常社群媒體信息流的一部分，有時甚至會演變成具有顛覆性的內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s economic growth is slowing. A prolonged property crash has eroded the value of many families’ biggest asset while jobs have become harder to find and less secure. As the malaise deepens, more social media users are abandoning a cheery, compliant public performance and creating counternarratives that censorship can sometimes erase but not easily rebut.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的經濟增長正在放緩。曠日持久的房地產崩盤侵蝕了許多家庭最大資產的價值，同時工作變得更難找，也更缺乏保障。隨著這種低迷狀態的加深，越來越多的社群媒體用戶放棄了愉悅、順從的公開表現，轉而構建出一種反敘事——它們雖有時會被審查刪除，卻難以被輕易駁斥。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Across RedNote, Douyin, Weibo and other popular platforms, you can scroll endless posts about meager wages, scarce jobs, falling property values and fear about the future. Some turn their hardships into dark humor. Others hijack official posts and hashtags and turn propaganda into spectacles of mockery.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在小紅書、抖音、微博和其他熱門平台上，可以刷到無數關於微薄工資、工作崗位稀缺、房地產貶值以及對未來擔憂的帖子。一些人將自己的苦難化作黑色幽默。另一些人則借題發揮，假借官方帖子和標籤，將宣傳變成嘲弄的精彩表演。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s censorship apparatus still controls the internet. But prolonged economic distress is making it harder for the party to maintain its preferred account of how the country is doing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的審查機制仍然控制著互聯網。但長期的經濟困境使得中共越來越難以維持其對國家現狀偏好的敘述。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s official youth unemployment rate reached 17.9 percent in July. More than 200 million people, over a quarter of the country’s working population, now work in what the government calls “flexible employment” — essentially a vast gig economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月，中國官方公布的青年失業率達到17.9%。目前有超過2億人（佔全國勞動人口的四分之一以上）從事政府所謂的「靈活就業」——這實質上就是一個龐大的零工經濟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A hashtag on RedNote, also known as Xiaohongshu, urging people to keep a tight grip on their money has been viewed nearly 120 million times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在小紅書上，一個敦促人們捂緊錢包的標籤已被瀏覽近1.2億次。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLqD27jr3ZYDFXs8RAgdXjgCHw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Young Chinese struggle to find jobs and are retreating from marriage and parenthood. Middle-age people who have followed the prescribed routes to security now feel that their major life decisions may have become liabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國年輕人求職困難，正在逃避婚姻和生育。那些曾經循規蹈矩走上安穩道路的中年人現在卻覺得他們人生中的重大決定可能已經變成了累贅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In this environment, you’ve won if you didn’t buy apartments, didn’t buy cars, didn’t invest or didn’t get married early,” read one post on RedNote. People born in the 1980s who strove the hardest, it said, are likely the biggest losers. The post was liked nearly 2,000 times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在這種大環境下，如果你沒買房、沒買車、沒投資、沒早結婚，你就贏了，」小紅書上的一篇帖子寫道。帖子稱，最努力拚搏的80後可能是最大的輸家。該帖子獲得了近2000次點讚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The criticism sometimes extends to forbidden territory — the Chinese leader, Xi Jinping, and Communist Party rule.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種批評有時會延伸到禁忌領域——中國領導人習近平以及中國共產黨的統治。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In November, the comment section on a Douyin post explaining the idiom “yichou wannian,” — literally, “to leave a stench for 10,000 years,” or to be remembered in infamy forever — blew up. Users made veiled references to Mr. Xi, who is often referred to simply as “he” in Chinese conversations. “He’s in a league of his own,” one comment said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年11月，抖音上一條解釋成語「遺臭萬年」的帖子評論區炸了鍋。用戶隱晦地影射了習近平，在中文對話中，習近平通常被簡稱為「他」。一條評論寫道：「他簡直是獨一檔的存在。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Li Ying, known for his online alias, “Teacher Li,” runs a popular account on X that serves as an uncensored information clearinghouse about China. He and his team monitor the Chinese social media sphere closely. They’ve seen an “exponential” increase in pessimistic and even subversive posts and comments this year, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以網名「李老師」聞名的李穎在X上運營著一個受歡迎的帳號，作為不受審查的中國信息集散地。他和他的團隊密切監控著中國的社群媒體圈。他說，今年他們看到悲觀甚至顛覆性的帖子和評論數量呈「指數級」增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Back in 2022, if we saw one online comment mocking Xi Jinping, we considered it worth sharing because few people dared say things like that,” Mr. Li said. “Today, you see so much of it that it barely even registers anymore.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「回想2022年，如果我們看到一條嘲笑習近平的在線評論，我們會認為它值得分享，因為很少有人敢說那樣的話，」李穎說。「今天，你能看到太多這樣的內容，根本都引不起注意了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJmo27jr3ZYDFQAHvAEde0gjcQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the economy declined, people started asking questions that they didn’t need to think of before, Mr. Li said. Many users may not have realized that their personal complaints could be considered political. For example, he said, some government workers on RedNote compared how many months they had gone without getting paid.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">李穎說，隨著經濟衰退，人們開始提出以前根本不需要思考的問題。許多用戶可能沒有意識到，他們的個人抱怨可能會被視為政治性的。例如，他說，小紅書上的一些政府工作人員在互相比較自己已經有幾個月沒領到工資了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To the social media users, their individual posts might feel like a personal reflection or complaint. But collectively they offer an account of China at odds with the official narrative of progress and prosperity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於社群媒體用戶來說，他們各自的帖子可能感覺像是個人的反思或抱怨。但將它們匯總起來，卻勾勒出一個與官方所宣揚的進步與繁榮敘事格格不入的中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other users are deliberately using social media as a tool of dissent, and they subvert official propaganda to that purpose. A Douyin video proclaiming the Communist Party to be the world’s greatest party drew 41,000 roughly identical comments with rows of crying-face emojis punctuated by slashes and backslashes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有些用戶則在蓄意將社群媒體作為表達異議的工具，並以此顛覆官方宣傳。抖音上一個宣稱中國共產黨是世界上最偉大政黨的影片引來了4.1萬條內容基本相同的評論，評論中是一排排的流淚表情符號，中間穿插著斜杠和反斜杠。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="一段讚揚共產黨的影片吸引了4.1萬條內容幾乎完全相同的評論，評論中排滿了哭臉表情符號。" data-src="https://static01.nyt.com/images/2026/09/04/business/Biz-Newworld-Shame/Biz-Newworld-Shame-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/04/business/Biz-Newworld-Shame/Biz-Newworld-Shame-jumbo.jpg"/></div><figcaption><span>一段讚揚共產黨的影片吸引了4.1萬條內容幾乎完全相同的評論，評論中排滿了哭臉表情符號。</span> <cite>via X</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tactic becomes especially potent when users converge on government and state media accounts. Last month, a state-affiliated media post claimed that China had invented human flight during the Ming dynasty, centuries before the West. The post triggered many sarcastic comments. “I get withdrawal symptoms if I go a day without hearing that China has won,” one said. “When will we invent two-day weekends?” said another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當用戶聚集在政府和官方媒體帳號上時，這種策略變得尤為有效。上個月，一家官方媒體發布的帖子聲稱中國在明朝就發明了載人飛行，比西方早了幾個世紀。該帖子引發了許多諷刺性評論。「如果一天聽不到中國贏了的消息，我就會出現戒斷反應，」其中一條評論寫道。「我們什麼時候才能發明雙休日呢？」另一條評論寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Christian Göbel, a professor of contemporary Chinese politics at the University of Vienna, calls this tactic “subversive amplification.” Rather than build an audience of their own, users piggyback on the reach of official posts while undermining their intended messages.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維也納大學當代中國政治學教授顧克禮(Christian Göbel)將這種策略稱為「顛覆性放大」。用戶並不是建立自己的受眾群體，而是搭乘官方帖子的傳播便車，同時破壞其原本想要傳達的信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s internet censorship has grown increasingly ruthless over the past decade. That makes the sheer volume of the pessimistic posts and sarcastic comments all the more striking. At the same time, it’s difficult to know why some posts survive long enough to go viral while others quickly disappear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在過去的10年裡，中國的互聯網審查變得越來越嚴苛。這使得海量的悲觀帖子和諷刺評論變得尤為引人注目。與此同時，很難弄清楚為什麼有些帖子能留存足夠長的時間直至瘋傳，而另一些帖子卻很快消失。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKDQ27jr3ZYDFdk8RAgdmAY94g" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One possible explanation is that policing too aggressively could hurt traffic and advertising revenue. Another potential explanation is that recommendation algorithms allow scattered grievances to find one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一種可能的解釋是，過於嚴厲的監管可能會損害流量和廣告收入。另一種潛在的解釋是，推薦算法讓零散的怨言得以互相找到彼此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When I opened my RedNote in recent weeks, I was surprised to find that the first 30 or so posts were nearly all about economic despair, many with hundreds or thousands of likes. The suggested searches could be even gloomier. “Is there a future for employment in China?” read one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近幾週，當我打開我的小紅書時，我驚訝地發現，前30篇左右的帖子幾乎全都是關於經濟絕望的，其中許多帖子有成百上千個贊。推薦搜索的結果可能更加令人沮喪。其中一個是：「中國就業還有未來嗎？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government has tried to tamp down on negative energy. In 2023, the Ministry of State Security portrayed efforts to “bad-mouth China’s economy” as a security and political issue. Last year, the internet regulator ordered platforms to suppress claims that hard work or education was useless, as well as memes and jokes that excessively spread pessimism.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府曾試圖壓制負能量。2023年，國家安全部將「唱衰中國經濟」的努力定性為安全和政治問題。去年，互聯網監管機構命令平台壓制有關努力工作或受教育無用的言論，以及過度傳播悲觀情緒的網路梗和段子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, the Ministry of State Security posted an article accusing an unnamed foreign organization of funding “lying flat” influencers to “erode the minds of Chinese youth.” “Lying flat” is a growing trend among young Chinese people who believe that striving is futile in the face of a bleak economic future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">4月，國家安全部發表了一篇文章，指責一家未具名的外國組織資助「躺平」網紅，以「腐蝕中國青年的思想」。「躺平」在中國年輕人中成為一種日益增長的趨勢，他們認為面對暗淡的經濟前景，奮鬥是徒勞的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The accusation prompted another counternarrative. Under a related hashtag on Weibo, users connected “lying flat” to scarce jobs, low wages and punishing work schedules. Some questioned whether the government was desperate. “When the mule stops working, the landlord stops making money,” one commenter wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一指責引發了另一種反敘事。在微博上的一個相關標籤下，用戶將「躺平」與工作崗位稀缺、低工資和高壓的工作日程聯繫起來。一些人質疑政府是不是急了。「騾子不幹活了，地主就賺不到錢了，」一位評論者寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ministry closed the article’s comment section.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國安部關閉了該文章的評論區。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMD827jr3ZYDFY02RAgdlVECtg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I don’t know if this can really be controlled,” Mr. Göbel said. “Any narrative that would try to make this go away would be an insult to the people who are suffering.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我不知道這是否真的能被控制住，」顧克禮說。「任何試圖讓這一切消失的敘事都是對正在受苦的人們的一種侮辱。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">袁莉為《紐約時報》撰寫「新新世界」專欄，專注中國及亞洲科技、商業和政治交叉議題。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260908/china-social-media-pessimism/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
