@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國出口繼續「狂飆」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國出口繼續「狂飆」</h1>
+    <h2 class="en-headline">China’s Surging Exports Loom Over Trump’s Talks With Xi</h2>
+    <div class="meta-line">艾莎 <span style="margin: 0 8px;">•</span> 2026-09-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一，南京一處港口整齊堆放的集裝箱。全球對中國商品的需求部分源自各國急需大舉建設人工智慧能力。" height="700" src="https://static01.nyt.com/images/2026/09/08/multimedia/08biz-china-exports-flwt/08biz-china-exports-flwt-master1050.jpg" width="1050"/><figcaption><span>週一，南京一處港口整齊堆放的集裝箱。全球對中國商品的需求部分源自各國急需大舉建設人工智慧能力。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When President Trump and China’s leader, Xi Jinping, meet this month to talk about a fragile trade truce, one issue is sure to dominate: China’s seemingly unstoppable export engine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統與中國領導人習近平將於本月會晤，討論脆弱的貿易休戰問題。屆時，中國看似不可阻擋的出口引擎勢必將成為主要議題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese customs data released on Tuesday showed that in August, China sold $119.09 billion more in goods to the world than it bought — the fourth month in a row that the trade surplus topped $100 billion. Exports rose by 25 percent in U.S. dollar terms, while imports climbed 28 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>週二公布的中國海關數據顯示，8月份中國對全球的商品出口額比進口額高出1190.9億美元——這是貿易順差連續第四個月突破1000億美元大關。以美元計價出口同比增長25%，進口攀升28%。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So far this year, the trade gap is already over $800 billion, and economists say it is on track to surpass last year’s $1.2 trillion, a milestone no other country has reached.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年以來，中國的貿易順差已超過8000億美元。經濟學家指出，該數據正逼近甚至有望超越去年1.2萬億美元的規模，而</span>那已經是此前未有任何其他國家達到過的里程碑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the early months of his second term, Mr. Trump made confronting China on trade a centerpiece of his agenda, unleashing hefty tariffs on the country to try to force a sweeping economic deal. But after Beijing retaliated by choking off rare earths exports, the Trump administration was forced to back down and accept a modest truce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在第二任期的最初幾個月裡，川普將在貿易問題上對抗中國作為其議程的核心，對中國加徵高額關稅，試圖迫使中方達成一項廣泛的經濟協議。但在北京通過切斷稀土出口進行報復後，川普政府被迫讓步，接受了適度的休戰。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMiLnYiv4JYDFZQwaAgdtowEIg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While China’s trade surplus with the United States narrowed earlier, it has begun expanding again, testing the limits of the détente. The trade disparity with the United States in August grew even wider, swelling by 44 percent to more than $29 billion, the widest gap since Mr. Trump returned to office in January, 2025.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對美貿易順差此前曾有所縮小，但如今再度擴大，正挑戰著這種緩和狀態的極限。8月份，中美貿易順差進一步擴大，激增44%，至290多億美元，創下自川普2025年1月重返白宮以來的最高紀錄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s domestic economic troubles have helped set it on a collision course with some of the world’s biggest economies. Facing cutthroat competition and frugal consumers at home, where the economy is growing at its slowest rate in three years, China’s factories have sought markets overseas, where their cheap goods are welcomed. Chinese exports this year have grown everywhere. They have ballooned by nearly 26 percent with Southeast Asia and more than 25 percent with Africa. Its exports to Canada are up by more than 10 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國國內的經濟困境使其與世界上幾個最大經濟體走向衝突。在國內，經濟正以三年來最慢的速度增長，面對殘酷的競爭和節儉的消費者，中國工廠紛紛轉向歡迎其廉價商品的海外市場。今年，中國對全球各地的出口均呈增長態勢：對東南亞的出口激增近26%，對非洲出口增幅超過25%，對加拿大的出口也增長了10%以上。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of the demand for Chinese goods has been driven by a voracious appetite around the world to build out artificial intelligence capabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球為建設人工智慧能力而產生的巨大需求部分推動了對中國商品的消費。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年，中國宿遷一家半導體製造廠。8月份，中國半導體出口大幅增長。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/08biz-china-exports-bzmt/08biz-china-exports-bzmt-master1050.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/08biz-china-exports-bzmt/08biz-china-exports-bzmt-master1050.jpg"/></div><figcaption><span>去年，中國宿遷一家半導體製造廠。8月份，中國半導體出口大幅增長。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exports of Chinese semiconductors and automatic data processing machines grew by nearly 130 percent and 77 percent in August compared with the same period last year. Demand for China’s electric vehicles also remains strong, as the war in Iran has dragged on for six months, disrupting the flow of oil through the Strait of Hormuz and sending oil and gas prices higher.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與去年同期相比，8月份中國半導體和自動數據處理設備的出口分別增長了近130%和77%。與此同時，由於在伊朗的戰爭已持續六個月，擾亂了途經霍爾木茲海峽的石油運輸並推高了油氣價格，對中國電動汽車的需求依然強勁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s yawning trade gap with the world has frustrated officials in many of the biggest economies, who are worried about the growing dominance of Chinese companies across a range of industries, as well as the flood of goods into their countries. Many officials argue that China’s manufacturing dominance is the result of heavy government subsidies that favor Chinese companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對世界其他地區巨大的貿易順差令許多最大經濟體的官員不滿，他們不僅擔心中國企業在多個行業日益增強的主導地位，也對大量湧入其國內的商品感到不安。許多官員認為，中國在製造業的主導地位源於嚴重偏袒中國企業的政府補貼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European Union’s trade commissioner recently gave Beijing an October deadline to provide “concrete results” of its efforts to rebalance a record trade deficit with Europe — with proposed measures like granting European companies more access to the Chinese market — or to risk “harsher measures.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>歐盟貿易委員最近給北京設下了10月的最後期限，要求中方出示旨在重新平衡創紀錄的中歐貿易逆差的「具體成果」——例如允許歐洲企業獲得更多進入中國市場的機會等擬議措施——否則將面臨「更嚴厲的措施」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tensions spilled into the open last week at a gathering of economic officials from the Group of 20 nations. Treasury Secretary Scott Bessent accused China of blocking a joint statement by the group because it opposed language that criticized countries “with excessive and persistent external surpluses.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，這種緊張的氣氛瀰漫到了二十國集團經濟官員會議。美國財政部長史考特·貝森特指責中國阻撓該集團發表聯合聲明，因為中方反對聲明中批評一些國家「存在過度且持續的外部順差」的措辭。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="左起：中國人民銀行行長潘功勝，財政部副部長廖岷。兩人上月出席在北卡羅萊納州阿什維爾舉行的二十國集團會議。美國財政部長在會上指責中國阻撓該集團發表聯合聲明。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/08biz-china-exports-cjgt/08biz-china-exports-cjgt-master1050.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/08biz-china-exports-cjgt/08biz-china-exports-cjgt-master1050.jpg"/></div><figcaption><span>左起：中國人民銀行行長潘功勝，財政部副部長廖岷。兩人上月出席在北卡羅萊納州阿什維爾舉行的二十國集團會議。美國財政部長在會上指責中國阻撓該集團發表聯合聲明。</span> <cite>Gerald Herbert/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has denied that it is intentionally creating trade imbalances, arguing that its competitive edge is a result of innovation and efficient manufacturing. The government accused Mr. Bessent of using international forums like the G20 to “hype narratives” about trade imbalances and to “manufacture pretexts for pressuring and restricting China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京方面否認故意製造貿易失衡，強調其競爭優勢是創新和高效製造的結果。中國政府指責貝森特利用二十國集團等國際論壇「炒作」貿易失衡的敘事，並「為施壓和限制中國製造藉口」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The trade tensions will be front and center during talks between Mr. Trump and Mr. Xi, who is expected to visit Washington later this month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">預計習近平將於本月晚些時候訪問華盛頓。在川普與習近平的會談中，貿易緊張局勢將成為核心議題。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLKtnoiv4JYDFe8waAgdsd4w6w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The latest trade data will give Mr. Trump “fresh ammunition” going into the talks with Mr. Xi, said Han Lin, the China country director of The Asia Group, a consulting firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諮詢公司美商亞洲集團中國區總監林漢昇表示，最新的貿易數據將為即將與習近平會談的川普提供「新彈藥」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But it also strengthens Xi’s hand. China’s exports remain resilient despite U.S. tariffs, underscoring Beijing’s leverage,” said Mr. Lin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「但這也增強了習近平的底氣。儘管面臨美國的關稅，中國的出口依然保持韌性，這彰顯了北京掌握的籌碼，」林漢昇說道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The widening trade gap is also a symptom of lackluster demand at home. Consumer spending has been weak, while youth unemployment remains high. In August, China’s imports slowed, even as the country imported more high-tech goods like automatic data processing machines and semiconductors. Foreign car shipments have fallen around 20 percent so far this year as domestic brands dominate the market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不斷擴大的貿易順差同時也是<span>國內需求疲軟的表徵。消費者支出持續疲軟，青年失業率居高不下。8月份，儘管中國進口了更多自動數據處理設備和半導體等高科技商品，但整體進口增速仍有所放緩。由於本土品牌主導市場，今年迄今為止，外國汽車的進口量已下降約20%。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s oil imports continued to fall in August and were down nearly 15 percent from the same period a year earlier. China is the world’s biggest buyer of oil, but has pared back its purchases since the war with Iran began.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國8月份的石油進口繼續下降，同比降幅近15%。中國是全球最大的石油買家，但自美伊戰爭爆發以來已削減了購買量。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Murphy Zhao對本文有報導貢獻。</p><div class="" data-poster=""><span><p class="cn-p">艾莎(Alexandra Stevenson)是《紐約時報》上海分社社長，報導中國經濟和社會新聞。</p><div class="" data-poster=""></div></span></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260909/china-exports-xi-trump-talks/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

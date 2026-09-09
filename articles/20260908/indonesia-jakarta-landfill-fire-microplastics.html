@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>印度尼西亞的微塑料危機 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">印度尼西亞的微塑料危機</h1>
+    <h2 class="en-headline">The Microplastics Epidemic in Indonesia</h2>
+    <div class="meta-line">黃瑞黎, PABLO ROBLES <span style="margin: 0 8px;">•</span> 2026-09-08</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="消防員努力控制坦格朗賈蒂瓦林因垃圾場大火時，燃燒的垃圾升起煙霧。" height="700" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-a-02/c08indonesia-microplastics-a-02-master1050.jpg" width="1050"/><figcaption><span>消防員努力控制坦格朗賈蒂瓦林因垃圾場大火時，燃燒的垃圾升起煙霧。</span> <cite></cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The blaze at the landfill, the Jatiwaringin waste site, burned for 10 days in July. It was unusual for its sheer size and duration, but that kind of pollution is endemic in Indonesia: people burn trash every day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月，位於賈蒂瓦林因的垃圾填埋場發生大火，持續燃燒了10天。就其規模和持續時間而言，這場火災不同尋常，但這類污染在印度尼西亞普遍存在：人們每天都在焚燒垃圾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are breathing microplastics,” said Muhammad Reza Cordova, a senior scientist at Indonesia’s National Research and Innovation Agency in Jakarta.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們正在呼吸微塑料，」雅加達印度尼西亞國家研究與創新署高級科學家穆罕默德·禮薩·科爾多瓦說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The implications could be dire, and spill over the country’s borders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其影響可能十分嚴重，並會蔓延到該國境外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After firefighters brought the flames at the landfill under control, hundreds of people in the surrounding area were treated for acute respiratory infections, the authorities said. The mounds of trash included tens of thousands of tons of plastic, which broke off into tiny fragments as the fires raged.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當局表示，在消防員控制住垃圾場的火勢後，周邊地區有數百人因急性呼吸道感染接受治療。垃圾堆中包括數萬噸塑料，在大火肆虐時碎裂成微小碎片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Microplastics are generally defined as pieces that are less than 5 millimeters long, slightly smaller than the diameter of a plastic straw. The smallest of these, nanoplastics, which measure less than 1 micrometer, are the most likely to get into human blood and tissue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微塑料通常被定義為長度小於五毫米的碎片，略小於塑料吸管的直徑。其中最小的納米塑料尺寸小於一微米，最有可能進入人體血液和組織。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-01/c08indonesia-microplastics-master1050.png" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-01/c08indonesia-microplastics-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers have also found microscopic pieces of plastic — which is not biodegradable and keeps breaking down into smaller and smaller fragments — in human brains, breast milk and amniotic fluid.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員還在人類大腦、母乳和羊水中發現了微小塑料碎片——塑料不可生物降解，並會不斷分解成越來越小的碎片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Indonesia has the highest level of microplastic ingestion in the world, according to a study from Cornell University, which was published in 2024. The researchers found that on average, people in Indonesia consume 15 grams of plastic particles every month, which is the weight of three credit cards. The country also ranks among the highest in the world for airborne microplastics. Researchers have found plastic fragments present in the air in 18 cities across the country, of which Jakarta had the highest concentration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據康乃爾大學2024年發表的一項研究，印度尼西亞的微塑料攝入量居世界首位。研究人員發現，印度尼西亞人平均每月攝入15克塑料顆粒，相當於三張信用卡的重量。該國空氣中的微塑料濃度也位居全球前列。研究人員已在該國18個城市的空氣中發現塑料碎片，其中雅加達濃度最高。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ2nsY2v4JYDFZ0E9Qgd0m8Nag" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The contamination is the toxic legacy of the country’s chronic challenges with managing plastic waste. Mr. Reza and his colleagues have reported that the amount of microplastics on the ground multiplied fivefold after it rained — a sign of how thick the air has become with these materials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種污染是該國長期面臨塑料垃圾管理難題所留下的有毒遺產。禮薩及其同事報告稱，下雨後地面上的微塑料數量增加五倍——這表明空氣中這些物質的濃度已經非常高。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Washing clothes made of synthetic fabrics can also emit microplastics into sewage, and then rivers and oceans. Some types of car tires also produce microplastics as they wear down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">洗滌合成纖維衣物也會向污水中排放微塑料，進而進入河流和海洋。某些類型的汽車輪胎在磨損時也會產生微塑料。</div></div></div><figure class="article-inline-photo large with-no-credit-caption"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-02/c08indonesia-microplastics-02-master1050.png" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-02/c08indonesia-microplastics-02-master1050.png"/></div><figcaption><span></span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">All of this has global ramifications because Indonesia sits between two major oceans. The United Nations says the country is the second-largest plastic polluter in the world after China. Indonesia also has a big fisheries industry, exporting over a million tons a year of seafood to Asia and North America. Researchers have found microplastics in manta rays, milkfish and snappers that were caught in Indonesian waters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所有這些都具有全球影響，因為印度尼西亞位於兩大洋之間。聯合國表示，該國是僅次於中國的世界第二大塑料污染國。印尼漁業發達，每年向亞洲和北美出口超過100萬噸海產品。研究人員已在印度尼西亞水域捕獲的蝠鱝、虱目魚和鯛魚體內發現微塑料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And, the trash itself can travel long distances once it reaches the ocean.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而且，垃圾本身一旦進入海洋，可以漂流很遠的距離。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The science on how microplastics affect the human body is still at an early stage. But a 2024 study published in The New England Journal of Medicine found that patients undergoing surgery to clear clogged carotid arteries were 4.5 times as likely to suffer a heart attack or stroke or die over the next 33 months if microplastics were found in the plaque removed from their arteries than those whose plaque was free of plastic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於微塑料如何影響人體的科學研究仍處於早期階段。但2024年發表在《新英格蘭醫學雜誌》上的一項研究發現，在接受清除頸動脈堵塞手術的患者中，如果從動脈中取出的斑塊內發現微塑料，那麼這些患者在接下來33個月內發生心臟病發作、中風或死亡的可能性，是斑塊中不含塑料者的4.5倍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Controlled laboratory studies have shown that exposure to the tiny plastics can trigger inflammation and cell damage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對照實驗研究表明，接觸微小塑料可引發炎症和細胞損傷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I have no doubt that microplastics are causes of disease, that they are causes of premature death,” said Dr. Philip Landrigan, a professor who directs a program on global health at Boston College. “There’s no way that any reasonable person can think that microplastics in the human body are benign.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我毫不懷疑微塑料是疾病的誘因，是過早死亡的原因，」波士頓學院全球健康項目主任菲利普·蘭德里根博士說。「任何有理性的人都不可能認為人體內的微塑料是無害的。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="印尼坦格朗賈蒂瓦林因垃圾場燃燒垃圾產生煙霧，衛生工作者正疏散周邊村莊的居民。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-a-01/c08indonesia-microplastics-a-master1050.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-a-01/c08indonesia-microplastics-a-master1050.jpg"/></div><figcaption><span>印尼坦格朗賈蒂瓦林因垃圾場燃燒垃圾產生煙霧，衛生工作者正疏散周邊村莊的居民。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it will probably be years before the public gets a clearer picture. Scientists say the fundamental issue with understanding how microplastics affects human health is they cannot reliably measure the tiniest particles that can enter human cells. While several studies have shown associations between microplastic exposure and diseases, they do not prove that microplastics caused those conditions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但公眾可能要等多年才能獲得更清晰的圖景。科學家表示，理解微塑料如何影響人類健康的根本問題是，他們無法可靠地測量能夠進入人體細胞的最微小顆粒。雖然有多項研究顯示微塑料暴露與疾病之間存在關聯，但它們並不能證明微塑料導致了這些疾病。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The challenge facing researchers now is understanding what the potentially harmful level is, according to Kevin Thomas, an environmental health scientist at the University of Queensland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">昆士蘭大學環境健康科學家凱文·托馬斯表示，研究人員目前面臨的挑戰是，弄清楚什麼水平才是潛在有害的。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLvzsY2v4JYDFYW6tQod3NYOcQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, he added: “It’s solid advice to limit exposure.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，他還說：「限制接觸是可靠的建議。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, Indonesia’s health minister, Budi Gunadi Sadikin, convened a news conference to warn that if it rains in Jakarta, people should wear masks. The announcement, prompted by Mr. Reza’s findings, led to a slew of headlines in the Indonesian press warning about “plastic rain.” But Mr. Reza said the public should be equally worried about the dry season, when people can inhale microplastics suspended in the air.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，印度尼西亞衛生部長布迪·古納迪·薩迪金召開新聞發布會，警告如果雅加達下雨，人們應該戴口罩。這一由禮薩的研究結果引發的聲明，導致印度尼西亞媒體出現大量關於「塑料雨」的警告報導。但禮薩說，公眾同樣應該擔心旱季，因為那時人們可能吸入懸浮在空氣中的微塑料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After the minister’s warning, Wahyu Lilik, a resident of Jakarta, became even more wedded to wearing a face mask during his commute, a habit he had formed during the coronavirus pandemic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在部長髮出警告後，雅加達居民瓦休·利利克在通勤時更加堅持佩戴口罩，這是他在新冠疫情期間養成的習慣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I used to be more worried about air pollution in Jakarta, but once the issue of microplastics became widely discussed, it added to my concerns,” said Mr. Wahyu, who works in marketing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我以前更擔心雅加達的空氣污染，但自從微塑料問題被廣泛討論後，這更加重了我的擔憂，」從事營銷工作的瓦休說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Setting Fire to Trash</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>焚燒垃圾</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A major reason airborne microplastic pollution is so dire in Indonesia is because of the open burning of waste, according to Indonesian researchers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據印尼研究人員稱，印度尼西亞空氣傳播微塑料污染如此嚴重的一個主要原因是露天焚燒垃圾。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPOMso2v4JYDFddH3gYdk781_g" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">About 57 percent of Indonesian households burn their trash, even though it is illegal, according to a 2023 survey by Indonesia’s Ministry of Health, compared with a global average of 14 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據印尼衛生部2023年的一項調查，約57%的印尼家庭會焚燒垃圾，儘管這是違法行為；而全球平均水平為14%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Millions of people resort to burning their garbage because waste collection services are few and far between outside of cities. Recycling is not common. Many low-income people rely on cheap plastic sachets of shampoo, coffee and detergent that accumulate in trash mountains around the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數以百萬計的人不得不焚燒垃圾，因為城市以外的垃圾收集服務少之又少。回收利用並不普遍。許多低收入人群只能購買便宜的塑料小包裝洗髮水、咖啡和洗滌劑，這些包裝在全國各地堆積成垃圾山。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="垃圾場焚燒垃圾升起濃煙，數十輛卡車排隊傾倒塑料垃圾。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-03/c08indonesia-microplastics-03-master1050.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-03/c08indonesia-microplastics-03-master1050.jpg"/></div><figcaption><span>垃圾場焚燒垃圾升起濃煙，數十輛卡車排隊傾倒塑料垃圾。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These landfills are fire hazards. In July, officials said they preemptively sprayed the Bantar Gebang waste site in Jakarta — which is taller than the Statue of Liberty and spans more than 200 football fields — with water during the dry season because of the high levels of flammable methane gas trapped in the trash piles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些垃圾堆存在火災隱患。7月，官員們表示，他們在旱季預先向雅加達的班塔爾格邦垃圾場噴水，因為垃圾堆中積聚的可燃甲烷氣體濃度很高。這座垃圾場比自由女神像還高，面積超過200個足球場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, Ecoton, a nonprofit, said it had found microplastics present in the air in 18 cities across Indonesia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，非營利組織埃科頓表示，已在印尼18個城市的空氣中發現微塑料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In June, Indonesia’s environment minister, Moh Jumhur Hidayat, set a 2027 deadline for all regional governments to completely phase out open dumping of trash. But environmentalists say it is highly unlikely that the deadline will be met.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">6月，印尼環境部長穆罕默德·朱姆胡爾·希達亞特設定了2027年的最後期限，要求所有地方政府徹底停止露天傾倒垃圾。但環保人士表示，這一期限極不可能實現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Microplastics in the Water</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>水中的微塑料</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLa8so2v4JYDFZ113gYdOfUZoA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Mr. Reza collected rainwater from the rooftop of his lab in northern Jakarta in 2022, he expected to find the tiny plastic fragments that he recognized as microplastics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2022年，當禮薩從他在雅加達北部實驗室的屋頂收集雨水時，他預料到會發現那些他熟悉的微小塑料碎片，也就是人們所說的微塑料。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But he was shocked to see how abundant they were, and that one form of microplastic was dominant: synthetic fibers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他對它們的數量之多感到震驚，而且有一種微塑料佔了主導地位：合成纖維。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His finding echoed one from the International Union for Conservation of Nature, a global environmental network, that concluded that washing clothes by machine is one of the largest household sources of microplastic pollution on the planet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的發現與國際自然保護聯盟（一個全球環境網路）的一項研究結果相呼應。該研究結論認為，用洗衣機洗衣服是全球最大的家庭微塑料污染源之一。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="工人在雅加達一家商業洗衣店內洗滌紡織品。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-a-03/c08indonesia-microplastics-a-03-master1050.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-a-03/c08indonesia-microplastics-a-03-master1050.jpg"/></div><figcaption><span>工人在雅加達一家商業洗衣店內洗滌紡織品。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During a wash cycle, friction in the washing machine causes microscopic plastic fibers to shed. Research shows that faster spin cycles and hot water make it even easier for these fibers to detach. Washing clothes by hand or with lower spin cycles produces fewer microplastic emissions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在洗滌過程中，洗衣機的摩擦會導致微小的塑料纖維脫落。研究表明，更快的脫水轉速和熱水會使這些纖維更容易脫落。手洗衣物或使用較低脫水轉速產生的微塑料排放則較少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In countries with advanced sanitation systems, these tiny fibers are mostly caught by integrated filtration plants. But in Indonesia, there are few of these facilities. The wastewater from laundry is often dumped into gutters or streams, causing millions of fibers to flow directly into the rivers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在擁有先進污水處理系統的國家，這些微小的纖維大多會被綜合過濾設施截留。但在印尼，此類設施很少。洗衣廢水通常排入排水溝或溪流，導致數百萬根纖維直接流入河流。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="洗滌產生的廢水直接排入街道排水溝，將數百萬微纖維送往當地的河流。" data-src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-04/c08indonesia-microplastics-04-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/08/multimedia/c08indonesia-microplastics-04/c08indonesia-microplastics-04-jumbo.jpg"/></div><figcaption><span>洗滌產生的廢水直接排入街道排水溝，將數百萬微纖維送往當地的河流。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When these rivers dry up under the sun, the fibers are left behind. Over time they are lifted into the air by wind and accumulate in the atmosphere. When rain falls, it washes out the suspended dust, pollutants and microplastics from the air.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當這些河流在陽光下乾涸時，纖維留在原地。隨著時間推移，它們被風捲起，並在大氣中積聚。降雨時，雨水將空氣中懸浮的灰塵、污染物和微塑料沖刷下來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers from Ecoton sampled 68 rivers in Indonesia and found that synthetic fibers account for nearly half of all microplastic pollution those waters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃科頓的研究人員對印尼的68條河流進行了採樣，發現合成纖維占這些水域所有微塑料污染的近一半。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJzkso2v4JYDFRBY3gYduuI0TQ" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asep Kuswanto, the head of the Jakarta Environmental Agency, said the government is expanding the city’s centralized wastewater treatment network to properly filter domestic liquid waste.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雅加達環境局局長阿塞普·庫斯萬托表示，政府正在擴建該市的集中式廢水處理網路，以妥善過濾生活污水。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview, Mr. Budi, the health minister, said the government plans to collect surveillance data on the level of microplastics in the country’s air, food and water, then share the information with the World Health Organization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">衛生部長布迪在接受採訪時表示，政府計劃收集有關該國空氣、食物和水中微塑料水平的監測數據，然後與世界衛生組織共享這些信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Reza is not waiting to find out. He has an air purifier at home, where he says the machine’s light is almost always red, a sign of the poor air quality outside. Even though he has adjusted to the smell of burning plastic every morning, he said he now avoids bottled water, sets his washing machine to a lower spin speed, exercises more, and eats a fiber-rich diet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">禮薩不打算坐等結果。他家裡有一台空氣凈化器，他說機器的指示燈幾乎總是紅色，表明室外空氣質量很差。儘管他已經習慣了每天早上焚燒塑料的氣味，但他說他現在避免飲用瓶裝水，將洗衣機調到較低的脫水轉速，增加鍛煉，並多吃富含纖維的食物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“From all the toxicology tests conducted, microplastics have shown negative effects,” he said. “Honestly, I’m worried.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從已做的所有毒理學測試來看，微塑料都顯示出負面影響，」他說。「老實說，我很擔心。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">註：微塑料的形狀基於肖氏研究所發布的顯微圖像。雨滴和微塑料的大小並非按比例繪製。</p><p class="cn-p">在尺寸對比圖中，PM2.5指的是直徑為2.5微米或更小的空氣顆粒。根據美國生理學會的數據，紅細胞的直徑約為7.8微米。根據聯合國環境規劃署的數據，人類頭髮的平均直徑約為70微米。標準辦公打印紙的克重為80克/平方米，厚度為0.10毫米。根據塑料工業協會的生產標準，吸管的寬度約為6毫米。根據歐洲環境署對服裝洗滌的研究，微塑料纖維的平均厚度為八至17微米，長度為50至200微米。</p><p class="cn-p">補充資料來源：馬修·羅斯博士(Dr. Matthew Ross)，麥克尤恩大學物理科學系副教授。</p><p class="cn-p">Jiwoong Hong對本文亦有貢獻。</p><p class="cn-p">翻譯：晉其角、杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20260908/indonesia-jakarta-landfill-fire-microplastics/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
