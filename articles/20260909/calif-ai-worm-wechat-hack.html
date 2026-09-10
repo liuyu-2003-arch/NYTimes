@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>零點擊微信蠕蟲：人工智慧將令駭客攻擊更危險？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">零點擊微信蠕蟲：人工智慧將令駭客攻擊更危險？</h1>
+    <h2 class="en-headline">A Hacking Tool Built With A.I. Can Breach Phones Without a Click</h2>
+    <div class="meta-line">DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-09-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="安全公司Calif的研究人員最近僅用一週多時間就構建了一個駭客工具，能夠在微信上橫行肆虐。" height="653" src="https://static01.nyt.com/images/2026/09/03/multimedia/03dc-cyber-tqwl/03dc-cyber-tqwl-master1050.jpg" width="1050"/><figcaption><span>安全公司Calif的研究人員最近僅用一週多時間就構建了一個駭客工具，能夠在微信上橫行肆虐。</span> <cite>Dado Ruvic/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A friend you haven’t heard from in a while suddenly calls. You don’t pick up, but in a matter of seconds, the damage is already done.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一個許久未聯繫的朋友突然打來電話。你沒有接，但就在幾秒鐘內，損害已經造成。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The call wasn’t actually from an old companion looking to reconnect, but from a hacker who had hijacked that number. Worse, the assailant now secretly has control over your account, including access to your private messages, and is already using your number to reach your saved contacts and compromise them, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這通電話並非來自想要敘舊的老友，而是來自一個劫持了那個號碼的駭客。更糟糕的是，入侵者現在已祕密控制了你的帳戶，包括訪問你的私人消息，並且已經在用你的號碼聯繫通訊錄上的聯繫人，入侵他們的帳戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like a raging, highly contagious virus, the attack keeps spreading. Within hours, millions of people have suffered the same fate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就像一種來勢洶洶、傳染性極強的病毒，攻擊不斷蔓延。數小時內，數百萬人遭受了同樣的命運。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A year ago, such a cyberattack might have sounded far-fetched to even the most paranoid digital experts, or at least like something only the world’s most elite spy agencies could have pulled off.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一年前，即便是對最多疑的數字安全專家來說，這樣的網路攻擊也可能聽起來遙不可及，或者至少像是只有世界上最頂尖的情報機構才能完成的操作。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKSCoPPv4pYDFd-BpAQdOrU4bw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead, because of advanced artificial intelligence models, a small team of researchers at Calif, a security company based in Palo Alto, Calif., recently built a hacking tool in a little more than a week that could run roughshod across WeChat, the social media and messaging platform ubiquitous in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，由於先進的人工智慧模型，位於加利福尼亞州帕洛阿爾托的安全公司Calif的一個小型研究團隊最近僅用一週多時間就構建了一個駭客工具，它能夠在微信——中國無處不在的社群媒體和即時通訊平台——上橫行肆虐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This bug is exceptional,” said Thai Duong, the chief executive of Calif, which says it builds hacking tools not to sell them but to bolster cyberdefense. The bug’s simplicity and powerful abilities, he added, would be “a dream come true” for hackers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這個漏洞非同尋常，」Calif的首席執行官楊蔡（音）說，該公司表示開發駭客工具並非為了出售，而是為了加強網路防禦。他補充說，這一漏洞的簡單性和強大的功能對駭客來說將是「夢想成真」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The attack is the latest — and one of the most alarming — demonstrations yet of the breakneck speed at which A.I. is progressing, outpacing the ability of regulators and even of leading developers to keep up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這次攻擊是人工智慧以驚人速度發展的最新、也是最令人擔憂的例證之一，其發展速度已超出了監管機構乃至頂尖開發者跟上這一發展步伐的能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Calif said the attack, which it named WeWorm, was the first known computer worm — a type of malicious software that can leap from machine to machine on its own absent human help — that could spread across Apple’s iOS and Google’s Android operating systems without needing a victim to click or tap on anything. So-called zero-click attacks are different, and far more lethal, than standard phishing emails and texts. They are considered especially pernicious because they are so hard to defend against, given that they do not require a victim to step into a digital booby trap.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Calif表示，這次被其命名為「WeWorm」的攻擊是已知的第一個無需受害者點擊或觸碰任何東西就能在蘋果iOS和谷歌Android操作系統之間傳播的計算機蠕蟲，蠕蟲是一種無需用戶干預即可自行從一台機器跳至另一台機器的惡意軟體。所謂的零點擊攻擊與標準的網路釣魚電子郵件和短訊不同，其危害性要大得多。這類攻擊尤其令人防不勝防，因為它們根本不需要受害者主動踩進某個數字世界裡的「陷阱」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokeswoman for Tencent, the Chinese technology company that owns WeChat, confirmed the vulnerability and said that it had fixed the issue after being contacted by Calif.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">擁有微信的中國科技公司騰訊的一位發言人證實了該漏洞的存在，並表示在接到Calif的聯繫後已修復了該問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company had no reason to believe the issue compromised security or affected any users, the spokeswoman said in a statement, adding that no app updates were required by customers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該發言人在聲明中表示，公司沒有理由相信該問題危及了安全或影響了任何用戶，並補充說用戶無需更新應用程序。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLahnfPv4pYDFfvNSgAdbskC4w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The discovery is still likely to fuel more concerns that advanced A.I. models could soon usher in a dystopian future that shatters core assumptions about digital security and, at least in the short term, delivers a major advantage to malicious hackers. Calif said it relied on a combination of open-source A.I. models and leading models from the United States, but it declined to specify which ones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一發現仍可能引發更多擔憂，即先進的人工智慧模型可能很快帶來一個反烏托邦的未來，粉碎關於數字安全的核心假設，並且至少在短期內為惡意駭客提供巨大優勢。Calif表示，它依賴於開源人工智慧模型和美國領先模型的組合，但拒絕透露具體是哪些模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent weeks, OpenAI and more than 100 major technology companies, including Calif, warned in an open letter that a wave of A.I.-enabled cyberattacks was coming, and that organizations and governments needed to prepare. The letter followed a spate of cyberattacks from A.I. models, with the models in some cases breaking out of testing environments and attacking other companies. Bill Gates, the billionaire co-founder of Microsoft, said in an interview with The New York Times that addressing these risks should be “the world’s top priority.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近幾週，OpenAI以及包括Calif在內的100多家主要科技公司在一封公開信中警告，一波人工智慧驅動的網路攻擊即將來臨，企業和政府都需要做好準備。這封公開信發布之前，已出現了一系列來自人工智慧模型的網路攻擊，在某些情況下，這些模型甚至突破了原本用於測試的環境，並對其他公司發起攻擊。微軟聯合創始人、億萬富翁比爾·蓋茲在接受《紐約時報》採訪時表示，應對這些風險應該成為「全球的頭等大事」。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="OpenAI首席執行官薩姆·奧特曼上週表示：「除非有人立即採取行動，否則網路安全方面將會出現非常嚴重的問題。」" data-src="https://static01.nyt.com/images/2026/09/03/multimedia/03dc-cyber-wqlt/03dc-cyber-wqlt-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/03/multimedia/03dc-cyber-wqlt/03dc-cyber-wqlt-jumbo.jpg"/></div><figcaption><span>OpenAI首席執行官薩姆·奧特曼上週表示：「除非有人立即採取行動，否則網路安全方面將會出現非常嚴重的問題。」</span> <cite>Sean Rayford/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We have a big challenge in front of us,” Sam Altman, the chief executive of OpenAI, said last week at a Group of 20 nations meeting in North Carolina. “Some things are going to go very wrong with cybersecurity unless some people act quite urgently.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們面臨著一個巨大挑戰，」OpenAI首席執行官薩姆·奧特曼上週在北卡羅萊納州舉行的二十國集團會議上表示。「除非有人立即採取行動，否則網路安全方面將會出現非常嚴重的問題。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the WeWorm attack, once a WeChat account was compromised, a hacker could have read and sent messages, made calls and controlled the victim’s account. Computer worms leverage software vulnerabilities that do not require clicking on a link or a file to automatically deploy their code across a network or the internet, allowing them to spread quickly and easily — in this case, across WeChat accounts. Combined with other security bugs, an attacker could have used the access to a WeChat account to fully compromise a victim’s phone, Calif said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在WeWorm攻擊中，一旦微信帳戶被攻破，駭客就可以讀取和發送消息、撥打電話並控制受害者的帳戶。計算機蠕蟲利用軟體漏洞，無需點擊鏈接或文件就能自動在網路或互聯網上部署其代碼，使其能夠快速輕鬆地傳播——在這次事件中，是在微信帳戶之間傳播。Calif表示，結合其他安全漏洞，攻擊者可以利用對微信帳戶的訪問權限完全控制受害者的手機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">WeChat has over 1.4 billion active users each month, the company said in a blog post this year, making it one of the world’s most widely used apps. Nearly all of its users are based in China. President Trump is scheduled to host the Chinese leader Xi Jinping this month, and the two men are expected to discuss A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">騰訊在今年的一篇部落格文章中表示，微信每月有超過14億活躍用戶，使其成為世界上使用最廣泛的應用程序之一。它的幾乎所有用戶都在中國。川普總統定於本月接待中國領導人習近平，兩人預計將討論人工智慧問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Calif briefed White House officials before publicly disclosing the vulnerability. When asked about the attack, a White House official acknowledged the briefing, noting that A.I. was paving the way for quicker, more advanced attacks and drastically empowering cyber defenders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Calif在公開披露該漏洞之前向白宮官員通報了情況。當被問及此次攻擊時，一位白宮官員承認了通報，並指出人工智慧正在為更快、更先進的攻擊鋪平道路，同時也極大地增強了網路防禦者的能力。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ_BnfPv4pYDFXDNSgAdAQsBfw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a short research summary published on Tuesday that was reviewed by The Times, Calif said the attack took advantage of how WeChat trusts numbers saved as friends by an account, allowing compromises to spread rapidly from phone to phone. It works if a targeted WeChat user picks up the call or lets it ring, said Mr. Duong, Calif’s chief executive. Only declining the call seconds after a phone’s first buzz would prevent infiltration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週二發布的一份簡短的研究摘要中，Calif公司表示，這次攻擊利用了微信對帳號中已保存為好友的電話號碼的信任機制，從而使入侵能夠迅速從一部手機蔓延到另一部手機。《紐約時報》獲得了這份報告。Calif首席執行官楊蔡表示，如果被攻擊的微信用戶接聽了電話或任其響鈴，攻擊就會成功。只有在手機第一次震動後幾秒鐘內拒接電話，才能阻止攻擊者入侵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“WeChat, like many messaging apps, gives trusted contacts more privileges,” the summary said. “But once one contact is compromised, that trust works against you.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「微信和許多即時通訊應用一樣，給予受信任的聯繫人更多權限，」摘要寫道。「但一旦一個聯繫人被入侵，這種信任就會反噬你。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vinh Nguyen, a former chief data scientist at the National Security Agency who reviewed Calif’s research before its publication, said the WeChat worm was one of the most troubling and potentially severe cyberattacks he had ever seen. While self-propagating computer worms have been unleashed before, they were more common decades ago and did not involve mobile software.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾在國家安全局擔任首席數據科學家的阮明（音）提前審閱了Calif的研究摘要，他表示，微信蠕蟲是他所見過的最令人不安、潛在危害最嚴重的網路攻擊之一。雖然自我傳播的計算機蠕蟲以前也曾被釋放過，但它們更常見於幾十年前，且不涉及移動軟體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The WeChat worm was especially concerning because of its ability to rapidly compromise accounts and then automatically spread to all numbers saved in an account’s address book, allowing it to “propagate exponentially,” said Mr. Nguyen, who is now a senior fellow on A.I. at the Council on Foreign Relations. “Within hours, you could reach hundreds of millions of devices.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現為外交關係委員會人工智慧高級研究員的阮明表示，微信蠕蟲尤其令人擔憂，因為它能夠快速入侵帳戶，然後自動傳播到帳戶通訊錄中保存的所有號碼，使其能夠「呈指數級傳播」。「在幾小時內，你就可以感染數億台設備。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Duong and his colleague Bruce Dang visited the Palo Alto offices of Tencent, hoping to speak to representatives about a problem they believed was dire. They were unable to find anyone there, however, and departed after taking a photo in front of a Tencent sign.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">楊蔡和他的同事布魯斯·鄧（音）前往騰訊位於帕洛阿爾托的辦公室，希望能與代表討論他們認為極其嚴重的問題。然而，他們撲了空，在騰訊標誌前拍了一張照片後便離開了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Flaws like the one Calif identified are known as zero-day vulnerabilities — security holes that are unknown to software makers. They were once considered so rare and powerful that they could fetch millions of dollars on black markets used to sell hacking tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">像Calif發現的這種漏洞被稱為零日漏洞——軟體製造商未知的安全漏洞。它們曾一度被認為非常罕見且威力巨大，在用於銷售駭客工具的黑市上可以賣到數百萬美元。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIjsnfPv4pYDFRTMSgAdhhg5og" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But new A.I. models appear to be able to find and weaponize zero-day bugs and other coding flaws that dwarf what security researchers and spy agencies, including the N.S.A., had believed were possible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但新的人工智慧模型似乎能夠發現和利用零日漏洞以及其他編碼缺陷，其能力之強，令安全研究人員和包括國家安全局在內的情報機構都始料未及。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When Anthropic’s new Mythos model was announced in April, the company said it had identified thousands of zero-day vulnerabilities “in every major operating system and every major web browser,” including many that were decades old. The dynamic has led Anthropic and other A.I. labs like OpenAI to initially limit the release of their newest, most powerful models to certain companies and government agencies. Doing so, they have argued, can allow major companies to patch critical software weaknesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當Anthropic的新款Mythos模型在4月發布時，該公司表示，它已在「每個主要操作系統和每個主要網路瀏覽器中」識別出數千個零日漏洞，包括許多已存在數十年的漏洞。這種情況促使Anthropic和OpenAI等其他人工智慧實驗室最初將其最新、最強大的模型僅發布給特定公司和政府機構。它們認為，這樣可以讓大型企業有機會及時修補軟體中的關鍵漏洞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The WeChat attack is just the latest finding from Calif to raise eyebrows. In May, the company disclosed to The Wall Street Journal that it had used an early version of the Mythos model to bypass security protocols in Apple’s macOS operating system, long viewed as highly secure and difficult to breach. Since Mythos and other powerful cyber-focused models built by competing A.I. labs were released to select organizations beginning in the spring, technology vendors have been reporting vastly more high-severity bugs than normal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">針對微信的攻擊只是Calif公司近期披露的又一個令人警覺的發現。今年5月，該公司向《華爾街日報》透露，他們曾利用早期版本的Mythos模型，繞過了蘋果macOS操作系統的安全防護機制。長期以來，macOS一直被認為安全性很高、很難被攻破。自今年春季開始，Mythos以及競爭對手開發的、專門用於網路攻防的強大模型陸續向部分機構開放以來，科技廠商發現的高危漏洞數量遠遠高於正常水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the Apple and WeChat cases, the A.I. systems did not build attacks on their own but relied on mixing their talents with human cybersecurity expertise to discover and leverage them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在蘋果和微信的案例中，人工智慧系統並非自行構建攻擊，而是依靠將其能力與人類網路安全專業知識相結合來發現和利用這些漏洞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These skills came from years of manual work,” Mr. Duong said, adding, “To exploit it and build a worm, we also need to babysit the entire process.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這些技能來自多年的人工工作，」楊蔡說，並補充道，「要利用它並構建蠕蟲，我們還需要全程人工介入。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Dustin Volz為時報報導網路安全和情報領域新聞，常駐華盛頓。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260909/calif-ai-worm-wechat-hack/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
