@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蘋果推出首款摺疊屏手機iPhone Duo - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">蘋果推出首款摺疊屏手機iPhone Duo</h1>
+    <h2 class="en-headline">Apple Unveils the iPhone Duo, a Foldable Phone That Costs $1,999</h2>
+    <div class="meta-line">KALLEY HUANG <span style="margin: 0 8px;">•</span> 2026-09-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週三，蘋果首席執行官約翰·特納斯介紹了摺疊屏iPhone Duo。" height="700" src="https://static01.nyt.com/images/2026/09/09/business/09biz-apple-event-phone-2-03/09biz-apple-event-phone-2-03-master1050.jpg" width="1050"/><figcaption><span>週三，蘋果首席執行官約翰·特納斯介紹了摺疊屏iPhone Duo。</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Apple introduced a foldable iPhone on Wednesday, making the most significant change in 19 years to the company’s most important product.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，蘋果公司推出了一款摺疊屏iPhone，這是該公司最重要的產品19年來最重大的一次變革。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During a 75-minute<strong> </strong>recorded<strong> </strong>presentation at its headquarters in Cupertino, Calif., Apple unveiled the iPhone Duo, a foldable smartphone with a bendable display that opens and closes like a book. When it’s folded, the phone has a smaller screen on the front similar in size to a passport. When it’s open, consumers will be able to use two apps at the same time across a larger display. The phone will start at $1,999 and will be available on Oct. 23.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在加州庫比蒂諾總部預先錄製好的75分鐘發布會上，蘋果揭開了iPhone Duo的面紗，這是一款配備可彎曲顯示屏的摺疊式智慧型手機，可以像書本一樣打開和合上。摺疊狀態下，手機正面有一塊較小的螢幕，尺寸與護照大小相近；展開後，用戶可以在更大的螢幕上同時使用兩個應用程序。這款手機起售價為1999美元，於10月23日發售。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Others have created foldables that just feel like two phones awkwardly stuck together,” said John Ternus, Apple’s new chief executive. The new Apple phone, he added, “will redesign the experience of using a foldable phone.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「其他公司也做過摺疊屏手機，但感覺就像兩部手機生硬地拼在一起，」蘋果新任首席執行官約翰·特納斯表示。他補充說，這款新蘋果手機「將重新定義摺疊屏手機的使用體驗」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Foldable smartphones have been commercially available since 2018, but the category has not yet made inroads with consumers. Last year, consumer electronics companies shipped nearly 20 million foldable phones — or less than 2 percent of all smartphone shipments — according to Counterpoint Research, which tracks smartphone markets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">市面上自2018年起就有摺疊屏智慧型手機，但該品類手機尚未真正打動消費者。據追蹤智慧型手機市場的Counterpoint Research統計，去年消費電子企業的摺疊屏手機出貨量接近2000萬部，佔比不到智慧型手機總出貨量的2%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Apple’s product event on Wednesday was Mr. Ternus’s first since taking over leadership of the company. He was the company’s head of hardware engineering before succeeding Tim Cook as chief executive last week. In the recorded presentation, Mr. Ternus emphasized Apple’s work on artificial intelligence and described iPhones as the ideal device to be a “personal intelligent hub.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三的產品發布會是特納斯接任公司領導層以來的首次亮相。他此前擔任蘋果硬件工程主管，上週接替蒂姆·庫克出任首席執行官。在錄播演示中，特納斯強調了蘋果在人工智慧方面的工作，並稱iPhone是充當「個人智能中樞」的理想設備。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="蘋果新任首席執行官約翰·特納斯在週三的發布會上。" data-src="https://static01.nyt.com/images/2026/09/09/business/09biz-apple-event-hfo-ternus/09biz-apple-event-hfo-ternus-master1050.jpg" src="https://static01.nyt.com/images/2026/09/09/business/09biz-apple-event-hfo-ternus/09biz-apple-event-hfo-ternus-master1050.jpg"/></div><figcaption><span>蘋果新任首席執行官約翰·特納斯在週三的發布會上。</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the nearly two decades since it debuted in 2007, the iPhone has become Apple’s biggest business, now accounting for half — or more than $200 billion — of its annual revenue. That business has continued to grow, even as the iPhone has faced criticism for improving only incrementally.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自2007年首次亮相以來的近二十年間，iPhone已成為蘋果最大的業務，目前占公司年收入的一半——超過2000億美元。儘管iPhone一直因升級幅度有限而備受詬病，但該業務仍在持續增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The foldable iPhone is “part of experimentation around how to continue to grow” the iPhone business, said Gene Munster, a managing partner at Deepwater Asset Management, an investment firm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資公司Deepwater Asset Management的管理合伙人吉恩·芒斯特表示，這款摺疊屏iPhone是蘋果「探索如何繼續擴大iPhone業務的一部分嘗試」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIW-8Mmx5ZYDFZNaTAgdN0QlzQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With the iPhone Duo, Apple is establishing a new high end for its lineup of phones and trying to prove that it can still create innovative products. The phone’s exterior is made of glass, while its inner screen is made of custom polymer that feels like plastic. Its software adapts to how the phone is folded, contracting to the smaller display on the front and expanding to the larger one on the inside. Its controls are on the side of the phone, rather than on the bottom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過iPhone Duo，蘋果正在為其手機產品線建立一個全新的高端價位，同時也試圖證明自己仍能打造創新產品。手機外殼採用玻璃材質，而內屏則採用觸感類似塑料的定製聚合物。手機的軟體會根據摺疊狀態自動適配——摺疊時收縮至正面的小螢幕，展開時擴展至內部的大螢幕。控制按鍵位於手機側面，而非底部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Greg Joswiak, Apple’s head of marketing, called the iPhone Duo “the most transformational iPhone experience since the original.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘋果市場營銷負責人格雷格·喬斯維亞克稱，iPhone Duo擁有「自初代iPhone以來最具變革性的iPhone使用體驗」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="蘋果推出iPhone Duo，這是一款配備可彎曲顯示屏的摺疊式智慧型手機，可以像書本一樣打開和合上" data-src="https://static01.nyt.com/images/2026/09/09/multimedia/09biz-apple-event-duo-gplb/09biz-apple-event-duo-gplb-master1050.jpg" src="https://static01.nyt.com/images/2026/09/09/multimedia/09biz-apple-event-duo-gplb/09biz-apple-event-duo-gplb-master1050.jpg"/></div><figcaption><span>蘋果推出iPhone Duo，這是一款配備可彎曲顯示屏的摺疊式智慧型手機，可以像書本一樣打開和合上</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The iPhone Duo is hitting the market in a difficult environment for consumer electronics, though its price tag is a bit less than analysts expected. The artificial intelligence boom has created a global shortage in memory chips, making the component more expensive for devices like phones, computers and video game consoles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">iPhone Duo上市之際，消費電子產品市場環境並不樂觀，儘管它的定價略低於分析師此前的預期。人工智慧熱潮引發了全球存儲晶片短缺，導致這類晶片在手機、電腦和遊戲主機等設備中的成本上升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In June, Apple increased the prices of Macs and iPads. In July, the company said it expected to pay even more for memory in the current quarter. On Wednesday, Apple also quietly increased the prices for older models of the iPhone. The iPhone 17 now starts at $899, $100 higher than when it was released last September. And the base models of the iPhone 16, 17e and Air all cost $100 more.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年6月，蘋果提高了Mac和iPad的售價。7月，公司表示預計本季度需要為內存支付更高的成本。週三，蘋果還悄悄上調了舊款iPhone的售價。iPhone 17如今起售價為899美元，比去年9月發布時高出100美元。iPhone 16、iPhone 17e和iPhone Air的基礎款均漲價100美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The iPhone Duo’s $1,999 price “looks like a bold move by Apple, even if it means sacrificing some margin,” said Liz Lee, an associate director at Counterpoint, in a statement. “It’ll leave consumers eager and waiting early on, especially if supply is much tighter than expected.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Counterpoint副總監利茲·李在一份聲明中表示，iPhone Duo 1999美元的定價「看起來是蘋果的大膽舉措，即使這意味著犧牲部分利潤率。這會讓消費者在初期既充滿期待又不得不幹等，尤其是如果供應比預期緊張得多的話」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The iPhone Duo could add significantly to the market for foldable smartphones, but it would remain a slice of the market overall. Next year, Apple is expected to ship more than 12 million foldables — 5 percent of all iPhone shipments — according to Counterpoint.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">iPhone Duo可能會顯著擴大摺疊屏智慧型手機市場，但該品類在整個智慧型手機市場中仍只會佔據一小部分。Counterpoint預計，明年蘋果的摺疊屏手機出貨量將超過1200萬部，佔全部iPhone出貨量的5%。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="自近二十年前iPhone問世以來，它已成為蘋果最大的業務板塊。" data-src="https://static01.nyt.com/images/2026/09/09/business/09APPLE-EVENT-1-03/09APPLE-EVENT-1-03-master1050.jpg" src="https://static01.nyt.com/images/2026/09/09/business/09APPLE-EVENT-1-03/09APPLE-EVENT-1-03-master1050.jpg"/></div><figcaption><span>自近二十年前iPhone問世以來，它已成為蘋果最大的業務板塊。</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, Apple also updated traditional models of the iPhone. The iPhone 18 Pro will have a new chip, the A20 Pro, that allows it to run Apple’s most advanced A.I. models. Apple extended the phone’s battery life, so it can play videos for 36 hours on the iPhone 18 Pro and for 48 hours on the iPhone 18 Pro Max. The phone also has a new system of cameras, including one that can change how much light it lets in.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，蘋果還推出了新的傳統款iPhone。iPhone 18 Pro將搭載全新的A20 Pro晶片，使其能夠運行蘋果最先進的AI模型。蘋果延長了手機的電池續航時間，iPhone 18 Pro可連續播放影片36小時，iPhone 18 Pro Max則可達48小時。此外，新款手機還配備了一套全新的攝像系統，其中一枚攝像頭可以調節進光量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both models will be $100 more expensive than their predecessors. The iPhone 18 Pro will start at $1,199 and the iPhone 18 Pro Max at $1,299.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩款機型均比上一代貴100美元。iPhone 18 Pro起售價為1199美元，iPhone 18 Pro Max起售價為1299美元。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週三，蘋果還推出了傳統型號的新款iPhone。" data-src="https://static01.nyt.com/images/2026/09/09/business/09biz-apple-event-phone-phone/09biz-apple-event-phone-phone-master1050.jpg" src="https://static01.nyt.com/images/2026/09/09/business/09biz-apple-event-phone-phone/09biz-apple-event-phone-phone-master1050.jpg"/></div><figcaption><span>週三，蘋果還推出了傳統型號的新款iPhone。</span> <cite>Jason Henry for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Apple also positioned its smartwatches as A.I. devices, preparing to compete with a device that the A.I. company OpenAI has been working on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘋果還將智能手錶定位為AI設備，準備與OpenAI等人工智慧公司正在研發的設備展開競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It introduced a feature that allows the watch and its digital assistant Siri to summarize daily activities and conversations for a wearer. The company emphasized privacy when announcing the feature and said it wouldn’t record, store or be able to access audio. In addition, it introduced A.I. features that recognize sounds like sirens and doorbells and tell a wearer what was said in conversation 15 seconds ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘋果推出了一項功能，可以讓手錶及其數字助手Siri為佩戴者總結日常活動和對話。公司在發布該功能時強調了隱私保護，並表示不會錄音、存儲或訪問音頻。此外，它還引入了AI功能，可以識別警笛和門鈴等聲音，並告訴佩戴者15秒前的對話內容。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIKz8Mmx5ZYDFTnCLQAdah8r9Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company also took steps to catch up to wearable devices from competitors like Garmin, the smart ring maker Oura and the health tracker Whoop. The Apple Watch Series 12 and Ultra 4 will measure a wearer’s heart rate more frequently and tell a wearer how ready they are for activity. The new watches will start at the same price as their predecessors, $399 for the Series 12 and $799 for the Ultra 4.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司還採取行動追趕Garmin、智能戒指製造商Oura和健康追蹤器Whoop等競爭對手的可穿戴設備。Apple Watch Series 12和Ultra 4將更頻繁地測量佩戴者的心率，並評估身體的活動準備狀態。新手錶定價與前代保持一致，Series 12起售價為399美元，Ultra 4起售價為799美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Apple has updated its AirPods, too. The AirPods 5 will offer noise cancellation, play more detailed sound and fit more ear shapes. A more advanced version will allow a wearer to change the volume by swiping on the stem of the earbud and to wirelessly charge the earbuds. The AirPods’ price will also stay the same, starting at $129.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘋果還更新了AirPods。AirPods 5將提供降噪功能，呈現更精細的音質，並適配更多耳型。一款更高級的版本允許佩戴者通過在耳機柄上滑動來調節音量，並支持無線充電。AirPods的售價也保持不變，起售價為129美元。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260910/apple-iphone-duo-foldable-phone/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

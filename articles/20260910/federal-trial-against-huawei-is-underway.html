@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>華為案在美國開審 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">華為案在美國開審</h1>
+    <h2 class="en-headline">Federal Trial Against Huawei Begins After 8 Years</h2>
+    <div class="meta-line">SANTUL NERKAR <span style="margin: 0 8px;">•</span> 2026-09-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2018年，時任華為首席財務官孟晚舟。當時她在加拿大被捕，被指控竊取美國公司的商業機密。" height="700" src="https://static01.nyt.com/images/2026/09/09/nyregion/09met-huawei-trial/09met-huawei-trial-master1050.jpg" width="1050"/><figcaption><span>2018年，時任華為首席財務官孟晚舟。當時她在加拿大被捕，被指控竊取美國公司的商業機密。</span> <cite>Nicoco Chan/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 2018 arrest in Canada of a senior executive at Huawei, the Chinese telecommunications giant, inflamed already strained relations between Beijing and Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2018年，中國電信巨頭華為的一名高管在加拿大被捕，激化了北京和華盛頓之間本已緊張的關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After three years of detention in her luxurious Vancouver homes, the executive, Meng Wanzhou, reached a deal with federal prosecutors and flew back to China. But the agreement did not end the U.S. government’s efforts to prosecute Huawei, which officials say has long defied U.S. law by stealing from American companies and evading sanctions against Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在溫哥華的豪華住宅中被拘禁三年後，這位名叫孟晚舟的高管與聯邦檢察官達成協議，飛回了中國。但該協議並沒有結束美國政府起訴華為的努力，官員們表示，華為長期以來無視美國法律，竊取美國公司的機密，並規避對伊朗的制裁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, after eight years, the case against the company is being heard in a federal courtroom in Brooklyn.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，八年過去了，針對該公司的案件正在布魯克林的一家聯邦法庭審理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Opening statements began on Wednesday, and the trial could last four months.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">開案陳詞已於週三開始，審判可能會持續四個月。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COGitMax5ZYDFXMblgkdRtEMiw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The entire business operated through a pattern of theft, lies and cover-ups,” Taylor Stout, a federal prosecutor in the Justice Department, told jurors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「整個企業都是通過盜竊、謊言和掩蓋事實的模式運作的，」美國司法部聯邦檢察官泰勒·斯托特告訴陪審員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The witnesses who are expected to testify include former Huawei employees, experts on telecommunications technology and a banker who Ms. Meng admitted misleading about the company’s dealings in Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">預計將出庭作證的證人包括前華為員工、電信技術專家，以及一位銀行人士——孟晚舟曾承認向此人隱瞞了華為在伊朗的業務往來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Meng, who is Huawei’s chief financial officer and whose father founded the company, struck the deal with prosecutors in 2021 to avoid jail time. Since 2019, Huawei has been effectively banned from selling its products in the United States; U.S. officials have feared that they could pose a national security threat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">孟晚舟是華為的首席財務官，她的父親是公司創始人。為避免入獄，她於2021年與檢察官達成了協議。自2019年以來，華為實際上已被禁止在美國銷售其產品；美國官員擔心它們可能構成國家安全威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Huawei has continued to sell smartphones and equipment that support telephone and internet networks worldwide. It is also an important part of the Chinese government’s efforts to develop artificial intelligence chips, despite Washington’s efforts to slow China’s progress. A guilty verdict for Huawei may not significantly affect the company’s fortunes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華為仍在繼續向全球銷售智慧型手機以及支持電話和互聯網網路的設備。儘管華盛頓努力放緩中國的發展步伐，但華為也是中國政府開發人工智慧晶片計劃的重要組成部分。對華為作出有罪判決可能不會對其命運產生重大影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But federal prosecutors are moving ahead with their case against the technology giant, which U.S. officials have viewed with suspicion for decades. The United States has long accused the Chinese government of sponsoring efforts to steal trade secrets, ranging from sophisticated defense technology to corn seeds in Iowa.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但聯邦檢察官正在推進針對這家科技巨頭的案件，幾十年來，美國官員一直對該公司持懷疑態度。長期以來，美國一直指責中國政府支持竊取商業機密的活動，涉及的範圍從尖端的國防技術到愛荷華州的玉米種子。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Defenders of Huawei have argued that the case has been fueled by retaliation against China’s efforts to build 5G networks around the world, using Huawei’s technology. Huawei has denied any wrongdoing, saying it operates independently from the Chinese government. It attributes its growth not to stealing trade secrets, but rather to strong investment in research and development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華為的辯護者認為，此案的動因是對中國利用華為技術在全球建設5G網路的報復。華為否認有任何不當行為，稱其獨立於中國政府運營。該公司將其發展歸功於在研發方面的大力投資，而不是竊取商業機密。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN-otMax5ZYDFQ0WpAYdXHsnJw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a pair of statements, Huawei said the “U.S. government’s overarching narrative is demonstrably false” and that it had “the utmost respect for intellectual property.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在兩份聲明中，華為表示「美國政府的總體敘事顯然是虛假的」，並稱該公司「對知識產權有最高程度的尊重」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Huawei was founded in the 1980s by Ms. Meng’s father, Ren Zhengfei. Its rise mirrored that of China, which was undergoing a momentous transition toward becoming a capitalist economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華為由孟晚舟的父親任正非於20世紀80年代創立。其崛起歷程與中國的發展軌跡相呼應，當時中國正在經歷向資本主義經濟轉變的重大過渡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brian Heberlig, a lawyer representing Huawei, said Mr. Ren built Huawei through hard work and that he “hired people with the same work ethic.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華為的代表律師布萊恩·赫伯利格表示，任正非通過辛勤工作創立了華為，並且他「僱傭了具有相同職業道德的人」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Huawei ascended, U.S. officials worried that the company’s technology could be used to spy on Americans, that Huawei was ripping off American competitors and that it was doing business with Iran, in defiance of U.S. law.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著華為的崛起，美國官員擔心該公司的技術可能被用來監視美國人，擔心華為剽竊美國競爭對手，並無視美國法律與伊朗進行交易。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A new indictment filed against Ms. Meng and Huawei in 2020 echoed some of those concerns. Huawei and its affiliates, prosecutors said, used “a pattern of racketeering activity” to steal trade secrets from American companies. Huawei, prosecutors said, stole intellectual property from six companies — identified by The New York Times as Cisco Systems, Motorola Solutions, Fujitsu, Quintel Technology, T-Mobile and CNEX Labs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2020年針對孟晚舟和華為提起的一項新起訴書呼應了其中的一些擔憂。檢察官表示，華為及其附屬公司利用「一種詐騙活動模式」從美國公司竊取商業機密。檢察官稱，華為竊取了六家公司的知識產權——《紐約時報》確認這六家公司為思科系統、摩托羅拉系統、富士通、Quintel科技、T-Mobile和CNEX實驗室。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The stolen information included source code and operating system manuals, according to an indictment. The company even launched a bonus program for employees who stole information from competitors, according to the indictment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據起訴書，被竊取的信息包括源代碼和操作系統手冊。起訴書還顯示，該公司甚至為從競爭對手處竊取信息的員工設立了獎金計劃。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COm5tMax5ZYDFTwCpAYdIv0VdQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one particularly brazen example of theft from 2004, prosecutors said, a Huawei employee was caught trying to steal from a competitor at a Chicago trade show. The employee, prosecutors said, was discovered late at night trying to photograph the inside of a networking device.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">檢察官表示，在2004年一起尤為明目張膽的盜竊案例中，一名華為員工在芝加哥一場貿易展上試圖從競爭對手那裡竊取信息，被當場抓獲。檢察官稱，該員工在深夜被發現試圖拍攝一台網路設備的內部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And through working in Iran with a subsidiary known as Skycom, prosecutors say, Huawei gave Iranian intelligence services the means to spy on its own citizens. Huawei hid the fact it was doing business in the country, said Mr. Stout, the federal prosecutor, including by removing Huawei’s logo off packaging shipped to Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">檢察官表示，華為通過其名為Skycom的子公司在伊朗開展業務，為伊朗情報機構提供了監視其本國公民的手段。聯邦檢察官斯托特說，華為隱瞞了它在該國開展業務的事實，包括將運往伊朗的包裝上的華為標誌移除。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Huawei’s lawyers have argued that the charges are part of a misguided effort by the Justice Department to target Chinese people and businesses. Competition over 5G and the U.S.-China trade war “made Huawei a prime target for the Justice Department and other federal agencies,” lawyers for Huawei wrote in a filing last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華為的律師辯稱，這些指控是美國司法部針對中國公民和企業所採取的錯誤行動的一部分。華為的律師在去年的一份法庭文件中寫道，圍繞5G領域的競爭和美中貿易戰「使華為成為司法部和其他聯邦機構的首要目標」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, Mr. Heberlig said that prosecutors had provided a “distorted picture” of Huawei, arguing that they had described ordinary business as crime and unfairly focused on a few instances of trade theft among a company with hundreds of thousands of workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，赫伯利格表示，檢察官描繪了一個「扭曲的」華為形象，認為檢方將常規商業行為描述為犯罪，並且極不公平地將重點放在了一家擁有數十萬名員工的公司中為數不多的幾起商業竊密事件上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Huawei’s success did not come from theft, racketeering or fraud,” Mr. Heberlig said in court.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「華為的成功不是來自盜竊、敲詐勒索或欺詐，」赫伯利格在法庭上說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The case burst into the open with the arrest of Ms. Meng by Canadian police in December 2018, which came at the request of the U.S. government. In retaliation, the Chinese government detained two Canadians, charging them with espionage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著2018年12月加拿大警方應美國政府要求逮捕孟晚舟，此案被公之於眾。作為報復，中國政府拘留了兩名加拿大人，指控他們從事間諜活動。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMCp3Max5ZYDFfoirAAda5MxBg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption" aria-label="廣告" data-google-container-id="4" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/usa_4" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://50c753071885d0cc43f5a88116a2ed89.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The standoff further calcified relations between the United States and China, which were locked in a trade war initiated by President Trump. He at one point suggested that Ms. Meng could be a bargaining chip in a potential trade deal with China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場對峙進一步加劇了中美關係的僵局，當時兩國正陷入由川普總統發起的貿易戰中。他曾一度暗示，孟晚舟可以成為與中國潛在貿易協議中討價還價的籌碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet Ms. Meng remained detained under an $8 million bail in Vancouver until September 2021, when she reached the deal with the Justice Department, then under President Biden, for her to return to China, where she received a hero’s welcome.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，孟晚舟以800萬美元的保釋金一直被扣留在溫哥華，直到2021年9月，她與拜登總統領導下的司法部達成協議，被允許返回中國，在中國，她受到了英雄般的歡迎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under a deferred prosecution agreement, Ms. Meng admitted that Huawei had misled a bank about its dealings with Iran, which dodged U.S. sanctions. Her admission will be key evidence during Huawei’s trial, after a federal judge ruled in June that it was admissible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據一項延期起訴協議，孟晚舟承認華為曾就其與伊朗的交易向一家銀行提供誤導性信息，從而規避了美國的制裁。在聯邦法官於6月裁定其可作為證據採納後，她的供述將成為華為審判期間的關鍵證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Within hours of Ms. Meng’s departure in 2021, China released the two Canadians from detention, though U.S. officials said their release was not part of the deal reached with Ms. Meng.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2021年孟晚舟離開後的幾個小時內，中國釋放了兩名被拘留的加拿大人，儘管美國官員表示，釋放他們並不是與孟晚舟達成協議的一部分。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Santul Nerkar是《紐約時報》記者，報導布魯克林聯邦法院新聞。</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260910/federal-trial-against-huawei-is-underway/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
