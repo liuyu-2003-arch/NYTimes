@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9·11事件25週年 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">9·11事件25週年</h1>
+    <h2 class="en-headline">Did 9/11 Really Change Everything?</h2>
+    <div class="meta-line">CHARLES HOMANS <span style="margin: 0 8px;">•</span> 2026-09-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/09/10/magazine/10mag-ideas-911-promo/10mag-ideas-911-promo-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Illustration by Chantal Jahchan</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the best firsthand accounts of the Sept. 11 attacks I’ve read is a short essay titled “Diary of Disaster” by Nicholas Spangler, at the time a 25-year-old journalism-school student and today a reporter for Newsday on Long Island. Spangler happened to be downtown that morning, close enough to the World Trade Center to arrive on the scene between the first and second planes. Like many early recollections of the first hours at ground zero, written before memories had been corrected to fit the dimensions of history, his is as strange as it is horrifying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我讀過的最好的9·11親歷記述之一是尼古拉斯·斯潘格勒寫的一篇短文《災難日記》。當時他25歲，還在新聞學院讀書，如今是長島《新聞日報》的記者。那天早上，他恰好在曼哈頓下城，離世貿中心很近，在第一架飛機撞擊後、第二架飛機撞擊前就趕到了現場。和許多關於世貿中心災難現場最初幾個小時的早期回憶一樣——那些文字寫於記憶尚未被修正以契合歷史維度之前——他的文字讀起來既詭異，又令人毛骨悚然。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He hears the bodies of the north tower’s jumpers hitting the pavement, and also the easy-listening music still drifting out of the building’s outdoor speakers. Under a tree newly stripped of its leaves lies a severed leg wrapped in burlap. Barely an hour after the second tower’s collapse, onlookers enlist Spangler to take a souvenir photo of them posing in front of the wreckage with a disposable camera. It’s the end of the world, or at least of <i>a</i> world, and people have not yet figured out how they are supposed to act.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他聽見北樓跳樓者的身體砸在人行道上的聲音，同時還能聽見大樓室外揚聲器裡飄出的輕音樂。一棵剛被震得葉片盡落的樹下是一條裹在粗麻布裡的斷腿。第二座塔樓倒塌後不到一小時，就有圍觀者請斯潘格勒用一次性相機為他們在廢墟前拍照留念。這是世界末日，或者說，至少是一個世界的終結，而人們還沒來得及弄清楚自己究竟應該作何反應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Days later, trying to make sense of what he has seen, Spangler writes: “I believe that our present way of life ended in those minutes or hours. The American ethos — the way we see the world and our place in it — fractured and will perhaps have to be discarded.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾天後，斯潘格勒試圖理解自己所看到的一切，他寫道：「我相信，我們現有的生活方式就在那幾分鐘或幾個小時裡終結了。美國精神——我們看待世界以及看待自己在這個世界中的位置的方式——已經破碎，也許將不得不被拋棄。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When he revisits that passage three months later, however, it feels wrong to him. “Our way of life did not end so much as it was interrupted,” he writes, “and if there is such a thing as an American ethos, it has not been significantly altered. There are those relative few whose lives bear the permanent bloody brand of that day but most of us continue to be shaped by much more banal events.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而三個月後，當他重讀這段話時，卻覺得不對勁。「我們的生活方式與其說是終結了，不如說是被打斷了，」他寫道，「如果說真有什麼美國精神，它也沒有被顯著改變。確實有那少數人，他們的生活被那一天打上了永久的血腥烙印，而我們大多數人繼續被遠為平庸的事件所塑造。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CP3eo9b055YDFbJ5GAAdoPI5nw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Did 9/11 change everything? For years, people who agreed on nothing else about the attacks’ aftermath would have agreed that the answer was yes. Arguing otherwise would have been an affront to the victims, to the war on terror’s civilian and military casualties and to the common sense of anyone who has had to take off their shoes at airport security. But question and answer alike have always been colored by the assumption that 9/11 was <i>supposed</i> to change everything: that in being attacked as it was, the United States was being presented with a test that it could pass or fail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">9·11改變了一切嗎？多年來，即使人們在這場襲擊的後續影響上幾乎毫無共識，但唯獨在這一點上達成一致：答案是肯定的。持相反論點會被視為對受害者、對反恐戰爭中軍民傷亡者的冒犯，也是對每一個在機場安檢時不得不脫鞋的人的常識的冒犯。但無論是這個問題本身還是對它的回答始終都帶有這樣一種假設：9·11本就應該改變一切——美國以那樣的方式遭到襲擊，相當於接受了一場它要麼通過、要麼失敗的考試。。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A quarter-century on, it is possible to consider the question with at least some critical distance. Far too much of our current reality stems directly from 9/11 for anyone to argue credibly that it was not a hinge point in our recent history: the ubiquity of surveillance technology, the vague open-endedness that all American military operations now acquire, the general up-armoring of everyday life. At the same time, considering the most dystopian facets of this reality, 9/11’s influence is not as singular as it might have once seemed. It is a middle chapter in the story of American fracture rather than the pyrotechnic beginning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">四分之一個世紀過去，我們至少可以帶著一些批判性的距離來重新審視這個問題。我們當下的現實中，有太多東西直接源於9·11，以至於沒有人能夠有說服力地否認「9·11是我們近代史上的一個轉折點」：監控技術無處不在，美國軍事行動如今普遍具有一種模糊而沒有終點的性質，日常生活也越來越被各種防護措施包圍。但與此同時，如果仔細審視這種現實中最具反烏托邦色彩的部分，9·11的影響也並不像人們過去所認為的那樣獨一無二。它是美國社會分裂史中的一個中間章節，而非驚天動地的開場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Nearly every account </strong>of 9/11 mentions the weather. It was a perfect morning in New York, we are invariably told, the sky an almost unnaturally pure blue, unmarked by a single cloud, unless you count the thunderhead of dramatic irony that sits over everything.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>幾乎每一篇</b>關於9·11的記錄都會提到那天的天氣。人們總是說，那是紐約一個完美的早晨，天空呈現出近乎不自然的純藍，沒有一絲雲彩——除非你把那瀰漫在一切之上的殘酷反諷也算作一片雲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his 2024 book “Homeland,” Richard Beck notes that minutes before American Airlines Flight 11 hit the north tower, “Good Morning America” was airing an investigative segment on faulty G.E. appliances, interviewing a man identified in the chyron as a “dishwasher fire victim.” This is the cartoon of the world before 9/11: a place of sunlight and tranquillity, where nobody knows how good they have it and how bad it is about to get.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">理查德·貝克在其2024年出版的《國土》(Homeland)一書中指出，在美國航空11號航班撞擊北塔前幾分鐘，「早安美國」節目正在播出一條關於通用電氣電器缺陷的調查報導，採訪了一位在字幕中被標為「洗碗機火災受害者」的男子。這正是9·11之前那個世界的漫畫式寫照：一個陽光明媚、歲月靜好的地方，沒有人沒有人意識到自己擁有的一切有多麼美好,也沒有人料到接下來的一切會有多麼糟糕。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="9·11襲擊發生一週多後，曼哈頓下城的國民警衛隊隊員。" data-src="https://static01.nyt.com/images/2026/09/10/magazine/10mag-ideas-911-02/10mag-ideas-911-02-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/10/magazine/10mag-ideas-911-02/10mag-ideas-911-02-jumbo.jpg"/></div><figcaption><span>9·11襲擊發生一週多後，曼哈頓下城的國民警衛隊隊員。</span> <cite>Timothy A. Clary/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the pre-9/11 era was a nervier time in America than the popular imagination remembers it to be. Both the left and the right were itchy amid the comforts of the end of history. Our retrospective understanding of the nation’s immediate reaction to the attacks is influenced by footage of stunned TV news anchors narrating them in real time, but shock is not quite the same thing as surprise: The United States was only eight years removed from the first World Trade Center attack and only six from the Oklahoma City bombing, and the new tragedy was almost immediately slotted into old arguments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但9·11之前的美國其實比人們如今憑印象所記得的要更為焦躁。在「歷史終結」帶來的舒適安逸中，無論是左派還是右派都隱隱感到不安。我們如今對這個國家在襲擊發生後最初反應的回顧性理解很大程度上受到了那些鏡頭的影響——畫面裡，一臉驚愕的電視新聞主播正實時播報著這一切；但震驚並不完全等同於意外：當時距離第一次世貿中心襲擊案僅僅過去八年，距離奧克拉荷馬城爆炸案也不過六年，這場新的悲劇幾乎是立刻被納入了舊有的爭論框架之中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the left-liberal intellectual class, to consider the attacks unthinkable was to admit an unacceptable ignorance: of the resentment that American hegemony had stirred throughout the world, of the conflicts that had persisted in much of that world even as the United States enjoyed its post-Cold War peace dividend. “A few shreds of historical awareness might help us understand what has just happened, and what may continue to happen,” Susan Sontag wrote in The New Yorker.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於左翼自由派知識階層而言，如果認為這場襲擊不可想像，便等於是承認了一種不可接受的無知：對美國霸權在世界範圍內激起的怨恨一無所知，對美國享受著冷戰後的和平紅利時世界上仍然存在的衝突也一無所知。蘇珊·桑塔格在《紐約客》上寫道：「只要有一點點歷史意識，也許就能幫助我們理解剛剛發生的事情，以及接下來可能還會發生什麼。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJaNpNb055YDFYl17QIdep8ZsQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the right, the attacks stirred a hope that the softness of post-Cold War America, and the liberal ambivalence toward out-and-proud patriotism that had lingered since Vietnam, might have come to a welcome end; to call it a new Pearl Harbor was both a description and an aspiration. In a recent podcast conversation, Darryl Worley, the singer-songwriter whose bullying Iraq-invasion anthem “Have You Forgotten?” is one of the essential cultural documents of the early 2000s, recalled his wonder on 9/11 at seeing American flags flying along a side road outside of Nashville. “It had already turned into, like, a parade route,” he said. He recalled thinking to himself: “It had to come to this for us to fly the red, white and blue?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而在右翼陣營看來，襲擊激起了一種期望：冷戰後美國的軟弱，以及自越戰以來始終揮之不去的、對張揚愛國主義的自由派式曖昧態度或許終於迎來了令人欣慰的終結。把它稱作新珍珠港事件既是一種描述，也是一種期許。在最近的一次播客訪談中，歌手兼詞曲作者達里爾·沃利回憶道，9·11當天，他在納什維爾郊外一條小路上看到沿途飄揚的美國國旗時深感震撼。「那陣仗已經像是……像是變成了遊行路線，」他說道。他記得自己當時心想：「難道非得走到這一步，我們才願意升起星條旗?」沃利那首咄咄逼人的伊拉克戰爭主題曲《你忘了嗎?》是21世紀初最具代表性的文化文本之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of course, in the end, the United States got neither self-awareness nor self-actualization. What it got, a decade and a half later, was Donald Trump, whose election in 2016 has often been cast as a culmination of what the journalist Spencer Ackerman, in his 2021 book “Reign of Terror,” describes as the “decadent phase of the war on terror.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，到頭來，美國既沒有獲得自我認識，也沒有實現自我完善。15年後，它得到的是唐納德·川普。川普於2016年當選總統，常被視為「反恐戰爭衰敗階段」（記者斯賓塞·阿克曼在其2021年出版的《恐怖統治》[Reign of Terror]一書中就是這樣描述這一階段的）最終發展到頂點的結果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump’s path from reality-TV celebrity to the presidency ran through the Islamophobic fever swamps of the post-9/11 right — the ground zero mosque panic, Obama birth-certificate conspiracism — but also through an increasingly bipartisan discontent with the war on terror that had, by 2016, curdled into cynicism. Trump was the first Republican presidential nominee to break the formidable taboo against affirming what most Americans by then believed, that the country’s post-9/11 military adventurism had been a mistake. He also did little to seriously curtail it in his first presidency and has enthusiastically expanded it in his second.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普從真人秀明星走向總統寶座的道路穿過了後9·11時代右翼陣營中那片伊斯蘭恐懼症滋生的泥潭——從歸零地清真寺恐慌,到歐巴馬出生證明陰謀論—，也經歷了日益超越黨派的對反恐戰爭的不滿情緒，這種不滿情緒在2016年已演變為一種犬儒主義。川普是第一位打破這一強大禁忌的共和黨總統候選人，公開承認當時大多數美國人已經相信的一點：美國在9·11之後的軍事冒險是一場錯誤。他在自己的第一個總統任期內也沒有真正大幅削減這些軍事行動，在第二個任期中更是積極擴大了這些行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It has long been tempting to view Trump’s presidencies as the logical conclusion of the folly of the post-9/11 era, and as support for the liberal contention that the right’s calls for patriotism in that era were always really about seizing domestic power. But Trump has also enabled a re-examination of history, and even recent history, that complicates the tale of 9/11’s primacy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，人們很容易將川普的兩屆總統任期視為9·11後時代種種荒謬行徑的必然結果，並以此佐證自由派的一種觀點：當時右翼的愛國主義呼籲其實始終是為了奪取國內權力。但川普同時也促使人們重新審視歷史，甚至包括近代史，這種審視使得9·11事件首要地位的敘事變得複雜。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="1995年奧克拉荷馬城爆炸案發生一個月後，該市的一輛警車。與人們今天記憶中的情況相比，20世紀90年代的美國是一個更令人提心弔膽的時代。" data-src="https://static01.nyt.com/images/2026/09/10/magazine/10mag-ideas-911/10mag-ideas-911-master1050.jpg" src="https://static01.nyt.com/images/2026/09/10/magazine/10mag-ideas-911/10mag-ideas-911-master1050.jpg"/></div><figcaption><span>1995年奧克拉荷馬城爆炸案發生一個月後，該市的一輛警車。與人們今天記憶中的情況相比，20世紀90年代的美國是一個更令人提心弔膽的時代。</span> <cite>David Butow/Corbis, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The right-wing extremism unleashed in the last act of his first presidency borrowed aesthetically from the special-operations chic of the post-9/11 militarized state, but it owed a more substantive debt to the 1990s: to Ruby Ridge, Waco and the decade’s sundry militias. Trump’s second-term reinvention of the Department of Homeland Security as an unaccountable interior ministry realizes the direst predictions of civil libertarians in the first days of the war on terror. But it is working in the service of an anti-immigration vision that draws less obviously from post-9/11 terrorism panics than from the nativist paleoconservatism of the preceding decades, figures like Pat Buchanan and Sam Francis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普第一任總統任期的最後階段，右翼極端主義的興起在美學上借鑒了9·11後軍事化國家的特種作戰風格，但在實質上更多源於20世紀90年代：紅寶石嶺事件、韋科慘案，以及那個年代形形色色的民兵組織。川普第二任期內將國土安全部重塑為不受問責的內政部，印證了民權自由主義者們在反恐戰爭最初幾天的可怕預言。然而，這種做法服務於一種反移民理念，這種理念與其說是源於9·11後的恐怖主義恐慌，不如說是源於此前幾十年本土主義的保守主義，例如帕特·布坎南和薩姆·弗朗西斯等人的思想。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump’s 2016 election “represented the crystallization of elements that were still inchoate” in the early 1990s, John Ganz writes in “When the Clock Broke,” his recent history of the period’s underappreciated malaise. In retrospect, 9/11 was paradoxically both a respite from and accelerant of polarizations and pathologies that were already well underway by then. It allowed Americans to ignore them for a moment, until they came roaring back with redoubled force.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">約翰·甘茨在其新著《當時鐘停擺》(When the Clock Broke)中寫道，川普2016年的當選「代表了20世紀90年代初那些尚處於萌芽狀態的因素的結晶」。這本書講述了那個時期被低估的社會頹勢。回頭來看，9·11事件矛既為當時已然愈演愈烈的兩極分化和社會病態提供了暫時的喘息之機，又悖論般地加速了這些現象的發展。它讓美國人暫時忽略了這些，直到它們以加倍的勢頭捲土重來。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CL3TpNb055YDFRZ17QIdw3Iaxg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>To claim 9/11’s </strong>singularity is also to assume that demarcations of eras in public life are most naturally drawn around geopolitics. This was an understandable assumption for Americans who lived through the end of the Cold War, or Vietnam, or World War II. It holds less true for anyone born after the 1980s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>主張9·11事件的獨特性</b>也意味著假設公共生活中的時代劃分最自然地圍繞地緣政治來劃定。對於經歷過冷戰結束、越戰或二戰的美國人來說，這是一個可以理解的假設。但對20世紀80年代後出生的人來說，這種假設就不再那麼成立。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If you do not remember the Berlin Wall but had an adolescence shaped by social media and cellphones, the brightest dividing lines in recent history are technological — and, with the rapid acceleration of artificial intelligence, are becoming more so. This is clear in the borrowed nostalgias of Gen Z, the bits of the past that 20-somethings have recently pressed into service as emblems of a lost golden era: “Friends,” John F. Kennedy Jr. and Carolyn Bessette Kennedy, ’90s high-school-class home videos, music videos and concert footage from bands like Alien Ant Farm and Puddle of Mudd.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果你不記得柏林牆，但你的青春期是被社群媒體和手機塑造的，那麼近代史上最明亮的分界線就是技術層面的。而且，隨著人工智慧的迅猛發展，這種趨勢正愈發明顯。這一點在Z世代的懷舊情結中體現得淋漓盡致，20多歲的年輕人將過去零碎的記憶當作逝去黃金時代的象徵：《六人行》、小約翰·F·甘迺迪和卡羅琳·貝塞特·甘迺迪、90年代高中課堂的家庭錄像、「外星螞蟻養殖場」(Alien Ant Farm)和「爛泥巴」(Puddle of Mudd)等樂隊的音樂錄影帶和演唱會片段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These artifacts span the pre- and post-9/11 years, and the lost innocence they represent has nothing to do with the attacks. Their interest comes from their evocation of a period when people hung out with friends in person and sweated alongside strangers at clubs and music festivals; teenagers goofed un-self-consciously for cameras rather than posing for them like jaded celebrities; and popular culture could be loud and dumb and not picked apart in the digital panopticon for its social politics. The shape that looms ominously over them isn’t the Twin Towers. It’s the iPhone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些物件跨越9·11事件前後的歲月，而它們所代表的失落純真與那場襲擊無關。它們的魅力來自它們所喚起的那個時期：那時人們會與朋友面對面相聚，在夜店和音樂節與陌生人一起流汗；青少年對著鏡頭毫不扭捏地嬉鬧，而不是像世故的明星那樣擺拍；流行文化可以喧鬧而膚淺，而不會在數字全景監獄中因其社會政治內涵而遭到細究。籠罩在它們之上那道不祥的陰影不是世貿雙子塔，而是iPhone。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it is hard to disentangle 9/11 from even the societal shifts that don’t obviously relate to it. When I visited the 9/11 Memorial and Museum for the first time recently, I spent the better part of an hour in the museum’s central exhibit, a minute-by-minute reconstruction of the events of the day of the attacks. In the videos and still images, the relics preserved under glass, I found myself less drawn to the terrible but familiar story they told of the attacks than I was to the more unremarkable evidence of life in New York a quarter-century ago that the exhibit preserved — a life that I had lived myself but that suddenly seemed very far away.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但即使是一些看似與9·11事件並無直接關聯的社會變遷，也很難將它們與9·11完全剝離開來。前不久，我第一次參觀9·11事件紀念館和博物館時，在博物館的中心展區前待了近一個小時，那裡按分鐘還原了襲擊當天的事件經過。在影片和靜態圖像中，在玻璃罩下保存的遺物中，我發現自己並不是那麼關注它們講述的關於襲擊事件的那些可怕卻又熟悉的故事，更吸引我的反而是那些被展覽保存的、四分之一世紀前紐約生活中更不起眼的證據——那是我自己經歷過的生活，但突然顯得非常遙遠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I lingered in particular on a pile of floppy disks recovered from the World Trade Center rubble, caked in dust like the remnants of an ancient civilization. I tried to remember the last time I had used a floppy disk myself; it was probably not long after 9/11. It occurred to me that the world the disks represented, in which a digital life was present but not yet omnipresent, is at least as unimaginable for my children as a major terrorist attack on American soil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一堆從世貿中心廢墟中回收的軟盤尤其令我流連，它們像古代文明的遺存一樣覆滿灰塵。我努力回憶自己最後一次使用軟盤是什麼時候；大概是9·11事件之後不久。我想到這些軟盤所代表的世界，那時數字生活已經存在，但尚未無所不在。對我的孩子們來說，它至少和對美國本土的重大恐怖襲擊一樣難以想像。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I have been thinking since then about what, specifically, people my age know about the moment documented in the museum that my children will never know. It is most likely nothing particular to 9/11 itself, exhaustively chronicled as it has been. But it is visible in the record of that day, if you look closely: in the police officers not yet encased in Kevlar and equipped with drones and Palantir software, in the video footage taken by professionals and dedicated hobbyists rather than thousands of autonomous digital eyes, in the public spaces not yet studded with bollards, in the handwritten fliers of people trying to find loved ones at a time when disappearance is, for worse or for better, still a possibility.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從那時起，我一直在思考，具體來說，對於我這個年紀的人所知道的、博物館所記錄下來的那個時刻，有什麼是我的孩子們永遠不會知道的。很可能不是9·11事件本身特有的東西——畢竟該事件已被詳盡地記載下來。但如果你仔細觀察，它在那天的記錄中依然可見：在那些尚未身穿凱夫拉爾防彈衣、尚未配備無人機和Palantir軟體的警察身上；在那些由專業人士和專注的愛好者拍攝、而非成千上萬自主數字監控鏡頭拍下的影片素材裡；在尚未布滿防撞柱的公共空間裡；在人們手寫的尋親傳單裡——那時失蹤仍然是一種可能性，無論好壞。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMuipNb055YDFYcYKwgdnVUgxw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is a picture of a country on the brink of enormous change — some of it a direct result of 9/11, some of it not, some of it hard to sort out at this distance, the echoes of the attacks blurring with the echoes’ own echoes. But if you were there then, you see it now: a world where so much we live with today was in motion but did not yet seem so inescapable. The many narrators of 9/11 aren’t wrong to talk about the sky that morning. It really was something. The air was so clear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是一個處於巨大變革邊緣的國家的圖景，有些變革是9·11事件的直接結果，有些不是，還有一部分在時隔多年後已難以釐清，襲擊的餘波與餘波的回聲模糊在一起。但如果你當時身處其中，你現在就能看清：在那時，我們今天所經歷的許多事物雖已初現端倪，卻尚未顯得如此不可避免。9·11事件的眾多敘述者會談及那天早上的天空，這並沒有錯。那確實是一幅令人難忘的景象。空氣是那樣澄澈。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">插圖圖片來源：Angel Franco/Agence France-Presse — Getty Images; Tim Robberts/Getty Images; Nathan Posner/Anadolu, via Getty Images</p><p class="cn-p">Charles Homans是《紐約時報》和《紐約時報雜誌》記者，報導美國國內政治。</p><p class="cn-p">翻譯：晉其角、杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260911/did-9-11-really-change-everything/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

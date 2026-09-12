@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧末日論：人類為何會如此擔憂 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人工智慧末日論：人類為何會如此擔憂</h1>
+    <h2 class="en-headline">A.I. Could Possibly End Humanity. How Are Humans Supposed to Process That?</h2>
+    <div class="meta-line">WILLIAM J. BROAD, CADE METZ <span style="margin: 0 8px;">•</span> 2026-09-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="從大流行病到致命小行星，再到生態崩潰，人類面臨諸多滅頂之災。人工智慧超智能不過是最近一個引發人們無限想像的話題。" height="700" src="https://static01.nyt.com/images/2026/09/10/science/10SCI-AI-RISK-EXPLAINER/10SCI-AI-RISK-EXPLAINER-master1050.jpg" width="1050"/><figcaption><span>從大流行病到致命小行星，再到生態崩潰，人類面臨諸多滅頂之災。人工智慧超智能不過是最近一個引發人們無限想像的話題。</span> <cite>Andrew Harnik/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It could launch a bioweapon attack, or a global drone war. It could set off a nuclear bomb. Or it could destroy human society more gradually, by hoarding all the world’s economic resources and depriving us of food, housing or medicine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它可能發動生物武器攻擊，或掀起一場全球無人機戰爭。它可能引爆核彈。或者，它也可能通過囤積全球所有經濟資源、讓我們無法獲得食物、住房或藥品，以一種更加漸進的方式摧毀人類社會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These are the sorts of dark thoughts that now swirl around artificial intelligence, a technology that has already proved to be a great advance in human achievement — but that, some fear, also has the potential to snuff out humanity entirely.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些正是如今圍繞人工智慧產生的一些黑暗想像。這項技術已被證明是人類成就的一項巨大進步，但一些人擔心，它同樣有可能讓人類徹底走向滅亡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such anxieties made global headlines this week when an Anthropic researcher quit the industry, citing fears that his lab and others like it were building supersmart machines that humans would be unable to control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本週，當Anthropic的一名研究人員離開這個行業，表示他擔心自己所在的實驗室及其他類似機構正在建造人類無法控制的超級智能機器時，這種焦慮登上了全球新聞頭條。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The potential threats posed by A.I. are understandably scary. But the modern world teems with a multitude of existential risks. Humans also face the prospect of doom from killer asteroids, pandemics, thermonuclear war, climate change, giant blobs of incandescent material shot from the sun, ecological collapse and the onset of a sudden ice age.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人們對人工智慧可能帶來的威脅感到害怕，是可以理解的。但現代世界充斥著各種各樣可能威脅人類生存的風險。人類同樣面臨著毀於殺手小行星、大流行病、熱核戰爭、氣候變化、太陽噴射出的巨大熾熱物質團塊、生態系統崩潰以及突然降臨的冰河時代的可能。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKza0dn055YDFaXLPAUduA0cng" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption" aria-label="廣告" data-google-container-id="1" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/technology_1" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://588cf9e94374c7bf4b9094d5c67fd988.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The problem, scientists and public policy experts say, is not so much these threats, of which A.I. is merely the latest, but the innate human difficulty of putting them into perspective.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科學家和公共政策專家表示，問題與其說在於這些威脅本身——人工智慧只是其中最新的一個，不如說在於人類天生難以正確看待和權衡這些威脅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We tolerate risks that we’re used to but fear the new ones,” said James K. Hammitt, the director of the Harvard Center for Risk Analysis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們能夠容忍自己已經習慣的風險，卻害怕那些新出現的風險，」哈佛大學風險分析中心主任詹姆斯·哈米特說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We drive in cars more often than we fly in planes, he said, so “airlines are perceived as dangerous compared to motor vehicles, when they’re really not.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，我們開車出行的頻率高於坐飛機，所以「與機動車相比，人們會認為坐飛機更危險，但實際上並非如此」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Artificial intelligence, he noted, “is obviously not understood and not under our perceived control, so it generates huge social concern.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他指出，人工智慧「顯然還沒有得到充分理解，也不在我們自認為能夠控制的範圍之內，因此引發了巨大的社會擔憂」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the tech executives and researchers building A.I. systems, there has always been a contingent that has warned of A.I.’s potential to destroy humanity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在構建人工智慧系統的科技高管和研究人員中，一直有一派人警告人工智慧可能毀滅人類。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the short term, some say, artificial intelligence could help unskilled but malicious people create viruses or toxic substances capable of causing widespread disease and death. Just on Thursday, Anthropic said it had foiled several efforts by scientists who were conducting research that potentially could lead to the development of biological weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些人認為，從短期來看，人工智慧可能幫助那些缺乏專業技能但懷有惡意的人製造病毒或有毒物質，從而造成大範圍的疾病和死亡。就在週四，Anthropic表示，該公司挫敗了若干科學家的數次嘗試；這些科學家正在進行可能導致生物武器開發的研究。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLPZ0dn055YDFRLKPAUd8MsZlg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the longer term, those warning of A.I.’s potential dangers argue that tech companies could give A.I. systems greater autonomy, connect them to the internet and even tie them into vital infrastructure, including power grids, stock markets and military weapons. Once they are connected to this infrastructure, they argue, A.I. systems could cause problems in unexpected ways.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從長期來看，那些警告人工智慧潛在危險的人認為，科技公司可能賦予人工智慧系統更大的自主權，將它們接入互聯網，甚至讓它們連接到包括電網、股市和軍事武器在內的重要基礎設施。他們認為，一旦與這些基礎設施連接起來，人工智慧系統就可能以人們意想不到的方式引發問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today, when A.I. systems go rogue, companies like OpenAI can just shut them off. But some experts worry that future systems will resist efforts to shut them down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，如果人工智慧系統失控，OpenAI等公司只需把它們關掉即可。但一些專家擔心，未來的系統可能會抵抗人類關閉它們的嘗試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For now, these are hypothetical concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，這些都是假設性的擔憂。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="NASA的「小行星威脅評估項目」利用超級計算能力評估假設性小行星撞擊可能造成的損害和風險。" data-src="https://static01.nyt.com/images/2026/09/10/science/10SCI-AI-RISK-EXPLAINER-02/10SCI-AI-RISK-EXPLAINER-02-master1050.jpg" src="https://static01.nyt.com/images/2026/09/10/science/10SCI-AI-RISK-EXPLAINER-02/10SCI-AI-RISK-EXPLAINER-02-master1050.jpg"/></div><figcaption><span>NASA的「小行星威脅評估項目」利用超級計算能力評估假設性小行星撞擊可能造成的損害和風險。</span> <cite>Lorien Wheeler, NASA/Ames</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We are very far away,” said Oren Etzioni, a professor at the University of Washington and the founding chief executive of the Allen Institute for Artificial Intelligence. “If I had to worry about either an A.I. escaping the lab and killing millions of people and a virus escaping and killing millions, it is no contest. The worry is the virus.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們距離那一步還非常遙遠，」華盛頓大學教授、艾倫人工智慧研究所創始首席執行官奧倫·埃齊奧尼說。「如果非要讓我在『人工智慧逃出實驗室並殺死數百萬人』和『一種病毒逃逸並殺死數百萬人』這兩件事之間選擇一個需要擔心的，我根本不會猶豫。應該擔心的是病毒。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As it turns out, even anthrax has a reasonable chance at doing in humanity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實證明，就連炭疽也有相當的機會毀滅人類。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthrax has been around since ancient times, but more recently it has been a favorite of rogue nations developing biological weapons programs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">炭疽自古以來就存在，但到了近現代，它一直是發展生物武器計劃的流氓國家的最愛。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COOh0dn055YDFa7LPAUd1bAJ8Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Scientists have long known that a single gallon of anthrax, if suitably distributed, could end human life on earth. But that hasn’t happened, even though North Korea and other belligerent states (including Iran) have long been suspected of harboring the lethal germ.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科學家早就知道，如果將一加侖炭疽以適當的方式散播出去，就可能讓地球上的人類全部死亡。但這種事情從未發生過，儘管長期以來，人們一直懷疑朝鮮以及包括伊朗在內的其他好戰國家藏有這種致命病菌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What often gets lost in the frenzied panics of modern life is that, at least with intentional threats, plain old deterrence can save the day. State actors are reluctant to unleash anthrax on an enemy because they will face retaliation — turning a strike into a suicide — thus creating an incentive for restraint.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在現代生活的瘋狂恐慌中，人們經常忽略的一點是，至少對於蓄意威脅而言，最簡單的威懾手段就可以避免災難。國家行為體不願向敵人釋放炭疽，因為它們會面臨報復——這會讓一次攻擊變成自殺式行動，從而形成了剋制的動機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Harvard Center, founded in 1989, seeks to put these numerous doom scenarios in perspective, especially the undeterrable ones, such as environmental risks and major threats to human health. It seeks to apply decision science, economics and risk assessment to assess and improve policymaking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成立於1989年的哈佛大學風險分析中心試圖幫助人們正確看待這些形形色色的末日情景，尤其是那些無法通過威懾加以阻止的風險，例如環境風險以及人類健康的重大威脅。該中心試圖運用決策科學、經濟學和風險評估等方法，對政策制定進行評估並加以改進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Similarly, NASA relies on supercomputers in its Asteroid Threat Assessment Project. Overall, the space agency puts the risk this century of an asteroid impact that would endanger human existence at essentially zero. And it calculates that earthlings can (in all likelihood) breath a sigh of relief for at least 1,000 years to come.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣，美國國家航空航天局在「小行星威脅評估項目」中依賴超級計算機。總體而言，這家航天機構認為，本世紀發生足以威脅人類生存的小行星撞擊事件的風險基本為零。該機構計算認為，地球人很可能至少在未來1000年內都可以鬆一口氣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And how do knowledgeable scientists assess the risk of a global pandemic that would wipe out most human life?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那麼，知識淵博的科學家如何評估一場可能消滅大部分人類的全球大流行病的風險？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They peg the threat as low, if not zero. Toby Ord, a researcher at Oxford University, in his 2020 book “The Precipice: Existential Risk and the Future of Humanity,” put the 100-year risk of an existential catastrophe from a pandemic at one in 30, or roughly a 3 percent chance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們認為威脅很低，甚至接近於零。牛津大學研究員托比·奧德在其2020年出版的《懸崖邊緣：生存性風險與人類的未來》(The Precipice: Existential Risk and the Future of Humanity)一書中估計，未來100年發生一場由大流行病引發的、足以威脅人類生存的災難，其概率為三十分之一，也就是大約3%。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI6q0dn055YDFbfNPAUdaoQQTg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What makes the doomsayers of the tech industry different from, say, an airline scientist assessing crash risks, is that many A.I. executives and researchers held such dire beliefs even before the technology began to show its power. They believe that existential risk is a serious problem in part because they have always believed it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">科技行業那些末日論者與航空領域評估飛機失事風險的科學家不同之處在於，早在這項技術開始展現其威力之前，許多人工智慧領域的高管和研究人員就已經抱有如此悲觀的看法。他們之所以認為生存風險是一個嚴重問題，一定程度上恰恰在於他們一直以來就這麼認為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I was there when this subculture developed,” said Zack Korman, a founder of the A.I. security company Embroidery. He was referring to his time at the University of Oxford, when it was a hotbed of the “effective altruism” movement, in which many of these fears of A.I. existential risk first incubated. Too many thinkers on the subject today, Mr. Korman said, “interpret all events in light of this story that has been told for more than a decade.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種亞文化形成的時候，我就在現場，」人工智慧安全公司Embroidery的創始人之一紮克·科曼說。他指的是自己在牛津大學的經歷。當時，那裡是「有效利他主義」運動的大本營，而許多關於人工智慧生存風險的擔憂最初正是在這一運動中孕育出來的。科曼說，如今關於這一問題的思考者中，有太多人「用這個講述了十多年的故事來解釋所有發生的事情」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the world’s top researchers, though, do not share such beliefs. They say the fears are wildly overblown. And scientists outside Silicon Valley tend to hold a very different view about the threat of A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，世界上許多頂尖研究人員並不認同這種看法。他們認為，這些擔憂被嚴重誇大了。而矽谷以外的科學家往往對人工智慧威脅持有截然不同的看法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The discussion has a frame, and it is a very particular frame. That is the frame that was there before deep learning took off, and it has stayed there,” Branton DeMoss, an A.I. researcher at Oxford, said, referring to the rise of neural networks. “And I don’t agree with it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這個討論有一個既定框架，而且是一個非常特定的框架。那是深度學習興起之前就存在的框架，並且一直沿用至今，」牛津大學人工智慧研究員布蘭頓·德莫斯說，他指的是神經網路的興起。「而我並不認同這個框架。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent blog post, Dr. Ord summarized the world’s different risks as moving up and down — a climate catastrophe down, a nuclear disaster up. His judgment on pandemics and A.I. is mixed: lots of changes, but no clear direction in the overall risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最近的一篇貼文中，奧德博士將世界不同風險的走向概括為有升有降——氣候災難下降，核災難上升。他對大流行病和人工智慧的判斷則是喜憂參半：相關情況發生了許多變化，但總體風險並沒有明確的上升或下降方向。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts note that catastrophic and existential risks can also be mitigated with sound plans and early warning systems. Faced with a clear and present danger (like an asteroid on a collision path with the planet), humanity might well unite behind a common enemy, pushing squabbles into the background.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家指出，災難性風險和生存風險同樣可以通過完善的應對方案和預警系統加以降低。如果面對的是一個明確而迫在眉睫的危險——比如一顆小行星正沿著撞向地球的軌道飛來——人類很可能會圍繞一個共同的敵人團結起來，將紛爭擱置一旁。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNG30dn055YDFRrGPAUdrvUEPw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Ord hopes a day will come to pass for what he calls existential security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧德博士希望，他所稱的「生存性安全」有一天能夠實現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is a hypothetical future state of the world where existential risk is low and kept low,” he wrote in his post. Not only would humanity extinguish the current fires, Dr. Ord wrote, but “put in place the mechanisms to ensure fire no longer poses a substantive threat.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在貼文中寫道：「這是一種假設的未來世界狀態，在這個世界裡，生存風險很低，而且能夠一直保持在較低水平。」奧德博士寫道，人類不僅會撲滅眼下的各種火災，還會「建立起相應的機制，確保火災不再構成實質性的威脅」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">William J. Broad自1983年以來一直為《紐約時報》報導科學新聞。他常駐紐約。</p><p class="cn-p">Cade Metz撰寫有關人工智慧、無人駕駛汽車、機器人、虛擬現實和其他技術新興領域的新聞。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260911/ai-humanity-risk/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

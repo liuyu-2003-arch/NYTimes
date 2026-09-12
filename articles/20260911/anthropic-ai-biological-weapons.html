@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anthropic報告AI模型被濫用情況 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">Anthropic報告AI模型被濫用情況</h1>
+    <h2 class="en-headline">Anthropic Says It Blocked Possible Efforts to Build Biological Weapons</h2>
+    <div class="meta-line">DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-09-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="Anthropic週四發布的報告列舉了過去八個月其AI模型——包括聊天機器人Claude——遭到的一系列濫用情況。" height="695" src="https://static01.nyt.com/images/2026/09/10/multimedia/Dc-anthropic-zgkh/Dc-anthropic-zgkh-master1050.jpg" width="1050"/><figcaption><span>Anthropic週四發布的報告列舉了過去八個月其AI模型——包括聊天機器人Claude——遭到的一系列濫用情況。</span> <cite>Marissa Leshnov for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic said it had disrupted several potential plots this year by scientists who used its leading artificial intelligence models to conduct research that could have helped develop biological weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic表示，今年已多次阻止科學家利用其領先的人工智慧模型開展研究的企圖，這些研究可能有助於開發生物武器。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a report describing misuses of its A.I. models, Anthropic said it could not determine whether the research served a legitimate or nefarious purpose because valid biological inquiry — the kind that can lead to breakthroughs like vaccines — can also help engineer dangerous pathogens. In the face of that uncertainty, Anthropic said it erred on the side of caution because the consequences of missing malicious activity could be severe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一份描述其AI模型被濫用的報告中，Anthropic表示無法確定這些研究是出於合法還是邪惡目的，因為有效的生物學研究——能帶來疫苗等突破的那種——也可能有助於設計危險病原體。面對這種不確定性，Anthropic表示選擇謹慎行事，因為漏掉惡意活動的後果可能很嚴重。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You are not seeing someone in a comic book kind of way say, ‘Hey, I want to build a biological weapon to kill everybody,’” Jacob Klein, the head of threat intelligence at Anthropic, said in an interview. “It’s an incredibly nuanced situation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你不會看到有人像漫畫書裡那樣說，『嘿，我想製造生物武器殺死所有人，』」Anthropic威脅情報主管雅各布·克萊因在接受採訪時說。「情況極其微妙。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The potential for cutting-edge A.I. models to facilitate the development of known or entirely new biological pathogens is among the gravest concerns experts have about a technology that is developing so rapidly that even its leading architects doubt whether humans will be able to fully control it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">尖端AI模型可能促進已知或全新生物病原體的開發，這是專家們對這項技術最嚴重的擔憂之一——該技術發展如此迅速，連其領先的設計者都懷疑人類能否完全控制它。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKuZttv055YDFZeFpgQd40cFXA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Compared with the threat of catastrophic cyberattacks or A.I. agents that fail to align with human intentions, biological misuse has gained less attention as an existential risk of A.I., in part because past examples have generally been shown only in research settings rather than in the real world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>與災難性網路攻擊或與人類意圖不一致的AI智能體相比，生物濫用作為AI的生存風險受到的關注較少，部分原因是過去的案例通常只出現在研究環境中，而非現實世界。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Andrew Weber, a senior fellow on the Council on Strategic Risks who reviewed Anthropic’s report before its release, said the findings were “chilling examples of state-sponsored biological weapons developers tapping into the rapidly advancing capabilities” of leading A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">戰略風險委員會高級研究員安德魯·韋伯在報告發布前審閱了Anthropic的報告。他說，這些發現是「國家支持的生物武器開發者利用領先AI模型快速進步能力的案例，令人不寒而慄」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The lengthy report that Anthropic published on Thursday cataloged a litany of misuses on various models of its Claude A.I. chatbot over the past eight months. Some examples were similar to past disclosures from Anthropic and other A.I. labs, including suspected Chinese and Iranian government-linked actors targeting dissident and diaspora communities for surveillance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>Anthropic週四發布的長篇報告列舉了過去八個月其Claude聊天機器人各模型被濫用的一系列事例。一些例子與Anthropic和其他AI實驗室過去的披露類似，包括疑似與中國和伊朗政府有關聯的行為者針對異見者和僑民社區進行監視。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The report also highlighted cases of Russian state media using Claude to generate online propaganda masquerading as independent reporting, including fabricated claims about an election in Moldova.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告還提到俄羅斯官方媒體使用Claude生成偽裝成獨立報導的在線宣傳，包括關於摩爾多瓦選舉的捏造內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic documented another genre of abuse it said was new: attempts to use Claude to develop software for conventional weapons design and development, including firearms, missiles, armed drones and bombs. It detailed three cases in China, two in Russia and one in Yemen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic記錄了另一種它認為屬於新型的濫用：試圖利用Claude開發用於常規武器設計和開發的軟體，包括槍枝、導彈、武裝無人機和炸彈。報告詳細描述了在中國的三起、俄羅斯的兩起和葉門的一起案例。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The report does not identify by name which parties were involved in the Yemeni case, but the context makes clear that it is referring to the Iran-backed Houthi militia. A.I. use by terrorist networks is a growing concern among U.S. security officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告未點名葉門這一例涉及哪一<span>方，但上下文清楚表明指的是伊朗支持的胡塞武裝。恐怖網路使用AI正日益成為美國安全官員的擔憂。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COPLttv055YDFYyupgQdemU0tg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But among all the categories of threats shared in the report, none may be as worrisome as the biological research cases. Anthropic did not disclose the names of researchers or institutions that it blocked, their countries of affiliation or the specific biological agents at issue, in part because of its uncertainty about their aims.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在報告列出的所有威脅類別中，可能生物研究最令人擔憂。Anthropic未披露它阻止的研究人員或機構的名稱、所屬國家或所涉具體生物製劑，部分原因是其不確定這些人的目的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, Anthropic said the scientists circumvented its controls intended to prevent users from blocked regions from gaining access to its A.I. models and worked to “obfuscate the purpose of their research to evade our safeguards.” The company banned accounts associated with the research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，Anthropic表示，這些科學家規避了旨在阻止被封鎖地區用戶訪問其AI模型的控制措施，並設法「混淆研究目的以避開我們的安全護欄」。該公司封禁了相關帳戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one example from May, a scientist sought Claude’s help with writing a grant application for funding to conduct research intended to experiment on the chikungunya virus, a mosquito-borne malady that can lead to months of severe pain and other symptoms. Such research, known as gain of function, can be legitimate and lead to vaccine development, but it can also create superbug versions of viruses. In this instance, the scientist wanted to engineer mutations to the virus that would make it more harmful as it repeatedly infected live animals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在5月的一個案例中，一名科學家尋求Claude幫助撰寫撥款申請，以資助針對基孔肯雅病毒的研究。這是一種蚊媒疾病，可導致數月嚴重疼痛和其他癥狀。這類研究被稱為功能獲得性研究，可能合法且促成疫苗開發，但也可能製造出超級病毒。在此例中，科學家想要設計病毒突變，使其在反覆感染活體動物時更具危害性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic said it believed the particular research was worrisome in part because it could discern that the work was intended to be performed at a military research institute.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic表示，它認為這項研究令人擔憂，部分原因是它能夠辨別出這項工作擬在一家軍事研究機構進行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“What we don’t know is if the research was meant to be weaponized,” Mr. Klein said. “But a military institution doing gain-of-function research is concerning.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們不知道的是，這項研究是否有武器化意圖，」克萊因說。「但軍事機構進行功能獲得性研究令人擔憂。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic said evaluations from last year of its older models demonstrated that they were not yet able to meaningfully assist in conducting dangerous biological research. Its current models are more able to complete complex scientific research, the company said, which spurred tighter safeguards intended to restrict access to a wide range of dual-use biological research queries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic表示，去年對其舊模型的評估表明，它們尚不能有效協助進行危險的生物研究。該公司稱，當前模型更有能力完成複雜科學研究，這促使其收緊了安全護欄，以限制多種兩用生物研究的提問。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIijttv055YDFR2gpgQdHd0WMQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Susan Monarez, a microbiologist and public health expert who oversaw a review of national biosecurity preparedness in the Obama administration, also reviewed the Anthropic report before its publication. She said the findings provided real-world evidence to support concerns that bad actors were trying to covertly use advanced A.I. “to improve their chances of building biological pathogens that could cause significant harm.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微生物學家兼公共衛生專家蘇珊·莫納雷斯曾在歐巴馬政府負責監督國家生物安全準備工作的審查，她也在報告發布前審閱了Anthropic的報告。她說，這些發現提供了現實證據，支持了有關不良行為者正試圖祕密利用先進AI的擔憂，這些行為者試圖「提高其製造可能造成重大傷害的生物病原體的機會」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dr. Monarez, who briefly served as the director of the Centers for Disease Control and Prevention last year, said A.I. held enormous promise to usher in an era of medical breakthroughs that save and extend lives. But the same abilities that make that possible, she added, could also “let bad actors hide in plain sight, using seemingly legitimate research to create pathogens we may not see coming and may not be able to stop once released.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年曾短暫擔任美國疾病控制與預防中心主任的莫納雷斯說，AI有著巨大前景，可開啟一個拯救和延長生命的醫學突破時代。但她補充說，使其成為可能的同樣能力也可能「讓不良行為者在光天化日之下，利用看似合法的研究製造我們可能無法預見、一旦釋放可能無法阻止的病原體」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Weber of the Council on Strategic Risks, who also served as the assistant secretary of defense for nuclear, chemical and biological defense programs during the Obama administration, called for limiting access to A.I. tools capable of this level of biological research to trusted researchers only.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">戰略風險委員會的韋伯也曾在歐巴馬政府擔任負責核、化學和生物防禦項目的助理國防部長。他呼籲將能夠進行這種級別生物研究的AI工具僅限於可信研究人員使用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The fact that Russia, China and North Korea continue to develop prohibited biological weapons makes it imperative that we deny their researchers access to these extraordinarily capable models,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「俄羅斯、中國和朝鮮繼續開發被禁止的生物武器，這使我們必須阻止其研究人員使用這些極其強大的模型，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Dustin Volz為時報撰寫網路安全和情報方面的文章，他常駐華盛頓。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260911/anthropic-ai-biological-weapons/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
