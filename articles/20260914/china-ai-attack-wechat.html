@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「一種新的核武器」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「一種新的核武器」</h1>
+    <h2 class="en-headline">For China, a Mock A.I. Attack on WeChat Signals a Dangerous New Era</h2>
+    <div class="meta-line">郭莉莉, PEI-LIN WU <span style="margin: 0 8px;">•</span> 2026-09-14</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="在中國，政府機構、企業以及近80%的公民都使用微信來處理業務、進行支付和溝通。" height="700" src="https://static01.nyt.com/images/2026/09/11/multimedia/11int-china-wechat-ai-cglp/11int-china-wechat-ai-cglp-master1050.jpg" width="1050"/><figcaption><span>在中國，政府機構、企業以及近80%的公民都使用微信來處理業務、進行支付和溝通。</span> <cite>David Kirton/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">WeChat, a messaging app, is practically part of the national infrastructure in China, woven into daily communications, government services and digital payments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">微信這款即時通訊應用在中國幾乎已成為國家基礎設施的一部分，融入了日常通信、政府服務和數字支付之中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s why a recent discovery by a small team of researchers in California — that a tool built with artificial intelligence could breach millions of accounts in just a few hours — has rattled experts and Chinese analysts. It proved that with A.I., even a tiny team with no government backing can mount a devastating attack on an app used by 1.4 billion people a month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正因如此，加利福尼亞州一個小型研究團隊最近的發現——一種利用人工智慧構建的工具可以在短短几個小時內攻破數以百萬計的帳戶——讓專家和中國分析人士感到震驚。這證明，有了人工智慧，即使是沒有政府背景的小型團隊也能對一款每月有14億人使用的應用程序發起毀滅性的攻擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“From a destruction standpoint, it’s extremely potent,” said Zhao Minghao, deputy director of the Center for American Studies at Fudan University in Shanghai. He said the ability to take down an app like WeChat, given its importance to the Chinese public and its huge user base, amounted to “a new kind of nuclear weapon.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從破壞力的角度來講這個是非常強的，」上海復旦大學美國研究中心副主任趙明昊說。他表示，鑒於微信對中國公眾的重要性及其龐大的用戶群，搞垮這樣一款應用程序的能力相當於「一種新的核武器」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This discovery adds fuel to warnings from researchers that A.I. hacking capabilities are advancing faster than defenses can keep up, with tech leaders like Bill Gates warning that addressing risks from A.I. should be “the world’s top priority.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一發現進一步印證了研究人員的警告：人工智慧駭客能力的發展速度超過了防禦手段的跟進速度；比爾·蓋茲等科技領袖也警告稱，應對人工智慧帶來的風險應成為「全球的首要任務」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN71sJ6-75YDFZlOCAQdatQvhg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That urgency could shape talks between President Trump and China’s leader, Xi Jinping, that are expected on Sept. 24 in Washington, where the two sides are expected to discuss A.I. security as well as trade and other issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種緊迫性可能會影響川普總統與中國領導人習近平預計於9月24日在華盛頓舉行的會談，屆時雙方預計將在會談中討論人工智慧安全以及貿易和其他問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">New risks seem to surface almost daily. Anthropic, the company behind Claude and other A.I. models, said in a report on Thursday that it had disrupted plots by scientists to use its models for research that could have helped develop biological weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新的風險似乎每天都在出現。開發了Claude及其他人工智慧模型的Anthropic公司在上週四的一份報告中表示，該公司挫敗了一些科學家利用其模型進行研究的陰謀，這些研究有可能助長生物武器的研發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic also described attempts by a Chinese arms manufacturer to use Claude to refine a proposal for an anti-torpedo weapons system for the Chinese military. And it documented instances in which Chinese users tried to use Claude to build surveillance operations targeting foreign governments, Uyghurs in Syria and religious leaders. (Asked about the report, Mao Ning, a spokeswoman for China’s Foreign Ministry, said Friday that Beijing “opposed the distortion of facts and attempts to attack or smear China.”)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic還描述了一家中國武器製造商試圖利用Claude為中國軍隊完善反魚雷武器系統方案的企圖。此外，該公司還記錄了中國用戶試圖利用Claude針對外國政府、在敘利亞的維吾爾人以及宗教領袖建立監控行動的實例。（在被問及該報告時，中國外交部發言人毛寧上週五表示，北京「反對歪曲事實、對中國進行攻擊抹黑」。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the WeChat hack, the researchers who developed the tool were with Calif, a security company based in Palo Alto, Calif., that says it makes such tools not to sell them but to bolster cyberdefense.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在微信駭客攻擊事件中，開發該工具的研究人員就職於總部位於加利福尼亞州帕洛阿爾托的安全公司Calif，該公司表示，製造此類工具不是為了出售，而是為了加強網路防禦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They showed that the tool, which they named WeWorm, could hijack a WeChat user’s account, call their contacts and then spread from phone to phone without anyone ever answering a call. Calif said it took the company a little more than a week to build the bug and that it had disclosed the flaw to the White House and Tencent, the owner of WeChat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們展示了這款被他們命名為WeWorm的工具，它可以劫持微信用戶的帳戶，撥打其聯繫人的電話，然後在無需任何人接聽電話的情況下，在手機之間傳播。Calif表示，該公司花了一個多星期的時間構建了這個漏洞利用程序，並且已經向白宮和微信的母公司騰訊披露了該缺陷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In one sense, the news of WeWorm should make Beijing more eager to work with Washington to manage the risks posed by A.I., according to Kyle Chan, a fellow at the Brookings Institution focusing on Chinese technology and industrial policy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會專注中國科技和產業政策的研究員陳凱欣(Kyle Chan)認為，從某種意義上說，關於WeWorm的消息應該會讓北京更渴望與華盛頓合作，以管控人工智慧帶來的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It hints at the massive potential for other actors, nation-states or nonstate actors, to use A.I. to attack China’s digital infrastructure,” Mr. Chan said. “The stakes have gotten much higher as A.I. systems make leaps in cyber capabilities.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這暗示了其他行為體、民族國家或非國家行為體利用人工智慧攻擊中國數字基礎設施的巨大可能性，」陳凱欣說。「隨著人工智慧系統在網路能力方面取得飛躍進步，風險也大幅升高。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="作為一個基本實現無現金化的社會，中國已逐漸依賴微信等移動支付服務來方便日常生活。" data-src="https://static01.nyt.com/images/2026/09/11/multimedia/11int-china-wechat-ai-kbpf/11int-china-wechat-ai-kbpf-master1050.jpg" src="https://static01.nyt.com/images/2026/09/11/multimedia/11int-china-wechat-ai-kbpf/11int-china-wechat-ai-kbpf-master1050.jpg"/></div><figcaption><span>作為一個基本實現無現金化的社會，中國已逐漸依賴微信等移動支付服務來方便日常生活。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But deep mutual suspicion between China and the United States could undercut talks. And the revelation of weapons like WeWorm, even as a simulation, could simply accelerate competition over who will wield the world’s most powerful A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，中美之間深深的互疑可能會削弱談判的效果。而且，像WeWorm這類武器的曝光，即使只是作為一種模擬，也可能只會加速圍繞誰將掌握世界上最強大的人工智慧模型而展開的競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China, now acutely aware of the vulnerabilities in its digital infrastructure, will most likely want to beef up the defense capabilities of domestic A.I. systems to better spot and fix security flaws, said Mr. Zhao, of Fudan University.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">復旦大學的趙明昊表示，中國現在敏銳地意識到了其數字基礎設施中的脆弱性，很可能會希望加強國內人工智慧系統的防禦能力，更好地發現和修復安全漏洞。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIbVsZ6-75YDFYNOCAQd5_EyLA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The problem is that the U.S. side may then see those systems as potential tools to attack U.S. companies and institutions, pushing the U.S. to strengthen its own cyber defenses. “The boundary between defense and offense gets increasingly blurred,” Mr. Zhao said. “We can call this the A.I. security dilemma.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">問題在於，美方隨後可能會將這些系統視為攻擊美國公司和機構的潛在工具，從而促使美國加強自身的網路防禦。「Defense（防禦）、offense（進攻） 這個界限越來越模糊了，」趙明昊說。「我們可以把它叫做AI security dilemma（人工智慧安全困境）。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">WeWorm and Anthropic’s report about abuses of its models are yet more evidence that the world’s two largest A.I. powers need a way to share information about bad actors or to clarify their intentions, experts say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家表示，WeWorm和Anthropic關於其模型被濫用的報告進一步證明，世界上最大的兩個人工智慧大國需要找到一種方式來共享有關惡意行為者的信息，或澄清各自的意圖。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, few expect the summit to result in limits on the technology itself. Neither government is likely to agree to anything that restricts its own development of A.I. capabilities. But experts say there is value in at least establishing a channel of communication in the event of a crisis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，很少有人期望這次峰會能對技術本身做出限制。任何一國政府都不太可能同意任何限制其自身人工智慧能力發展的條款。但專家表示，至少建立一條危機時的溝通管道是有價值的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is an alarm, a wake-up call,” said Jiang Tianjiao, an associate professor at Fudan University focusing on emerging technologies, referring to WeWorm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「那肯定會是一個alarm（警告），可能是一個警醒吧，」復旦大學專注於新興技術的副教授江天驕在提到WeWorm時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everyone needs to sit down and discuss how A.I. raises safety and security risks that are very different from traditional issues, and whether we need new frameworks of cooperation,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「大家需要坐下來討論，人工智慧是怎樣帶來和傳統問題截然不同的安全和安保風險，以及我們是否需要新的合作框架，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even as China embraces A.I. as a strategic technology critical to its economy, officials have also begun to raise concerns about its risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管中國將人工智慧視為對其經濟至關重要的戰略技術，但官員們也已開始對其風險表示擔憂。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CK2Qsp6-75YDFQNlCAQdbRA8Ug" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese regulators have warned local governments and companies about using the A.I. assistant OpenClaw and in May released guidelines for how to regulate the use of A.I. agents. Officials are also working on more than a dozen new national standards to strengthen cybersecurity in the age of A.I. Mr. Xi, speaking in July at an A.I. conference, said countries should work together to “ensure that A.I. is always under human control.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國監管機構已就使用人工智慧助手OpenClaw向地方政府和企業發出警告，並於5月發布了關於如何規範人工智慧代理使用的指導方針。官員們還在制定十多項新的國家標準，以加強人工智慧時代的網路安全。習近平在7月的一次人工智慧會議上發言時表示，各國應共同努力「確保人工智慧始終處於人類控制之下」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Zhao Lei, director of the research office at the Central Party School, which trains Chinese Communist Party officials, warned in an essay published on WeChat on Thursday that extremist forces could leverage A.I. to design “highly transmissible and virulent pathogens” or to optimize weapons. This threat, he said, would “trigger a new kind of existential crisis for humanity.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">培訓中共官員的中央黨校研究室負責人趙磊在週四發表於微信的一篇文章中警告說，極端勢力可能會利用人工智慧來設計「高傳染性、高毒力的人工病原體」，或優化武器。他說，這種威脅將「引發新型的人類生存危機」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, China’s cybersecurity authorities warned about the risk that extremist groups or others could use A.I. to learn how to design and build “nuclear, biological, chemical and missile weapons.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，中國網路安全部門曾警告稱，極端組織或其他人可能會利用人工智慧來學習如何設計和製造「核⽣化導武器」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another issue hanging over A.I. safety talks with Washington is how transparent both sides would be. It is unclear whether Chinese A.I. firms would approach an American company if they found a flaw in their system, in the way that Calif described. Chinese firms are required to report such discoveries first to China’s Ministry of Industry and Information Technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">懸在中國與華盛頓人工智慧安全談判之上的另一個問題是雙方的透明度如何。目前尚不清楚中國的人工智慧公司如果在美國公司的系統中發現漏洞，是否會像Calif公司描述的那樣與美國公司接觸。中國公司被要求將此類發現首先報告給中國工業和信息化部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pei Wang, a cybersecurity expert, said that Chinese companies would approach such disclosures “with caution,” given the risk that they could be politicized amid the intense tech competition between the two countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">網路安全專家王培表示，鑒於中美之間激烈的科技競爭，此類披露可能被政治化，因此中國企業會「謹慎」對待此類披露。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國領導人習近平7月在一場人工智慧會議上表示，各國應通力合作，「確保人工智慧始終處於人類控制之下」。" data-src="https://static01.nyt.com/images/2026/09/11/multimedia/11int-china-wechat-ai-ktcz/11int-china-wechat-ai-ktcz-master1050.jpg" src="https://static01.nyt.com/images/2026/09/11/multimedia/11int-china-wechat-ai-ktcz/11int-china-wechat-ai-ktcz-master1050.jpg"/></div><figcaption><span>中國領導人習近平7月在一場人工智慧會議上表示，各國應通力合作，「確保人工智慧始終處於人類控制之下」。</span> <cite>Greg Baker/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has long accused Washington of trying to hold back China’s technological progress with sanctions on Chinese companies, export controls cutting off the country’s access to advanced technology and tariffs on Chinese goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，中國一直指責華盛頓試圖對中國企業實施制裁、通過出口管制切斷中國獲取先進技術的管道以及對中國商品加徵關稅，以這些手段來遏制中國的技術進步。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The WeWorm vulnerability sends a signal to Beijing about American A.I. capabilities at the same time that U.S. officials have signaled new willingness to attack Chinese companies. On Tuesday, the deputy C.I.A. director, Michael Ellis, said that Chinese companies were a legitimate target for espionage in areas like artificial intelligence, semiconductors and biotechnology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">WeWorm漏洞向北京發出了有關美國人工智慧能力的信號，而與此同時，美國官員也釋放出了攻擊中國企業的新意願。週二，美國中央情報局副局長麥可·埃利斯表示，在人工智慧、半導體和生物技術等領域，中國企業是間諜活動的正當目標。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPehsp6-75YDFQ9PCAQdWaAs4A" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some Chinese scholars have suggested that American and Chinese officials could potentially discuss voluntary “negative lists” of unacceptable A.I.-enabled cyber activities or identify categories of critical infrastructure that are protected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些中國學者建議，中美官員可就不可接受的人工智慧網路活動討論自願性的「負面清單」，或確定受保護的關鍵基礎設施類別。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials have not publicly acknowledged the disclosure of the WeChat hacking tool, perhaps in an effort not to add more tensions between the two countries before the summit. Ms. Mao, the foreign ministry spokeswoman, was asked about WeWorm at a news conference on Wednesday. She said she “was not familiar” with the issue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員尚未公開承認這款微信駭客工具的披露，這或許是為了避免在峰會前加劇兩國之間的緊張局勢。在上週三的新聞發布會上，外交部發言人毛寧被問及WeWorm時，表示自己對此「不了解」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Tencent, the hack is likely to draw intense scrutiny by Chinese regulators, said Xiaomeng Lu, who researches U.S.-China tech competition at Eurasia Group.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐亞集團研究美中科技競爭的魯曉萌表示，對於騰訊而言，這次駭客事件可能會引來中國監管機構的嚴厲審視。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I wouldn’t be surprised if after this event agencies like the Cyber Administration of China invite some Tencent people over for tea and ask them exactly what happened and what’s the chance of something happening again,” Ms. Lu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果在此次事件之後，像中國國家網信辦這樣的機構請騰訊的一些人去『喝茶』，詢問他們到底發生了什麼，以及再次發生類似事件的機率有多大，我不會感到驚訝，」魯曉萌說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Dustin Volz自華盛頓、Steve Lohr自首爾對本文有報導貢獻。</p><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p><p class="cn-p">Pei-Lin Wu是《紐約時報》記者/研究員，報導台灣和中國新聞。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260914/china-ai-attack-wechat/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
