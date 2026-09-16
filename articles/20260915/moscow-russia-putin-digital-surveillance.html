@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「科技仙境」莫斯科：是數字烏托邦，也是監控陷阱 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「科技仙境」莫斯科：是數字烏托邦，也是監控陷阱</h1>
+    <h2 class="en-headline">The New Moscow: A Digital Utopia Doubling as a Surveillance Trap</h2>
+    <div class="meta-line">IVAN NECHEPURENKO <span style="margin: 0 8px;">•</span> 2026-09-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="今年，莫斯科的一台配送機器人。俄羅斯人在享受新技術進步的同時，也身處一個日益受監控的社會框架之中。" height="750" src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-01-vchw/14int-russia-digital-01-vchw-master1050.jpg" width="1050"/><figcaption><span>今年，莫斯科的一台配送機器人。俄羅斯人在享受新技術進步的同時，也身處一個日益受監控的社會框架之中。</span> <cite>Nanna Heitmann for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the surface, today’s Moscow is a technological wonderland. You can use your face to pay for almost anything, like subway fares, or even to finalize the purchase of an apartment. Robots scurry across sidewalks making 15-minute grocery deliveries, and driverless taxis are set to begin commercial service this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">表面上看，如今的莫斯科是一個科技仙境。你可以刷臉支付幾乎任何東西，從買地鐵票到買房付款。機器人在人行道上穿梭，15分鐘送達食品雜貨，無人駕駛計程車將於今年開始商業運營。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Underpinning many of the modern amenities is a robust digital infrastructure developed by the city government that has made life not only easier, but also safer. Policing aided by digital tools has helped cement Moscow’s transformation from the raw, unforgiving place it was 25 years ago, plagued by home burglaries, street muggings and murders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">支撐這些現代便利的是市政府開發的強大數字基礎設施，它讓生活不僅更便利，也更安全。數字工具輔助的警務也幫助莫斯科完成了蛻變：25年前，這裡還原始而殘酷，入室盜竊、街頭搶劫和謀殺橫行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But there is a cost to the convenience and security: an expanding surveillance state.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但便利與安全也有代價：一個不斷擴張的監控國家。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Moscow’s roughly 300,000 CCTV cameras make it one of the most heavily watched cities in the world. It is impossible to avoid a lens while simply walking through the city. The same cameras that whisk subway passengers through turnstiles are also used to monitor and flag people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">莫斯科約有30萬個閉路電視攝像頭，這使其成為世界上監控最嚴密的城市之一。只要在城市裡走一走，就不可能避開鏡頭。那些讓地鐵乘客快速通過閘機的攝像頭也被用來監控和標記人員。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMa54ZX-8ZYDFVRSNAkdyBkL5Q" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, a Russian rock musician was detained by the police at a railway terminal in St. Petersburg after surveillance cameras mistook him for a similar-looking Ukrainian public figure wanted by the state. After checking his face and pulling at his hair to ensure it was not a wig, they let him go.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>4月，一名俄羅斯搖滾音樂人在聖彼得堡一個火車站被警方拘留，原因是監控攝像頭把他誤認成一名長相相似、被國家通緝的烏克蘭公眾人物。警方檢查了他的臉，還拉扯頭髮確認不是假髮，隨後放他離開。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The CCTV network is linked to biometric databases. Submission of biometric data is voluntary in Russia, but it is encouraged in widespread advertisements, and citizens cannot take full advantage of digital services without complying.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">閉路電視網路與生物識別數據庫相連。在俄羅斯，提交生物識別數據是自願的，但鋪天蓋地的廣告鼓勵這樣做，而公民若不配合，就無法充分享受數字服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These databases help the authorities target political dissent in addition to crime. Biometric feeds can be used to hunt down critics of the government after they hold gatherings. The days when outspoken Russians could flee to remote towns to avoid the authorities, as they did during Stalin’s purges, are largely over.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些數據庫除了幫助當局在打擊犯罪之外，還助其針對政治異見。生物識別數據流可用於在政府批評者舉行集會之後追捕他們。大膽直言的俄羅斯人已經基本不再可能像史達林清洗時期那樣逃往偏遠城鎮躲避當局。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="一名市政工人在莫斯科的一個閉路電視攝像頭旁插上俄羅斯國旗。莫斯科全市約有30萬個此類攝像頭。" data-src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-03-vchw/14int-russia-digital-03-vchw-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-03-vchw/14int-russia-digital-03-vchw-jumbo.jpg"/></div><figcaption><span>一名市政工人在莫斯科的一個閉路電視攝像頭旁插上俄羅斯國旗。莫斯科全市約有30萬個此類攝像頭。</span> <cite>Nanna Heitmann for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As of July, around 10 million Russians were using biometrics-driven applications in some form, and the Kremlin wants to increase that number, pushing citizens to adopt the tools for identification not only at train stations, but also at airports. This year, Moscow City Hall announced that a biometric system would recognize passengers on buses and trams, automatically deducting their fare once they confirmed the transaction in an app.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">截至7月，約1000萬俄羅斯人正在以某種形式使用生物識別驅動的應用，克里姆林宮希望增加這一數字，推動公民不僅在火車站、也在機場採用這些工具進行身份識別。今年，莫斯科市政府宣布，一套生物識別系統將識別公車和有軌電車上的乘客，乘客在應用中確認交易後，車費將自動扣除。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other major European cities also have large CCTV networks, most notably London. Moscow’s, however, is more centralized and uses biometrics to identify people spotted by cameras with fewer restrictions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他主要歐洲城市也有大型閉路電視網路，最著名的是倫敦。但莫斯科的網路更集中，且對於使用生物識別技術識別攝像頭髮現人員限制更少。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With Russia’s war in Ukraine, the stakes behind the growing surveillance have become higher.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著俄羅斯對烏克蘭的戰爭，日益增長的監控背後的風險也更高了。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COSJ4pX-8ZYDFQJPNAkdu-UKqQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rumors of a new wave of military conscription, the first major mobilization since the early months of the war, have swept through Russia. While in the recent past it was relatively simple to evade a draft because enlistment offices were buried under paper files, artificial intelligence-enhanced digitized systems make that almost impossible now. The authorities introduced electronic summonses that carry the full legal weight of paper notices after thousands of Russians fled the draft in 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>新一輪軍事徵兵的傳言席捲俄羅斯——這將是戰爭最初幾個月以來的首次重大動員。過去，逃避徵兵相對容易，因為徵兵辦公室淹沒在紙質文件中；但人工智慧增強的數位化系統如今讓這幾乎不可能。2022年數千名俄羅斯人逃離徵兵後，當局推出了具有紙質通知同等法律效力的電子傳票。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March, Vlad, 28, an art and fashion photographer, received a summons to appear at a military enlistment office for a mandatory medical examination. Through the State Services app — a centralized portal for government services, medical care and identity verification — he learned that he had been barred from leaving the country until he complied.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">3月，28歲的藝術與時尚攝影師弗拉德收到傳票，要求他到軍事徵兵辦公室接受強制體檢。通過「國家服務」應用——一個集政府服務、醫療和身份驗證於一體的集中門戶——他得知自己在遵令執行之前已被禁止出境。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vlad, who asked that his last name be withheld for fear of repercussions, said he now lived “in fear” as he defied the summons, which he believes could be a prelude to being sent off to war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">弗拉德因害怕遭到報復而要求不公開姓氏。他說由於沒有聽從該指示，他如今「生活在恐懼中」，他認為這張傳票可能是他被送上戰場的前奏。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There is total control because you give up so much data that your every step can be traced,” he said. He has stopped using the subway, terrified of the cameras.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是全面控制，因為你交出太多數據，你走的每一步都能被追蹤，」他說。他因害怕攝像頭而不再乘坐地鐵。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="帶有面部識別支付功能的莫斯科地鐵閘機。" data-src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-02-vchw/14int-russia-digital-02-vchw-master1050.jpg" src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-02-vchw/14int-russia-digital-02-vchw-master1050.jpg"/></div><figcaption><span>帶有面部識別支付功能的莫斯科地鐵閘機。</span> <cite>Nanna Heitmann for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Kremlin-aligned analysts argue that the government is using convenient apps and data collection to build a system that is more responsive to people’s needs than what can be provided by Western democracies, which struggle to plan long term because of changes in government and, in some cases, limit digital services because of privacy concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與克里姆林宮立場一致的分析人士認為，政府正在利用便捷的應用和數據收集建立一個比西方民主國家更能回應民眾需求的系統。西方民主國家因政府更迭而難以長期規劃，有時還因隱私擔憂而限制數字服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia remains steps away from China’s “social credit” system, which rates people on their behavior in financial, legal and other matters and limits the freedom of offenders. But Russian technocrats clearly view Beijing’s digital architecture as a blueprint.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>俄羅斯距離中國的「社會信用」體系仍有一段距離。該體系根據人們在金融、法律等事務中的行為進行評分，並限制違規者的自由。但俄羅斯技術官僚顯然將北京的數字架構視為藍圖。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMi24pX-8ZYDFcEUJQYdO6gvAA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gleb Kuznetsov, a political analyst who previously worked for a major Kremlin-aligned think tank, pointed to Moscow under its longtime mayor, Sergei Sobyanin, and to Shenzhen, the Chinese high-tech megacity, as urban models superior to Western capitals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾在主要的親克里姆林宮智庫任職的政治分析人士格列布·庫茲涅佐夫認為，長期由市長謝爾蓋·索比亞寧領導的莫斯科以及中國高科技大城市深圳是優於西方首都的城市模式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Sobyanin’s approval rating is high not because ‘the elections lack competition,’” Mr. Kuznetsov said in response to written questions, “but because the city government genuinely works in the interest of its residents.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「索比亞寧的支持率高不是因為『選舉缺乏競爭』，」庫茲涅佐夫在對書面問題的回答中說，「而是因為市政府真正為居民利益服務。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Russian authorities, however, can be quick to pull the plug on the networks undergirding these digital amenities when they perceive a security threat, highlighting a tension between technocratic agencies and the security services.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，一旦感知到安全威脅，俄羅斯當局可能迅速切斷支撐這些數字便利的網路，這凸顯了技術官僚機構與安全部門之間的緊張關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March, for instance, mobile internet services were abruptly shut down for more than two weeks across much of central Moscow, including in the subway system, temporarily rendering many of the city’s prized digital services useless.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>例如，今年3月，莫斯科中部大部分地區——包括地鐵系統——的移動互聯網服務突然關閉超過兩週，該市許多引以為傲的數字服務暫時失效。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Residents were left stunned by the blackout, which some analysts speculated was a result of intense state paranoia after the assassination of Ayatollah Ali Khamenei in Iran.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>居民對這次斷網感到震驚。一些分析人士推測，這是伊朗阿亞圖拉阿里·哈梅內伊遇刺後國家極度</span>恐慌的結果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Russia is going to go back to a situation 25 years ago where you have ‘patchwork globalization,’” said Jeremy Morris, an ethnographer who is one of the few Western academics who continue to conduct fieldwork in Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「俄羅斯將回到25年前那種『拼湊式全球化』的局面，」民族志學者傑瑞米·莫裡斯說。他是少數仍在俄羅斯進行田野調查的西方學者之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You could go into one place and it would be super, super cybernetic and technological,” he added, “and then you walk out of the zone of coverage and you’re back to a basic economy.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你走進一個地方，那裡高度網路化、技術化，」他補充說，「可一旦走出覆蓋區，就又回到一個初級的經濟體中。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年互聯網服務曾在多個時段被關閉，使該市許多數字服務失效。" data-src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-zmhf/14int-russia-digital-zmhf-master1050.jpg" src="https://static01.nyt.com/images/2026/09/14/multimedia/14int-russia-digital-zmhf/14int-russia-digital-zmhf-master1050.jpg"/></div><figcaption><span>今年互聯網服務曾在多個時段被關閉，使該市許多數字服務失效。</span> <cite>Nanna Heitmann for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">According to a Russian official involved in developing digital infrastructure, who spoke on the condition of anonymity because he was not authorized to speak publicly, a quiet war is being waged within the state.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據一位參與數字基礎設施開發的俄羅斯官員稱，國家內部正在打一場無聲的戰爭。他因未獲公開表態授權而要求匿名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Technocratic agencies like the Ministry of Digital Development, he said, are colliding with the Federal Security Service, or F.S.B. — specifically its notorious political-policing department. While it has access to digital tools, the F.S.B. was not involved in creating them. It favors old-school analog methods of monitoring and controlling society, the official said, even if that means breaking the technology that the technocrats spent billions building.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，數字發展部等技術官僚機構正與聯邦安全局——尤其是其臭名昭著的政治警察部門——發生衝突。安全局雖能使用數字工具，卻未參與創建這些工具。這位官員說，它偏愛老式的模擬手段來監控和控制社會，哪怕這意味著破壞技術官僚花費數十億打造的技術。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIPU4pX-8ZYDFV4PJQYdMF8rFw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The F.S.B.’s stance is partly driven by institutional self-preservation, as A.I. threatens to erode the justification for its sprawling apparatus of human agents, the official said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這位官員說，安全局的立場部分源於機構自保，因為人工智慧可能削弱其龐大特工體系的存在理由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ultimately, both the digital and security agencies are competing for the ear and mind of one man: President Vladimir V. Putin, who has demanded that the government develop A.I. while insulating it from Western influence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最終，數字機構與安全機構都在爭奪一個人的傾聽與關註：總統弗拉基米爾·V·普丁。他要求政府發展人工智慧，同時使其不受西方影響。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, speaking at a high-profile Kremlin meeting on A.I., Mr. Putin framed the stakes in existential terms. “The sovereignty of the Russian state in the near future — and, without exaggeration, its very existence — depends on our ability to perform well in A.I., along with digital platforms and autonomous systems,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>4月，普丁在克里姆林宮一次高調的人工智慧會議上以</span>關乎生死存亡的措辭描述此事的重要性。「俄羅斯在不久的將來的主權以及——毫不誇張地說——國家存亡本身，取決於我們在人工智慧以及數字平台和自主系統方面表現出色的能力，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet for all of its ambitions, Russia lacks the infrastructure and hardware to develop the technology in isolation from China and the United States. Western sanctions related to the invasion of Ukraine have limited Russia’s access to cutting-edge chips, and many of its top technical minds have left the country since the war began in 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，儘管雄心勃勃，俄羅斯仍缺乏脫離中國和美國、自主開發這項技術所需的基礎設施和硬件。與入侵烏克蘭相關的西方制裁限制了俄羅斯獲取尖端晶片，自2022年戰爭爆發以來，許多頂尖技術人才已離開該國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Russia’s two flagship A.I. models — one developed by the country’s largest state-owned bank and the other by its leading domestic tech company — were “inspired” by or heavily rely on Chinese open-source architectures.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>俄羅斯的兩個旗艦人工智慧模型——一個由該國最大國有銀行開發，另一個由該國領先的科技公司開發——「靈感來自」或嚴重依賴中國的開源架構。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the end, said Ilya Grashchenkov, a Moscow-based political analyst, Russia is likely to be defined by what he called an attempt to “combine the seemingly incompatible.” That, he said, involves building an “external digital perimeter” to close the country off from the world, while accelerating digitization within Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">莫斯科政治分析人士伊利亞·格拉什琴科夫說，最終，俄羅斯的特徵可能在於他所說的嘗試「把看似不相容的東西結合起來」。他說，這包括建立「外部數字邊界」，將國家與世界隔絕，同時加速俄羅斯內部的數位化。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN3p4pX-8ZYDFQkVJQYdEtA0Mw" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Vlad, the photographer who received the military summons, said he would gladly do away with the frictionless, high-tech conveniences if it meant getting back the freedom that was truly missing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">收到軍事傳票的攝影師弗拉德說，如果能換回真正缺失的自由，他樂意放棄這些無縫的高科技便利。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Life in Russia, he said, now resembles “living in an oxygen mask.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，如今俄羅斯的生活就像「戴著氧氣面罩活著」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Ivan Nechepurenko報導俄羅斯、烏克蘭、比利時、高加索國家和中亞國家新聞。他常駐莫斯科。</p><p class="cn-p">翻譯：經雷</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260915/moscow-russia-putin-digital-surveillance/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

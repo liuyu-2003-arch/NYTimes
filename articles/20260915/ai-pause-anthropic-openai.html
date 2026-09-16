@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>放緩人工智慧發展速度的難題在於中國 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">放緩人工智慧發展速度的難題在於中國</h1>
+    <h2 class="en-headline">Dario Amodei’s Essay Was Gutsy. It Didn’t Go Far Enough.</h2>
+    <div class="meta-line">SEBASTIAN MALLABY <span style="margin: 0 8px;">•</span> 2026-09-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/09/14/multimedia/14mallaby1-qvhf/14mallaby1-qvhf-jumbo.jpg" width="768"/><figcaption><span></span> <cite>Photo Illustration by Philotheus Nisch for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It takes courage to stand in front of an express train and yell at it to slow down. That is what Dario Amodei, the chief executive of the leading artificial intelligence lab Anthropic, has just done.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">站在一列高速列車前，大喊著讓它減速，這需要很大的勇氣。這正是領先的人工智慧實驗室Anthropic首席執行官達里奧·阿莫迪剛剛做過的事情。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic has the world’s strongest A.I. models. It most likely has the fastest revenue growth in the history of capitalism. Its lead is set to grow because it is probably closest to the takeoff point of recursive self-improvement, when A.I. autonomously creates stronger versions of itself. Yet on Saturday Amodei published an essay calling for an A.I. slowdown. He declared that recursive self-improvement “must be pursued very carefully, if at all.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic擁有世界上最強大的人工智慧模型。它很可能擁有資本主義歷史上最快的收入增長速度。它的領先優勢還將擴大，因為它可能最接近「遞歸自我改進」（人工智慧自主創建更強大版本的時刻）的起飛點。然而，就在週六，阿莫迪發表了一篇文章，呼籲放緩人工智慧的發展。他宣稱，遞歸自我改進「必須非常謹慎地推進，如果真要推進的話」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s hard to think of another chief executive who has done something this gutsy — especially one simultaneously planning a blockbuster initial public offering. He deserves all due credit for grappling with a major problem. That’s not the same as saying he has the solutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">很難想出還有哪位首席執行官做過如此有膽量的事情——尤其是一位同時還在籌劃轟動性首次公開募股的首席執行官。他勇於直面重大問題，理應獲得充分的讚譽。但這並不等於說他已經找到了解決方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Amodei is channeling his fear, and that of Anthropic’s internal brain trust, that a “swarm” of A.I. agents could be capable of “taking over the entire internet” in the next six to 12 months. He worries that, in the absence of advanced safety guardrails, “the scale of damage would continue to increase from there.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿莫迪表達了他以及Anthropic內部智囊團的擔憂：人工智慧智能體「集群」可能會在未來六到12個月內具備「接管整個互聯網」的能力。他擔心，如果沒有先進安全護欄，「破壞的規模將持續擴大。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKPNkZn-8ZYDFYsIJQYdiDYHdw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He therefore proposes “pacing” — a slowing of A.I. capability to allow A.I. safety to keep up. As a first step, Anthropic will grant outside experts permanent access badges and system permissions. These embedded evaluators will monitor Anthropic’s safety practices and report incidents to the public.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，他提出了「步調控制」——放緩人工智慧能力的提升，讓人工智慧安全能夠跟上。作為第一步，Anthropic將向外部專家授予永久訪問證和系統權限。這些常駐評估者將監控Anthropic的安全實踐，並向公眾報告相關事件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The industry rejected earlier calls for slowing or pausing A.I. development. This time, because of the technology’s alarming progress, three rival A.I. executives — Sam Altman, Elon Musk and Demis Hassabis — have commended Mr. Amodei’s essay; and Mr. Altman says that he will follow Mr. Amodei’s example by embedding evaluators in his company, OpenAI.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此前，業界曾拒絕過放緩或暫停人工智慧發展的呼籲。而這一次，由於該技術令人擔憂的進展，三位競爭對手公司的人工智慧高管——薩姆·奧特曼、伊隆·馬斯克和傑米斯·哈薩比斯——都對阿莫迪的文章表示讚賞；奧特曼還表示，他將效仿阿莫迪的做法，在其公司OpenAI內部引入常駐評估者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the past, the A.I. labs didn’t know what they would do during a pause. They have reversed their position because they now have a to-do list as long as their arms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去，人工智慧實驗室不知道在暫停期間該做些什麼。如今它們改變了立場，是因為現在他們有了一份長長的待辦事項清單。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many recent A.I. safety incidents could have been prevented if the labs had been more careful about operational details. Of five mishaps known to have occurred in quick succession over the summer, three involved errors in the configuration of so-called sandboxes — contained digital testing environments that A.I. agents are not supposed to be able to exit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果各實驗室在操作細節上更加謹慎，最近發生的許多人工智慧安全事件本是可以避免的。在今年夏天已知連續發生的五起事故中，有三起涉及所謂的「沙盒」配置錯誤——沙盒是一種受控的數字測試環境，人工智慧智能體本來是不應該能夠從中逃脫的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To eliminate such glitches, the labs need to tighten their quarantine of experimental models, scrub training data of material that encourages models to behave badly and fix countless other protocols. “There is precedent for operating technologically complex, safety-critical systems millions of times without anything going wrong — for example, commercial airplanes,” Mr. Amodei observed in his essay. “But it takes time to get it right.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了消除這些故障，實驗室需要加強對實驗模型的隔離，從訓練數據中清除那些會誘導模型產生不良行為的內容，並修復無數其他的協議。「在技術複雜且安全至關重要的系統中，成百上千萬次運行而未出任何差錯是有先例的——例如商用飛機，」阿莫迪在他的文章中寫到。「但這需要時間才能做好。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some officials at Anthropic’s competitors, notably Jensen Huang, boss of the chip designer Nvidia, implicitly accuse Mr. Amodei of exaggerating A.I. risk for business reasons. By announcing that A.I. is dangerous, Mr. Amodei is really just trumpeting the fact that A.I. is powerful, Mr. Huang argues, without naming Mr. Amodei. Calling for safety, to Mr. Huang, is a marketing trick.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic一些競爭對手的高管——尤其是晶片設計公司英偉達的老闆黃仁勛——隱晦地指責阿莫迪出於商業原因誇大了人工智慧的風險。黃仁勛在沒有點名阿莫代先生的情況下稱，通過宣布人工智慧具有危險性，阿莫迪實際上只是在吹噓人工智慧十分強大。在黃仁勛看來，呼籲安全只是一種營銷伎倆。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMeWkpn-8ZYDFQQMJQYdN8EbGg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But impartial authorities — academic experts, the British government’s respected A.I. Security Institute, the recent independent report on rogue A.I. agents’ hacking of the website Hugging Face — support Mr. Amodei’s claim that A.I. risk is genuine. Mr. Huang, who wants his company to sell lots more of its A.I.-enabling chips, is the one taking positions that accord with his company’s bottom line.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但包括學術專家、備受推崇的英國政府人工智慧安全研究所、最近關於失控的人工智慧代理駭客攻擊Hugging Face網站的獨立報告在內，公正的權威機構都支持阿莫迪關於人工智慧風險是真實存在的觀點。黃仁勛希望自己的公司能售出更多支持人工智慧的晶片，因此他所持的立場才是完全符合其公司經濟利益的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A variant on Mr. Huang’s claim holds that Mr. Amodei is playing up A.I. risk to ensure government regulation, and that this is a cynical ploy to throttle competitors and cement Anthropic’s lead. But this “regulatory capture” story is also backward. The biggest reason to suspect that competitors might lose out from regulation is that they are often more dangerous. Many produce “open-weight” A.I. models — ones that allow users to remove safety guardrails.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛主張的一種變體認為，阿莫迪正在大肆渲染人工智慧風險，以確保政府實施監管，而這是一種壓制競爭對手並鞏固Anthropic領先地位的冷酷伎倆。但這種「監管俘獲」的說法也是本末倒置的。懷疑競爭對手可能會因監管而遭受損失的最大原因，是它們通常更加危險。許多公司生產「開放權重」的人工智慧模型，這些模型允許用戶移除安全護欄。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The reasonable critique of Mr. Amodei’s proposal is that it wouldn’t result in the A.I. slowdown that he wants. He presents his embedded evaluators as a step toward coordinated pacing: If all labs in democratic countries embrace them, the evaluators can verify that no opportunist is taking irresponsible shortcuts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對阿莫代先生提議的合理批評在於，這一提議不會帶來他所希望的人工智慧發展放緩。他將常駐評估者作為邁向協同步調控制的一步：如果民主國家的所有實驗室都接受這些評估者，他們就可以驗證，是否存在投機者採取不負責任的捷徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But it’s not clear that all labs, or even most labs, will follow Anthropic’s example — or, if they do, that the evaluators will help. The Google subsidiary DeepMind previously invited independent evaluators to monitor its work on A.I.-enabled health products. Anxious to signal credibility, the evaluators exaggerated DeepMind’s shortcomings until Google dismissed them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但尚不清楚是否所有或大多數實驗室都會效仿Anthropic的做法——或者，即使他們這樣做了，評估者是否會有所幫助。谷歌子公司DeepMind此前曾邀請獨立評估者監督其在基於人工智慧的健康產品方面的工作。為了急於彰顯公信力，這些評估者誇大了DeepMind的缺點，直到谷歌解僱了他們。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To be fair to Mr. Amodei, he is proposing evaluators because Congress is unlikely to act quickly to create a government regulator that forces labs to act responsibly — the most obvious route to coordinated pacing. But he only briefly mentions another coordination mechanism that might prove useful: an industry-financed but government-endorsed self-regulatory body, as proposed two months ago by Mr. Hassabis, the chair of DeepMind.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">公平地說，阿莫迪提議引入評估者，是因為國會不太可能迅速採取行動，建立一個迫使實驗室負責任地行事的政府監管機構，而這本是實現協同步調控制最明顯的途徑。但他只是簡要地提到了另一種可能證明有用的協調機制：一個由行業資助但受到政府認可的自律機構，正如DeepMind主席哈薩比斯在兩個月前所提議的那樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">America’s A.I. titans should create such a body immediately. The government can help by ensuring that any potential antitrust concerns around this kind of industry coordination are minimized or waived.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的人工智慧巨頭應該立即建立這樣一個機構。政府可以通過確保將此類行業協調可能引發的反壟斷擔憂降至最低或予以豁免來提供幫助。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNymkpn-8ZYDFfU8JQYdGHk2cw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even this would not be enough, though. The larger coordination problem for any A.I. slowdown concerns China. “Pacing within democracies will be limited by the lead that U.S. companies have over authoritarian regimes, chiefly the Chinese Communist Party,” Mr. Amodei wrote. Since the U.S. lead over China stands at only a few months, Mr. Amodei is saying that a Western slowdown must be modest. But he also suggests that safer A.I. development might require additional breathing room of one or two years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，即使這樣也是不夠的。針對任何人工智慧發展減速的提議，更廣泛的協調難題都在於中國。「民主國家內部的減速節奏將受限於美國企業領先威權政權——主要是中國共產黨——的幅度，」阿莫迪寫道。鑒於美國對中國的領先優勢只有幾個月，阿莫迪的意思是，西方的放緩必須是適度的。但他也表示，為了更安全地發展人工智慧，可能還需要一到兩年的緩衝期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How to buy more time for safety without falling behind China? Here, Mr. Amodei restated his view that China should be denied the tools of A.I. progress. American controls on exports of chips and chip-manufacturing equipment should be tightened. “Distillation,” the practice of using advanced models to train new ones, should be combated, since China employs this shortcut ruthlessly. Security at Western labs should be strengthened to stop China from stealing A.I. secrets. These measures could expand the Western A.I. lead, enabling slower pacing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如何在不落後於中國的情況下為安全爭取更多時間？在這裡，阿莫迪重申了他的觀點：應該拒絕向中國提供人工智慧進步的工具。美國應收緊對晶片及晶片製造設備的出口管制。應該打擊「蒸餾」（使用高級模型來訓練新模型的做法），因為中國正不擇手段地使用這種捷徑。應該加強西方實驗室的安全性，以阻止中國竊取人工智慧機密。這些措施可以擴大西方在人工智慧領域的領先地位，從而使放緩步調成為可能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This playbook has been tried already, and the results are not encouraging. The Biden administration imposed chip-export controls on China in 2022; the loopholes have been obvious for some time, but neither the Biden team nor the Trump team closed them enough to halt China’s progress.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一策略早已付諸實踐，但結果並不令人鼓舞。拜登政府在2022年對中國實施了晶片出口管制；一段時間以來，漏洞一直很明顯，但無論是拜登團隊還是川普團隊都未能充分堵住這些漏洞以遏制中國的進步。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meanwhile, Western frontier labs have enormous incentives to prevent distillation and guard against theft of their intellectual property. If they have not succeeded yet, it is probably because they don’t know how. Despite America’s best efforts to hobble China’s A.I. industry, Chinese models account for a growing share of A.I. usage in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，西方前沿實驗室有巨大的動力來防止蒸餾並防範其知識產權被竊取。如果它們尚未取得成功，那可能是因為它們不知道該怎麼做。儘管美國竭力阻礙中國的人工智慧產業，但在美國的人工智慧使用量中，中國模型的佔比卻在不斷增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The alternative to keeping China down is to make China a partner in safety and pacing. Until now, Mr. Amodei has embraced the U.S. foreign policy consensus that negotiating an A.I. deal with China is near-impossible. So perhaps the most significant section of his essay is the last one, in which he appeared to soften his stance. He avoided calling out China’s techno-authoritarianism and oppression of ethnic minorities and listed a series of areas on which collaboration might be possible. During the Cold War, the United States competed fiercely with the Soviet Union. That did not prevent them from striking arms-control deals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了壓制中國之外，另一種選擇是讓中國成為安全與發展節奏方面的合作夥伴。在此之前，阿莫迪一直支持美國外交政策的共識，即與中國談判達成人工智慧協議幾乎是不可能的。因此，他文章中最重要的一部分也許是最後一部分，在這一部分中，他似乎軟化了自己的立場。他避免點名批評中國的技術威權主義和對少數民族的壓迫，並列出了一系列可能進行合作的領域。在冷戰期間，美國與蘇聯進行了激烈的競爭。但這並未阻止他們達成軍備控制協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sept. 24, President Trump is scheduled to meet China’s leader, Xi Jinping. The summit is expected to yield something modest on A.I. diplomacy, but the good news is that the leaders may meet twice more before the end of this year. The superpowers share an interest in preventing superhuman A.I. models from causing havoc, as China’s leaders clearly recognize. However difficult U.S.-China coordination, the consequences of not coordinating make it essential to try.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統計劃於9月24日會見中國領導人習近平。預計這次峰會在人工智慧外交方面成果有限，但好消息是，兩國領導人可能在今年年底前再會面兩次。超級大國在防止超越人類的人工智慧模型造成嚴重破壞方面有著共同的利益，中國領導人清楚地認識到了這一點。無論美中協調有多麼困難，不協調的後果都使得嘗試協調成為必要。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLrEkpn-8ZYDFUNONAkdNwEUUg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The icy state of U.S.-China relations is what makes an A.I. slowdown so elusive. The technology’s positive potential will be realized only if the Trump administration — and tech leaders like Mr. Amodei — throw their full weight behind A.I. talks with Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美中關係的冰冷狀態正是導致放緩人工智慧發展變得如此難以實現的原因。只有當川普政府以及像阿莫迪這樣的科技領袖全力支持與北京舉行人工智慧談判時，這項技術的積極潛力才能得以實現。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Sebastian Mallaby是美國外交關係委員會的高級研究員，也是《The Infinity Machine: Demis Hassabis, DeepMind, and the Quest for Superintelligence》一書的作者。他與他人共同主持該委員會的播客節目「The Spillover「。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260915/ai-pause-anthropic-openai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
