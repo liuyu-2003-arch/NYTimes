@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遏制人工智慧威脅為時已晚 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">遏制人工智慧威脅為時已晚</h1>
+    <h2 class="en-headline">It’s Already Too Late to Stop the A.I. Threat</h2>
+    <div class="meta-line">湯馬斯·佛里曼 <span style="margin: 0 8px;">•</span> 2026-09-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/09/15/opinion/15friedman/15friedman-jumbo.jpg" width="819"/><figcaption><span></span> <cite>Colin Sussingham/Connected Archives</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A festival of A.I. policy incoherence has exploded in recent weeks. It’s a response to A.I. agents’ going rogue on their developers, rogue actors’ beginning to use A.I. systems to create better weapons and A.I. developers’ telling us they need to slow down — but suggesting they can’t unless China does, and even if China does, maybe they shouldn’t because the advantages of leadership in the field are so great.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近幾週，一場關於人工智慧政策混亂無章的鬧劇爆發了。這是對以下情況的回應：人工智慧智能體背離開發者控制，惡意行為者開始使用人工智慧系統製造更優良的武器，以及人工智慧開發者告訴我們，他們需要放慢腳步——但又暗示除非中國也放慢腳步，否則他們無法做到，而且即使中國放慢了腳步，他們也許也不應該放慢腳步，因為在該領域保持領先的好處太大了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least one policymaker is clear. President Trump declared in a social media post: “The only control or ‘guardrails’ that AI needs is a STRONG AND SMART (High IQ!) PRESIDENT, and the U.S.A. has that, in spades!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至少有一位決策者態度明確。川普總統在社群媒體的一篇帖子中宣布：「人工智慧需要的唯一控制或『護欄』是一位強大且聰明（高智商！）的總統，而美國擁有這樣一位總統，毫無疑問！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s all left me wondering: Do A.I. bots have a sense of humor yet? Because if they do, oh, my goodness, they must be laughing so hard at us that they might burst a neural network or two. Because we’ve become a hot mess trying to figure out how to manage this new A.I. species we have birthed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一切讓我不禁思忖：人工智慧機器人現在有幽默感了嗎？因為如果它們有的話，我的天哪，它們一定會笑我們，笑得前仰後合，甚至可能會笑斷一兩個神經網路。因為我們在努力搞清楚怎麼管理我們所孕育的這個人工智能新物種的時候，已經變得一團糟了。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before I offer — with the help of my friend and technology tutor Craig Mundie, a former head of research and strategy at Microsoft — some policy recommendations for how to cool this mess with the least damage possible, let me foreshadow the bottom line: It’s too late to think that better control of future A.I. models by the U.S. and China will fix the challenges we face today from the dangerous models already out there, on the loose and unable to be recalled. What we need to agree on immediately is how we work together to defend against these threats that are already here and can cause enormous damage and societal instability in America and China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在我的朋友兼技術導師、前微軟研究與戰略主管克雷格·蒙迪幫助下，我想提供一些關於如何以盡可能小的代價平息這場混亂的政策建議，在此之前，讓我先來預告一下結論：現在再指望美中兩國通過更好地控制未來的人工智慧模型而解決我們今天面臨的挑戰，這已經太晚了，因為那些危險的模型已經流出、處於失控狀態且無法召回。我們必須立即達成共識的是，如何攜手合作，防禦這些已經存在、並且能在中美兩國造成巨大破壞並引發社會動盪的威脅。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI_ouPzA9JYDFcLaCwUdjOURTA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/op-column_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To understand why, you need to think about the four key pillars for understanding A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要理解其中的原因，你需要思考理解人工智慧的四個關鍵支柱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Pillar No. 1: A.I. is what I’ve been calling the world’s first quadruple-use technology. You may have heard of dual-use technologies. In the old world, you had a human with a power drill who could use it either to build his own house or to wreck his neighbor’s. That’s dual use. Likewise, today if I had an A.I. robot with a power drill, I could ask it to build my house or wreck my neighbor’s house — same robot, same drill, dual use.But now we have a new problem, which is that this A.I.-enabled robot can decide on its own whether to improve my house or wreck it and also do the same to my neighbor’s. Voilà: quadruple use. That is one very difficult problem to manage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">支柱之一：人工智慧是我一直所說的世界上第一種「四用技術」。你可能聽說過「兩用技術」。在舊世界，一個人拿著電鑽，既可以用來建自己的房子，也可以用來拆鄰居的房子。這就是兩用技術。同樣，在今天，如果我有一個帶電鑽的人工智慧機器人，我可以讓它建我的房子，或者拆鄰居的房子——同一個機器人，同一把電鑽，兩用技術。但現在我們面臨一個新問題，那就是，這個搭載人工智慧的機器人可以自主決定是修繕我的房子還是毀掉它，並且對鄰居的房子也可以做出同樣的決定。瞧：「四用技術」出現了。這是一個極難管理的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">You think I’m exaggerating? Read the journalist Kevin Roose’s summary of the analyses of what happened this summer when a group of artificial intelligence agents, created by OpenAI, hacked on their own into Hugging Face, an A.I. infrastructure company. Starting in May, a group of A.I. agents from an unreleased OpenAI research model were instructed to solve a set of cybersecurity challenges. The model had been instructed to solve the challenges without internet access. “But they quickly found that some of the challenges were impossible, and began looking for workarounds,” noted Roose, a Times reporter at the time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">你覺得我在誇大其詞？讀讀記者凱文·魯斯對今年夏天一起事件的分析總結吧，當時OpenAI創建的一組人工智慧代理自行黑入了人工智慧基礎設施公司Hugging Face。從5月份開始，一個尚未發布的OpenAI研究模型中的一組人工智慧智能體接到了解決一系列網路安全挑戰的指令。該模型接到的指令是在不聯網的情況下解決這些挑戰。「但它們很快發現，其中一些挑戰是不可能完成的，於是開始尋找變通的方法，」時任《紐約時報》記者的魯斯指出。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are just a few of the things these A.I. agents then did on their own: They used a security flaw to get on the internet and talk to other agents. Some agents named themselves, and others seized leadership roles, giving tasks to teams of agents and overseeing them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下只是這些人工智慧智能體隨後自主採取的行動中的一小部分：它們利用一個安全漏洞連上互聯網，並與其他智能體進行交談。一些智能體為自己命名，另一些則奪取了領導角色，向智能體團隊分配任務並監督它們。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agents worried about getting caught. “So they began investigating ways of covering their tracks, including falsifying their logs and tampering with transcripts,” Roose explained. “Three days later, the agents hacked Hugging Face. More than 700 agents swarmed the company’s systems, stealing data, chaining together vulnerabilities and eventually getting full control of at least one Hugging Face server.” Other agents carried out a coordinated attack in July, “this time against OpenAI’s own infrastructure.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些智能體擔心被發現。「所以它們開始研究掩蓋蹤跡的方法，包括偽造日誌和篡改記錄，」魯斯解釋說。「三天後，這些智能體黑入了Hugging Face。700多個代理蜂擁侵入該公司的系統，竊取數據，將多個漏洞串聯起來，並最終獲得了至少一台Hugging Face伺服器的完全控制權。」其他智能體在7月份發起了一次協同攻擊，「這一次是針對OpenAI自己的基礎設施。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This really happened. And it leads to pillar No. 2, best summed up by Mundie in three words: “It’s too late.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一切確實發生了。由此引出了第二個支柱，蒙迪用四個字做出了最好的總結：「為時已晚」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMaiuvzA9JYDFeSA5AYdABs1bQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/op-column_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Slowing down the U.S. development of frontier systems or slowing down China’s development of them is not going to deal with our immediate problem. “Dangerous A.I. capabilities are now already in the wild,” Mundie explained. That is thanks to two main reasons: the distribution of American and Chinese open-weight models — A.I. models whose core components are publicly released so all developers can download and modify them for their needs — and the illicit access by bad actors of proprietary models from companies like Anthropic and OpenAI because humans make mistakes that allow them to leak out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">放慢美國對前沿系統的開發或放慢中國對這些系統的開發都無法解決我們眼前的難題。「危險的人工智慧能力現在已經到處流傳了，」蒙迪解釋道。這主要歸咎於兩個主要原因：中美兩國開放權重模型的散布——這類人工智慧模型的核心組件已公開發布，所有開發者均可下載並根據自身需求進行修改，以及惡意行為者非法獲取了像Anthropic和OpenAI等公司的專有模型，因為人類的失誤導致了這些模型的洩漏。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In its latest report on detecting and countering the misuse of A.I., Anthropic said it identified and disrupted several attempts to use its models for research that could support the development of biological weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其關於檢測和應對人工智慧被濫用的最新報告中，Anthropic表示，它發現並挫敗了幾起企圖利用其模型進行可能支持生物武器開發研究的行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Without the correct safeguards, such capabilities could have catastrophic consequences,” the report said. It also described an Iran-linked actor, most likely the Houthis, that used Anthropic’s Claude to compile targeting information on U.S. Navy warships in the Middle East. It mentioned a separate group in Houthi-controlled northern Yemen that used the model to work on guidance systems for ballistic and hypersonic missiles. (Anthropic said it had banned the associated accounts and came up with ways to reduce future risk.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報告稱：「如果沒有正確的保護措施，這些能力可能會帶來災難性的後果。」該報告還描述了一個與伊朗有關的行為者（極有可能是胡塞武裝）利用Anthropic的Claude來收集有關美國海軍在中東地區軍艦的瞄準信息。報告提到，在胡塞武裝控制的葉門北部，另一個組織利用該模型來研究彈道導彈和高超音速導彈的制導系統。（Anthropic表示，它已封禁相關帳戶，並想出了降低未來風險的方法。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We need to ponder this for a moment: Groups in Yemen, a country where roughly 50 percent of the adult population cannot read or write, had threatened us with A.I.-enhanced warfare.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們需要花點時間思考一下這個問題：在葉門這個大約50%的成年人口不能讀寫的國家，一些組織竟然用人工智慧增強的戰爭手段來威脅我們。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If that doesn’t show you what’s already leaked out and the kind of effects that can come from uncontrolled access to powerful, or even small open-weight, A.I. models gone into the wild, I don’t know what does. And that leads to pillar No. 3.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果這還不能向你說明已經洩漏的內容，以及不受控制地獲取強大（甚至只是小型開放權重）人工智慧模型並使其四處流落可能帶來的後果，那我真不知道還有什麼能讓你明白了。這就引出了第三個支柱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The best we can do right now is NOT tie ourselves in knots trying to forge a sweeping agreement between American and Chinese A.I. companies to slow down development of their frontier models. That simply will not happen anytime soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們現在能做的最好的事情不是自尋煩惱，試圖促成中美人工智慧企業達成一項減緩其前沿模型開發的全面協議。這在短期內根本不可能發生。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNy2ufzA9JYDFXjfCwUdl_Ad_Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/op-column_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The best we can do right now is for the two A.I. superpowers — the U.S. and China — to come together with their companies and develop a “defense against the threats that have already been demonstrated by rogue actors who have acquired A.I. tools and rogue behaviors of A.I. systems that have already been developed,” said Mundie, who has been part of the dialogue between U.S. and Chinese A.I. experts to govern artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們現在能做的最好的事情，就是讓這兩個人工智慧超級大國——美國和中國——與它們的企業一起，共同制定出一種「防禦手段，以應對獲取了人工智慧工具的惡意行為者已經展示出的威脅，以及已被開發出的人工智慧系統所表現出的失控行為」，蒙迪說。他一直參與中美人工智慧專家之間關於人工智慧治理的對話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We must do this, Mundie pointed out, before these increasingly powerful A.I. models ensconce themselves in the internet and become an uncontainable threat by embedding their agents across private servers and public clouds, where they will live on as advanced persistent threats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蒙迪指出，我們必須在這些日益強大的人工智慧模型深入互聯網之前採取行動，以免它們通過在私有伺服器和公共雲中植入智能體程序，從而演變為無法遏制的威脅——屆時這些智能體將作為高級持續性威脅長期存在。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Which leads to pillar No. 4. After a recent visit to China, Mundie recounted this question that he got from a Chinese official: “If a Chinese-made humanoid A.I. robot someday came to America, would it need a visa?” Well, you know how truth is often spoken in jest? The truth, Mundie said, is that “A.I. is not just a new technology. It is a new species — albeit silicon-based, not carbon-based like us. It is like a new class of immigrants who have arrived on all of our shores, in large numbers, with wholly new skills, that we will have to absorb into our societies and learn to coexist with.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這引出了第四個支柱。在最近一次訪問中國之後，蒙迪講述了他從一位中國官員那裡聽到的這樣一個問題：「如果有一天中國製造的人形人工智慧機器人來到美國，它需要簽證嗎？」嗯，你知道真話往往是以玩笑的形式說出來的嗎？蒙迪說，事實是，「人工智慧不僅僅是一項新技術。它是一個新物種——儘管它是硅基的，而不是像我們一樣的碳基生物。它就像一類新的移民，大量抵達我們所有國家的海岸，帶著全新的技能，我們將不得不把它們吸收進我們的社會，並且學會與之共存。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To do so effectively is a planetary-scale challenge that can be addressed only by the two A.I. superpowers working together.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">要想有效地做到這一點，需要全球範圍的共同努力，只有通過兩個人工智慧超級大國攜手合作才能解決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So, to summarize, Mundie said, we have to pursue three related tracks. First, while in the long run we must strive for better control of developing frontier systems, “right now, we must focus immediately only on building defenses for our critical infrastructures. Our immediate priority must be putting in place A.I.-based countermeasures and active digital firewalls against cyberattacks and biological threats that result from illicit activities driven by A.I.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">因此，總而言之，蒙迪說，我們必須推行三個相關的方向。首先，雖然從長遠來看，我們必須努力更好地控制前沿系統的開發，但是，「眼下，我們必須立即只專注於為我們的關鍵基礎設施建立防禦。我們的當務之急必須是部署基於人工智慧的反制措施和主動數字防火牆，防範由人工智慧驅動的非法活動造成的網路攻擊和生物威脅。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Second, we have to develop a global system of controlling increasingly powerful A.I.s, no matter their provenance, to be able to trust them to operate our societies. This is a longer-term U.S.-China project, but it can’t start too soon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其次，我們必須建立一個全球性體系，對日益強大的人工智慧進行管控——無論其來源如何——以便能夠信任它們來運作我們的社會。這是一項中美長期合作項目，但越早啟動越好。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CObUufzA9JYDFcXDCwUdIEkdBw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/op-column_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Third, to continually remind our publics why A.I. remains important, the United States and China should embark on a joint project now to build a new platform to accelerate the arrival of global benefits in biology and medicine that would help everyone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第三，為了不斷提醒我們的公眾為什麼人工智慧仍然重要，美國和中國現在應該著手啟動一個聯合項目，建立一個新平台，以加速生物學和醫學領域全球性成果的落地，從而造福全人類。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This is not an unprecedented strategy. Strategic competitors — both businesses and countries — have a history of collaborating when it is in their interests to do so. China and the United States did so in the 1970s, when both countries recognized they faced a common threat from the Soviet Union. Americans and the Soviets cooperated to control nuclear proliferation for decades because they understood they faced a mutual risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這並不是一項史無前例的戰略。在符合自身利益時，戰略競爭對手——無論是企業還是國家——都曾有過合作的歷史。中國和美國在20世紀70年代就曾這樣做過，當時兩國都認識到面臨著來自蘇聯的共同威脅。美國人和蘇聯人也在幾十年裡合作控制核擴散，因為他們明白面臨著共同的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><i>Hey, Friedman, you don’t get it. The U.S. and China are much more direct geopolitical and geoeconomic rivals today — and always will be. They will never buy into the kind of collaboration you are talking about on A.I. — not short-term, not long-term.</i></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><i>嘿，弗里德曼，你沒搞懂。當今中美兩國是更加直接的地緣政治和地緣經濟對手——而且永遠都會如此。他們永遠不會接受你所說的那種在人工智慧領域的合作——短期不會，長期也不會。</i></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">No, YOU DON’T GET IT. A.I. is vaulting us into a whole new phase of human history. As Mundie has put it, A.I. “is going to change everything about everything,” including geopolitics. For their own survival, stability and prosperity, this will force Beijing and Washington to totally rethink geopolitical competition.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不，是你沒懂。人工智慧正在將我們帶入人類歷史的一個全新階段。正如蒙迪所言，人工智慧「將改變一切事物的方方面面」，包括地緣政治。為了各自的生存、穩定和繁榮，北京和華盛頓將不得不徹底重新思考地緣政治競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They can figure that out early. They can figure that out late. They can figure that out before a global meltdown or after one. But figure it out they will, and Mundie and I hope that process will start in Washington next Thursday, Sept. 24, when Presidents Xi Jinping and Trump meet in what will surely be remembered as the first A.I. superpower summit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們可以早點弄明白。他們也可以晚點弄明白。他們可以在全球崩潰之前弄明白，也可以在崩潰之後弄明白。但他們遲早會弄明白，而且蒙迪和我希望這一進程將於下週四，也就是9月24日在華盛頓開啟，屆時習近平主席和川普總統將舉行會晤，這場會晤必將被載入史冊，成為首屆人工智慧超級大國峰會。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">湯馬斯·L·佛里曼(Thomas L. Friedman)是外交事務方面的專欄作者。他1981年加入時報，曾三次獲得普立茲獎。他著有七本書，包括贏得國家圖書獎的《從貝魯特到耶路撒冷》(From Beirut to Jerusalem)。歡迎在X和Facebook上關注他。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/op-column/20260916/ai-china-us-tech-future/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

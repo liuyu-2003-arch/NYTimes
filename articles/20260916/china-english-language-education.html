@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧時代，中國人還需要學英語嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人工智慧時代，中國人還需要學英語嗎？</h1>
+    <h2 class="en-headline">In the Age of A.I., Some in China Wonder if Learning English Is Worth the Trouble</h2>
+    <div class="meta-line">TIFFANY MAY, BERRY WANG <span style="margin: 0 8px;">•</span> 2026-09-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2023年，柳州市高培村小學的英語課。" height="686" src="https://static01.nyt.com/images/2026/09/16/multimedia/16int-china-english-qwct/16int-china-english-qwct-master1050.jpg" width="1050"/><figcaption><span>2023年，柳州市高培村小學的英語課。</span> <cite>CFOTO/Future Publishing, via Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It started earlier this month when a math teacher in China posted a call on social media for the study of English to be made optional in schools across the country. Children were frantically learning English even before they had mastered their native tongue, he said, adding that Chinese people should stop their “blind worship of foreign imports.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事情始於本月早些時候，當時中國一名數學教師在社群媒體上發帖，呼籲在全國學校將英語課改為選修。他說，孩子們甚至在還沒有掌握母語之前就開始拚命學習英語，並稱中國人應該停止「崇洋媚外」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As A.I. translation tools improve and young people face uncertain post-grad prospects, the post from the teacher, Tang Jiafeng, set off a debate online that resurfaces every few years: Should schools cut back on mandatory English class time? Since the late 1970s, China has embraced teaching English, which is one of three core subjects along with math and Chinese, as crucial to its efforts to open up to the rest of the world. It takes up significant classroom time and counts heavily toward scores on the gaokao, the Chinese college entrance exam.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著人工智慧翻譯工具的進步，以及年輕人面臨畢業後前途未卜的局面，這位名叫湯家鳳的教師的帖子在網上引發了一場每隔幾年就會重新浮出水面的辯論：學校是否應該削減英語的必修課時？自20世紀70年代末以來，中國一直將英語作為與數學、語文並列的三大核心科目之一，將其視為向世界開放的關鍵舉措。它佔據了大量的課堂時間，並且在高考分數中佔有很大比重。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some parents and teachers found Mr. Tang’s suggestion refreshing. The standard nationwide English curriculum, with its emphasis on grammar and testing, does not translate into English proficiency for many students. Some online commenters said that students, with their heavy workloads, would do better to spend that time on other subjects.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些家長和老師認為湯家鳳的建議令人耳目一新。全國統一的英語課程側重於語法和考試，卻未能使許多學生真正掌握英語。一些網民表示，在課業負擔沉重的情況下，學生把時間花在其他科目上效果會更好。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But for others, making English less of a priority would be a step backward. And Mr. Tang’s choice of words touched a nerve. “Blind worship” is a particularly inflammatory phrase in China that “can imply that you are compromising your own dignity in relation to a more powerful outsider,” said Wang Zichen, a foreign policy analyst at Beijing’s Center for China and Globalization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對另一些人來說，降低英語的優先地位無異於倒退。而且，湯家鳳的措辭觸動了人們的敏感神經。北京的全球化智庫的外交政策分析師王子辰表示，在中國，「崇洋媚外」是一個極具煽動性的詞語，「它可能暗示在面對更強大的外國勢力時，你犧牲了自己的尊嚴。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CODBvffA9JYDFVp76QIduY40cw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption" aria-label="廣告" data-google-container-id="1" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_1" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://19e62ed28e8dec4385d739db834613e9.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hu Xijin, the former editor of the Global Times, a Communist Party newspaper, said that the issue was being politicized by people looking to trumpet their nationalism. “The public should not be fooled by them, and I hope the education department will ignore them,” Mr. Hu wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官方報紙《環球時報》前總編輯胡錫進表示，這個問題正被一些試圖宣揚民族主義的人政治化。「公眾千萬別上他們當，我也希望教育部門別搭理他們，」胡錫進寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As youth unemployment grows and artificial intelligence upends many industries, people are questioning which skills will still be useful to students when they graduate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著青年失業率上升以及人工智慧顛覆許多行業，人們開始質疑，學生畢業時，究竟哪些技能仍然有用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The debate about English education taps into uncertainty about what the economy holds for China’s youth, said Gina Tam, an associate professor of history at Trinity University in San Antonio, Texas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">得克薩斯州聖安東尼奧三一大學歷史學副教授吉娜·塔姆表示，關於英語教育的辯論反映了人們對中國青年未來經濟前景的不確定性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When young people are feeling particularly economically precarious,” Ms. Tam wrote in an email, “Is the ability to engage with global audiences with English going to be a marketable skill for Chinese young people? Or is it going to be superfluous?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當年輕人感到經濟上特別不穩定時，」塔姆士在一封電子郵件中寫道，「用英語和全球受眾交流的能力對中國年輕人來說會是一種有市場價值的技能嗎？還是會變得多餘？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Tang made his post shortly after Liaoning, a province in northeastern China, decided to remove history, biology and geography from its middle school entry test, in part to reduce student workload. The move prompted a wave of online complaints that the authorities were downplaying the country’s war-torn modern history, which many believe to be an essential part of a patriotic education.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">湯家鳳發帖前不久，中國東北部的遼寧省決定將歷史、生物和地理從中考中取消，部分原因是為了減輕學生的負擔。此舉在網上引發了一波抱怨，認為當局在淡化中國飽經戰火的近代史，而許多人認為這是愛國主義教育的重要組成部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government has not commented on the debate about English-language education, but some schools have been dialing back English requirements in recent years. In 2021, education authorities in Shanghai barred final exams on English for elementary school children to reduce pressure on students. A government adviser also recommended that English be dropped from the gaokao because machine translation on smartphones could effectively resolve language barriers for most people, though no policy change followed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府尚未對有關英語教育的辯論發表評論，但近年來，部分學校一直在縮減英語要求。2021年，上海教育部門為減輕學生壓力，禁止對小學生進行英語期末考試。一位政府顧問也曾建議將英語從高考中取消，因為智慧型手機上的機器翻譯可以有效地解決大多數人的語言障礙，儘管後來並沒有隨之出台任何政策上的改變。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNCZ4PfA9JYDFdtb6QIdvAQF5w" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption" aria-label="廣告" data-google-container-id="2" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_2" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://19e62ed28e8dec4385d739db834613e9.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Recent advances in A.I. have accelerated the transition away from prioritizing English. In July, a research university in Shenzhen announced that English language courses would be phased out, citing A.I.’s ability to generate translations in real time. (The university plans to replace them with courses focused on comparing Chinese and Western cultures.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧的最新進展加速了教育體系從優先重視英語向其他方向的轉型。今年7月，深圳的一所研究型大學宣布將逐步取消英語語言課程，理由是人工智慧能夠實時生成翻譯。（該大學計劃用側重於中西文化比較的課程來取代。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are some signs that a decline in English investment is already having an effect. According to a ranking released by English First, an international education company, China in 2025 ranked 86 out of 123 countries in English proficiency, falling from 38th place in 2020.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有跡象表明，對英語投入的減少已經產生了影響。根據國際教育公司英孚發布的一項排名，在2025年，中國在123個國家中的英語熟練度排名第86位，較2020年的第38位有所下降。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some parents also want the requirement to be dropped because they are frustrated with how English is taught, according to a social media video posted by an English teacher in Sichuan Province. For many students, the time and effort spent learning English does not make them proficient enough to use it, she said in the video.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據四川省一位英語老師在社群媒體上發布的一段影片，一些家長也希望取消對英語課的要求，因為他們對英語的教學方式感到失望。她在影片中說，對於許多學生來說，花在學習英語上的時間和精力並未能使他們達到足以熟練運用英語的水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Xiong Bingqi, the director of 21st Century Education Research Institute in Shenzhen, said the problem lies in a curriculum that emphasizes test scores rather than proficiency, resulting in “dumb English.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">深圳21世紀教育研究院院長熊丙奇表示，問題在於課程體系強調考試分數而不是實際能力，這導致了「啞巴英語」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And people who work in research or for international companies “are actually in the minority,” he said. “That’s why more people are questioning the value of foreign languages.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，從事研究或為跨國公司工作的人「實際上是少數」。「所以越來越多的人在質疑外語的價值。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Cinderella Huang, an English teacher in Guangdong Province, said that because English proficiency is still an obstacle to using top A.I. models, getting around in foreign countries, and attending many of the highest-ranked global universities, removing English as a core subject would only widen the wealth gap.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但廣東省的英語教師辛德瑞拉·黃（音）表示，因為英語不夠流利仍然是很多人使用頂級人工智慧模型、在國外通行以及就讀許多全球排名最高的大學的障礙，取消英語作為核心科目只會拉大貧富差距。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNH6z_fA9JYDFfN66QIdH9kweg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; display: inline-block; width: 300px; height: 250px;"><iframe allow="private-state-token-redemption" aria-label="廣告" data-google-container-id="3" data-is-safeframe="true" data-load-complete="true" frameborder="0" height="250" id="google_ads_iframe_/29390238/cnnyt/china_3" marginheight="0" marginwidth="0" name="" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" scrolling="no" src="https://19e62ed28e8dec4385d739db834613e9.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html" style="border: 0px; vertical-align: bottom;" tabindex="0" title="第三方廣告內容" width="300"></iframe></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Rich people will keep hiring English tutors and sending their kids to international school,” she said. “But for children without money, the English they learn in schools is their only window.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「富人將繼續聘請英語家教，把孩子送到國際學校，」她說。「但對於沒有錢的孩子來說，在學校學到的英語就是他們唯一的窗口。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Professor Tam said that the debate reflects two visions of China: as a globally engaged leader or a powerful nation state that is more inward looking. “Whether excited or anxious, people realize we are at a global crossroads,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">塔姆說，這場辯論反映了中國的兩種願景：是一個積极參与全球事務的領導者，還是一個更加內向型的強大民族國家。「無論是興奮還是焦慮，人們都意識到我們正處於一個全球十字路口，」她說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Tiffany May是時報駐香港記者，報導香港和更廣泛地區的政治、商業和文化議題。</p><div class="" data-poster=""><span><p class="cn-p">Berry Wang是《紐約時報》記者/研究員，常駐香港。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20260916/china-english-language-education/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
