@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國將能源作為政治工具 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國將能源作為政治工具</h1>
+    <h2 class="en-headline">China Stockpiled Oil, and Now It Could Dominate the Energy Landscape</h2>
+    <div class="meta-line">REBECCA F. ELLIOTT, KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-09-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國九江的一家煉油廠。傳統上，掌握主動權的一直是沙烏地阿拉伯和美國等石油出口國，而非中國等進口國。" height="788" src="https://static01.nyt.com/images/2026/09/17/multimedia/17biz-china-oil-1-pfvb/17biz-china-oil-1-pfvb-master1050.jpg" width="1050"/><figcaption><span>中國九江的一家煉油廠。傳統上，掌握主動權的一直是沙烏地阿拉伯和美國等石油出口國，而非中國等進口國。</span> <cite>Keith Bradsher/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the most important lessons from the war with Iran is one that few saw coming.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">很少有人能預見到與伊朗的這場戰爭帶來的一個重要教訓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The conflict has made clear that China, which has long been highly vulnerable to oil supply shocks, has managed to transform that weakness into a surprising source of geopolitical power. The country made that big shift by stockpiling huge amounts of oil, building extra oil refining capacity and investing in coal and other alternatives. And in the early months of the war, it flexed that power by cutting off supplies of jet fuel, gasoline and diesel to neighboring countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場衝突清楚地表明，長期極易受到石油供應衝擊影響的中國已設法將這一弱點轉化為令人驚訝的地緣政治力量源泉。中國通過儲備巨量石油、建設額外煉油產能以及投資煤炭和其他替代能源實現了這一重大轉變。在戰爭爆發的最初幾個月裡，中國通過切斷對鄰國的航空燃油、汽油和柴油供應，展示了這種力量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That has big implications for the global energy industry, where oil producers like Saudi Arabia and the United States — not importers like China — have traditionally held most of the cards.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這對全球能源行業產生了重大影響。傳統上，在該行業掌握主動權的一直是沙烏地阿拉伯和美國等石油生產國，而非中國等進口國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Already dominant in solar panels, batteries and electric vehicles, China now appears to have an unparalleled position across the energy landscape. As a result, the threat that a foreign power would restrict the country’s access to oil may no longer deter leaders in Beijing from taking aggressive steps like invading or blockading Taiwan, former U.S. officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國已經在太陽能電池板、電池和電動汽車領域佔據主導地位，如今似乎在整個能源格局中也擁有了無與倫比的地位。前美國官員表示，外國勢力限制中國獲取石油的威脅可能不再能阻止北京領導層採取諸如入侵或封鎖台灣等激進舉措。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIqrleTC-ZYDFfiMpAQdI8ESdQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If they come to feel that in this domain, they are less vulnerable than they and many others may have assessed previously, that is a profound and important shift in one of the key inputs to how China makes decisions about its global strategy,” said Julian Gewirtz, a former White House and State Department official who worked on China issues in the Biden administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果他們開始覺得，在這一領域，自己已經不再像他們以及其他人曾經評估的那麼脆弱，中國的全球戰略決策的一個關鍵考量因素就發生了深刻且重要的轉變，」拜登政府負責中國事務的前白宮和國務院官員朱利安·格維爾茨表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s massive oil reserves and refining capacity, paired with its ability to run its economy on a variety of energy sources, allowed the country to slash oil purchases by 23 percent in the first six months of the war with Iran compared with the same period the year before, customs data show. Other countries that rely heavily on crude oil from the Middle East didn’t have those options and were forced to use less energy or pay much more for it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">海關數據顯示，憑藉龐大的石油儲備和煉油產能，加上利用多種能源維持經濟運轉的能力，中國在伊朗戰爭爆發的前六個月內將石油採購量同比削減了23%。其他嚴重依賴中東原油的國家沒有這些選擇，被迫減少能源使用或支付更高昂的費用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s ability to throttle oil imports caught nearly everyone in the oil industry by surprise. And it’s a big reason crude oil prices have not risen nearly as much as most energy executives and analysts thought they would once Iran severely restricted the passage of ships through the Strait of Hormuz. As of late August, crude oil cost roughly $10 a barrel less than it would have had China continued buying at prewar levels, according to Daan Struyven, who leads oil research for Goldman Sachs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國節流石油進口的能力令石油業內幾乎所有人感到意外。這也是伊朗嚴格限制船隻通過霍爾木茲海峽後，原油價格並未如大多數能源高管和分析師預期的那樣大幅上漲的一個重要原因。高盛石油研究主管達安·斯特魯伊文表示，截至8月下旬，相比中國若繼續保持戰前採購水平的情況，原油價格每桶低了約10美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is a power that nobody thought China had,” said Erica Downs, a senior research scholar at Columbia University’s Center on Global Energy Policy. “Going forward, it’s going to be really interesting to see: What does China do with this newfound power?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一種沒人想到中國會擁有的力量，」哥倫比亞大學全球能源政策中心高級研究員埃麗卡·道恩斯表示，「展望未來，看看中國將如何運用這種新獲得的力量將是一件非常有趣的事情。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Next week’s scheduled meeting between President Trump and China’s leader, Xi Jinping, at the White House, may provide some clues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">下週川普總統與中國國家主席習近平計劃在白宮舉行的會晤可能會提供一些線索。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s actions, even in just the past few months, suggest it will not be shy about using energy as a political tool. The country depends heavily on foreign crude oil, but it is one of the world’s biggest oil refiners. And early in the Iran war, the country ordered severe restrictions on exports of refined fuels like gasoline and diesel, both to conserve domestic supplies and to punish countries at odds with China’s foreign policy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即使僅僅通過過去幾個月的行動，中國也表明其在將能源作為政治工具方面不會有所顧忌。中國嚴重依賴外國原油，但也是全球最大的煉油國之一。在伊朗戰爭初期，中國下令對汽油和柴油等成品油出口實施嚴格限制，這既旨在保障國內供應，也意在懲罰與中國外交政策相左的國家。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國之所以具有獨特的影響力，是因為其石油購買量巨大，且其政府能夠施加民主國家決策者所缺乏的那種控制。" data-src="https://static01.nyt.com/images/2026/09/17/multimedia/17biz-china-oil-3-jpmh/17biz-china-oil-3-jpmh-master1050.jpg" src="https://static01.nyt.com/images/2026/09/17/multimedia/17biz-china-oil-3-jpmh/17biz-china-oil-3-jpmh-master1050.jpg"/></div><figcaption><span>中國之所以具有獨特的影響力，是因為其石油購買量巨大，且其政府能夠施加民主國家決策者所缺乏的那種控制。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What little China did export this spring, when supplies were especially tight, went mainly to countries that maintain close ties to Beijing, like Vietnam and Thailand. Australia and the Philippines, which have been at odds with China because of its territorial claims in the South China Sea, were among those that lost out. Such actions echo the restrictions that China has placed on exporting rare-earth metals used in magnets and computer chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年春季供應尤為緊張之際，中國極其有限的出口主要流向了越南和泰國等與北京保持密切關係的國家。因南海領土主張而與中國產生分歧的澳洲和菲律賓則未能獲得供應。此類行動呼應了中國此前</span>對用於磁體和電腦晶片的稀土金屬實施的出口限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China resumed wider exports of jet fuel, gasoline and diesel in early July. But the last shipments of Iranian oil, sent before the United States imposed a blockade, now seem to have arrived at small refineries in China that operate separately from state-owned giants, said Tom Reed, a longtime specialist in China’s oil industry at Argus Media, a commodity pricing firm in London. He warned that China might reimpose a ban on fuel exports soon. Taking yet another source of diesel off the market could cause a further jump in prices, which are at a record of $6.40 a gallon in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國在7月初恢復了更廣泛的航空燃油、汽油和柴油出口。不過，倫敦大宗商品定價機構阿格斯資深中國石油行業專家湯姆·里德表示，在美國實施封鎖前發出的最後一批伊朗石油如今似乎已抵達獨立於國有巨頭運營的中國小型煉油廠。他警告稱，中國可能很快會重新實施燃料出口禁令。若市場上再少一個柴油來源，可能會導致價格進一步飆升，目前美國柴油價格已達到創紀錄的每加侖6.40美元。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMXyleTC-ZYDFbGBpAQdNu0ORQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s sway over the crude oil market is different from that of oil-producing countries because China imports more than it produces. The country tends to reduce oil price volatility, lifting prices when it is stocking up — as it was last year — and easing them when it is not, as has happened since the war started, Goldman Sachs analysts wrote recently.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對原油市場的影響力與產油國不同，因為其進口量大於生產量。高盛分析師最近寫道，中國傾向於平抑油價波動：在建立儲備時（如去年）推高油價，而在不儲備時（如戰爭爆發以來）則使油價回落。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China is uniquely influential because it is such a big buyer and its autocratic government exerts the kind of control that policymakers in democratic countries lack. The extent of Beijing’s sway is becoming clear as fractures develop in the Organization of the Petroleum Exporting Countries, an oil producers’ cartel that has long been the most powerful force in the oil market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國之所以具有獨特的影響力是因為其購買量巨大，且其政府能夠施加民主國家決策者所缺乏的那種控制力。隨著長期主導石油市場的產油國卡特爾——石油輸出國組織——<span>內部出現裂痕，北京方面影響力的廣度正變得日益清晰。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Have they fully wrested control? No,” Dr. Downs said of China. “But are they a force for OPEC to reckon with? Yes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們完全奪取控制權了嗎？並沒有，」道恩斯在談到中國時表示，「但他們是一股讓歐佩克不得不重視的力量嗎？是的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s steep drop in oil imports this year reflects two main changes. The country is no longer stockpiling oil and has begun using some reserves. And its refineries have cut back sharply on turning oil into gasoline, diesel and other fuels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國今年石油進口量的銳減反映出兩大變化。該國不再補充石油儲備，並已開始動用部分儲備；同時，其煉油廠也大幅削減了將石油轉化為汽油、柴油及其他燃料的產能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is partly because Chinese demand for oil has weakened so much that consumption most likely peaked last year, ahead of forecasts, Sinopec, the country’s biggest refiner, has said. Electric vehicles now make up around 14 percent of the passenger cars on the road in China, a large enough share that the country used 1.5 million barrels a day less oil in the second quarter than it would have with only gasoline or diesel cars, trucks and buses, according to the International Energy Agency. That shaved more than 1 percent off global oil demand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這部分是因為中國對石油的需求嚴重疲軟。正如中國最大的煉油企業中國石化所言，該國的石油消費很可能已在去年提前</span>達峰<span>。國際能源署的數據顯示，電動汽車目前約佔中國道路上乘用車保有量的14%，</span>相比只有燃油汽車、卡車和公車的情況，這一比例令該國第二季度的日均石油消耗量減少了150萬桶。這削減了全球逾1%的石油需求。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="電動汽車使得該國第二季度日均石油消耗量比僅有燃油汽車的情況減少了150萬桶。" data-src="https://static01.nyt.com/images/2026/09/17/business/17biz-china-oil-2/17biz-china-oil-2-master1050.jpg" src="https://static01.nyt.com/images/2026/09/17/business/17biz-china-oil-2/17biz-china-oil-2-master1050.jpg"/></div><figcaption><span>電動汽車使得該國第二季度日均石油消耗量比僅有燃油汽車的情況減少了150萬桶。</span> <cite>CFOTO/Future Publishing via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China also has a robust high-speed rail system and the ability, not widely shared by other countries, to use coal, rather than oil, to make chemicals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國還擁有發達的高鐵網路，以及利用煤炭而非石油生產化學品的能力，這在其他國家中並不多見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The precise mix of tools China has used to reduce oil imports has been the subject of intense debate because Beijing discloses very little. “I try to follow every little piece of data, and all of it is conflicting and all of it is maddening,” said Rory Johnston, an oil market researcher.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於北京方面披露的信息極少，中國用於減少石油進口的具體工具組合一直是激烈辯論的焦點。「我試圖追蹤每一條細微的數據，但所有數據都相互矛盾，令人抓狂，」石油市場研究員羅裡·約翰斯頓表示。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CM-HluTC-ZYDFZXPSgAd56MzPg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China recognized the value of establishing government oil reserves relatively late, after becoming a net oil importer in 1993. The United States and others set up large reserves after the energy crises of the 1970s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1993年成為石油凈進口國後，中國較晚才認識到建立政府石油儲備的價值。相比之下，美國等國在20世紀70年代的能源危機後便建立了大規模儲備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China caught up quickly, however.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，中國追趕得很快。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Every effort must be made to conserve and substitute oil, accelerate the exploration and development of oil and natural gas, actively utilize overseas resources, and establish a reserve system for oil,” China’s premier at the time, Zhu Rongji, told the country’s legislature in 2001.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2001年，時任中國國務院總理朱鎔基在全國人大會議上表示：「必須千方百計節約和替代石油，加快石油和天然氣勘探與開發，積極利用國外資源，並儘快建立石油等戰略資源的儲備制度。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That energy security strategy was motivated partly by fears that the U.S. or Indian navies could block oil shipments from getting to China from the Middle East through the Strait of Malacca, a small channel between Indonesia and Malaysia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一能源安全戰略在一定程度上源於一種擔憂：美國或印度海軍可能會封鎖馬六甲海峽（印尼和馬來西亞之間的一條狹窄水道），從而阻止中東石油運往中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has maintained those priorities, overseeing the growth of stockpiles that now represent roughly a third of known oil inventories worldwide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國國家主席習近平延續了這些優先事項，並推動了石油儲備的增長。目前，中國的石油儲備約佔全球已知石油庫存的三分之一。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Low interest rates triggered by a severe housing market crisis since 2021 facilitated the recent buying spree by Beijing and its state-backed oil companies. When interest rates are high, the costs for buying and storing oil are steep. Unlike bonds or dividend-paying stocks, oil does not generate income unless it is sold. But when interest rates are very low, governments and companies see little difference between holding cash and holding commodities like oil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2021年房地產市場嚴重危機引發的低利率環境為北京方面及其國有石油公司近期的瘋狂採購提供了便利。在利率高企時，購買和儲存石油的成本十分高昂。與債券或派息股票不同，石油除非出售否則無法產生收益。但當利率極低時，政府和企業會認為持有現金與持有石油等大宗商品之間幾乎沒有區別。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COu0luTC-ZYDFc2MpAQdkYw70w" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the big questions now, with the main global oil price hovering around $103 a barrel, is how much China will buy in the coming months, as well as how much of that crude it will turn around and sell in the form of diesel and other fuels. Oil imports climbed 6 percent in August from July but remained well below prewar levels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，隨著全球主要油價在每桶103美元左右徘徊，關鍵問題之一是中國在未來幾個月將購買多少石油，以及其中有多少原油會被轉化為柴油及其他燃料出售。8月份的石油進口量環比增長了6%，但仍遠低於戰前水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Think about how much geopolitical influence Saudi Arabia has had over the decades because of its ability to modulate production,” said Meghan O’Sullivan, a deputy national security adviser for Iraq and Afghanistan under President George W. Bush. “If China has that ability on the demand side, then they become an actor that the U.S. and others will go to and ask them for that behavior in exchange for potentially something else.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「想想幾十年來，沙烏地阿拉伯憑藉調節產量的能力擁有了多大的地緣政治影響力，」曾在喬治·W·布希總統任內負責伊拉克和阿富汗事務的前副國家安全顧問梅根·奧沙利文表示。「如果中國在需求端具備了這種能力，就會成為一個美國及其他國家主動尋求合作的行為體，他們會以其他潛在利益作為交換，請求中方採取相關行動。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Ruoxin Zhang和Murphy Zhao對本文有研究貢獻。</p><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Rebecca F. Elliott為《紐約時報》報導能源新聞。</p><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260918/china-oil-iran-war/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

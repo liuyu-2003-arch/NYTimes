@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國擔憂的是另一種人工智慧風險 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國擔憂的是另一種人工智慧風險</h1>
+    <h2 class="en-headline">China Is Scared of A.l. Just Not the Way We Are.</h2>
+    <div class="meta-line">KYLE CHAN <span style="margin: 0 8px;">•</span> 2026-09-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/09/17/opinion/17chan-image/17chan-image-master1050-v4.jpg" width="1050"/><figcaption><span></span> <cite>Illustration by Sam Whitney/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic’s chief executive, Dario Amodei, recently said the world should collectively slow the development of A.I. until we get a better handle on the safety risks this new technology poses. Sam Altman of OpenAI and Elon Musk voiced their support for this plan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic首席執行官達里奧·阿莫迪最近表示，世界應該共同放緩人工智慧的發展，直到我們能更好地應對這項新技術帶來的安全風險。OpenAI的薩姆·奧特曼和伊隆·馬斯克對這一計劃表達了支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American A.I. companies know they can’t tap the brakes on A.I. by themselves — China has to go along. Chinese companies such as DeepSeek, Z.ai and Moonshot have A.I. models nearly as powerful as Anthropic’s and OpenAI’s. And they likely pose many of the same risks; terrorists could potentially use their tools to carry out cyberattacks or design biological weapons. Many people hope the upcoming summit between President Trump and China’s leader, Xi Jinping, could be an opportunity to make some headway on such a partnership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的人工智慧公司知道，僅憑自身力量無法為人工智慧發展踩下剎車——中國必須參與進來。深度求索、智譜AI和月之暗面等中國公司擁有的人工智慧模型能幾乎與Anthropic和OpenAI的模型一樣強大。它們也很可能構成許多相同的風險，恐怖分子可能會利用它們的工具來實施網路攻擊或設計生物武器。許多人希望，川普總統與中國領導人習近平即將舉行的峰會能成為推動此類合作取得進展的契機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Too often, however, A.I. safety experts assume that China has the same concerns as we do about A.I. The reality is, the Chinese have a different set of worries. And until we understand what those are, cooperation with China will be impossible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，人工智慧安全專家往往認為，中國對人工智慧有與我們相同的擔憂。現實情況是，中國人的擔憂截然不同。除非我們了解這些擔憂的具體內容，否則與中國合作將是不可能的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Generally speaking, China doesn’t fret as much about A.I. as an existential threat to humanity. You don’t see its political leaders or the founders of Chinese A.I. companies warning that superhuman A.I. is “probably the greatest threat to the continued existence of humanity,” as Mr. Altman wrote in 2015. It’s not central to Chinese A.I. policymaking, nor a part of Chinese tech culture.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總的來說，中國並沒有那麼擔心人工智慧會成為人類的生存威脅。你不會看到中國政治領導人或中國人工智慧公司的創始人警告說，超越人類的人工智慧「可能是人類繼續生存的最大威脅」，正如奧特曼在2015年所寫的那樣。這並非中國人工智慧決策的核心，也不屬於中國科技文化的一部分。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COOz_OrC-ZYDFQvN0gQdQqccXw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s mainly because of differences in how the two countries think about A.I. training and development. The leading American A.I. companies are hyper-focused on advancing “recursive self-improvement” — using A.I. systems themselves to develop even better A.I. systems. There are fears that this feedback loop could accelerate the pace of A.I. development to the point where humans no longer have control over the process. American tech leaders believe this takeoff point might be around the corner.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這主要是因為兩國在如何看待人工智慧訓練和發展方面存在差異。美國領先的人工智慧公司極度關注推進「遞歸自我改進」——即利用人工智慧系統自身來開發更好的人工智慧系統。人們擔心，這種反饋循環可能會加速人工智慧的發展步伐，最終導致人類無法再掌控這一進程。美國科技界領袖認為，這個起飛點可能就在眼前。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. companies are also working on recursive self-improvement. But because of their limited access to A.I. computing power and the slower pace of progress, they believe the takeoff moment is still technologically a long way off. Chinese policymakers seem to share that outlook and so are more focused on building resilient A.I. supply chains and increasing A.I. adoption throughout the economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的人工智慧公司也在致力於遞歸自我改進。但由於他們獲取人工智慧算力的途徑有限，且進展步伐較慢，他們認為，從技術上講，這個起飛時刻還有很長的路要走。中國決策者似乎也認同這一前景，因此他們更專注於建立有韌性的人工智慧供應鏈，並提高人工智慧在整個經濟中的應用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So why would the Chinese agree to a slowdown in A.I. development if they don’t think a crisis is imminent? If anything, Chinese A.I. companies are trying to move faster, hoping to narrow the performance gap with American A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果中國人不認為危機迫在眉睫，他們為什麼要同意放緩人工智慧的發展呢？事實上，中國的人工智慧公司正試圖加快步伐，希望縮小與美國人工智慧模型之間的性能差距。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the moment, Chinese policymakers are more worried about the political and social risks caused by A.I. They don’t want it creating deepfakes of political leaders or saying the “wrong” things about Taiwan or Tiananmen Square. They don’t want A.I. chatbots to create psychological dependencies or threaten child safety, or set off social instability or a mass movement powerful enough to topple the Communist Party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，中國決策者更擔心人工智慧引發的政治和社會風險。他們不希望它製造政治領導人的深度偽造內容，或在台灣或天安門廣場問題上說「錯」話。他們不希望人工智慧聊天機器人造成心理依賴、威脅兒童安全，或者引發社會動盪，抑或掀起一場強大到足以推翻共產黨的群眾運動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s A.I. regulations today are generally aimed at these types of risks. Most new public-facing A.I. models must be registered with the government and pass a battery of tests before they can be released. China has created extensive rules requiring labeling of A.I.-generated content and limiting how humanlike A.I. chatbots can operate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國目前的人工智慧法規大多針對這類風險。大多數面向公眾的新人工智慧模型必須在政府備案，並在發布前通過一系列測試。中國制定了廣泛的規則，要求對人工智慧生成的內容進行標識，並限制人工智慧聊天機器人模擬人類行為的程度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A spokesman for China’s foreign ministry has dismissed U.S. calls for a slowdown as “fear-mongering” intended to hold the country back in the race for A.I. dominance. (Indeed, Mr. Trump has said he opposes a slowdown specifically to prevent China from catching up.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國外交部的一位發言人駁斥了美國關於放緩發展的呼籲，稱其為「危言聳聽」，旨在阻礙中國在人工智慧主導權競爭中的進展。（事實上，川普曾表示，他反對放緩發展，正是為了防止中國迎頭趕上。）</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMDK_OrC-ZYDFV7L0gQdoeMgXg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are some, limited signs that Beijing is starting to take large-scale A.I. threats more seriously. Two types of risks have received special attention in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有一些有限的跡象表明，北京正開始更加認真地對待大規模的人工智慧威脅。有兩類風險在中國受到了特別關注。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The first is cybersecurity. This year, many Chinese users downloaded a popular A.I. agent tool called OpenClaw and used it to automate computer-based tasks. Chinese officials quickly issued a warning that A.I. tools like OpenClaw could expose users to data leaks and cybersecurity vulnerabilities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第一類是網路安全。今年，許多中國用戶下載了一款名為OpenClaw的流行人工智慧智能體工具，並用它來自動化處理計算機任務。中國官員迅速發出警告，稱OpenClaw這類人工智慧工具可能會讓用戶面臨數據洩漏和網路安全漏洞風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then in April, Anthropic announced that it had trained a new model called Mythos that demonstrated significantly elevated cyberattack abilities. It did not take long for the Chinese to appreciate the national security implications. The head of China’s main security agency recently issued a rare warning that the cybersecurity landscape was changing, and critical infrastructure was now vulnerable to A.I.-led cyberattacks from adversaries. He pointed to some of the latest models from OpenAI and Anthropic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年4月，Anthropic宣布他們訓練了一個名為Mythos的新模型，該模型表現出顯著提升的網路攻擊能力。中國人沒過多久就意識到了其對國家安全的影響。中國主要安全機構的負責人最近發出了一次罕見的警告，指出網路安全格局正在發生變化，關鍵基礎設施現在很容易受到對手發動的、由人工智慧主導的網路攻擊。他特別提到了OpenAI和Anthropic的一些最新模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Adding to these concerns, a U.S.-based security company recently used A.I. to develop an experimental tool that could rapidly compromise accounts on WeChat, the Chinese messaging platform with 1.4 billion monthly users. Although the tool was not released into the wild, it gave the Chinese pause.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">加劇這些擔憂的是，一家總部位於美國的安全公司最近利用人工智慧開發了一款實驗性工具，該工具可以迅速攻破微信上的帳戶，微信是一個擁有14億月活用戶的中國即時通訊平台。儘管該工具並未公開發布流傳，但它還是引起了中方的警覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The second A.I. risk that’s gaining attention in China is runaway A.I operating beyond human control. China has watched closely as rogue American models have broken out and breached other websites’ security. The OpenAI models’ attack in July on Hugging Face, an A.I. infrastructure company, has been widely covered in Chinese state media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國引起關注的第二類人工智慧風險是失控的人工智慧超出人類控制的範圍運作。中國一直在密切關註失控的美國模型突破限制並攻破其他網站安全防線的事件。今年7月OpenAI模型對人工智慧基礎設施公司Hugging Face的攻擊，已在中國官方媒體上被廣泛報導。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Runaway A.I. is being talked about in higher levels of China’s government. Mr. Xi mentioned the risks of “loss of control” in July. More recently, a senior cybersecurity official in its Cyberspace Administration warned of “extreme loss of control,” citing the A.I. breakout incidents in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">失控的人工智慧正成為中國政府高層討論的話題。習近平在7月提到了「失控」的風險。最近，中國國家互聯網信息辦公室的一名高級網路安全官員援引美國的人工智慧失控事件，警告稱存在「極端失控」的危險。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CK_K_urC-ZYDFWvf0gQd2DcmXg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These shifting views of A.I. risks suggests both countries may be motivated to cooperate on A.I. safety out of sheer national interest. Neither country wants terrorists to use A.I. to create viruses. Neither country wants autonomous A.I. systems to accidentally hack its companies or institutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些對人工智慧風險不斷轉變的看法表明，兩國出於國家利益的考量，可能有動力在人工智慧安全方面開展合作。兩國都不希望恐怖分子利用人工智慧製造病毒。兩國也不希望自主的人工智慧系統意外黑入本國的公司或機構。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the other hand, each country’s suspicions of the other will make any kind of agreements about A.I. safety difficult. China is very worried that America could use A.I. to enhance its cyber and military weapons aimed at China. And same is true in the other direction. Without a base line level of mutual understanding, the world’s two A.I. superpowers are bound to talk past each other.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一方面，兩國對彼此的猜疑將使在人工智慧安全方面達成任何形式的協議變得困難。中國非常擔心美國會利用人工智慧來增強針對中國的網路和軍事武器。反之亦然。如果沒有最基本的相互理解，世界上這兩個人工智慧超級大國註定只會自說自話。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fortunately, that common ground is possible. Rather than jump straight into debates over a global slowdown or an arms control treaty for A.I., the United States and China should start with something much more basic: realizing and acknowledging how the other side sees A.I. risks. From there, they can start to explore areas where both sides share an interest in mitigating threats from third parties or even the technology itself.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幸運的是，這種共識是有可能達成的。中美兩國與其直接跳入關於全球放緩或人工智慧軍備控制條約的爭論，不如從更基本的事情開始：理解並承認對方如何看待人工智慧風險。在此基礎上，他們可以開始探索雙方在減輕來自第三方甚至技術本身威脅方面具有共同利益的領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There will be disagreements to resolve, and plenty of quibbles on details to sort out. But if the two countries can agree they want to avoid A.I. catastrophe, cooperation on A.I. safety is not such an unrealistic possibility.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然會有分歧需要解決，在細節上也會有諸多爭論需要理清。但如果兩國能夠達成一致，確認雙方都希望避免人工智慧災難，那麼在人工智慧安全領域開展合作並非遙不可及。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Kyle Chan是布魯金斯學會的研究員，他是中國技術發展和產業政策方面的專家，也是行業通訊"High Capacity"的作者。</p><p class="cn-p">圖片來源：Getty Images</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260918/ai-china-america-risk/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
