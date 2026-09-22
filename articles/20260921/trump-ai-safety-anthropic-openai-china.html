@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白宮內部關於人工智慧威脅的複雜辯論 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">白宮內部關於人工智慧威脅的複雜辯論</h1>
+    <h2 class="en-headline">Trump Calls A.I. Fears a Hoax. Inside the White House, the Debate Is More Complex.</h2>
+    <div class="meta-line">DAVID E. SANGER, JONATHAN SWAN, CECILIA KANG, DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-09-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="去年，川普總統在白宮與戴維·薩克斯和馬克·祖克柏共進晚餐。" height="700" src="https://static01.nyt.com/images/2026/09/17/multimedia/17dc-trump-ai-gfpw/17dc-trump-ai-gfpw-master1050.jpg" width="1050"/><figcaption><span>去年，川普總統在白宮與戴維·薩克斯和馬克·祖克柏共進晚餐。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump made clear in the past week that he views fears that A.I. could lead to mass extinction as a “HOAX,” and that he sees opponents of data centers as people who “want to end up being backwards and poor.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統在過去一週明確表示，他認為有關人工智慧可能導致大規模人類滅絕的擔憂是「騙局」，並將反對建設數據中心的人視為「想要最終變得落後貧窮」的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">People who have discussed the subject with Mr. Trump in private say his outbursts are rooted in worries that if the artificial intelligence boom fueling the American economy slows down, the market could crash and recession could quickly follow.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">私下裡曾與川普討論過這個話題的人說，他這些言論的根源在於擔心，如果推動美國經濟的人工智慧熱潮放緩，市場可能會崩盤，經濟衰退可能會很快接踵而至。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His anti-regulatory, anti-slowdown outbursts have been encouraged by a slice of Silicon Valley’s most influential voices. Chief among them has been David Sacks, the venture capitalist who interceded to weaken an executive order in May that would have required safety reviews of new A.I. models. Mark Zuckerberg of Meta and Jensen Huang of Nvidia have also spoken to the president. All have advised Mr. Trump that the bigger risk is being overtaken by Chinese competitors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">矽谷部分最具影響力的聲音一直在助長他這些反對監管、反放緩的言論。其中首要的是風險投資家戴維·薩克斯，他曾出面斡旋，削弱了5月一項原本要求對新人工智慧模型進行安全審查的行政命令。Meta的馬克·祖克柏和英偉達的黃仁勛也曾與總統交談。他們都向川普建議，更大的風險是被中國競爭對手超越。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But inside the administration, the debate is far more complex, and there are other voices in Mr. Trump’s ear, urging caution.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在政府內部，討論要複雜得多，川普耳邊還有其他聲音在敦促他保持謹慎。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMuf1aaLgZcDFeFtqwIdrVYGpg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The more cautious tone inside the White House reflects a growing concern that despite the strategic challenge posed by China, a summer of A.I. surprises has raised the prospect of risks that were often dismissed a year ago as the wild talk of “doomers.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">白宮內部更加謹慎的基調反映出一種日益增長的擔憂：儘管中國構成了戰略挑戰，但今年夏天以來人工智慧帶來的一系列意外事件增加了風險發生的可能性，而就在一年前，這些風險還經常被當作「末日論者」的瘋言瘋語而被置之不理。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now, even the biggest A.I. boosters in the administration concede that A.I.-fueled hacks into infrastructure, biological threats, attacks on nuclear command-and-control systems, job losses and global financial instability seem more possible than they did before A.I. agents went rogue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，即使是政府內部最為熱衷於人工智慧的人也承認，與人工智慧智能體失控之前相比，由人工智慧驅動的針對基礎設施的駭客攻擊、生物威脅、針對核指揮和控制系統的攻擊、失業以及全球金融動盪現在看來都更有可能發生。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The issue of A.I. safety is expected to come to a head this weekend as Treasury Secretary Scott Bessent meets in New York with his Chinese counterpart to set the agenda for Mr. Trump’s visit in Washington with President Xi Jinping of China, which starts on Wednesday. Mr. Bessent is trying to negotiate some kind of agreement between Mr. Trump and Mr. Xi that would suggest the two countries are working together on mutual A.I. safety concerns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">預計人工智慧安全問題將在週末成為焦點，屆時財政部長貝森特將在紐約會見中國同級官員，為川普在華盛頓與中國國家主席習近平從週三開始的會晤設定議程。貝森特正試圖在川普和習近平之間談判達成某種協議，表明兩國正在就共同的人工智慧安全擔憂開展合作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But already, officials say, some of the most expansive ideas being discussed among A.I. safety experts, including an agreement on safety standards and reviews of forthcoming Chinese and American A.I. models before their public release, are unlikely to be part of any initial accord.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但官員們表示，人工智慧安全專家正在討論的一些最宏大的構想——包括就安全標準達成協議，以及在中美兩國即將推出的人工智慧模型公開發布前對其進行審查——目前看來已不太可能被納入任何初步協議。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="本週，財政部長史考特·貝森特在國會大廈。今年，多家銀行的高管曾向貝森特警示人工智慧對全球金融體系構成的風險。" data-src="https://static01.nyt.com/images/2026/09/17/multimedia/17dc-trump-ai-gtwc/17dc-trump-ai-gtwc-jumbo.jpg" src="https://static01.nyt.com/images/2026/09/17/multimedia/17dc-trump-ai-gtwc/17dc-trump-ai-gtwc-jumbo.jpg"/></div><figcaption><span>本週，財政部長史考特·貝森特在國會大廈。今年，多家銀行的高管曾向貝森特警示人工智慧對全球金融體系構成的風險。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One diplomat involved in the effort said he believed “the best we can hope for” is the creation of some kind of U.S.-China working group that might build on a Biden-era agreement with China to bar the use of artificial intelligence in decisions about the employment of nuclear weapons. But that does not begin to get at the complexity of the problem of unpredictable A.I.-driven agents, which took the industry and the government by surprise this summer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一位參與此項工作的外交官表示，他認為「我們所能期盼的最好結果」是成立某種形式的美中工作組，該工作組可能會建立在拜登時代與中國達成的一項協議的基礎之上，該協議禁止在核武器使用決策中運用人工智慧。但這根本無法觸及不可預測的人工智慧智能體這一問題的複雜性，今年夏天，這個問題讓業界和政府都措手不及。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nor does it get to the fundamental issues surrounding imposing safeguards on frontier models. The United States could go its own way and impose mandatory reviews of the safety of new, American-generated models, but Mr. Trump and his aides believe that would effectively drive the global market to Chinese largely open-source alternatives. And because those open-source models can be modified by users — who could remove the “guardrails” meant to limit their powers — a safety review may mean little.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項協議也沒有觸及對前沿模型實施安全保障措施的根本問題。美國可以單獨行動，強制對美國生成的新模型進行安全審查，但川普及其助手認為，這將在實際上把全球市場推向主要基於開源技術的中國替代品。而且，由於這些開源模型可以被用戶自行修改——用戶可以移除旨在限制其能力的「護欄」——安全審查可能意義不大。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CL_T1aaLgZcDFZ2SLQkdF3gN_Q" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump wants to meet with the A.I. executives next week, according to company representatives. (A White House official said on Thursday that nothing was on the schedule as of now.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據企業代表稱，川普希望下週會見人工智慧高管。（一位白宮官員週四表示，目前日程上尚無相關安排。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If that session happens, it would presumably include some of the A.I. executives who, in recent days, have been calling for the kind of slowdown in the release of new models that Mr. Trump says he opposes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果這次會議如期舉行，一些人工智慧高管很可能參加，他們近日來一直在呼籲放緩新模型的發布，而川普表示他反對這種做法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Few expect Dario Amodei, a founder of Anthropic, to be among the invitees: His company’s products have been banned by the Pentagon, and he appeared to anger Mr. Trump by proposing last weekend a detailed plan for the industry to pace itself and bring in independent safety inspectors. Mr. Trump dismissed him, and denounced an unnamed class of “Conspiracy Theorists, Treasonists, Traitors and Leakers” who were politicizing the debate over A.I. and undercutting American leadership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾乎沒有人預計Anthropic的創始人達里奧·阿莫迪會在受邀之列：他公司的產品已被五角大廈禁用，而且他在上週末提出了一項詳細計劃，要求該行業控制發展步伐，並引入獨立的安全檢查員，這似乎激怒了川普。川普對他不屑一顧，並且不點名地譴責了一批「陰謀論者、叛國者、賣國賊和洩密者」，稱他們將人工智慧的辯論政治化，並削弱美國的領導地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But another Anthropic founder, Tom Brown, who raises less ire in the White House, talks to officials regularly. In recent days, Mr. Trump has also talked with Sam Altman of OpenAI and Elon Musk of SpaceX, both of whom endorsed Mr. Amodei’s plan to slow down, test new models for vulnerabilities and let in outside inspectors, at least in general terms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但Anthropic的另一位創始人湯姆·布朗在白宮引起的憤怒較少，他經常與官員溝通。最近幾天，川普還與OpenAI的薩姆·奧特曼和SpaceX的伊隆·馬斯克進行了交談，這兩人至少大體上都支持阿莫迪的計劃：放緩步伐、測試新模型的漏洞並允許外部檢查員介入。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Bessent and the White House chief of staff, Susie Wiles, have been increasingly concerned over the past several months that A.I. could cause massive disruptions across industries, including hacks into major financial institutions that could destabilize the world economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去幾個月裡，貝森特和白宮幕僚長蘇西·懷爾斯越來越擔心，人工智慧可能會在各行各業造成大規模破壞，包括對主要金融機構的駭客攻擊，這可能會破壞世界經濟的穩定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Wiles this year began organizing an informal group to think about how to deal with the risk created by new, more powerful models. Mr. Bessent is chief among the members of that informal group, an administration official said, but other experts are called in depending on the topic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">懷爾斯今年開始組織一個非正式小組，思考如何應對更強大的新模型帶來的風險。一位政府官員說，貝森特是這個非正式小組的主要成員之一，但根據討論主題的不同，也會邀請其他專家參與。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLzs1aaLgZcDFeJXqwIdsMMrMw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The White House pointed to Ms. Wiles’s social media post on May 6 as the foundational statement of how Mr. Trump balances the risks and opportunities of the new technology. “This administration has one goal: ensure the best and safest tech is deployed rapidly to defeat any and all threats,” she wrote at the time. She said that “the White House will continue to lead an America First effort that empowers America’s great innovators, not bureaucracy, to drive safe deployment of powerful technologies while keeping America safe.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">白宮指出，懷爾斯在5月6日發布的社群媒體帖子是川普關於如何平衡這項新技術的風險與機遇的基礎性表態。「本屆政府只有一個目標：確保快速部署最好、最安全的技術，以擊敗任何及所有威脅，」她當時寫道。她表示，「白宮將繼續領導一項『美國優先』的努力，賦能美國的偉大創新者——而非官僚機構——推動強大技術的安全部署，同時保障美國的安全。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked about Mr. Trump’s accusation that A.I. risk is overblown, Elizabeth Huston, a White House spokeswoman, said that “President Trump is saying that Democrats using A.I. concern as a way to score points is a hoax, just like their claims that climate change would kill everyone in six years.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當被問及川普指責人工智慧風險被誇大一事時，白宮發言人伊麗莎白·休士頓表示：「川普總統的意思是，民主黨人利用對人工智慧的擔憂來撈取政治資本，這是一種騙局，就像他們聲稱氣候變化將在六年內殺死所有人一樣。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She added that Mr. Trump had reversed the “failed approach” of the Biden administration, which she said had “stifled innovation, hurt consumers and nearly cost America its competitive edge over China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她還說，川普扭轉了拜登政府的「失敗做法」，她表示那種做法「扼殺了創新，傷害了消費者，幾乎讓美國喪失了對中國的競爭優勢」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But at a moment when A.I. has emerged as arguably the most important long-term issue for the country’s economic health and national security, in the Trump White House there is no single person in charge of coordinating A.I. policy. Marco Rubio, in his role as national security adviser, is rarely discussed as a player on these issues. The White House eliminated the post of deputy national security adviser for cyber and emerging technologies created during the Biden administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在人工智慧已成為對國家經濟健康和國家安全最重要的長期問題之際，川普的白宮卻沒有專人負責協調人工智慧政策。國家安全顧問魯比奧很少被視為這些議題的決策者。白宮取消了拜登政府時期設立的負責網路和新興技術的副國家安全顧問職位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And the national cyber director, a position created by Congress, has only indirect authority over artificial intelligence issues. The current director is Sean Cairncross, a former senior official at the Republican National Committee, who was light on cyber and A.I. experience before taking the post.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由國會設立的國家網路總監一職對人工智慧問題則只有間接權力。現任總監是共和黨全國委員會前高級官員肖恩·凱恩克羅斯，他在上任前缺乏網路和人工智慧方面的經驗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And there has been a purging of some technical expertise, including at the Cybersecurity and Infrastructure Security Agency, part of the Department of Homeland Security. (The acting director of CISA said last week that the agency was hiring about 250 new employees after shedding around a thousand jobs — roughly a third of its work force — since Mr. Trump returned to the White House.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，一些技術專家已被裁撤，包括國土安全部下屬的網路安全和基礎設施安全局。（該局代理局長上週表示，自川普重返白宮以來，該機構裁減了大約一千個職位——約佔其員工總數的三分之一——目前正在招聘約250名新員工。）</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKiS1qaLgZcDFRGMLQkdOVMNVw" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As a result, A.I. has become the administration’s latest hot potato, with various officials dipping in and out of influence depending on the topic, or the day of the week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結果，人工智慧成了該政府最新的一塊燙手山芋：各位官員時而加入，時而退出，取決於討論的是什麼議題，甚至取決於當天是星期幾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump seems driven chiefly by the sense that A.I. is the way to economic growth and nothing can be allowed to stand in its way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普似乎主要是受這樣一種感覺的驅使：人工智慧是實現經濟增長的途徑，絕不允許任何事物阻擋它的發展。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="Anthropic公司首席執行官達里奧·阿莫迪上週在舊金山發表演講。該公司的產品已被五角大廈禁用，他提出的關於對人工智慧實施行業限制的計劃也遭到總統反對。" data-src="https://static01.nyt.com/images/2026/09/17/multimedia/17dc-trump-ai-amodei-bfqj/17dc-trump-ai-amodei-bfqj-master1050.jpg" src="https://static01.nyt.com/images/2026/09/17/multimedia/17dc-trump-ai-amodei-bfqj/17dc-trump-ai-amodei-bfqj-master1050.jpg"/></div><figcaption><span>Anthropic公司首席執行官達里奧·阿莫迪上週在舊金山發表演講。該公司的產品已被五角大廈禁用，他提出的關於對人工智慧實施行業限制的計劃也遭到總統反對。</span> <cite>Manuel Orbegozo for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He had latched onto this idea during the late campaign season. In a private meeting with OpenAI executives in June 2024, Mr. Trump discussed with them the idea of creating a version of “Operation Warp Speed” — his all-of-government enterprise to fast-track Covid vaccines — for the building of data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在競選季後期，他就抓住了這個想法。在2024年6月與OpenAI高管的一次私人會議上，川普與他們討論了創建一個類似「曲速行動」（ 他為加速新冠疫苗研發而啟動的政府全員行動）的計劃，用於建設數據中心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ever since, he has been determined to fuel A.I. growth at nearly any political cost, to keep alive what he has referred to as “the golden goose.” Mr. Trump, a real estate developer, is eager to keep building, dismissing the concerns of states and towns that want to slow or halt construction.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從那時起，他就決心幾乎不計任何政治代價來推動人工智慧的發展，以保住他所說的「金鵝」。身為房地產開發商的川普熱衷於持續推進建設，不理會希望放緩或停止建設的州和城鎮的擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The robots will not be taking over,” Mr. Trump insisted when he called into a large conference where Mr. Sacks and Mr. Huang were onstage this week. “The A.I. will not be taking over the rest of the world.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「機器人不會接管一切，」本週，當薩克斯和黃仁勛在一場大型會議上登台發言時，川普通過電話連線堅稱。「人工智慧不會接管世界其他地方。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Maggie Haberman對本文有報導貢獻。</p><p class="cn-p">David E. Sanger報導川普政府和一系列國家安全問題。他在時報任職超過40年，著有四本關於美國國家安全挑戰的書。</p><div class="" data-poster=""><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div></div></div><p class="cn-p">Jonathan Swan是《紐約時報》白宮記者，報導川普總統。</p><p class="cn-p">Cecilia Kang是《紐約時報》駐華盛頓的科技和監管政策記者。她從事科技報導已有20餘年。</p><div class="" data-poster=""><p class="cn-p">Dustin Volz為時報報導網路安全和情報領域，常駐華盛頓。</p></div><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20260921/trump-ai-safety-anthropic-openai-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

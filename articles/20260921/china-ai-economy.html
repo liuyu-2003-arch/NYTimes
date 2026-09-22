@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國「人工智慧大躍進」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國「人工智慧大躍進」</h1>
+    <h2 class="en-headline">China’s A.I. Makes a Great Leap Forward. But Its Economy Is Falling Behind.</h2>
+    <div class="meta-line">袁莉 <span style="margin: 0 8px;">•</span> 2026-09-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="966" src="https://static01.nyt.com/images/2026/09/19/business/00-newworld-ai/00-newworld-ai-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Dongyan Xu</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. Lead Over China in AI Is All But Gone.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國在人工智慧領域對中國的領先優勢幾乎蕩然無存。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China Is AI-Maxxing.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國正在全力押注人工智慧。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China Just Erased America’s AI Lead.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國剛剛抹去了美國在人工智慧領域的領先優勢。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those assessments of the artificial intelligence rivalry appeared in U.S. publications recently, and Xi Jinping will be pleased to have them in the air as he arrives in Washington this week for a state visit. Under Mr. Xi’s leadership, China has made huge strides in developing the most consequential technology of our times. What will be less discussed is that he is also the leader of an economy in its worst shape in decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些關於中美人工智慧競爭的判斷最近出現在美國媒體上。中國領導人本週抵達華盛頓進行國事訪問時，會樂見這樣的說法甚囂塵上。在習近平領導下，中國在發展這個時代最具影響力的技術方面取得了巨大進步。但較少被談及的是，他領導下的中國經濟也正處於幾十年來最糟糕的狀態。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COraraOLgZcDFdzDPwQdduEsDw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two facts are related.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩個事實相互關聯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists in China — even those closest to the state — have openly warned that the government is pouring too many resources into a technology that creates relatively few jobs, while doing too little to save the broader economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的經濟學家——即便是那些與政府關係最密切的經濟學家——也公開警告說，政府正在把過多資源投入一種創造就業崗位相對有限的技術，在提振整體經濟上的投入力度卻遠遠不夠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And it’s an economy in crisis: The country’s youth unemployment rate, excluding students, reached 18.9 percent in August. Consumers are not spending. During the first half of the year, domestic car sales fell markedly 20 percent from a year earlier, and housing sales fell another 14 percent, adding to years of decline. The country is in a deflationary spiral.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而這是一個正陷入危機的經濟體：8月，不包括在校學生的青年失業率達到18.9%。消費者不願花錢。今年上半年，國內汽車銷量較上年同期大幅下降20%，住房銷售再降14%，延續了多年來的下滑勢頭。中國正陷入通縮螺旋。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This summer, the economists’ warnings became a chorus. Li Daokui, a former adviser to the country’s central bank and a professor at Tsinghua University, said in July that China’s economy was “running too cold.” Its booming high-tech sectors, he said, could not lift the larger base.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年夏天，經濟學家的警告開始此起彼伏。曾任中國央行顧問、現為清華大學教授的李稻葵7月表示，中國經濟「運行偏冷」。他說，蓬勃發展的高科技產業無法帶動更龐大的經濟基本盤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Liu Shijin, another former adviser to the central bank, proposed at a forum in June to raise basic pension payouts, from $30 to $150 per month, for rural residents to shore up consumer demand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一位前央行顧問劉世錦在6月的一次論壇上提議將農民基本養老金從每月200多元提高到1000元，從而直接釋放消費活力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same forum, Huang Haizhou, an adviser to the central bank, said Beijing must foster mild inflation and corporate profitability before sustained technological advancement could occur. “A country mired in deflation cannot achieve technological innovation,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在同一論壇上，央行顧問黃海洲表示，北京必須推動溫和通膨並提高企業盈利能力，才能實現持續的技術進步。「一個深陷通縮的國家是不可能實現真正的技術創新的，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The economists’ comments were earlier reported by Bloomberg and Chinese media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">彭博新聞社和中國媒體此前報導了這些經濟學家的說法。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年上半年，汽車銷量下降20%，住房銷售下滑14%，凸顯出中國不斷加深的通縮螺旋。" data-src="https://static01.nyt.com/images/2026/09/20/multimedia/20Biz-Newworld-AI-02-ptkf/20Biz-Newworld-AI-02-ptkf-master1050.jpg" src="https://static01.nyt.com/images/2026/09/20/multimedia/20Biz-Newworld-AI-02-ptkf/20Biz-Newworld-AI-02-ptkf-master1050.jpg"/></div><figcaption><span>今年上半年，汽車銷量下降20%，住房銷售下滑14%，凸顯出中國不斷加深的通縮螺旋。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The exact amount of government support for artificial intelligence is difficult to know. Stanford’s AI Index Report noted that state-initiated investment funds deployed an estimated $184 billion into A.I. firms from 2000 to 2023. Last year, Mr. Xi instructed the government to use every tool at its disposal, including tax breaks, government contracts, financing and access to infrastructure, to advance A.I. And, according to Bloomberg, China is preparing to spend around $295 billion over the next five years to build data centers across the country, which will be operated by state-owned firms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府究竟為人工智慧提供了多少支持，很難確切知道。史丹佛大學的《人工智慧指數報告》指出，從2000年到2023年，由政府發起的投資基金估計向人工智慧企業投入了1840億美元。去年，習近平要求政府動用一切可以動用的手段，包括財政稅收、政府採購、融資和設施開放，推動人工智慧發展。據彭博新聞社報導，中國正準備在未來五年投入約2950億美元，在全國建設數據中心，並由國有企業負責運營。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese economists’ bluntness was itself revealing, as was the timing, just ahead of the regular midyear meeting of China’s ruling Politburo. They have been warned against sounding too pessimistic, and some have been censored or silenced for doing so. That these establishment figures were speaking so starkly right before the leadership was about to calibrate economic policy suggested how alarmed they had become.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國經濟學家的直言本身就耐人尋味，而時機也很能說明問題——正好在中國執政的政治局舉行例行年中會議之前。他們此前已被警告不要顯得過於悲觀，一些人還因此遭到審查或被迫噤聲。這些體制內人士在領導層即將調整經濟政策之前如此直白地發聲，說明他們的憂慮已經到了何種程度。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI30raOLgZcDFfvnPwQdk2Eh2A" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taken together, their message was clear: the Chinese economy was in trouble and an A.I.-centered allocation of resources could prove costly to ordinary people’s livelihoods and the country’s economic future.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">綜合起來，他們傳達的信息很明確：中國經濟陷入了麻煩，而以人工智慧為中心的資源分配可能會讓普通人的生計和國家的經濟未來付出高昂代價。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The leadership gave their warnings little heed. When the Politburo meeting ended on July 30, the party acknowledged the need for “proactive” measures to boost the economy, but stuck with incremental stimulus policies and vowed to develop “an intelligent new economy.” State media reports broke with previous practice and did not announce a target for domestic growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">領導層幾乎沒有理會他們的警告。7月30日政治局會議結束時，中共承認有必要採取「積極」措施提振經濟，但仍堅持漸進式刺激政策，並承諾發展「智能經濟新形態」。官方媒體的報導一反以往慣例，沒有公布國內經濟增長目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fixed-asset investment, including infrastructure, real estate and equipment, fell 4.1 percent in the first five months of the year. Mr. Li, the former central bank adviser, said a similar contraction happened only twice in the history of the People’s Republic: in 1961, at the height of the Great Famine, and in 1967, at the height of the Cultural Revolution. (It also fell in 1989 following the Tiananmen Square massacre, but it probably wouldn’t be wise to mention that at a meeting in Beijing.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年前五個月，包括基礎設施、房地產和設備在內的固定資產投資下降4.1%。前央行顧問李稻葵表示，建國以來只出現過兩次類似的萎縮：一次是1961年（那是大饑荒最嚴重的時候），另一次是1967年（那是文化大革命最激烈的時候）。（1989年天安門廣場大屠殺後也出現過下降，不過在北京的會議上提起這件事恐怕並不明智。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has offered a revealing explanation of how he measures economic progress.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平曾經解釋過他如何衡量經濟進步，這番話頗能說明問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We cannot look only at G.D.P. growth,” he said in a speech in March. What mattered, he argued, was China’s growing “hard power” and its development of advanced industries. In Mr. Xi’s view, slower growth does not necessarily signify failure if technological advancement proceeds “upward step by step.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不能光看國內生產總值增長，」他在3月的一次講話中說。他認為，真正重要的是中國「硬實力」的增長，以及發展新質生產力。在習近平看來，只要技術進步能夠「一步一步往上走」，經濟增速放緩並不一定意味著失敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rather than boosting household disposable income with cash or shopping vouchers or expanding the social safety net, as many economists have suggested, Mr. Xi believes that state-led technological rollouts will modernize traditional industries and unlock future economic value. But those gains could take years to materialize.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多經濟學家建議通過發放現金、購物券或擴大社會保障網來提高家庭可支配收入，但習近平對此並不認同，而是相信國家主導的技術推廣將推動傳統產業現代化，並釋放未來經濟價值。但這些收益可能需要多年之後才能實現。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="7月，習近平在上海出席世界人工智慧大會。在他的領導下，中國在開發當今最具影響力的技術方面突飛猛進。但代價呢？" data-src="https://static01.nyt.com/images/2026/09/20/multimedia/20Biz-Newworld-AI-01-ptkf/20Biz-Newworld-AI-01-ptkf-master1050.jpg" src="https://static01.nyt.com/images/2026/09/20/multimedia/20Biz-Newworld-AI-01-ptkf/20Biz-Newworld-AI-01-ptkf-master1050.jpg"/></div><figcaption><span>7月，習近平在上海出席世界人工智慧大會。在他的領導下，中國在開發當今最具影響力的技術方面突飛猛進。但代價呢？</span> <cite>Pool photo by Ng Han Guan</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China cannot afford to sit out the A.I. race. And in the first half of 2026, investment in information services, a sector the National Bureau of Statistics said was being propelled by A.I., jumped 19.2 percent. The technology could transform its economy and strengthen its position in its competition against the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國不能承受在人工智慧競賽中缺席。2026年上半年，信息服務業的投資增長了19.2%。國家統計局稱，這一行業正受到人工智慧推動。這項技術可能改變中國經濟，並增強其在與美國競爭中的地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But at what cost?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這麼做的代價是什麼？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CN2WrqOLgZcDFffbPwQdp-YpKQ" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Xu Chenggang, a Chinese economist at Stanford, put plainly what his peers in Beijing could only imply. China has more fiscal and monetary flexibility than most countries because Beijing controls the banking system. Every yuan going into state-backed technology is a yuan not spent on employment and consumption.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">史丹佛大學的中國經濟學家許成鋼直截了當地說出了北京的同行們只能暗示的事情。由於北京控制著銀行體系，中國在財政和貨幣政策上的騰挪空間比大多數國家都要大。投入國家支持的科技產業的每一元錢都意味著少了一元錢用於就業和消費。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When you have only this much money, what do you spend it on?” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「錢就這麼多，你要把它花在哪裡？」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a crisis similar to what China is facing, many governments would use stimulus to create jobs, Mr. Xu said. When people have jobs, he said, they spend more, creating a positive economic feedback loop. Instead, Beijing is concentrating its investment in A.I., a technology that may exacerbate high unemployment by reducing demand for workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許成鋼說，在類似中國當前面臨的危機中，許多政府會通過刺激措施創造就業。人們有了工作就會增加消費，從而形成經濟上的良性循環。但北京卻把投資集中在人工智慧上，而這種技術由於會減少對勞動力的需求，反而可能加劇高失業率。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some Chinese internet users are already calling the investment rush an “A.I. Great Leap Forward,” invoking Mao Zedong’s disastrous campaign of politically driven industrialization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些中國網民已經把這場投資熱潮稱為「人工智慧大躍進」，這裡借用了毛澤東那場由政治驅動、造成災難性後果的工業化運動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. companies ultimately need more than government support. They need businesses and consumers willing and able to pay for their products, Mr. Xu said. By weakening household demand and business vitality, Beijing may be depriving its A.I. industry of the market it needs to become commercially successful.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許成鋼說，人工智慧企業最終需要的不只是政府支持。它們需要願意並且有能力為其產品付費的企業和消費者。北京削弱家庭需求和商業活力，可能反而使人工智慧產業失去實現商業成功所需要的市場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has repeatedly demonstrated that an authoritarian state can keep an unsustainable model operating longer than outsiders expect. But history also demonstrates that “longer” does not mean forever.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國已多次表明，一個威權國家可以讓一種不可持續的模式維持得比外界預想的更久。但歷史同樣表明，「更久」並不意味著永遠。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIanrqOLgZcDFczDPwQdYPEx9Q" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sun Liping, a prominent sociologist in Beijing, invoked the Soviet Union. At its peak, its economy was roughly 70 percent the size of America’s, and it surpassed the United States in some fields of science and technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京知名社會學家孫立平提到了蘇聯。在鼎盛時期，蘇聯的經濟規模約為美國的70%，並且在一些科學技術領域超過了美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet its centrally managed economy eventually stalled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，其中央管理的經濟最終陷入停滯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China can produce vast quantities of increasingly sophisticated goods, Mr. Sun wrote in an article. But who in China will be able to afford them? Without buyers, products go unsold, businesses earn no profits, household incomes cannot rise and employment cannot improve.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">孫立平在一篇文章中寫道，中國可以生產數量龐大、技術日益先進的商品。但賣給誰？誰來買？賣不出去，沒人買，經濟就無法循環，企業就沒有利潤，居民收入就無法增加，就業的情況就不可能改善。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That,” he wrote, “is the fundamental problem with China’s economy today.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他寫道：「這就是現在中國經濟的基本癥結。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">袁莉為《紐約時報》撰寫「新新世界」專欄，專注中國及亞洲科技、商業和政治交叉議題。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260921/china-ai-economy/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
