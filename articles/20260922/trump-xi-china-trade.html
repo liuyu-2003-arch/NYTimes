@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美貿易「暗戰」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美貿易「暗戰」</h1>
+    <h2 class="en-headline">As Trump and Xi Meet, the U.S. and China Are ‘Shin-Kicking Under the Table’</h2>
+    <div class="meta-line">ANA SWANSON <span style="margin: 0 8px;">•</span> 2026-09-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="川普總統與中國領導人習近平去年在韓國釜山會面。" height="700" src="https://static01.nyt.com/images/2026/09/21/multimedia/21dc-china-trade-jcfp/21dc-china-trade-jcfp-master1050.jpg" width="1050"/><figcaption><span>川普總統與中國領導人習近平去年在韓國釜山會面。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the United States and China reached a trade truce during a meeting in South Korea a year ago, it helped restore some stability to an economic relationship that was threatening to spin out of control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一年前，美國和中國在韓國舉行的會議上達成貿易休戰，這有助於為兩國面臨失控危險的經濟關係恢復一些穩定性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agreement forced President Trump to walk back punishing tariffs on Chinese exports, and made China promise to maintain exports of critical minerals that it had cut off in response to the president’s levies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項協議迫使川普總統撤回了對中國出口商品的懲罰性關稅，並促使中國承諾維持關鍵礦產的出口，此前中國為回應川普關稅而切斷了這些礦產的出口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Negotiators appear to be preparing to extend that agreement as Xi Jinping, the leader of China, comes to Washington to meet with Mr. Trump later this week. On Sunday night, U.S. officials said that they would discuss setting up a dialogue on artificial intelligence and promoting trade in nonsensitive goods like energy and consumer products when Mr. Trump meets Mr. Xi this week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國領導人習近平將於本週晚些時候來到華盛頓與川普會晤，談判代表們似乎正準備延長該協議。週日晚上，美國官員表示，在川普與習近平於本週會晤時，他們將討論建立人工智慧對話機制，並促進能源和消費品等非敏感商品的貿易。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But despite the plans for a warm state dinner and other pomp and circumstance at the White House, the truce between the United States and China has been uneasier than it might appear. It has not prevented either government from continuing to take action against one another in ways that have sometimes threatened to upset the agreement entirely. Both nations have blamed each other for violating promises made last October in Korea.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但是，儘管白宮計劃舉行熱烈的國宴和其他隆重儀式，美中之間的休戰比表面上看起來更加令人不安。它並未阻止兩國政府繼續採取針對彼此的行動，這些行動有時險些徹底破壞該協議。兩國都指責對方違反了去年10月在韓國做出的承諾。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIjWwLPMg5cDFQSLpAQdNlo4zA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. officials say that China’s exports of many minerals necessary for cars, semiconductors and power tools are still overly restricted, leaving some companies uncertain about their supplies. China’s purchases of farm goods lag behind promised levels. And U.S. companies have also been deeply worried about a series of decrees that China’s State Council has issued since March, which expanded the Chinese government’s power over global companies that operate in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，中國對汽車、半導體和電動工具所需的許多礦產的出口仍然受到過度限制，導致部分企業對供應狀況感到擔憂。中國對農產品的採購落後於承諾的水平。此外，美國公司也對中國國務院自3月以來發布的一系列法令深感擔憂，這些法令擴大了中國政府對在華運營的跨國公司的權力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The rules restrict the unauthorized auditing of supply chains in China — something that is necessary for firms to comply with forced labor laws — and penalize firms for complying with foreign sanctions against Chinese firms. They also tighten state oversight for outbound investments and mineral exports, raising the question of how much influence Beijing will exert over global business.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些規定限制了對中國境內供應鏈的未經授權的審計——此類審計是企業遵守強迫勞動法所必需的，並處罰那些遵守針對中國企業實施的外國制裁的企業。這些規定還加強了對對外投資和礦產出口的國家監管，這引發了北京將對全球商業施加多大影響的疑問。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American officials have also continued to bar more Chinese technology from the United States, from routers to humanoid robots. The United States has recently accused China of copying American A.I. models through what it has labeled “industrial distillation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員也繼續禁止更多中國技術進入美國，從路由器到類人機器人。美國最近指責中國通過其所謂的「工業級蒸餾」複製美國的人工智慧模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In June, the U.S. added a slew of major Chinese firms to a list of Chinese military companies. And in July, the Trump administration added dozens of Chinese companies to a trade blacklist related to forced labor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年6月，美國將一批大型中國企業列入中國軍方企業名單。7月，川普政府又將數十家中國公司列入與強迫勞動相關的貿易黑名單。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In response, China sanctioned seven U.S. firms that help companies verify and map out their supply chains, including testing for cotton grown in Xinjiang, which the United States banned because of concerns about forced labor. The dueling regulations have put companies in a bind, since engaging in the supply chain checks required by U.S. law mean they could be penalized in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為回應，中國制裁了七家幫助企業驗證和規劃其供應鏈的美國公司，這些工作中包括對新疆棉花進行檢測——美國出於對強迫勞動的擔憂禁止了這種棉花。這些相互衝突的規定讓企業陷入了進退兩難的境地，因為如果按照美國法律的要求進行供應鏈核查，就可能在中國受到處罰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The moves, some say, have been calibrated to fly under Mr. Trump’s radar and not upset the overall relationship. But they are still harmful to companies on both sides of the Pacific, and a reflection of the deep challenges in the bilateral relationship that go beyond any rapport between Mr. Trump and Mr. Xi.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有人認為，這些舉措經過了精心計算，旨在不引起川普的注意，以免影響兩國整體關係。但它們仍然對太平洋兩岸的企業造成了損害，並反映了雙邊關係中存在的深層次挑戰，這些挑戰超越了川普與習近平之間的融洽關係所能解決的範疇。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COn4wLPMg5cDFWavpAQdxSMeGw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The overall relationship comes down from the top, and President Trump, Xi Jinping have a very good relationship,” Treasury Secretary Scott Bessent, who leads negotiations with China, said in an interview with FOX Business in July. “But, you know, that’s not an excuse for them to do things underneath the surface,” he said, referring to the Chinese.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「整體關係是自上而下的，川普總統和習近平有著非常好的關係，」負責對華談判的財政部長貝森特7月接受福克斯商業頻道採訪時說。「但是，你知道，這不能成為他們在私下裡搞小動作的藉口，」他在提到中方時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Bessent said he sometimes described the relationship as “a water polo match” where leaders were hitting the ball back and forth. But under the water, the Chinese were doing “a lot of kicking,” he said, adding, “if we have to, we’ll kick back.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">貝森特說，他有時將這種關係形容為「水球比賽」，領導人們在水面上將球打來打去。但在水下，中國人卻在做著「大量的踢腿動作」，他還說，「如果必要，我們也會踢回去。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An editorial in August in the China Daily, a state-run publication, agreed that it was a “perfect metaphor” but called it “an almost perfect inversion of reality,” saying that the United States was the one instigating the kicking.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官方媒體《中國日報》在8月的社論中同意這是一個「絕妙的比喻」，但稱其「幾乎完全顛倒了現實」，表示美國才是挑起踢腿的一方。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ryan Hass, the director of the John L. Thornton China Center at the Brookings Institution, a Washington think tank, said there was “still room for shin-kicking under the table,” but “there are limits to how hard the kicking can occur.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓智庫布魯金斯學會約翰·L·桑頓中國中心主任何雷恩(Ryan Hass)表示，「在桌子底下仍然有互相踢小腿的空間」，但是「踢的力度是有限度的」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Hass, at a Brookings panel last week, said that the “gentlemen’s agreement” the leaders had reached in South Korea set parameters around highly sensitive issues like tech restrictions, tariffs and behavior toward Taiwan, but did not restrict the countries’ actions in other areas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">何雷恩在上週的一次布魯金斯學會小組討論會上表示，兩國領導人在韓國達成的「君子協定」為技術限制、關稅和對台行為等高度敏感問題設定了界限，但並未限制兩國在其他領域的行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For the last many months, what we’ve seen is kind of a testing and probing by both sides to understand what can be done competitively while still keeping that leader-level rapprochement on track,” Mira Rapp-Hooper, a visiting fellow at Brookings, said at the same event.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會客座研究員米拉·拉普-胡珀在同一場活動中表示：「過去幾個月裡，我們看到雙方都在進行某種試探和摸索，以了解在保持領導人層面關係緩和的同時在競爭層面可以採取哪些行動。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJD4wLPMg5cDFQ2MpAQdNTQ3SA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I don’t think any of us can predict with any certainty how long an arrangement like this could go,” she said, calling it “an extremely unique way to handle a great power relationship.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我認為我們誰都無法確切預測這樣的安排能持續多久，」她說，並稱這是「處理大國關係的一種極其獨特的方式」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials on both sides will be focused on positive announcements next week. The United States is pushing for China to fulfill promises made earlier this year to buy U.S. farm goods and Boeing airplanes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雙方官員將把焦點放在下週發布積極聲明上。美國正在敦促中國兌現今年早些時候做出的購買美國農產品和波音飛機的承諾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both countries appear interested in making progress to set up a new “board of trade” that could lower tariffs on $30 billion of goods on each side. And analysts are watching to see how much progress the meetings will make on issues like A.I. safety and the war in Iran, and whether they will address Taiwan or Chinese investment in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩國似乎都希望在建立新的「貿易委員會」方面取得進展，該委員會可以降低雙方各300億美元商品的關稅。分析人士正在密切關注，這些會議將在人工智慧安全和伊朗戰爭等問題上取得多少進展，以及雙方是否會討論台灣或中國在美投資問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But most analysts believe the biggest focus of the trip will be ensuring that basic stability between the countries continues. China has pushed for a longer extension of the current trade truce, which expires in November, but the U.S. has proposed it be extended for just six months to keep negotiations on a tighter leash, people familiar with the negotiations say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但大多數分析人士認為，此行的最大重點將是確保兩國間的基本穩定得以持續。據熟悉談判情況的人士透露，中方推動將於11月到期的當前貿易休戰期進一步延長，但美國提議僅延長六個月，以便對談判保持更嚴格的控制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a briefing with reporters Friday, an administration official declined to say whether the truce would be extended, saying that it would be on the agenda for the meeting. The official also said that China’s performance in supplying the U.S. and global economy with rare earths had not been up to U.S. expectations and would be discussed, along with topics like A.I. safety and China’s role in the U.S. fentanyl crisis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週五的記者會上，一位政府官員拒絕透露是否會延長貿易休戰協議，並表示這將列入會議議程。該官員還表示，中國在向美國和全球經濟供應稀土方面的表現沒有達到美國的期望，這一問題也將被納入討論，還有人工智慧安全以及中國在美國吩坦尼危機中的角色等話題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The meetings this week could simply lay the groundwork for an extension of the truce, with any announcement coming later. In an interview with the Financial Times on Sunday, U.S. officials said that the trade truce didn’t officially expire until Nov. 30, so it wasn’t critical it be extended immediately.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本週的會談可能只是為延長休戰奠定基礎，任何公告都將在晚些時候發布。在週日接受《金融時報》採訪時，美國官員表示，貿易休戰協議要到11月30日才正式到期，因此無需立即延長。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLmvwbPMg5cDFXz1SgAd4hA45A" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sara Schuman, a former U.S. trade official and a managing director at Beacon Global Strategies, said the Chinese would like to see the truce extended for as long as possible, but the United States wants more frequent renegotiations that would allow it to press China on commitments that have not been fulfilled.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前美國貿易官員、燈塔全球戰略諮詢公司董事總經理莎拉·舒曼表示，中方希望休戰盡可能延長，但美國希望進行更頻繁的重新談判，以便就中國尚未履行的承諾向其施壓。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“From the U.S. perspective, right now China is just barely squeaking through on its commitments on critical minerals and rare earths,” Ms. Schuman said. “My expectation is that there’s a direct correlation between what China offers on critical minerals in this meeting and whether or not the truce is extended, and for how long,” she added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從美國的角度來看，目前中國在關鍵礦產和稀土方面的承諾僅勉強達標，」舒曼說。「我預計，中國在本次會議上就關鍵礦產提出的方案將直接決定休戰協議是否延長以及延長多久，」她還說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Geoffrey Gertz, a senior fellow at the Center for a New American Security, a Washington think tank, said there was a “real risk” in the coming months that one side would unintentionally upset the trade truce by crossing what the other party sees as a red line.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">華盛頓智庫新美國安全中心高級研究員傑弗里·格茨表示，在未來幾個月存在一種「真實風險」：一方可能無意中越過另一方視為紅線的界限，從而破壞貿易休戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think over time, some type of that miscalculation, misperception is pretty likely,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我認為，隨著時間的推移，出現某種此類誤判或誤解的可能性相當大，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Ana Swanson報導貿易和國際經濟新聞，常駐華盛頓。她從事新聞工作已超過十年。</p><div class="" data-poster=""></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20260922/trump-xi-china-trade/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

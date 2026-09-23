@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧議題中美說了算？聯合國被邊緣化 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">人工智慧議題中美說了算？聯合國被邊緣化</h1>
+    <h2 class="en-headline">U.N. Seeks Relevance on A.I. as the U.S. and China Race Ahead</h2>
+    <div class="meta-line">DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-09-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="上週，北京千尋智能公司總部數據訓練中心裡的員工。人工智慧將成為本週聯合國大會數場會議的主導議題。" height="700" src="https://static01.nyt.com/images/2026/09/21/multimedia/21dc-un-ai-fgkv/21dc-un-ai-fgkv-master1050.jpg" width="1050"/><figcaption><span>上週，北京千尋智能公司總部數據訓練中心裡的員工。人工智慧將成為本週聯合國大會數場會議的主導議題。</span> <cite>Tingshu Wang/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the threats posed by artificial intelligence spark international alarm, the stakes of the Chinese leader Xi Jinping’s state visit to Washington this week have only grown bigger.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著人工智慧帶來的威脅引發國際恐慌，中國領導人習近平本週對華盛頓的國事訪問顯得非同小可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earning considerably less attention are the meetings focused on A.I. at the United Nations General Assembly in New York this week, as world leaders gather in the shadow of several rogue A.I. hacking episodes that have prompted greater fears.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>相比之下，本週在紐約聯合國大會上聚焦人工智慧的會議受到的關注要少得多。此時，各國領導人正聚集在引發更大擔憂的幾起失控人工智慧駭客事件的陰影下。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. will be a dominant theme for a fleet of U.N. meetings on Monday centered on international digital cooperation. The schedule includes discussions about the technology’s risks and opportunities, the potential for economic dislocation and possible international governance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧將成為週一圍繞國際數字合作展開的一系列聯合國會議的主導議題。議程包括討論該技術的風險與機遇、潛在的經濟錯位以及可能的國際治理方案。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi is expected to skip the General Assembly to instead convene in Washington with President Trump, who has repeatedly dismissed A.I. safety concerns as a hoax.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>預計習近平將缺席聯合國大會，轉而在華盛頓與川普總統會面，川普已多次將對人工智慧安全的擔憂斥為騙局。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COyGorrMg5cDFXMWKwgdIsgL1g" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is no shortage of tension between the two countries, and A.I. is just one of several issues the two sides are expected to discuss. But few issues are as contentious right now — or as important to humanity, some say — as the race for A.I. dominance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩國之間緊張對峙頻頻，且人工智慧只是預計雙方將討論的眾多問題之一。但一些人表示，眼下很少有哪項議題能像爭奪人工智慧主導權這樣具爭議性，或對人類如此重要。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States has repeatedly accused Chinese A.I. firms of stealing the intellectual property of American A.I. labs. China, too, continues to agitate against U.S. restrictions on advanced computer chips needed to power A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國已多次指責中國人工智慧公司竊取美國人工智慧實驗室的知識產權。中國也持續抗議美國限制驅動人工智慧模型所需的高級計算機晶片。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some onlookers, though expecting little, compared the urgency for a breakthrough on A.I. safety issues between the world’s two superpowers to the need for nuclear arms control agreements during the Cold War.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管期望不高，但一些觀察人士仍將兩個超級大國在人工智慧安全問題上取得突破的緊迫性與冷戰期間締結核軍備控制協議的必要性相提並論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.N. gathering and the White House meeting underscore how much A.I. has become a race solely between two rival powers, with the rest of the world largely pushed to the periphery, foreign policy experts said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外交政策專家表示，聯合國大會和白宮會晤凸顯出，人工智慧在很大程度上已演變為僅在兩個競爭大國之間展開的角逐，而世界其他地區基本被推向邊緣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.N., to put it bluntly, has been sidelined in the A.I. conversation,” said Kyle Chan, a foreign policy fellow at the Brookings Institution who studies U.S.- China relations and focuses on technology issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會研究美中關係並專注於科技問題的外交政策研究員陳凱欣(Kyle Chan)表示：「坦白說，聯合國在人工智慧對話中已被邊緣化。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. is “a two-player game,” Mr. Chan added. “It’s kind of like nuclear weapons: If you do not have them or are not on the verge of having them, it’s hard to be relevant in shaping the discussion.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧是「兩個玩家的遊戲，」他還說。「這有點像核武器：如果你沒有，或者不是即將擁有它們，就很難在塑造相關討論時發揮實質性作用。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLvOobrMg5cDFRt17QIdStYqXg" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reflecting that reality, the United States and China discussed on Sunday creating a notification system to allow for the countries to alert each other about A.I.-driven national security risks. The mechanism, Treasury Secretary Scott Bessent said, would be called “the U.S.-China A.I. dialogue.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同樣反映<span>這一現實的是，美中兩國週日討論了建立一個通報系統，以便兩國互相通報由人工智慧引發的國家安全風險。財政部長史考特·貝森特表示，該機制將被命名為「美中人工智慧對話」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not for lack of trying. António Guterres, the U.N. secretary general, pushed last week for international cooperation on A.I., highlighting it as one of three existential risks facing humanity alongside climate change and deepening global inequality.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出現這種局面並非因為聯合國未作嘗試。聯合國秘書長安東尼奧·古特雷斯上週大力推動人工智慧領域的國際合作，強調它是與氣候變化和不斷加劇的全球不平等並列的三大人類生存風險之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I., he said, presents other dangers, including amplifying misinformation, discrimination, privacy violations, cyberattacks and so-called superintelligence that could advance beyond human control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他指出，人工智慧帶來了其他危險，包括放大虛假信息、加劇歧視、侵犯隱私、引發網路攻擊以及可能發展出脫離人類控制的所謂超級智能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We need a shared understanding of how to advance the safe, secure and responsible development of A.I., while identifying when increasingly powerful systems may require stronger safeguards,” Mr. Guterres said. “The world cannot afford a race to the bottom on A.I. safety.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們需要就如何安全、可靠且負責任地推進人工智慧發展達成共識，同時明確越來越強大的系統何時需要更強有力的保障措施，」古特雷斯表示。「世界承受不起在人工智慧安全上競相探底的後果。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="OpenAI的Stargate是美國最大的數據中心項目，位於得克薩斯州阿比林。一位公司發言人表示，該公司首席執行官薩姆·奧特曼將於週三在聯合國安全理事會發表演講。" data-src="https://static01.nyt.com/images/2026/09/21/multimedia/21dc-un-ai-hwzc/21dc-un-ai-hwzc-master1050.jpg" src="https://static01.nyt.com/images/2026/09/21/multimedia/21dc-un-ai-hwzc/21dc-un-ai-hwzc-master1050.jpg"/></div><figcaption><span>OpenAI的Stargate是美國最大的數據中心項目，位於得克薩斯州阿比林。一位公司發言人表示，該公司首席執行官薩姆·奧特曼將於週三在聯合國安全理事會發表演講。</span> <cite>Scott Ball for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under Mr. Guterres, the United Nations has been trying to build international consensus around responsible A.I. development for years, including by forming an advisory body in 2023 to study the issue. And on Monday, the leaders of 22 countries adopted a declaration calling to strengthen “human direction, oversight and control” of A.I. systems. The United States and China did not join the declaration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在古特雷斯的領導下，聯合國多年來一直致力於圍繞負責任的人工智慧發展凝聚國際共識，包括在2023年成立一個諮詢機構專門研究該問題。週一，22個國家的領導人通過了一項宣言，呼籲加強對人工智慧系統的「人類指導、監督和控制」。美國和中國均未加入該宣言。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two countries have only further cemented their leads ahead of everyone else since the U.N. began worrying about A.I., rushing to build out data centers and release cutting-edge A.I. models despite growing fears about existential risks associated with the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自聯合國開始關注人工智慧以來，美中兩國相對其他國家的優勢進一步擴大，競相建設數據中心並發布尖端人工智慧模型，<span>儘管外界對該技術相關的生存風險日益擔憂。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CIaworrMg5cDFRsKKwgdu0IjLA" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his remarks last week, Mr. Guterres acknowledged that “geopolitical divides” made policing A.I. difficult but said that voluntary pauses on the technology would not work if not everyone agreed to them — meaning, right now, the United States and China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在上週的講話中，古特雷斯承認「地緣政治分歧」增加了監管人工智慧的難度，但他表示，如果不能得到所有人的同意（這意味著目前必須包括美國和中國），暫停研發該技術的自願呼籲將無法奏效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China had generally been seeking to increase its influence with the United Nations, but this summer launched the World Artificial Intelligence Cooperation Organization, which has its headquarters in Shanghai, in a bid to assert global dominance on international A.I. discussions. The United States has shown little interest in building international consensus on A.I. or other geopolitical matters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國總體上一直在尋求擴大其在聯合國的影響力，但在今年夏天推出了總部設在上海的世界人工智慧合作組織，試圖主導全球人工智慧國際討論。美國則對在人工智慧或其他地緣政治問題上建立國際共識沒有表現出多少興趣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.N. Security Council may hold more sway on A.I. than the General Assembly. The OpenAI chief executive Sam Altman will speak to the Security Council on Wednesday, a company spokeswoman said. But it is difficult to imagine the Security Council — on which the United States, China and Russia sit — forging a consensus, experts said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聯合國安全理事會在人工智慧議題上可能比聯合國大會更具影響力。一位公司發言人表示，OpenAI首席執行官薩姆·奧特曼將於週三在安理會發表演講。但專家指出，很難想像有美、中、俄三國坐鎮的安理會能夠達成共識。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Altman’s appearance at the United Nations is just a warm-up. A day later in Washington, he will join a far larger roster of A.I. and technology leaders for the U.S.-China state dinner, including Nvidia’s Jensen Huang, SpaceX’s Elon Musk and the Amazon founder Jeff Bezos.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">奧特曼在聯合國的露面只是一場熱身。一天後，他將在華盛頓與陣容更為龐大的人工智慧和科技界領袖一同出席美中兩國國宴，其中包括英偉達的黃仁勛、SpaceX的伊隆·馬斯克以及亞馬遜創始人傑夫·貝索斯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Julian Ku, a professor of constitutional and international law at Hofstra University, said that the United Nations has always struggled to influence superpowers on the uses and limits of weapons they have that others do not, from nukes to high-powered hacking tools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">霍夫斯特拉大學憲法和國際法教授古舉倫(Julian Ku)表示，從核彈到高性能駭客工具，在影響超級大國如何使用和限制它們獨有的武器方面，聯合國歷來舉步維艱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the context of nuclear weapons, that took the form of helping nonnuclear nations gain access to nuclear power while spreading nonproliferation agreements, Mr. Ku said. While the United Nations would like to steer the A.I. safety conversation, it will probably find more success working to ensure the rest of the world is not fully left behind on the benefits societies could reap from the technology, Mr. Ku added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">古舉倫指出，在核武器背景下，聯合國的努力體現為幫助無核國家獲得核能，同時推廣不擴散協議。他補充說，儘管聯合國希望主導人工智慧安全對話，但它可能會發現，不如轉而致力於確保世界其他地區不會完全錯過從該技術中獲得的益處，這樣效果會更好。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CNaZo7rMg5cDFUt17QIdbnohRA" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In a lot of ways, this is the story of the U.N. from the outset,” Mr. Ku said. “The U.N. can’t really shape the actions of those who have the power directly, but they do have the interests of everyone else who do not have that power.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在許多方面，這就是聯合國自誕生以來的寫照，」古舉倫說。「聯合國無法直接左右那些權力者的行動，但它確實代表了不掌握這種權力的其他各方的利益。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Dustin Volz為時報撰寫網路安全和情報方面的文章，他常駐華盛頓。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260922/united-nations-artificial-intelligence-china-us/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
