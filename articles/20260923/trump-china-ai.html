@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面對人工智慧威脅，這回真得喊「狼來了」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">面對人工智慧威脅，這回真得喊「狼來了」</h1>
+    <h2 class="en-headline">It’s Time to Cry Wolf Over A.I.</h2>
+    <div class="meta-line">湯馬斯·佛里曼 <span style="margin: 0 8px;">•</span> 2026-09-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/09/23/opinion/22friedman-image/22friedman-image-jumbo-v2.jpg" width="732"/><figcaption><span></span> <cite>Austin Irving</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Looks like by April, you know, in theory, when it gets a little warmer, it miraculously goes away.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「看起來到了4月，你知道的，理論上來說，天氣稍微暖和一點，它就會奇蹟般地消失。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s what President Trump said about the Covid-19 outbreak on Feb. 10, 2020, about a month before it forced our country and the world into a lengthy lockdown.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是川普總統在2020年2月10日談及新冠疫情時所說的話，大約一個月後，這場疫情便迫使我們的國家乃至全世界進入了漫長的封鎖期。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why do I recall that today? Because when I think back on the biggest disaster stories I have covered — including 9/11 and Covid-19 — I am struck that they have one big thing in common: a failure of imagination. Sure, government experts prepared for these events in theory, but in practice how many of them imagined that suicidal terrorists would fly commercial airliners into the World Trade Center and the Pentagon? And how many imagined that a respiratory virus that emerged in Wuhan, China, would kill millions of people and drag down the world economy for years? So today, when it comes to the possibility that artificial intelligence, which is falling into the hands of rogue actors and is beginning to manifest a will of its own, could become incredibly destabilizing, my imagination is fully engaged.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為什麼我今天會想起這件事？因為當我回顧自己報導過的最大災難事件，包括9·11事件和新冠疫情，我驚訝地發現，它們有一個巨大的共同點：想像力的缺失。誠然，政府專家在理論上對這些事件做過準備，但在實踐中，有多少人能想到自殺式恐怖分子會駕駛民航客機撞向世貿中心和五角大廈？又有多少人想像到，一種在中國武漢出現的呼吸道病毒會奪去成百上千萬人的生命，並讓世界經濟陷入長達數年的低迷？因此今天，當談到人工智慧——它正落入惡意行為者手中，並開始展現出自身的意志——可能會帶來極大的不穩定性時，我的想像力已被徹底激發。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here is what my imagination is telling me. It is telling me that the big A.I. companies in America and China are not being candid with us about how little even they understand the power and reach of the models they have developed, like sorcerers, in their labs. It is telling me that the Trump administration, headed by a man who so often governs by social media post, is uniquely unsuited to the kind of comprehensive, sustained, coordinated governance that keeping A.I. safe demands. And it is telling me that there is so much at stake — economically, militarily and technologically — and so little trust between Washington and Beijing that it would take a miracle for the United States and China to agree on the kind of deep collaboration needed to defuse the most nightmarish threats posed by A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是我的想像力告訴我的。它告訴我，中美兩國的大型人工智慧公司並沒有坦誠地告訴我們，對於他們像巫師一樣在實驗室裡開發出的這些模型的威力和影響範圍，甚至連他們自己其實也知之甚少。它告訴我，川普政府——由一位經常通過社群媒體發帖來治國的人所領導——尤其不適合開展那種對保障人工智慧安全所需的那種全面、持續且協調的治理。它還告訴我，鑒於其中牽涉的經濟、軍事和技術利益如此巨大，而華盛頓和北京之間的信任又如此匱乏，想要中美兩國就化解人工智慧帶來的最可怕威脅進行深度合作並達成一致簡直需要奇蹟。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMne3PeLhpcDFc3h_QUdcZQc4w" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is still not too late, though, for radical rethinking before something very bad happens that forces all the key players to do things they never imagined, things they will have to do in the middle of a full-blown A.I.-driven crisis. I’d rather be remembered as the boy who cried wolf when the wolf never came than as someone who got eaten by it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，現在進行徹底的反思仍然為時未晚——在一場由人工智慧驅動的危機全面爆發、極其糟糕的事件迫使所有關鍵參與者去做那些他們從未想像過、卻又不得不做的事情之前。我寧願在人們記憶中是那個狼沒來時就喊「狼來了」的男孩，也不願成為被狼吃掉的那個人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So here goes: “Wolf, wolf, wolf, wolf.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所以我要開始喊了：「狼來了，狼來了，狼來了，狼來了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I will stand down when I see the United States and China start to address the immediate threat by teaming up to defend critical infrastructure — water systems, power grids, the internet — in their own countries and around the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">只有當我看到美國和中國開始聯手應對這一緊迫威脅，共同保護本國及全球的供水系統、電網、互聯網等關鍵基礎設施，我才會停止。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But I will breathe a sigh of relief only when I see Washington and Beijing put their heads together with their respective A.I. companies to draw up a long-term plan for how they can continue to compete on A.I. technologies, while simultaneously agreeing on internal A.I. guardrails to prevent increasingly capable A.I. systems from, on their own, creating catastrophic cybersecurity, biological, nuclear or financial risks. This a geopolitical, geoeconomic and technological challenge no generation of American and Chinese statesmen has ever before faced. They dodge it at their, and our, peril.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但要讓我真正鬆一口氣，除非看到這樣一幕：華盛頓和北京與各自的人工智慧公司齊聚一堂，制定出一項長期計劃，規劃他們如何能夠繼續在人工智慧技術上展開競爭，同時也就建立內部人工智慧護欄達成一致，以防止越來越強大的人工智慧系統自行引發災難性的網路安全、生物、核或金融風險。這是歷代美中政治家都從未面臨過的地緣政治、地緣經濟和技術挑戰。如果他們選擇迴避這一挑戰，不僅會危及自身，也會危及我們所有人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I sincerely hope a strategy along these lines is what comes out of Thursday’s summit in Washington between Trump and President Xi Jinping. A.I.’s potential to deliver transformational breakthroughs in energy, biology, new materials and drug discovery is unprecedented. But so too are its risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我真誠地希望，川普與習近平主席本週四在華盛頓舉行的峰會能制定出此類戰略。人工智慧在能源、生物學、新材料和藥物發現等領域實現變革性突破的潛力是前所未有的。但其風險同樣也是前所未有的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We need a way to get A.I.’s best and cushion against its worst — and we do not have that today.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們需要一種方法，既能獲取人工智慧帶來的最大益處，又能防範其最壞的影響——而我們今天還不具備這種方法。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COKK3feLhpcDFR3AfwQdRu4wnw" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Until there is a U.S.-China agreement to ensure that the A.I. agents that the world’s two A.I. superpowers are developing will operate only in ways that are consonant with human flourishing, and be kept that way, I am in the slow-this-thing-down-until-we-are-sure-we-can-control-it camp. I’m in it for the same reason that the Stanford political theorist Francis Fukuyama argued in the Substack publication Persuasion on Monday: “A.I. is a tool that can be used for good or bad purposes — and at the moment we have few mechanisms for regulating the bad uses other than the good intentions of the people creating the technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除非中美達成協議，確保這兩個世界人工智慧超級大國正在開發的人工智慧代理只能以符合人類繁榮的方式運行，並一直保持這種狀態，否則我就是屬於「把這東西慢下來、直到我們確信可以控制它」這個陣營。我身處這個陣營的原因，與史丹佛大學政治理論家弗朗西斯·福山週一在Substack的電子雜誌「Persuasion」中提出的觀點相同：「人工智慧是一種既可用於善，也可用於惡的工具。而目前，除了創造這項技術的人的善意之外，我們幾乎沒有任何機制來約束其惡意使用。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The last time we trusted the good intentions of the tech bros of Silicon Valley, when they told us to “move fast and break things” — regulations be damned — we unleashed social networks that helped fracture our society. I do not trust for one second that these people will put the national interest ahead of their own on A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上一次我們相信矽谷科技大佬們的善意時，他們說要「快速行動，打破陳規」——去他的監管，結果我們放任放任了那些助長社會分裂的社交網路。我絲毫不相信，在人工智慧問題上，這些人會將國家利益置於自身利益之上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anyone who tells you we can’t afford regulation now because it might slow down innovation is missing three things. First, those who contend that regulation is, by definition, innovation-destroying and market-destroying are “just ignorant of history,” Eric Beinhocker, the executive director of the Institute for New Economic Thinking at the University of Oxford’s Martin School, told me. “Good regulations create trust, and trust grows markets. How do you think the airline industry or the pharmaceutical industry grew so big, so fast? Because government regulations created trust among consumers that the planes they fly and the medicines they take are safe.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">任何告訴你「我們現在承擔不起監管，因為這可能會阻礙創新步伐」的人，都忽略了三件事。首先，正如牛津大學馬丁學院新經濟思維研究所執行主任埃里克·拜因霍克告訴我的那樣，那些主張監管從本質上來說會扼殺創新、破壞市場的人「完全對歷史一無所知」。他說，「良好的監管能夠建立信任，而信任能夠推動市場發展。你認為航空業或製藥業為何能夠如此迅速地發展壯大？因為政府監管在消費者中建立了信任，讓他們相信自己乘坐的飛機和服用的藥物是安全的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Would the pharma industry be what it is today if people didn’t trust that the drugs they buy at the drugstore, without a second thought, have gone through a regulatory process? Because we have not yet had an A.I. catastrophe, people are going along with the hands-off approach. But when one happens, the pitchforks will be out for the “no-regulations” gurus, like Trump’s A.I. whisperer David Sacks — and for good reason.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果人們不相信他們在藥店裡毫不猶豫買下的藥物已經通過了監管程序，製藥業還會是今天這個樣子嗎？因為我們尚未經歷過人工智慧災難，所以人們目前對放任自流的做法表示順從。但當災難發生時，那些主張「無監管」的大師們——比如川普的AI顧問戴維·薩克斯——必將遭到民眾的聲討，而這完全是有道理的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Any company that creates an A.I. agent that does something bad in the world “should be held liable for it,” Beinhocker added. That is precisely what we did not do with the lords of the social networks, and we have paid a huge price for it. I was happy to see Treasury Secretary Scott Bessent tell CNBC on Monday that the Trump administration won’t give A.I. leaders a “liability shield.” That may be the best way to slow them down in the near term. I hope China does the same.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">任何創造出在世界上作惡的人工智慧代理的公司「都應為此承擔責任」，拜因霍克還說。這正是我們在對待社交網路巨頭時沒能採取的措施，我們也為此付出了巨大的代價。我很高興看到財政部長貝森特週一在接受CNBC採訪時表示，川普政府不會給人工智慧領導者提供「免責保護傘」。這可能是近期內放慢他們腳步的最佳方式。我希望中國也能這樣做。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Second, A.I. is not just a technology but also, as the computer scientist Craig Mundie has been saying, “a new species.” And like a new species, it is already exhibiting evolutionary properties.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其次，人工智慧不僅是一項技術，正如計算機科學家克雷格·蒙迪一直所說，它也是「一個新物種」。而且，就像一個新物種一樣，它已經表現出進化的特徵。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CI6i3feLhpcDFdfg_QUdN7E5Pw" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’ve unleashed Darwin in silicon,” Beinhocker explained. The latest A.I. models have demonstrated a capacity for “self-improvement, self-replication and self-preservation. When you put those three things together, and their evolution happens at silicon speed, not human speed, you’ve got something extremely powerful, potentially dangerous and impossible to control.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們在硅基世界中釋放了達爾文進化論，」拜因霍克解釋道。最新的人工智慧模型已經展示了「自我改進、自我複製和自我保存」的能力。「當你把這三點結合在一起，並且它們的進化是以硅基速度而不是人類速度發生時，你就得到了一個極其強大、具有潛在危險且無法控制的事物。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This becomes even more true as we begin to give our A.I. systems bodies in the form of robots, drones and vehicles. We must ensure that there is always a human in the loop — that they are never fully autonomous — until we can guarantee these systems will always operate in line with human well-being, Beinhocker added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著我們開始為人工智慧系統賦予機器人、無人機和車輛等實體形態，這一點變得更加真切。我們必須確保始終有人類參與其中，確保它們絕不能完全自主運行，直到我們能夠保證這些系統的運行將始終符合人類福祉，拜因霍克補充說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Third, our president now runs the country the way he is said to have run the Trump Organization, which had to deal with multiple bankruptcies: There is virtually no regular policy process, interagency collaboration is weak, and on most days everyone in the administration just sits around waiting to see what the president posts on social media — often based on the last person he spoke to or something he heard on Fox News — and then tries to frame policies around it. (Thank goodness that at least Bessent, sources tell me, has done a deep dive into A.I. issues and has been talking to the Chinese. But whether he can herd the cats in this administration on this issue remains to be seen.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第三，我們的總統現在治理國家的方式據說與他當年經營川普集團時如出一轍——該集團曾多次面臨破產：幾乎沒有任何常規的政策制定流程，部門協作薄弱，大多數時候，政府裡的每個人都只是坐等總統在社群媒體上發些什麼——這些內容往往是基於他剛剛交談過的最後一個人，或者他在福克斯新聞上看到的內容，然後再試圖圍繞這些內容制定政策。（謝天謝地，消息人士告訴我，至少貝森特對人工智慧問題進行了深入研究，並且一直在與中國人溝通。但是，在這個問題上，他能否在這屆政府中讓這群各自為政的傢伙們齊心協力，還有待觀察。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">My Times colleagues recently reported that sources close to Trump made clear that his dismissal of fears that A.I. could lead to mass extinction as a “hoax” is driven not by any technological assessment. It is said to be driven, they reported, by his fear that “if the artificial intelligence boom fueling the American economy slows down, the market could crash and recession could quickly follow.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我在《紐約時報》的同事最近報導稱，與川普關係密切的消息人士明確表示，他將人工智慧可能導致人類大規模滅絕的擔憂斥為「騙局」，這並非出於任何技術評估。他們報導稱，其動機源於他擔心「如果推動美國經濟的人工智慧熱潮放緩，市場可能會崩潰，經濟衰退可能會接踵而至」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That kind of thinking is begging for trouble. Trump should be thinking about another president. Dwight D. Eisenhower famously said, “Plans are worthless, but planning is everything.” What he meant was that no fixed plan can survive all the unanticipated stuff that happens once a war or crisis starts to unfold. But if you’ve gone through a rigorous planning process — familiarized yourself with the depth of the problem and the kinds of things that could go haywire and built trust within your team — you greatly improve your ability to adapt on the fly.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種想法簡直是在自找麻煩。川普應該想想另一位總統的經驗。德懷特·艾森豪威爾有句名言：「計劃毫無價值，但制定計劃是至關重要的。」他的意思是，一旦戰爭或危機開始爆發，沒有任何既定的計劃能夠應對所有突如其來的狀況。但是，如果你經歷了一個嚴格的制定計劃的過程，深入了解了問題的本質和可能出錯的環節，並在團隊內部建立起了信任，你就能極大地提高臨場應變的能力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is precisely what was missing in the run-up to Trump’s war with Iran, and we are paying a huge price for that today. Imagine what could happen if A.I. agents — a thousand times cleverer and more dangerous than Tehran or Trump — go off the rails.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這正是川普對伊朗開戰前所缺乏的，而我們今天正在為此付出巨大的代價。想像一下，如果比德黑蘭或川普聰明且危險成千上萬倍的人工智慧代理失控了，將會發生什麼。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">湯馬斯·L·佛里曼(Thomas L. Friedman)是外交事務方面的專欄作者。他1981年加入時報，曾三次獲得普立茲獎。他著有七本書，包括贏得國家圖書獎的《從貝魯特到耶路撒冷》(From Beirut to Jerusalem)。歡迎在X和Facebook上關注他。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20260923/trump-china-ai/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
