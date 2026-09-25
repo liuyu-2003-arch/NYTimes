@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美AI競賽：美國在哪些領域領先、哪些領域落後？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美AI競賽：美國在哪些領域領先、哪些領域落後？</h1>
+    <h2 class="en-headline">In A.I. Race, U.S. Models Have the Edge, but China Has Other Advantages</h2>
+    <div class="meta-line">DUSTIN VOLZ, CADE METZ <span style="margin: 0 8px;">•</span> 2026-09-24</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="7月在上海舉行的世界人工智慧大會。中美兩國正陷入一場人工智慧競賽，雙方都認為這場競賽對在軍事、技術和經濟領域佔據上風至關重要。" height="700" src="https://static01.nyt.com/images/2026/09/22/multimedia/00dc-ai-china-04-kltq/00dc-ai-china-04-kltq-master1050.jpg" width="1050"/><figcaption><span>7月在上海舉行的世界人工智慧大會。中美兩國正陷入一場人工智慧競賽，雙方都認為這場競賽對在軍事、技術和經濟領域佔據上風至關重要。</span> <cite>Ng Han Guan/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is no shortage of issues on the table for possible discussion as President Trump prepares to welcome the Chinese leader, Xi Jinping, for a state visit beginning Wednesday evening, including the Iran war, Taiwan and tariffs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普總統將在週三晚間起迎接中國國家主席習近平進行國事訪問，屆時將有很多問題需要討論，包括伊朗戰爭、台灣和關稅問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But no topic has captured global fascination in recent weeks more than whether the two sides can reach any agreements around the pace of artificial intelligence development. The rapidly shifting debate about the risks of A.I. has so consumed Silicon Valley, Washington and, in recent days, the United Nations that some observers have likened the U.S.-China summit to a Cold War tête-à-tête during the nuclear arms race.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在最近幾週，沒有任何話題比雙方能否就人工智慧的發展速度達成共識更令全球關注。關於人工智慧風險快速變化的辯論已徹底席捲矽谷和華盛頓，近日波及聯合國，以至於一些觀察家將此次美中峰會比作核軍備競賽期間的冷戰一對一會談。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though some see the stakes this week as nothing short of civilizational, the expectations for any serious accord remain low. The countries are locked in an A.I. race that both sides see as decisive to gaining the upper hand militarily, technologically and economically, and mutual suspicion runs deep, according to foreign policy analysts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管有人認為本週的博弈事關文明存亡，但人們對達成任何實質性協議的期望依然很低。外交政策分析人士表示，兩國正陷入人工智慧競賽，雙方都認為這場競賽將決定誰能在軍事、技術和經濟上佔據上風，而且雙方的相互猜疑根深蒂固。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Western experts generally estimate that the United States is somewhere around six months ahead of China in the A.I. race when it comes to its leading models. But that figure obscures the complex relationship between the two nations, further complicating efforts to reach agreement on how to address A.I. safety risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西方專家普遍估計，在人工智慧競賽中，就領先模型而言，美國領先中國約六個月左右。但這個數字掩蓋了兩國之間複雜的關係，進一步增加了就應對人工智慧安全風險達成共識的難度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here is a look at where the United States has the upper hand against China on A.I. and where it is lagging behind its top geopolitical rival.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是美國在人工智慧領域相對於中國的優勢所在，以及落後於其頭號地緣政治對手的領域。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="歷屆美國政府都實施了出口管制措施，限制了中國獲得高性能晶片的管道，其中包括英偉達生產的晶片。" data-src="https://static01.nyt.com/images/2026/09/09/multimedia/00dc-ai-china-01-kl/09biz-nvidia-probe-chip-kmjz-master1050.jpg" src="https://static01.nyt.com/images/2026/09/09/multimedia/00dc-ai-china-01-kl/09biz-nvidia-probe-chip-kmjz-master1050.jpg"/></div><figcaption><span>歷屆美國政府都實施了出口管制措施，限制了中國獲得高性能晶片的管道，其中包括英偉達生產的晶片。</span> <cite>Max A. Cherney/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Access to top-shelf computer chips is paramount.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>獲取頂級計算機晶片至關重要。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States has one undeniable advantage over China: computer chips. Most of the specialized chips used to build and operate A.I. technologies are designed by American companies. This includes the Silicon Valley chipmaker Nvidia, which is now the world’s most valuable company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相對於中國，美國有一個不可否認的優勢：計算機晶片。用於構建和運行人工智慧技術的大多數專用晶片都是由美國公司設計的，其中包括現在全球市值最高的公司——矽谷晶片製造商英偉達。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJajwsPRiJcDFTSP7gEd1Egfgw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The people who have made the fastest chips are here,” said Andrew Feldman, the chief executive of the Silicon Valley chipmaker Cerebras. “And they are not in China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「製造出最快晶片的人在這裡，」矽谷晶片製造商Cerebras的首席執行官安德魯·費爾德曼說。「他們不在中國。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past decade, three American presidential administrations have imposed export controls that limited Chinese access to powerful chips. Even as China works to evade these controls, Chinese A.I. researchers often say that chip shortages are the biggest obstacle they face.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去十年裡，三屆美國政府都實施了出口管制，限制中國獲取強大的晶片。儘管中國努力規避這些管制，但中國的人工智慧研究人員經常表示，晶片短缺是他們面臨的最大障礙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The leading Chinese companies have spent hundreds of millions of dollars to secure the chips they need. To bypass American export controls, they often buy remote access to data centers outside of China. Over the past year, this allowed China to shrink the performance gap between its systems and the leading American technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領先企業已經花費數億美元來獲取所需晶片。為了繞過美國的出口管制，他們經常購買對中國境外數據中心的遠程訪問權限。過去一年裡，這使得中國縮小了其系統與美國領先技術之間的性能差距。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, China is working to build its own chip-making industry. But by its own admission, Huawei, the telecommunications and electronics company that leads this effort, is still years away from producing chips that perform as well as those offered by Nvidia today.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國正在努力建立自己的晶片製造產業。但引領這一努力的電信和電子公司華為也承認，距離生產出性能可與英偉達當前產品媲美的晶片仍需數年時間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese A.I. companies say they are already using chips from Huawei, but these chips are unlikely to provide much help in building cutting-edge technologies. Less-powerful chips are typically used to serve technologies to users across the internet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國人工智慧公司表示，他們已經在使用華為的晶片，但這些晶片不太可能為構建尖端技術提供太多幫助。性能較弱的晶片通常用於通過互聯網向用戶提供技術服務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even with help from Huawei, Chinese A.I. companies like Moonshot have struggled to find the additional chips they need to meet demand.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">即使有華為的幫助，像月之暗面這樣的中國人工智慧公司仍難以找到滿足需求的額外晶片。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COy2wsPRiJcDFZIuRAgdtXEutA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>As Americans sour on A.I., China faces fewer headwinds politically.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>美國人對人工智慧日益感到反感，中國在政治上面臨的阻力較小。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Public polling in the United States shows that A.I. has become increasingly unpopular over the past year — so much so that it has now become a key issue in the midterm elections. Many Americans are worried about A.I. threatening their jobs, undermining education and, more recently, posing a threat to humanity. A Pew Research Center poll this week found that 60 percent of Americans were uncomfortable with a new local data center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的民意調查顯示，人工智慧在過去一年裡變得越來越不受歡迎——以至於它現在已成為期中選舉的一個關鍵議題。許多美國人擔心人工智慧會威脅他們的工作、破壞教育，而最近更擔心它會對人類構成威脅。皮尤研究中心本週的一項民調發現，60%的美國人對新建本地數據中心感到不安。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Though Mr. Trump has dismissed calls for an A.I. slowdown as a “hoax,” a growing number of Republican and Democratic lawmakers, governors and 2028 presidential hopefuls are scrambling to offer a wide range of proposals seeking to regulate the technology after disclosures about rogue A.I. agents hacking into other companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管川普將放緩人工智慧發展的呼籲斥為「騙局」，但在有關失控的人工智慧智能體駭客入侵其他公司的事件曝光後，越來越多的共和黨及民主黨議員、州長以及2028年總統大選的有望參選者，正爭先恐後地提出各種提案，試圖對這項技術進行監管。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By nature of its centralized systems, China does not need to contend with a boisterous public debate about how or whether to rein in A.I. And though polling in China can be dubious, surveys consistently point to more enthusiasm for its adoption.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於中國實行集中式管理體制，因此無需面對是否以及如何限制人工智慧的激烈公眾辯論。而且，儘管中國的民意調查可能值得懷疑，但各項調查始終顯示，公眾對採用人工智慧的態度更為積極。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese citizens broadly appear to be much more optimistic about A.I. — and in fact are some of the most hopeful about the technology in the entire world, according to a KPMG survey of 47 countries last year. Some 69 percent of people in China said the technology’s benefits outweighed its risks, compared with just 35 percent of Americans who agreed. The technology is also more embedded in day-to-day life, including service robots in hotels and restaurants, as well as medical chatbots at hospitals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國公民似乎普遍對人工智慧要樂觀得多——事實上，根據畢馬威去年對47個國家進行的一項調查，他們是全世界對該技術抱有最大希望的人群之一。約69%的中國人表示，這項技術的好處大於風險，相比之下，持相同觀點的美國人僅佔35%。這項技術也更多地融入了日常生活，包括酒店和餐廳的服務機器人，以及醫院的醫療聊天機器人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The U.S. economy has so far been more resilient to huge investments in A.I.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>到目前為止，美國經濟在面對人工智慧領域的巨額投資時表現出了更強的韌性。</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKjjwsPRiJcDFdA5RAgd8oAXVg" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another advantage for the United States is that its economy has been more resilient during the A.I. boom. Stock indexes are near record highs, and worries of an A.I. bubble also have so far not materialized. Fears of job losses prompted by the technology proliferating throughout corporate America have yet to really appear in economic data.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國的另一個優勢是，在人工智慧熱潮期間，其經濟更具韌性。股票指數接近歷史高點，對人工智慧泡沫的擔憂迄今也未成為現實。儘管這項技術正在美國企業界廣泛普及，但由此引發的失業擔憂尚未在經濟數據中真正顯現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are some signs that A.I. is contributing to slower wage growth in jobs most exposed to the technology and fewer job openings, especially for young workers. And applying to jobs, especially for entry-level workers, has become even more daunting thanks to A.I. being used to either write résumés or screen applicants. But overall, the economic distress directly linked to A.I. has been far less than many economists predicted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有一些跡象表明，人工智慧正在導致受其影響最大的行業的工資增長放緩，職位空缺減少，尤其對年輕求職者而言更是如此。此外，由於人工智慧被用於撰寫簡歷或篩選申請人，求職過程變得更加艱難，尤其是對初級職位的求職者而言。但總體而言，與人工智慧直接相關的經濟困境遠小於許多經濟學家的預測。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, the story is different. Its economic struggles, including high youth unemployment, consumer pullback on spending and a deflationary spiral, threaten to undercut Beijing’s vast investments in A.I. Chinese economists have recently issued warnings that the economy is vulnerable and potentially being made more precarious because of the country’s A.I.-centered allocation of spending.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，情況則有所不同。其經濟困境——包括青年高失業率、消費者削減開支和通貨緊縮螺旋——有可能削弱北京在人工智慧領域的巨額投資。中國經濟學家最近發出警告稱，經濟本就脆弱，且可能因為以人工智慧為中心的財政支出配置而變得更加岌岌可危。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週二，在北京舉辦的面向信息技術行業的展會中國國際信息通信展上，一款機器人成為焦點。" data-src="https://static01.nyt.com/images/2026/09/22/multimedia/00dc-ai-china-01-kltq/00dc-ai-china-01-kltq-master1050.jpg" src="https://static01.nyt.com/images/2026/09/22/multimedia/00dc-ai-china-01-kltq/00dc-ai-china-01-kltq-master1050.jpg"/></div><figcaption><span>週二，在北京舉辦的面向信息技術行業的展會中國國際信息通信展上，一款機器人成為焦點。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The nature of A.I. models in the U.S. and China are drastically different.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>美中兩國人工智慧模型的性質截然不同。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, the leading artificial intelligence companies, including OpenAI and Anthropic, maintain tight control over how their technologies are used. They build elaborate guardrails, hoping to prevent users from spreading disinformation or hacking into computer networks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國， OpenAI和Anthropic等領先人工智慧公司對其技術的使用方式實施嚴格管控。它們建立了周密的防護機制，希望防止用戶傳播虛假信息或入侵計算機網路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As concern mounts over the risks of A.I., these companies are calling for federal regulations that would toughen this approach. They say the government should review their A.I. technologies before release to ensure that the proper guardrails are in place — and many policymakers, lawmakers and pundits agree.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著對人工智慧風險擔憂的加劇，這些公司呼籲制定聯邦法規，以強化這種做法。他們表示，政府應在人工智慧技術發布前進行審查查，以確保適當的防護措施到位——許多政策制定者、立法者和專家對此表示同意。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLTuwsPRiJcDFYcGvAEdNJ4FBg" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the leading Chinese companies take a different stance. Companies like DeepSeek, Moonshot and Z.ai typically make their most powerful technologies “open source,” meaning anyone is free to use and modify these systems as they see fit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國領先的公司採取不同的立場。像深度求索、月之暗面和智譜AI這樣的公司通常將其最強大的技術「開源」，這意味著任何人都可以自由地根據需要使用和修改這些系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Open source has driven the development of computer software, the internet and artificial intelligence for decades. The idea is that technology advances faster when its computer code is freely available for anyone to examine, use and improve upon.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾十年來，開源一直推動著計算機軟體、互聯網和人工智慧的發展。其理念是，當計算機代碼可供任何人自由查閱、使用和改進時，技術進步會更快。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In open-sourcing their technologies, Chinese companies can essentially combine their resources and accelerate their efforts. And if U.S. regulators stifle the progress of American open-source projects — as some lawmakers are suggesting they should — China could gain a significant edge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過開源其技術，中國企業實際上可以整合其資源，加速研發進程。而且，如果美國監管機構扼殺美國開源項目的進展——正如一些立法者建議的那樣——中國可能會獲得重大優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the best open-source systems come from China, many experts contend, developers across the globe will build atop Chinese technologies. This is already starting to happen, even in Silicon Valley.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多專家認為，如果最好的開源系統來自中國，全球各地的開發者將基於中國技術進行開發。這種情況已經開始發生，甚至在矽谷也是如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These models are still rough around the edges, but there are tasks where they are on par with the leading American systems,” said Rehaan Ahmad, a co-founder of the Silicon Valley start-up alphaXiv, who has used the latest Chinese technologies for the past several months.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這些模型在細節上仍顯粗糙，但在某些任務上，它們與領先的美國系統不相上下，」矽谷初創公司alphaXiv的聯合創始人雷漢·艾哈邁德說，他在過去幾個月裡一直在使用最新的中國技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anyone can use these open-source technologies for malicious purposes, including, most notably, cyberattacks. But security experts say this is balanced by another phenomenon: Anyone can use the same technologies to defend against malicious attacks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">任何人都可以將這些開源技術用於惡意目的，其中最引人注目的是網路攻擊。但安全專家表示，另一種現象抵消了這一風險：任何人都可以使用相同的技術來防禦惡意攻擊。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CKqrw8PRiJcDFUw8RAgdtukvtg" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>China could move ahead on electric power.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>中國在電力領域可能取得領先。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some believe that if China can build a viable chip industry, it could race ahead of the United States because of an advantage it has developed in another area: electrical power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些人認為，如果中國能建立起一個可行的晶片產業，它可能會超越美國，因為它在另一個領域發展了優勢：電力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Packed into giant data centers by the thousands, the leading chips require enormous amounts of electricity. They need so much electrical power, the big U.S. companies cannot get what they need from the existing power grid. Increasingly, they are turning to wind power or nuclear or even gas turbines installed alongside their data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">成千上萬的領先晶片密集部署在巨型數據中心內，消耗著巨大的電能。它們需要的電力如此之多，以至於美國大公司無法從現有的電網中獲得所需的一切。它們日益轉向風能或核能，甚至在數據中心旁邊安裝燃氣輪機。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“At a fundamental level, the tech industry is trying to convert electricity into intelligence,” said Mr. Feldman, the Cerebras chief executive. “It’s like a Dr. Seuss machine. In goes chips and power — and out comes intelligence.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「從根本上說，科技行業正試圖將電力轉化為智能，」Cerebras首席執行官費爾德曼說。「這就像一台蘇斯博士筆下的機器。一邊輸入晶片和電力，另一邊輸出智能。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Although the United States has a significant edge in terms of chips, Mr. Feldman said, he believes that China could pull ahead because it has spent years rebuilding its electrical grid. “That is going to be a huge asset,” he said. “Our grid is 1950s technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">費爾德曼表示，儘管美國在晶片方面擁有顯著優勢，但他認為中國有可能後來居上，因為它花了數年時間重建電網。「這將是一筆巨大的資產，」他說。「我們的電網還是20世紀50年代的技術。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>China leads in producing A.I. talent.</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>中國在培養人工智慧人才方面處於領先地位。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As far back as 2024, studies showed that by some metrics, China had eclipsed the United States as the biggest producer of A.I. talent, generating almost half of the world’s leading researchers. By comparison, only about 18 percent came from the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">早在2024年，研究就表明，按照某些指標，中國已經超過美國，成為最大的人工智慧人才出產國，培養了世界上近一半的領先研究人員。相比之下，只有約18%來自美國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers born and educated in China have for years played major roles inside leading U.S. artificial intelligence labs. And as newer studies have shown, they continue to drive important A.I. research across American industry and academia. But a growing number of them now stay in China, working for companies like Moonshot, Z.ai and DeepSeek.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出生在中國、並在中國接受教育的研究人員多年來一直在美國頂尖的人工智慧實驗室中發揮著重要作用。較新的研究表明，他們繼續推動著整個美國工業界和學術界的重要人工智慧研究。但如今，他們當中越來越多的人選擇留在中國，為月之暗面、智譜AI和深度求索等公司工作。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Dustin Volz為時報撰寫網路安全和情報方面的文章，他常駐華盛頓。</p><p class="cn-p">Cade Metz是時報記者，撰寫有關人工智慧、無人駕駛汽車、機器人、虛擬現實和其他新興技術領域的報導。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260924/ai-us-china-trump-xi-economy/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

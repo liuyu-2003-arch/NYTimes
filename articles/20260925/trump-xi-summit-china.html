@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>川普與習近平會談 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">川普與習近平會談</h1>
+    <h2 class="en-headline">Here’s the latest.</h2>
+    <div class="meta-line">ZOLAN KANNO-YOUNGS, DAVID E. SANGER, ANTON TROIANOVSKI <span style="margin: 0 8px;">•</span> 2026-09-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/09/24/multimedia/24trump-xi-carousel-fpkq/24trump-xi-carousel-fpkq-master1050-v2.jpg" width="1050"/><figcaption><span></span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump is set to host President Xi Jinping of China for a state dinner at the White House on Thursday night, continuing a landmark summit that has been heavy on pomp and platitudes. The guest list for the dinner includes several high-profile American executives, particularly in the tech sector, and the three-course menu will emphasize American ingredients with a “subtle Chinese influence.”<div class="" data-poster=""></div></div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四晚間，川普總統將在白宮為中國國家主席習近平舉行國宴，繼續這場充滿盛大儀式和空洞言辭的里程碑式峰會。出席晚宴的嘉賓包括多位美國知名企業高管，尤其是科技行業領袖。三道菜式的國宴菜單將以美國食材為主，並「巧妙融入中國元素」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Earlier on Thursday, Mr. Trump and Mr. Xi met for roughly three hours at the White House. They struck different tones in their joint remarks before meetings that were not expected to produce significant agreements. Mr. Trump emphasized their “truly great friendship,” while Mr. Xi was less personal, focusing more on matters of geopolitics, including Chinese companies’ access to the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四早些時候，川普總統和習近平主席在白宮會晤了約三個小時。會晤前，兩人發表了聯合講話，但語氣截然不同。外界普遍預期此次會晤不會達成任何重大協議。川普強調了兩人之間「真正偉大的友誼」，習近平則沒有那麼個人化，而是更多關注地緣政治問題，包括中國企業進入美國市場等問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The interests of China and the United States are deeply intertwined,” Mr. Xi said. The two nations, he said, must avoid the “Thucydides trap” — the theory that a rising power and an established power are likely to go to war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中美兩國利益深度交融，」習近平說。他表示，兩國必須避免「修昔底德陷阱」——即新興大國和老牌強國可能會爆發戰爭的理論。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/09/24/multimedia/24trump-xi-ru-garden-khtw/24trump-xi-ru-garden-khtw-master1050.jpg" src="https://static01.nyt.com/images/2026/09/24/multimedia/24trump-xi-ru-garden-khtw/24trump-xi-ru-garden-khtw-master1050.jpg"/></div><figcaption><span></span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi, who announced that China would soon be sending two pandas to the Atlanta zoo, left the White House after a visit that lasted more than three hours and included a tour of Mr. Trump’s construction projects on the grounds. After leading Mr. Xi past the site of the massive ballroom he has said was at least partly inspired by a grand hall in Beijing, Mr. Trump called the Chinese leader “an expert on stone, among many other things.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平宣布，中國將很快向亞特蘭大動物園贈送兩隻大熊貓。他在白宮停留了三個多小時，期間參觀了川普總統在白宮的多個建設項目。在帶習近平走過一個大型宴會廳現場後，川普稱讚這位中國領導人「精通石材，以及其他諸多領域」。川普曾表示該宴會廳的設計至少部分靈感來源於北京的人民大會堂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi and his wife are expected to return to the White House at 6:45 p.m. for the dinner. The guests are expected to include Jeff Bezos; Elon Musk; Michael Dell; Sundar Pichai of Google; Jensen Huang of Nvidia; Sam Altman of OpenAI; Tim Cook of Apple; and Jane Fraser of Citigroup, according to a Trump administration official who previewed the guest list on the condition of anonymity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平及彭麗媛將在晚間6:45分返回白宮參加晚宴。據一位提前了解了嘉賓名單的匿名川普政府官員透露，預計出席嘉賓包括：傑夫·貝佐斯；伊隆·馬斯克；麥可·戴爾；谷歌的桑達爾·皮查伊；英偉達的黃仁勛；OpenAI 的薩姆·奧特曼；蘋果的蒂姆·庫克；以及花旗集團的簡·弗雷澤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The White House visit, Mr. Xi’s first in more than a decade, opened with elaborate ceremonies involving hundreds of U.S. military personnel and a B-2 stealth bomber flyover. On Thursday evening, Mr. Trump is set to host a state dinner in Mr. Xi’s honor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><h4></h4>這次白宮之行是習近平十餘年來的首次到訪，行程以精心設計的儀式拉開帷幕，數百名美國軍人參與歡迎儀式，一架B-2隱形轟炸機飛越現場。週四晚間，川普將為習近平舉辦國宴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But expectations are low for breakthroughs in resolving any of the major tensions between the world’s two most powerful countries. Those include a shaky trade-war truce, the fate of Taiwan, a risky A.I. race and China’s support for Iran and for Russia’s war against Ukraine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但對於這兩個世界上最強大國家能否在任何重大矛盾方面取得突破，外界的期望並不高。其中包括不穩定的貿易戰休戰、台灣的命運、人工智慧競爭的風險，以及中國對伊朗以及俄羅斯戰爭的支持。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="" data-src="https://static01.nyt.com/images/2026/09/24/multimedia/24trump-xi-carousel-wbmp/24trump-xi-carousel-wbmp-master1050.jpg" src="https://static01.nyt.com/images/2026/09/24/multimedia/24trump-xi-carousel-wbmp/24trump-xi-carousel-wbmp-master1050.jpg"/></div><figcaption><span></span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a sign of the incremental nature of the two countries’ negotiations, Treasury Secretary Scott Bessent said late Wednesday that the United States and China had agreed to extend a one-year trade truce by two months, to Jan. 10. It had been due to expire Nov. 10.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國財政部長史考特·貝森特於週三晚間表示，美中已同意將為期一年的貿易停火協議延長兩個月，至1月10日。該協議原定於11月10日到期。這體現了兩國之間談判的漸進性質。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nor do experts expect much headway on artificial intelligence safety issues, despite American complaints about Chinese A.I. practices and even though some of America’s biggest tech titans have been invited to the dinner Thursday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管美國對中國的人工智慧行業做法有所抱怨，但專家們也不認為兩國會在人工智慧安全問題上取得太大進展。儘管一些美國最大的科技巨頭已被邀請參加週四的晚宴。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJ29g73RiJcDFRLL_QUdUvwokw" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi, for his part, could take advantage of Mr. Trump’s efforts to maintain a good relationship by pressing him to continue delaying arms sales to Taiwan.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就習近平而言，他可能會利用川普維護良好關係的努力向其施壓，要求他繼續推遲對台灣的軍售。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here’s what else to know:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是其他需要了解的內容：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• <strong>First lady:</strong> Melania Trump is scheduled to take Mr. Xi’s wife, Peng Liyuan, to the Smithsonian National Museum of Asian Art after Thursday’s arrival ceremony. On Friday, the women will join their husbands for tea in the Red Room of the White House and for a tour of the National Archives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>• 第一夫人：</b>梅拉尼婭·川普計劃在週四的歡迎儀式後陪同習近平的夫人彭麗媛前往史密森尼國家亞洲藝術博物館。週五，兩位夫人將陪同他們的丈夫在白宮紅廳共進下午茶，並參觀國家檔案館。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• <strong>Americans detained:</strong> The families of two Americans listed by the U.S. government as wrongfully detained in China are urging Mr. Trump to press Mr. Xi for their release. They are Youlin Chen, a seismologist who was detained and accused of spying while visiting relatives in Beijing in 2024, and U Min Zin, a political scientist who was arrested in June while visiting southwest China to attend a conference at the invitation of the Chinese government. </div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>• 被拘押的美國人：</b>被美國政府列為在中國被錯誤拘押的兩名美國人的家屬正敦促川普向習近平施壓，促成他們的釋放。兩人分別是陳友麟，一位於2024年在北京探親時被拘押並被指控從事間諜活動的地質學家；以及敏辛，一位於6月受中國政府邀請前往中國西南地區參加會議時被逮捕的政治學家。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260925/trump-xi-summit-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
