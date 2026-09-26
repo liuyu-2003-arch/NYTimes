@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聚焦中美元首峰會 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">聚焦中美元首峰會</h1>
+    <h2 class="en-headline">Flyovers, Pandas and Pomp Masked Divides in U.S.-China Summit</h2>
+    <div class="meta-line">ZOLAN KANNO-YOUNGS <span style="margin: 0 8px;">•</span> 2026-09-25</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週四，習近平和彭麗媛在白宮進行國事訪問期間與川普和梅拉尼婭合影。" height="700" src="https://static01.nyt.com/images/2026/10/24/multimedia/24dc-prexy-pjmv/24dc-prexy-pjmv-master1050.jpg" width="1050"/><figcaption><span>週四，習近平和彭麗媛在白宮進行國事訪問期間與川普和梅拉尼婭合影。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"> President Trump said he had “never gotten along better” with President Xi Jinping of China on Thursday during a day of military flyovers, gifts of pandas and lavish ceremonies that masked significant divides over artificial intelligence and trade.“President Xi and I both understand that we represent different systems but the ties between our people endure,” Mr. Trump said at the start of the state dinner with Mr. Xi at the White House. “Together we can continue to build a relationship that promotes prosperity and security for future generations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，川普總統表示，他與中國國家主席習近平「關係從未如此融洽」。這一天充滿了軍機飛行表演、贈送大熊貓和盛大儀式，掩蓋了雙方在人工智慧和貿易方面的重大分歧。「習近平主席和我都明白，我們代表著不同的制度，但我們兩國人民之間的紐帶歷久彌堅，」川普在白宮與習近平的國宴開始時說。「我們可以共同繼續建立一種關係，促進子孫後代的繁榮與安全。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The flattery capped a day in which Mr. Trump appeared focused on growing a personal relationship with Mr. Xi to strengthen ties between the two nations, while Mr. Xi at times was more pointed on the challenges before them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這番恭維為當天畫上了句號。在這一天裡，川普似乎專注於發展與習近平的個人關係，以加強兩國之間的聯繫，而習近平則有時更為直截了當地指出雙方面臨的挑戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After arriving to the White House earlier in the day, Mr. Xi warned that the two countries should avoid the “Thucydides Trap,” the theory that a rising power and an established power are likely to go to war.“We do not need to avoid mentioning competition, but our competition should be a healthy one and should be kept within bounds,” Mr. Xi said. “It should be a race of catching up with one another, not a wrestle in which one either wins or loses. China and the United States must hold the line of no conflict and no confrontation between us."</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在當天早些時候抵達白宮後，習近平警告說，兩國應避免「修昔底德陷阱」——這一理論認為，新興大國和老牌強國之間很可能會走向戰爭。「中美不必諱言競爭，但競爭應該是良性的，有邊界的，」習近平說。「應該是你追我趕的賽跑，而不是你輸我贏的角斗。中美雙方必須守住不衝突、不對抗的底線。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two leaders did appear to broach pressing issues behind the scenes. Mr. Trump said they planned on discussing security and “super intelligence,” his attempt at rebranding artificial intelligence, technology that has spurred global concern in recent weeks. In their private meeting, the two leaders also deliberated trade, Taiwan, the Middle East and Russia’s war in Ukraine, according to the official Chinese summary of talks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩位領導人似乎確實在幕後探討了緊迫問題。川普表示，他們計劃討論安全和「超級智能」 (super intelligence)——這是他為人工智慧重新命名的嘗試，這項技術在最近幾週引發了全球擔憂。根據中方關於會談的官方摘要，在閉門會議中，兩位領導人還商討了貿易、台灣、中東以及俄羅斯在烏克蘭的戰爭等問題。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CL7yhcqUi5cDFZs-RAgdUl4orQ" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, the two nations agreed to extend a shaky trade truce — that eased an intensifying trade war — by two months past a November deadline. But there was little sign of other policies that came about from the pomp and circumstance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，兩國同意將一項搖搖欲墜的貿易休戰協議在11月的截止日期之後再延長兩個月，該休戰曾緩解了兩國日益加劇的貿易戰。但在這場盛大的儀式中，幾乎看不到取得其他政策成果的跡象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi, in public at least, went further than Mr. Trump on the issue of artificial intelligence. During his opening remarks at the White House, Mr. Xi said he wanted to ensure A.I. was “always under human control.” Mr. Trump has called fears about A.I. leading to mass extinction a “hoax.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">至少在公開場合，習近平在人工智慧問題上的表態比川普走得更遠。在白宮的開場致辭中，習近平表示希望確保人工智慧「始終受控於人」。而川普則將對人工智慧導致大規模滅絕的擔憂稱為「騙局」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="川普以自己的個人外交風格為傲，儘管中美之間存在競爭，但他仍對習近平給予了熱情接待。" data-src="https://static01.nyt.com/images/2026/10/24/multimedia/24dc-prexy-mtjf/24dc-prexy-mtjf-master1050.jpg" src="https://static01.nyt.com/images/2026/10/24/multimedia/24dc-prexy-mtjf/24dc-prexy-mtjf-master1050.jpg"/></div><figcaption><span>川普以自己的個人外交風格為傲，儘管中美之間存在競爭，但他仍對習近平給予了熱情接待。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump, who prides himself on his personal brand of diplomacy, has extended his hand to Mr. Xi, despite the rivalry between the United States and China. Mr. Trump accused China this summer of “sinister election meddling” in the 2020 election. And Beijing has shown no signs of retreating from its business dealings with Tehran since the U.S. and Israeli war against Iran began this year.Since the start of the war, Chinese companies have even provided Tehran with satellite imagery, and access to a spy satellite, that Iran’s military forces have used to mount attacks in the region, according to multiple U.S. officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普以自己的個人外交風格為傲，儘管中美之間存在競爭，他仍向習近平示好。今年夏天，川普曾指責中國在2020年大選中進行了「陰險的選舉干預」。此外，自今年美以對伊朗發動戰爭以來，北京沒有表現出任何跡象，要從與德黑蘭的商業往來中退出。多位美國官員表示，自戰爭爆發以來，中國公司甚至向德黑蘭提供了衛星圖像和一顆間諜衛星的訪問權限，伊朗軍隊利用該衛星在該地區發動了襲擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There is little sign that China had made good on a promise made during Mr. Trump’s visit with Mr. Xi in Beijing earlier this year to sharply increase its purchases of American agriculture products.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾乎沒有跡象表明中國兌現了今年早些時候川普在北京與習近平會面時做出的大幅增加購買美國農產品的承諾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Mr. Trump, who once criticized the Obama administration for hosting Mr. Xi, appeared particularly focused on playing the part of host rather than rival.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普曾對歐巴馬政府接待習近平做出批評，但此次他似乎格外專注於扮演東道主而非競爭對手的角色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“In return for China breaking nearly every trade promise it has made, Trump is rolling out the red carpet for President Xi,” said Senator Ron Wyden, Democrat of Oregon. “There is no evidence that Trump is using this opportunity to push back on the Chinese government policies that hurt our workers and businesses, from forced labor to state subsidies. Donald Trump is giving away the store to China and leaving American families with the bill.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國幾乎違背了它做出的所有貿易承諾，作為回報，川普卻為習近平主席鋪上了紅毯，」奧勒岡州民主党參議員榮恩·懷登表示。「沒有證據表明川普正在利用這個機會反擊從強迫勞動到國家補貼這些損害我們工人和企業利益的中國政府政策。唐納德·川普正在向中國大肆讓步，卻讓美國家庭來買單。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="COvwhcqUi5cDFZ0ERAgdLyAufA" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, Mr. Trump went to Joint Base Andrews to greet Mr. Xi, breaking from the usual tradition of greeting world leaders at the White House. He presented him with an honor guard ceremony in the Rose Garden featuring a military flyover of a B2 bomber and F-22 jets. He then gave Mr. Xi a tour of his new helipad on the White House grounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，川普打破了總統通常在白宮迎接世界領導人的傳統，前往安德魯斯聯合基地迎接習近平。他在玫瑰園為習近平舉行了儀仗隊歡迎儀式，其中包括B-2轟炸機和F-22戰機的軍機飛行表演。隨後，他帶習近平參觀了白宮內新建的直升機停機坪。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump later hosted Mr. Xi for a state dinner in the East Room with Chinese officials, G.O.P. donors and a number of high-profile executives, including Jeff Bezos, Jensen Huang and Elon Musk. Rather than speak about artificial intelligence, Mr. Trump appeared to break from his scripted remarks to direct Mr. Xi to one of the points of pride of his second term.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">之後，川普在東廳為習近平舉行了國宴，中國官員、共和黨捐助者以及傑夫·貝佐斯、黃仁勛和伊隆·馬斯克等眾多知名高管出席了晚宴。川普並未談及人工智慧，他似乎偏離了預先準備的講稿，向習近平重點介紹了其第二任期內一個引以為豪的成就。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s one year away from complete, the new ballroom that you’ve heard about,” Mr. Trump said. “And you will see something that I think you will really love.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「你聽說過的那個新宴會廳，距離完工還有一年，」川普說。「到時候你會看到一些我認為你肯定非常喜歡的東西。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi came with gifts. He announced China would be sending two pandas to the Atlanta zoo.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平帶來了禮物。他宣布中國將向亞特蘭大動物園贈送兩隻大熊貓。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週三，川普前往安德魯斯聯合基地迎接習近平，這打破了總統通常在白宮迎接世界各國領導人的慣例。" data-src="https://static01.nyt.com/images/2026/10/24/multimedia/24dc-prexy-qphl/24dc-prexy-qphl-master1050.jpg" src="https://static01.nyt.com/images/2026/10/24/multimedia/24dc-prexy-qphl/24dc-prexy-qphl-master1050.jpg"/></div><figcaption><span>週三，川普前往安德魯斯聯合基地迎接習近平，這打破了總統通常在白宮迎接世界各國領導人的慣例。</span> <cite>Kenny Holston/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a Truth Social post, Mr. Trump said the day was a made-for-TV moment. But it was missing a crucial component. Major television networks declined to provide shared footage of the events after Mr. Trump blocked CNN, MS NOW and Politico from the White House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在Truth Social的一篇帖文中，川普稱這一天堪稱為電視量身定做的時刻。但卻缺少了一個關鍵要素。在川普禁止CNN、MS NOW和Politico進入白宮後，各大電視網拒絕提供這些活動的共享畫面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Reporters from those outlets had their access restored around midday, but the TV pool remained suspended. The networks had indicated that they would not resume coverage following the president until the White House had formally agreed to allow CNN to participate once again in the pool.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些媒體的記者在中午前後恢復了入場權限，但電視聯合採訪團仍處於停擺狀態。各大電視網曾表示，除非白宮正式同意讓CNN再次參與電視聯合採訪團，否則不會恢復對總統的跟拍報導。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CPCNhsqUi5cDFbU5RAgdpNU22Q" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A crowd of Chinese state media workers were, however, allowed onto the White House grounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，一群中國官方媒體工作人員卻被允許進入白宮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After Mr. Trump’s toast at the state dinner, Mr. Xi selectively recited the history of the two countries, choosing to ignore the worst moments of the Cold War but rather invoke President Richard Nixon’s rapprochement with Beijing in 1972. The message to Trump appeared to be that he, too, had an opportunity to re-establish ties with China, though on Beijing’s terms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普於國宴上致祝酒辭後，習近平選擇性地回顧了兩國的歷史，他選擇忽略冷戰最糟糕的時刻，而是提到理查德·尼克森總統在1972年與北京的破冰和解。這向川普傳遞的信息似乎是，他也有機會重新建立與中國的關係，儘管是按照北京的條件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Such a friendship, forged in blood and fire,” he said, “will surely live on through the generations.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這份血與火鍛造的友誼，」習近平說，「必將世代相傳。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">David E. Sanger、Anton Troianovski、David Pierson、Erica L. Green和儲百亮(Chris Buckley)對本文有報導貢獻。</p><p class="cn-p">Zolan Kanno-Youngs是《紐約時報》白宮記者，報導川普總統及其政府新聞。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20260925/trump-xi-us-china-summit/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
