@@ -378,7 +378,7 @@
 
     async function loadArticles() {
         try {
-            const response = await fetch(`articles.json?t=${new Date().getTime()}`);
+            const response = await fetch('articles.json');
             if (!response.ok) throw new Error('Failed to load articles.json');
             allArticles = await response.json();
 
@@ -389,7 +389,8 @@
             renderPage();
         } catch (error) {
             console.error(error);
-            document.getElementById('loading').innerHTML = 'Error loading content.<br>Please ensure <b>articles.json</b> exists.';
+            const loading = document.getElementById('loading');
+            loading.textContent = 'Unable to load articles.json.';
         }
     }
 
@@ -461,7 +462,10 @@
         list.innerHTML = '';
 
         if (filteredArticles.length === 0) {
-            list.innerHTML = `<div class="no-results">No articles found matching your criteria.</div>`;
+            const noResults = document.createElement('div');
+            noResults.className = 'no-results';
+            noResults.textContent = 'No articles found matching your criteria.';
+            list.replaceChildren(noResults);
             pagination.style.display = 'none';
             return;
         }
@@ -474,16 +478,35 @@
 
         pageItems.forEach(article => {
             const li = document.createElement('li');
-            li.innerHTML = `
-                    <a href="${article.url}">
-                        <div class="article-title-cn">${article.title_cn}</div>
-                        ${article.title_en ? `<div class="article-title-en">${article.title_en}</div>` : ''}
-                        <div class="article-meta">
-                            <span class="tag">${isNew(article.date) ? 'NEW' : 'ARCHIVE'}</span>
-                            <span class="date">${article.date}</span>
-                        </div>
-                    </a>
-                `;
+            const link = document.createElement('a');
+            link.href = article.url;
+
+            const cnTitle = document.createElement('div');
+            cnTitle.className = 'article-title-cn';
+            cnTitle.textContent = article.title_cn;
+            link.appendChild(cnTitle);
+
+            if (article.title_en) {
+                const enTitle = document.createElement('div');
+                enTitle.className = 'article-title-en';
+                enTitle.textContent = article.title_en;
+                link.appendChild(enTitle);
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'article-meta';
+
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.textContent = isNew(article.date) ? 'NEW' : 'ARCHIVE';
+
+            const date = document.createElement('span');
+            date.className = 'date';
+            date.textContent = article.date;
+
+            meta.append(tag, date);
+            link.appendChild(meta);
+            li.appendChild(link);
             list.appendChild(li);
         });
 

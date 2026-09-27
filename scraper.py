@@ -1,13 +1,17 @@
-import time
 import re
 import os
 import datetime
 import html
 import json
+import shutil
+import tempfile
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from urllib.parse import urljoin
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -16,9 +20,26 @@ TEMPLATE_FILE = 'article_template.html'
 ARTICLES_DIR = 'articles'
 JSON_DB_FILE = 'articles.json'
 HOME_URL = "https://nytimes.324893.xyz"
+ARTICLE_BODY_SELECTOR = ".article-body, section[name='articleBody'], article, main"
 
 # [重要] 设为 True 会强制重新下载并覆盖所有文章（建议设为 True 运行一次以修复现有文章的重复问题）
 FORCE_UPDATE = os.getenv('FORCE_UPDATE', 'False') == 'True'
+
+
+def atomic_write_text(path, content):
+    directory = os.path.dirname(path) or '.'
+    os.makedirs(directory, exist_ok=True)
+    fd, temp_path = tempfile.mkstemp(dir=directory, prefix='.tmp-', text=True)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as file:
+            file.write(content)
+        os.replace(temp_path, path)
+    except Exception:
+        try:
+            os.unlink(temp_path)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 def get_driver():
@@ -34,7 +55,10 @@ def get_driver():
     chrome_options.add_experimental_option('useAutomationExtension', False)
 
     try:
-        service = Service(ChromeDriverManager().install())
+        driver_path = shutil.which('chromedriver')
+        if not driver_path:
+            driver_path = ChromeDriverManager().install()
+        service = Service(driver_path)
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
     except Exception as e:
@@ -162,8 +186,8 @@ def rebuild_json_index():
 
     articles_data.sort(key=lambda x: x['date'], reverse=True)
 
-    with open(JSON_DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(articles_data, f, ensure_ascii=False, indent=2)
+    content = json.dumps(articles_data, ensure_ascii=False, indent=2) + '\n'
+    atomic_write_text(JSON_DB_FILE, content)
 
     print(f"Index rebuilt. Total articles: {len(articles_data)}")
 
@@ -173,23 +197,30 @@ def scrape_nytimes():
     template_content = load_template()
     if not template_content: return
 
+    driver = get_driver()
+    if not driver: return
+
+    try:
+        scrape_loaded_site(driver, template_content)
+    finally:
+        driver.quit()
+        rebuild_json_index()
+
+
+def scrape_loaded_site(driver, template_content):
     base_url = "https://cn.nytimes.com"
     homepage_url = f"{base_url}/zh-hant/"
     today_str = datetime.date.today().strftime("%Y-%m-%d")
     today_folder = today_str.replace('-', '')
 
-    driver = get_driver()
-    if not driver: return
-
-    try:
-        print(f"Fetching homepage: {homepage_url}")
-        driver.get(homepage_url)
-        time.sleep(5)
-        homepage_html = driver.page_source
-    except Exception as e:
-        print(f"Failed to load homepage: {e}")
-        driver.quit()
-        return
+    print(f"Fetching homepage: {homepage_url}")
+    driver.get(homepage_url)
+    WebDriverWait(driver, 15).until(
+        lambda current: current.execute_script(
+            "return document.readyState === 'complete'"
+        )
+    )
+    homepage_html = driver.page_source
 
     soup = BeautifulSoup(homepage_html, 'html.parser')
     all_links = soup.find_all('a')
@@ -236,7 +267,16 @@ def scrape_nytimes():
         bilingual_url = f"{clean_url}/zh-hant/dual/"
         try:
             driver.get(bilingual_url)
-            time.sleep(3)
+            WebDriverWait(driver, 20).until(
+                lambda current: current.execute_script(
+                    "return document.readyState === 'complete'"
+                )
+            )
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, ARTICLE_BODY_SELECTOR)
+                )
+            )
 
             if not is_valid_content(driver.page_source):
                 print("  -> Page invalid.")
@@ -257,7 +297,7 @@ def scrape_nytimes():
                 if h1_en: final_en = clean_text(h1_en.text)
 
                 if not final_en:
-                    parts = re.split(r'\s+[-–—]\s+', driver.title)
+                    parts = re.split(r'\s+[-–—]\s+', driver.title or '')
                     for p in parts:
                         p = clean_text(p)
                         if re.match(r'^[A-Za-z0-9\s:,\.\-\?\'"’]+$', p) and not is_brand_name(p):
@@ -304,16 +344,11 @@ def scrape_nytimes():
                     .replace('{{content}}', str(article_body)) \
                     .replace('{{url}}', bilingual_url)
 
-                with open(local_filepath, 'w', encoding='utf-8') as f:
-                    f.write(full_html)
+                atomic_write_text(local_filepath, full_html)
                 print(f"  -> Saved to {article_folder}/{local_filename}")
 
         except Exception as e:
             print(f"  -> Error: {e}")
-
-    driver.quit()
-    rebuild_json_index()
-
 
 if __name__ == "__main__":
     scrape_nytimes()
