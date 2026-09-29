@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國真的在竊取美國公司的人工智慧技術嗎？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國真的在竊取美國公司的人工智慧技術嗎？</h1>
+    <h2 class="en-headline">Is China Really Stealing A.I. From American Companies?</h2>
+    <div class="meta-line">CADE METZ <span style="margin: 0 8px;">•</span> 2026-09-29</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="智譜和月之暗面等中國公司與Anthropic和OpenAI的差距並不大。
+
+" height="700" src="https://static01.nyt.com/images/2026/09/26/multimedia/26sci-china-ai-distillation-ctmq/26sci-china-ai-distillation-ctmq-master1050.jpg" width="1050"/><figcaption><span>智譜和月之暗面等中國公司與Anthropic和OpenAI的差距並不大。 </span><cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For nearly two years, companies like Anthropic, OpenAI and Google have accused Chinese companies of unfairly copying their artificial intelligence technologies. As the Chinese leader Xi Jinping visits President Trump this week in Washington, these claims have become a flashpoint in their discussions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>近兩年來，Anthropic、OpenAI及谷歌等公司頻繁指責中國企業不公平地挪用其人工智慧技術。隨著中國國家主席習近平本週訪問華盛頓並與川普總統舉行會晤，這一指控已成為雙方會談的焦點問題之一。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Amid growing concern over the dangers of A.I., the leaders are expected to discuss the rapid rise of the technology, with many U.S. officials, tech executives and everyday people calling for a slowdown. American companies like Anthropic and OpenAI are leading the A.I. race, but Chinese start-ups like Z.ai and Moonshot are not far behind.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在外界對AI潛在風險的擔憂日益加劇之際，兩國領導人預計將就該技術的快速崛起展開討論；與此同時，眾多美國官員、科技高管及普通民眾紛紛呼籲放慢發展步伐。雖然Anthropic和OpenAI等美國企業在AI競賽中處於領先地位，但以</span>智譜和月之暗面為代表的中國初創企業同樣緊追不捨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the more contentious issues on the table is Silicon Valley’s repeated claim that Chinese companies are copying the leading American technologies using a technique called “distillation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雙方會談中最具爭議的議題之一是矽谷反覆提及的指控——即中國公司正利用一種叫做「蒸餾」的技術挪用美國領先的AI技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many experts say the claims from companies like Anthropic and OpenAI are overblown. “The narrative that all of the capabilities of the Chinese technologies coming from an Anthropic model is not as true as people say it is,” said Charles O’Neill, a head of model training at Baseten, a U.S. company that sells access to Chinese technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多專家指出，Anthropic與OpenAI等公司的上述說法有誇大之嫌。銷售中國技術接口服務的美國公司Baseten模型訓練負責人查爾斯·奧尼爾表示：「『中國技術的全部能力均源自Anthropic模型』這種說法遠非人們所傳的那樣屬實。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here is a guide to a niche technical process that has now become a geopolitical issue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本文意在解釋一個不為大眾所知的技術流程是如何成為一個地緣政治問題的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What exactly is distillation?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>什麼是蒸餾？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First developed in the early 2010s, distillation was initially a way for A.I. researchers to build more efficient technologies. Using this technique, they could collect data from an established system and use that data to build a new system able to run on less expensive hardware.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>蒸餾技術最早開發於2010年代初，是AI研究人員用於構建更高效技術的一種手段。通過該技術，研究人員可以從成熟系統中提取數據，並利用這些數據構建出能夠在更低成本硬件上運行的新系統。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Think of one model as the teacher and the other as a student,” Geoffrey Hinton, a former Google researcher who helped develop the technique, recently told The Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>曾參與開發該技術的谷歌前研究員傑弗里·辛頓此前在接受《紐約時報》採訪時解釋道：「可以把其中一個模型看作老師，另一個看作學生。」</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Companies still use distillation in this way. But more recently, the technique has also become a way for companies to collect data from technologies built by others.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今各家企業依然在沿用這種蒸餾手段。但近年來，該技術也演變成了企業從他人構建的技術中收集數據的一種途徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Basically, an outside company looking to distill a competitor’s system will set up many accounts on the competitor’s service, say Anthropic’s Claude or OpenAI’s GPT. The distilling company will then assign those systems to particular tasks, such as computer coding or mathematics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">簡而言之，意圖蒸餾競爭對手系統的外部公司會在對方的服務（如Anthropic的Claude或OpenAI的GPT）上註冊大量帳戶，隨後將這些系統指定用於特定的任務，例如計算機編程或數學運算。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The distiller can then use the information generated by these established A.I. systems to help train a new system of their own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蒸餾方隨後即可利用這些成熟AI系統生成的信息輔助訓練自身的全新系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Is distillation illegal?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>蒸餾是否違法？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some legal scholars say that distillation could violate the Defend Trade Secrets Act, a law that allows companies to sue over the theft of trade secrets. But U.S. courts have not decided this issue.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分法律學者指出，蒸餾行為可能違反《保護商業祕密法》，企業可以依據該法就商業祕密盜竊行為提起訴訟。不過，美國法院尚未對這一問題作出明確裁決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Copyright law does not necessarily apply, because distillation is an effort to copy the general behavior of the system rather than to copy its text word for word.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">版權法並不一定適用於此類情況，因為蒸餾旨在複製系統的總體行為邏輯，而非逐字逐句地抄襲其文本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Critics of Anthropic and OpenAI point out that the two companies have engaged in similar behavior.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic和OpenAI的批評者指出，這兩家公司自身也有類似行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anthropic is facing multiple lawsuits that accuse the San Francisco start-up of illegally using copyrighted internet data to train its systems. Last year, as part of a landmark legal settlement, the company agreed to pay $1.5 billion to a group of authors and publishers after a judge ruled that it had illegally downloaded and stored millions of copyrighted books. The settlement was the largest payout in the history of U.S. copyright cases.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Anthropic被指控非法使用受版權保護的互聯網數據訓練其系統，<span>目前正面臨多起訴訟。去年，在法官認定其非法下載並存儲了數百萬本受版權保護的書籍後，公司在一項里程碑式的法律和解協議中同意向一組作者及出版商支付15億美元賠償。該和解金額創下了美國版權訴訟史上的最高賠償紀錄。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI and other companies face similar suits, including one brought by The New York Times in 2023. That suit contends that OpenAI and its partner Microsoft used millions of articles published by The Times to train chatbots, which now compete with the news outlet as a source of information. OpenAI and Microsoft deny the claims.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>OpenAI及其他公司亦面臨類似訴訟，其中包括《紐約時報》於2023年發起的訴訟。該訴訟指控OpenAI及其合作夥伴微軟使用《紐約時報》發表的數百萬篇文章訓練聊天機器人，而這些機器人如今正作為信息來源與新聞媒體展開競爭。OpenAI和微軟對相關指控予以否認。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Are Chinese companies really copying American systems?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>中國公司是否真的在</b></span><b>挪用</b><span><b>美國系統？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese firms have most likely distilled proprietary American systems. But it is not completely clear what they have done.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國企業極有可能蒸餾了美國的專有系統，但它們具體的操作細節尚不得而知。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After the Chinese start-up DeepSeek shocked American researchers and investors last year by releasing a particularly powerful and efficient system, OpenAI accused DeepSeek of distilling its technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國初創企業DeepSeek<span>去年通過發布一款兼具高效與強悍性能的系統震動美國研究員與投資者後，OpenAI曾公開指責該公司蒸餾其技術。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Chinese systems continued to improve over the past nine months, Anthropic made similar claims. In June, Anthropic sent a letter to Senators Tim Scott and Elizabeth Warren, accusing the Chinese tech giant Alibaba of distilling its technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>隨著中國系統的性能在過去九個月中持續提升，Anthropic也提出了類似的指控。今年6月，Anthropic致信參議員蒂姆·史考特與伊麗莎白·沃倫，指責中國科技巨頭阿里巴巴蒸餾其技術。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese companies have not responded publicly to the accusations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對此，相關中國企業尚未作出公開回應。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Does distillation alone explain how China’s models remain competitive?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>僅憑蒸餾是否足以解釋中國大模型何以保持競爭力？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">No. When companies distill a proprietary system, they only have access to part of it: the words and characters and other data generated by the system. They do not have access to the system’s underlying computer code, as they would with an open source technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">答案是否定的。當企業對專有系統進行蒸餾時，它們所能獲取的僅限於系統生成的數據（如詞語、字符等輸出內容），而無法像對待開源技術那樣，接觸到系統底層的源代碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Using outputs from a proprietary system like Claude Fable from Anthropic , a Chinese company can accelerate the development of its own technology. But those outputs are only part of the puzzle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">利用Anthropic的Claude Fable等專有系統的輸出內容，中國企業確實可以加速自身技術的開發進程，但這些輸出僅僅是整個技術圖景的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“You are not getting access to everything you would use when you are distilling your model in-house,” said Rehaan Ahmad, a co-founder of the Silicon Valley start-up alphaXiv, a company that tracks the latest A.I. research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">追蹤最新AI研究的矽谷初創公司alphaXiv聯合創始人裡漢·阿赫邁德指出：「你在內部蒸餾自家模型時能用到的底層要素，通過這種外部方式是根本無法獲取的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before using those outputs, a Chinese company must first build a system that is already pretty powerful in its own right. Through distillation, it can then hone this model in important ways, but this requires additional work, money, computing power and talent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在利用這些輸出內容之前，中國企業必須首先自主構建出一個本身就具備相當實力的系統。隨後，企業雖可通過蒸餾在關鍵維度打磨模型，但這依然需要投入更多的精力、資金、算力以及人才。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Can Anthropic and OpenAI stop companies from distilling?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>Anthropic與OpenAI能否阻止其他公司實施蒸餾？</b><b></b></span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They can curb the practice — and they have tried.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它們可以採取手段遏制這種做法，且事實上也有過嘗試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Anthropic or OpenAI suspect that someone is distilling their systems, they may shut down the offender’s account. But others will most likely pop up. And if Anthropic and OpenAI shut down too many accounts, they may end up barring legitimate users.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一旦Anthropic或OpenAI懷疑有人在蒸餾其系統，可能會封禁違規者的帳戶。然而，新的違規帳戶很可能會接踵而至；而如果封鎖過於頻繁，兩家公司最終可能會誤傷合法用戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is basically impossible to stop distillation,” Lino Le Van, another alphaXiv researcher, said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一位alphaXiv研究員利諾·勒萬表示：「想要徹底杜絕蒸餾，在現實中幾乎是不可能的。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Cade Metz撰寫有關人工智慧、無人駕駛汽車、機器人、虛擬現實和其他技術新興領域的新聞。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20260929/china-ai-distillation-copying/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
