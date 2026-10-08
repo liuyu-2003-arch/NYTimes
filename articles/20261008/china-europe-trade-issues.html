@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中歐面臨一場貿易對決 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中歐面臨一場貿易對決</h1>
+    <h2 class="en-headline">Europe’s Trade Tensions With China Are Coming to a Head</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-10-08</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="歐盟委員會主席馮德萊恩警告說，歐洲對華貿易逆差已達到一個「臨界點」。" height="700" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-01-pjzt/07Biz-China-Europe-Trade-01-pjzt-master1050.jpg" width="1050"/><figcaption><span>歐盟委員會主席馮德萊恩警告說，歐洲對華貿易逆差已達到一個「臨界點」。</span> <cite>Pascal Bastien/Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European Union and China are heading toward a trade showdown.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟與中國正面臨一場貿易對決。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Europe’s trade negotiators are meeting with Chinese officials on Thursday and Friday in Beijing. A week later, Europe’s presidents and prime ministers will gather in Brussels to discuss industrial competitiveness with China, among other agenda items. Their concern is urgent. The region’s trade deficit with China is running at 1 billion euros ($1.1 billion) per day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲貿易談判代表將於週四和週五在北京與中國官員會面。一周後，歐洲各國領導人將在布魯塞爾舉行會議，討論包括如何提升工業競爭力以應對中國競爭在內的議題。他們迫切希望解決這一問題。目前，歐盟對華貿易逆差每天高達10億歐元（約合11億美元）。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">European officials blame an undervalued Chinese currency and Beijing’s state-controlled banking system, which has supplied vast amounts of cheap credit to build export-focused factories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲官員將此歸咎於被低估的人民幣匯率，以及中國政府控制的銀行體系。後者提供了大量低息貸款，用於建設以出口為導向的工廠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials offer a different explanation. They say much of the widening imbalance reflects Europe’s surging imports of electric cars, solar panels, batteries and battery chemicals. European demand for those products has risen as the continent tries to combat climate change, adjusts to the loss of inexpensive Russian oil and natural gas and copes with the war in the Middle East — developments for which China argues it should not be blamed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員則給出了不同的解釋。他們表示，貿易失衡日益加劇，很大程度上是因為歐洲從中國進口的電動汽車、太陽能電池板、電池及電池化工材料激增。隨著歐洲努力應對氣候變化、適應失去廉價俄羅斯石油和天然氣供應的局面，以及應對中東戰爭，歐洲對這些產品的需求不斷上升。中國認為，這些事態發展不應怪到中國頭上。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Europe is not alone in its concerns. China’s export push has unnerved other trading partners, including the United States, as Beijing’s trade surplus reached a record $1.19 trillion last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">感到擔憂的並不只有歐洲。隨著中國去年的貿易順差達到創紀錄的1.19萬億美元，包括美國在內的其他貿易夥伴也對中國大力推動出口感到不安。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ursula von der Leyen, the president of the European Commission, warned in an address last month that Europe’s trade deficit with China had reached a “tipping point,” leading to “deindustrialization in the industrial heartlands of Europe.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟委員會主席馮德萊恩上月在一次講話中警告說，歐洲對華貿易逆差已達到一個「臨界點」，導致「歐洲工業核心地帶的去工業化」。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="德國總理默茨上週在柏林。他與法國總統馬克宏一道敦促布魯塞爾擴大應對經濟失衡的手段。" data-src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-03-pjzt/07Biz-China-Europe-Trade-03-pjzt-master1050.jpg" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-03-pjzt/07Biz-China-Europe-Trade-03-pjzt-master1050.jpg"/></div><figcaption><span>德國總理默茨上週在柏林。他與法國總統馬克宏一道敦促布魯塞爾擴大應對經濟失衡的手段。</span> <cite>Annegret Hilse/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Friedrich Merz, the German chancellor, and Emmanuel Macron, the president of France, added to the pressure on Monday, urging Brussels to expand its arsenal against economic imbalances. In a letter to Ms. von der Leyen, they called for a mechanism that could rapidly restrict access to the European market. European media quickly labeled it a “kill switch.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國總理默茨和法國總統馬克宏週一進一步施壓，敦促布魯塞爾擴大應對經濟失衡的手段。在致馮德萊恩的一封信中，他們呼籲建立一種機制，以便迅速限制相關產品進入歐洲市場。歐洲媒體很快將其稱為「緊急開關」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Europe already has the right under the World Trade Organization’s so-called safeguard rules to impose steep tariffs on broad categories of imports from all countries, but not against a single country. Beijing has opposed safeguard tariffs designed in practice to target Chinese exports and has hinted that it would retaliate if they were imposed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據世界貿易組織所謂的保障措施規則，歐洲已經有權對來自所有國家的廣泛類別進口商品徵收高額關稅，但不能僅針對單一國家。北京一直反對那些實際上旨在針對中國出口商品的保障性關稅，並暗示一旦實施此類關稅，中國將採取報復措施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China will not accept any discriminatory measures,” said Tu Xinquan, dean of the China Institute for W.T.O. Studies at the University of International Business and Economics in Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國不會接受任何歧視性措施，」北京對外經濟貿易大學中國WTO研究院院長屠新泉說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For now, time favors Beijing. Each passing month adds more than $30 billion to China’s trade surplus with Europe, supporting hundreds of thousands of Chinese industrial jobs. Meanwhile, European manufacturers continue to weaken. Germany alone has been losing at least 10,000 industrial jobs each month, according to analysts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就目前而言，時間站在北京一邊。每過去一個月，中國對歐洲的貿易順差就增加300多億美元，支撐著數十萬個中國工業崗位。與此同時，歐洲製造商繼續走弱。分析人士稱，僅德國每月就至少失去1萬個工業崗位。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet despite Europe’s tougher language, China is seeking a compromise. “Both sides will ultimately seek to tackle those problems on a mutual benefit basis and maintain the overall trade relationship,” said He Weiwen, a prominent Chinese trade analyst.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，儘管歐洲的措辭日趨強硬，中國仍在尋求妥協。「雙方最終還是會本著互利的原則尋求解決這些問題，並維護整體貿易關係，」中國知名的貿易分析人士何偉文說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are some of the key issues at stake.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是雙方爭端涉及的幾個關鍵問題。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年慕尼黑一個展會上的比亞迪汽車。中國官員說，歐盟對華貿易失衡反映了歐洲對電動汽車、太陽能電池板和電池進口的激增。" data-src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-02-pjzt/07Biz-China-Europe-Trade-02-pjzt-master1050.jpg" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-02-pjzt/07Biz-China-Europe-Trade-02-pjzt-master1050.jpg"/></div><figcaption><span>去年慕尼黑一個展會上的比亞迪汽車。中國官員說，歐盟對華貿易失衡反映了歐洲對電動汽車、太陽能電池板和電池進口的激增。</span> <cite>Felix Schmitt for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cars</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>汽車</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The biggest point of friction — and perhaps the hardest to resolve — is China’s rapidly growing automobile exports to Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國對歐洲汽車出口迅速增長是雙方最大的摩擦點，也可能是最難解決的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Two years ago, the European Union imposed tariffs of 7.8 to 35.3 percent on battery-electric cars from China, on top of its existing 10 percent tariff on imported cars. But the measure left a significant loophole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩年前，歐盟在原有10%的進口汽車關稅基礎上，對中國生產的純電動汽車加徵7.8%至35.3%的關稅。但這一措施留下了一個重大漏洞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The extra tariffs do not apply to plug-in hybrids that combine an electric drivetrain with a gasoline engine, even a tiny one.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">額外關稅不適用於插電式混合動力汽車。這類汽車既有電力驅動系統，也配備汽油發動機，哪怕發動機非常小，也不受加徵關稅的影響。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese automakers have already developed many such models. Their popularity began with a practical problem drivers in China faced. After electric-car sales started surging in China in 2020, urban families driving home for Chinese New Year often encountered villages with only one charger and long lines. Automakers responded by adding small gasoline engines as backups.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的汽車製造商開發了許多此類車型。它們最初受到歡迎源於中國司機面臨的一個實際問題。2020年中國電動汽車銷量開始激增後，城市家庭在春節期間開車返鄉時，經常發現一些村莊只有一個充電樁，充電要排長隊。汽車製造商於是開始加裝小型汽油發動機作為備用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China has built charging infrastructure at an extraordinary pace, reducing the need for plug-in hybrids. Chinese automakers have increasingly exported them instead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但中國以驚人的速度建設充電基礎設施，降低了人們對插電式混合動力汽車的需求。中國汽車製造商因而越來越多地將這類汽車出口到海外市場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exports of plug-in hybrids have soared from fewer than 10,000 a month to almost 200,000 a month in just three years, with many going to Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">短短三年間，插電式混合動力車出口從每月不到1萬輛飆升至每月近20萬輛，其中許多銷往歐洲市場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing strongly opposes widening those E.U. tariffs to include plug-in hybrid cars. But European officials face growing pressure to respond, particularly after Volkswagen, struggling against Chinese competition, announced on Sept. 3 that it would cut another 50,000 jobs, bringing its total planned reductions to about 100,000.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京堅決反對歐盟將加徵關稅的範圍擴大到插電式混合動力汽車。但歐洲官員面臨著越來越大的壓力，要求他們採取應對措施。尤其是深受中國競爭衝擊的大眾汽車9月3日宣布將再裁減5萬個工作崗位，使計劃裁員總數達到約10萬人之後，這種壓力進一步加大。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國生產的風力渦輪機葉片。風力渦輪機是歐盟擬議的《工業加速法案》所涵蓋的技術之一，該法案要求關鍵部件在歐洲生產。" data-src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-04-pjzt/07Biz-China-Europe-Trade-04-pjzt-master1050.jpg" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-04-pjzt/07Biz-China-Europe-Trade-04-pjzt-master1050.jpg"/></div><figcaption><span>中國生產的風力渦輪機葉片。風力渦輪機是歐盟擬議的《工業加速法案》所涵蓋的技術之一，該法案要求關鍵部件在歐洲生產。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Renewable Energy</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>可再生能源</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European Union is investigating imports from China’s state-controlled Goldwind Science &amp; Technology Company, the world’s largest wind-turbine manufacturer. In February, the bloc issued a preliminary finding that Chinese subsidies were giving Goldwind an unfair advantage in Europe, potentially laying the groundwork for tariffs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟正在調查從中國的國有企業金風科技進口的產品。它是全球最大的風力渦輪機製造商。今年2月，歐盟初步認定，中國政府的補貼使金風科技在歐洲獲得了不公平的競爭優勢，這可能為徵收關稅鋪平道路。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Goldwind has said it complies with all international and local laws and regulations and will cooperate with the investigation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">金風科技表示，公司遵守所有國際及當地法律法規，並將配合調查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wind turbines are among the technologies covered by the European Union’s proposed Industrial Accelerator Act, an effort to rebuild the region’s manufacturing by requiring key components to be produced in Europe and by restricting some foreign investment. Solar energy, chemicals and other industries are also covered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">風力渦輪機是歐盟擬議的《工業加速法案》所涵蓋的技術之一。該法案旨在通過要求關鍵零部件在歐洲生產、限制部分外國投資等措施重振歐洲製造業。太陽能、化工及其他行業也在法案涵蓋範圍之內。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China strongly opposes the legislation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國堅決反對這項立法。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="歐洲正尋求減少對中國稀土金屬的依賴，而稀土對汽車、電子和半導體等行業至關重要。" data-src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-05-pjzt/07Biz-China-Europe-Trade-05-pjzt-master1050.jpg" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-05-pjzt/07Biz-China-Europe-Trade-05-pjzt-master1050.jpg"/></div><figcaption><span>歐洲正尋求減少對中國稀土金屬的依賴，而稀土對汽車、電子和半導體等行業至關重要。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rare Earths</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>稀土</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In her address last month, Ms. von der Leyen said Europe had become dangerously dependent on China for rare-earth metals, which are crucial for automobiles, drones, lasers, semiconductors, jetliners, electronics and other advanced industries. After previously accusing Beijing of restricting rare-earth shipments to Europe, she called for the union to develop its own supplies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馮德萊恩在上月的講話中表示，歐洲在稀土金屬方面已經對中國形成了危險的依賴。稀土金屬對汽車、無人機、雷射器、半導體、噴氣式客機、電子產品及其他先進產業至關重要。此前她曾指責北京限制向歐洲出口稀土。在這次講話中，她呼籲歐盟發展自己的稀土供應來源。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has tightened controls on exports of rare-earth processing equipment and restricted rare-earth technicians from leaving the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國加強了對稀土加工設備出口的管制，並限制稀土技術人員出境。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In July, Beijing also imposed stringent restrictions on rare-earth exports to 14 European companies, including Germany’s leading defense manufacturer and several businesses that turn rare earths and other critical minerals, like antimony and tungsten, into the alloys and specialty chemicals that many manufacturers need.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年7月，北京還對向14家歐洲企業出口稀土實施了嚴格限制。這些企業包括德國最大的國防製造商，以及數家將稀土和銻、鎢等其他關鍵礦產加工成合金及特種化學品的企業。這些材料是許多製造企業所必不可少的。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="芬蘭電信巨頭諾基亞今年秋天將關閉其在中國大陸的大部分業務。" data-src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-06-pjzt/07Biz-China-Europe-Trade-06-pjzt-master1050.jpg" src="https://static01.nyt.com/images/2026/10/07/multimedia/07Biz-China-Europe-Trade-06-pjzt/07Biz-China-Europe-Trade-06-pjzt-master1050.jpg"/></div><figcaption><span>芬蘭電信巨頭諾基亞今年秋天將關閉其在中國大陸的大部分業務。</span> <cite>Hector Retamal/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Market Access</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>市場准入</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">E.U. officials and business leaders also complain that Beijing continues to limit foreign companies’ access to the Chinese market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟官員和商界領袖還抱怨說，北京繼續限制外國公司進入中國市場。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In telecommunications, China has steadily replaced imported equipment with domestically manufactured alternatives and curtailed purchases from foreign suppliers. Nokia, the Finnish telecom giant, is closing much of its mainland China operations this autumn.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在電信領域，中國一直在逐步用國產設備取代進口設備，並減少向外國供應商採購。芬蘭電信巨頭諾基亞將在今年秋季關閉其在中國大陸的大部分業務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">European makers of hospital equipment, pharmaceuticals and other products have encountered similar obstacles. China’s state-owned companies have expanded at the expense of private businesses and have shown a particular reluctance to buy imports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲的醫院設備、藥品和其他產品製造商也遇到類似障礙。中國國有企業不斷擴張，以擠壓民營企業的發展空間為代價，而且尤其不願購買進口產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet European enthusiasm for the Chinese market is also fading for reasons beyond government policy. China’s prolonged housing market downturn has left many Chinese households and companies with little money to spend, while industrial overcapacity has driven fierce price competition and eroded profits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，歐洲對中國市場的熱情正在消退，原因並不完全在於政府政策。中國房地產市場長期低迷，使許多家庭和企業缺乏消費和投資資金；與此同時，產能過剩引發了激烈的價格競爭，侵蝕了利潤。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Jeanna Smialek自布魯塞爾對本文有報導貢獻。</p><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p><div class="commentsBlockLoaderRef" data-poster=""></div><div class="" data-poster=""><div class="css-1pwfetb" data-poster=""><div class="css-j7qwjs" data-poster=""></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261008/china-europe-trade-issues/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
