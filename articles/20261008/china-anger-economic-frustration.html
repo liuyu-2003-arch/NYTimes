@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國人之間為何彼此怨恨、互相攻擊？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國人之間為何彼此怨恨、互相攻擊？</h1>
+    <h2 class="en-headline">China’s Stressed People Are Starting to Turn on One Another</h2>
+    <div class="meta-line">高雨莘 <span style="margin: 0 8px;">•</span> 2026-10-08</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/10/04/opinion/02gao-imager/02gao-imager-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Matt Rota</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For years, the mood in China has been darkening.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，中國的社會情緒日益沉鬱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A weakening economy has left many disillusioned, a state of mind expressed privately and across the heavily controlled internet in lowered expectations and quiet anxiety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經濟疲軟令許多人深感幻滅。在私下交流及受到嚴格管控的互聯網上，這種心境通過不斷降低的期望和默默的焦慮表現出來。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of that may now be surfacing in more troubling ways.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，部分此類情緒可能正以更令人不安的方式浮出水面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In March, a man drove a heavy construction vehicle through an outdoor market in a Beijing suburb, reportedly killing several people. In June, a small aircraft crashed into a prominent office building in the capital, killing the pilot and injuring 13 others in what may have been a suicide. And last month a man was arrested in the southern city of Guangzhou after allegedly slashing the faces of multiple women in a busy shopping district.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年3月，一名男子在北京市郊的一個露天市場駕駛重型工程車衝撞人群，據報導造成數人死亡。6月，一架小型飛機在首都撞向一棟知名辦公樓，致使飛行員死亡及另外13人受傷，可能是一起自殺事件。上個月在南方城市廣州，一名男子因涉嫌在繁華商業區劃傷多名女性面部而被捕。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Incidents like these are rare in China and heavily censored, making motives difficult, if not impossible, to discern. But in a country where it’s dangerous to vent at government policies, I can’t shake the sense that people are instead beginning to take their anger and frustration out on one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此類事件在中國十分罕見且受到嚴格審查，因此很難（即便並非不可能）查明其動機。然而，在一個發洩對政府政策的不滿會面臨危險的國家，我產生了一種揮之不去的感覺：人們正開始將憤怒與挫敗感發洩在彼此身上。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Intensely focused on competing with the United States, Beijing is pouring resources into building up its advanced manufacturing and technology industries, seeing them as the future drivers of national growth. During a summit meeting with President Trump at the White House last week, President Xi Jinping of China spoke confidently, saying China was “breaking new ground” in his modernization drive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">聚焦於中美競爭的北京正投入大量資源發展先進制造業和科技產業，將其視為國家經濟增長的未來引擎。上週在白宮與川普總統舉行峰會期間，中國國家主席習近平滿懷信心地表示，中國正在其現代化進程中「開闢新天地」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But much of the broader economy remains weak. Unemployment is high, especially for younger people, and wages are stagnating. Households still reeling from the long-term collapse of the country’s real estate market are cutting back on spending. The government this year set its lowest annual growth target since 1991.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>但更廣泛的經濟領域大多依然疲軟。失業率居高不下（尤其是年輕人），工資水平停滯不前。眾多家庭仍因</span>本國房地產市場的長期崩盤而步履維艱，正紛紛削減開支。今年，政府設定了自1991年以來的最低年度經濟增長目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The impulse to find someone to blame is clearly evident in the viral doxxing phenomenon called “ba,” or “to strip.” In these campaigns, which have intensified in recent months, posses of digital sleuths comb through the backgrounds of people who have attracted attention for their academic or professional achievements, “stripping” them down in a hunt for evidence that connections, fraud or favoritism paved their way.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">急於找人承擔罪責<span>的衝動，在被稱為「扒」（即「剝去」）的病毒式人肉搜索現象中體現得淋漓盡致。近幾個月來此類運動愈演愈烈，成群結隊的「網路偵探」對那些因學術或</span>事業成就而備受矚目之人進行事無鉅細的背景調查，將他們「扒」個乾乾淨淨，試圖尋找靠關係、造假或偏袒來取得成功的證據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In late July, a 29-year-old podcaster named Zhuge Yiyang — a Ph.D. candidate at Boston College — went viral after she interviewed the director Christopher Nolan about his movie “The Odyssey.” Ms. Zhuge had been admired by many of her online followers as proof that hard work and merit lead to success, and she was widely praised for the intellectual depth of her questions in the interview.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月下旬，一位名叫諸葛一楊的29歲部落客——波士頓學院博士候選人——在就<span>電影《奧德賽》採訪導演克里斯托弗·諾蘭後走紅。</span>她在網上的眾多粉絲以她為努力與實力造就成功的表率，她在採訪中所提問題的思想深度也廣受讚譽。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon, however, the online stripping started, leading to accusations that she had plagiarized material in her podcasts and writing. Ms. Zhuge has disputed some of the accusations, but canceled public appearances and described herself as emotionally exhausted.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>然而不久之後，網路上的「深扒」接踵而至，引發了對其播客和文章素材存在抄襲的指控。諸葛女士對部分指控予以</span>反駁，但取消了公開露面，並稱自己已身心俱疲。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Often, the scrutiny seems less about exposing wrongdoing than about a reflexive resentment of perceived elites who have become avatars of an economy in which many people see their own prospects narrowing. Other recent targets have ranged from a Chinese actress to prominent doctors and a Harvard graduate who last year became the first Chinese woman to speak at a commencement ceremony at the university. The young woman called for global unity in her speech but was soon accused of using family privilege and connections to further her academic career.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通常，這種審視與其說是在揭露不當行為，不如說是在條件反射式地怨恨那些被視為精英的人——在許多人看來，這些精英已成為一種經濟的化身，而他們自己的前景在這種經濟中正變得越來越窄<span>。近期遭遇針對的其他目標涵蓋了一名女演員、多位知名醫生，以及一名去年成為首位在哈佛大學畢業典禮上致辭的中國籍女性的哈佛畢業生。</span>她在演講中呼籲全球團結，但很快就被指控利用家族特權和關係來助推其學術生涯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fraud, nepotism and plagiarism are hardly new in China, nor is the tendency for people to take aim at perceived inequities online. What feels new is how automatic and ferocious the hunt for them has become as sensitivity rises over who gets ahead — and how — at a time of pervasive economic anxiety.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>欺詐、裙帶關係和抄襲在中國絕非新鮮事，網民將矛頭對準</span>其認為的不公現象亦是如此。真正讓人感到新鮮的是，在普遍存在經濟焦慮的當下，隨著人們對「誰能出人頭地以及如何出人頭地」的敏感度不斷上升，這種「扒」變得如此自動化且來勢洶洶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Bitterness is intensifying between men and women, too. In online forums, men complain that more of the pressure from the worsening economic prospects falls on them. They rail against feminists, and some have even called for a men’s rights awakening.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>男女兩性之間的對立與怨恨也在加劇。在網路論壇上，男性抱怨經濟前景惡化所帶來的更多壓力落在了他們肩上。他們強烈抨擊女權主義者，部分人甚至呼籲男性權利意識的覺醒。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Male frustration spilled into the streets in August when groups of young men, apparently protesting the effeminizing of youth culture, reportedly gathered in the city of Chongqing outside the office of a talent agency that handled boy bands. After police detained one of the men, the protesters marched down a major road, demanding his release and chasing, shoving and kicking female fans waiting outside the agency. Some took photos of the women, which were digitally altered as pornographic images and disseminated online.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種男性的挫敗感在8月份蔓延到了街頭。據報導，為抗議青年文化的「女性化」傾向，一群群年輕男子聚集在重慶一家管理男子偶像團體的經紀公司辦公室外。在<span>警方拘留其中一名男子後，抗議者在主幹道上遊行要求放人，並對在經紀公司外等候的女粉絲進行追逐、推搡和踢打。部分人還拍下這些女性的照片，用數位技術篡改成色情圖像並在網上散播。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Studies suggest that many Chinese men, particularly those with fewer resources, face mounting difficulty fulfilling traditional expectations to marry and become stable breadwinners. A man is often expected to have an apartment and a car before he can secure a wife. For many, that’s becoming nearly impossible.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>研究表明，許多中國男性（尤其是資源較</span>匱乏<span>者）在滿足「結婚並成為穩定養家者」的傳統期望方面，正面臨越來越大的困難。社會通常期望男性在娶妻前必須擁有住房和汽車。對許多人而言，這正變得幾乎遙不可及。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In some parts of the country, a groom’s family may also be expected to pay a “bride price,” a payment to the bride’s family as part of the marriage agreement. A survey of young male migrant workers, which was published in February, put the average price at around 130,000 yuan ($19,000) — about six times the respondents’ average annual savings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在部分地區，新郎的<span>家庭還可能被要求支付「彩禮」（作為婚姻協議一部分付給女方家庭的錢款）。今年2月公布的一項針對年輕男性農民工的調查顯示，平均彩禮金額約為13萬元人民幣——大約是受訪者平均</span>年積蓄的六倍。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Marriage prospects are worsened by the government’s former one-child policy which, combined with a traditional preference for male heirs, led many families to abort female fetuses, skewing China’s gender balance. The policy was ended a decade ago, but single men of marriageable age outnumbered unwed women by as much as two to one in some parts of the country, according to the most recent detailed census in 2020. Last year, China still had nearly 29 million more men than women.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">昔日的獨生子女政策進一步惡化了婚姻前景，該政策加上重男輕女的傳統觀念導致許多家庭選擇墮掉女胎，從而造成中國性別比例失衡。儘管該政策已於十年前廢止，但根據2020年最新一次詳盡<span>的人口普查，在部分地區，適婚單身男性與未婚女性的比例高達二比一。去年，中國男性總數依然比女性多出近2900萬。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">I grew up in a China whose ascent was powered not just by factories, investment and growing incomes, but by the sense that all boats were rising. Even if some rose faster, people could see those who had made it and imagine joining their ranks. They could look forward to building families and bringing up children whose lives would be better than their own.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在我兒時的中國，推動其崛起的不僅有工廠、投資和不斷增長的收入，還有一種「水漲船高」的普遍感受。即使部分人致富速度更快，人們也能看到那些成功者，並憧憬著加入他們的行列。他們期待著成家立業，撫養生活註定會比自己更好的下一代。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What’s disturbing about China today is not simply that those expectations are fading, but that success itself is cause for suspicion and outright hostility: If I am falling behind, someone else must be getting ahead at my expense; if I can’t meet the expectations society places on men, a woman must be to blame.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當今中國令人不安的不僅在於這些期望正在破滅，更在於「成功」本身成了遭受懷疑和公然敵視的理由：如果我落後了，必定是別人踩著我的利益往上爬；如果我無法滿足社會對男性的期望，那錯的一定是女人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese state has enormous power to steer the economy and shape public life. What it cannot simply command back into existence is goodwill between its citizens.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府擁有掌控經濟和塑造公共生活的巨大權力。但它無法僅憑一道命令就讓國民之間的善意失而復得。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economic downturns end. A fraying social fabric may prove harder to mend.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經濟衰退終會結束。但修補不斷磨損的社會結構恐將困難得多。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">高雨莘(Helen Gao)是一名自由撰稿人，常駐北京。</p><div class="" data-poster=""><br/></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20261008/china-anger-economic-frustration/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
