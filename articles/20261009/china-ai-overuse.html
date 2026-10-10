@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國面臨過度依賴人工智慧的挑戰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國面臨過度依賴人工智慧的挑戰</h1>
+    <h2 class="en-headline">China’s Push Into A.I. Has Led to a Problem: Too Much Usage</h2>
+    <div class="meta-line">YAN ZHUANG <span style="margin: 0 8px;">•</span> 2026-10-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國政府正在對人工智慧應用和聊天機器人的使用實施監管，原因是擔心該技術可能會干擾人際關係並破壞社會秩序。" height="718" src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-01-zvhg/30int-china-ai-reliance-01-zvhg-master1050.jpg" width="1050"/><figcaption><span>中國政府正在對人工智慧應用和聊天機器人的使用實施監管，原因是擔心該技術可能會干擾人際關係並破壞社會秩序。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As China’s government pushes its citizens to embrace artificial intelligence, it is confronting a problem partly of its own making: overreliance on the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著中國政府推動國民接受人工智慧，它正面臨著一個部分由自身造成的問題：對這項技術的過度依賴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">State media reports have featured stories that serve as cautionary tales: a farmer who lost 25 acres of seedlings after asking an A.I. for advice, children who have become so attached to chatbots that they want their parents to speak like them and A.I.-generated micro dramas with characters that look like carbon copies of one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官方媒體的報導刊登了一些警示案例：一名農民在向人工智慧尋求建議後損失了150畝的幼苗；孩子們對聊天機器人過於依戀，甚至希望父母也像機器人那樣說話；還有人工智慧生成的短劇，其中的角色看起來幾乎如出一轍。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These cases and others have raised concerns in China that as it rushes to catch up with the United States in A.I., it is running into adverse side effects created by the new technology, which is accused of undermining human relationships and depriving people of their better judgment. The government, seeking to direct how people use the technology, has responded by imposing new regulations and judicial guidelines on its use — and misuse.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些案例及其他類似情況在中國引發了擔憂，當中國爭分奪秒地追趕美國在人工智慧領域的步伐時，也遭遇了這項新技術帶來的負面影響，人工智慧技術被指責破壞人際關係並剝奪人們的判斷力。為引導民眾正確使用這項技術，政府已針對其使用及濫用行為出台了新的法規和司法指導方針。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The response reflects how the ruling Communist Party is trying to balance its ambitions to promote the widespread use of A.I. with a desire to avoid anything that might undermine social order, say analysts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士指出，這樣的回應反映出，執政的共產黨正試圖在推動人工智慧廣泛應用的雄心與避免可能破壞社會秩序的因素之間取得平衡。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The party is “recognizing that the more they develop the technology, the more there’s going to be social challenges that they have to deal with,” said Scott Singer, a fellow and co-director of the China A.I. Initiative at the Carnegie Endowment for International Peace. “Where the party is sensitive is any area where they feel like the technology is getting better in a way that fundamentally could disrupt social stability.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">卡內基國際和平基金會中國人工智慧倡議研究員兼聯合主任史考特·辛格表示，中共「認識到這項技術發展得越快，他們就越需要應對更多的社會挑戰」。「中共特別關注的是那些他們認為技術進步可能從根本上破壞社會穩定的領域。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Singer said the party is particularly sensitive to disruptions caused not only to human relationships but also the job market as A.I. threatens to replace workers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">辛格表示，隨著人工智慧威脅取代勞動者，中共不僅對人際關係受到的衝擊特別敏感，而且對就業市場受到的破壞也特別敏感。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="9月在北京舉行的PT博覽會上展出的類人伴侶機器人。隨著中國面臨歷史最低出生率的困境，虛擬伴侶應用的興起引發了人們對人工智慧可能取代人際關係的擔憂。" data-src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-02-zvhg/30int-china-ai-reliance-02-zvhg-master1050.jpg" src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-02-zvhg/30int-china-ai-reliance-02-zvhg-master1050.jpg"/></div><figcaption><span>9月在北京舉行的PT博覽會上展出的類人伴侶機器人。隨著中國面臨歷史最低出生率的困境，虛擬伴侶應用的興起引發了人們對人工智慧可能取代人際關係的擔憂。</span> <cite>Kevin Frayer/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Concerns about overuse are shared among China’s citizens, who say they see the spread of the technology as inevitable even as they question its benefits and tire of its ubiquity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國民眾也普遍擔心人工智慧被過度使用，他們認為該技術的普及不可避免，但同時也對其效益存疑，並對它無處不在的現象感到厭倦。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Xie Tong, a graphic designer in Beijing, uses A.I. in her own work at a consulting agency and can no longer imagine her life without it. But she despairs at encountering A.I. all around her — in the subway ads that she sees on her commute and in the work of contractors at her job who obviously relied on A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">謝彤（音）是北京一家諮詢公司的平面設計師，她在自己的工作中使用人工智慧，已經無法想像沒有它的生活。但對於身邊隨處可見的人工智慧——無論是通勤途中看到的地鐵廣告，還是工作中那些顯然依賴人工智慧的承包商的作品——她感到絕望。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s like a marriage where you curse your partner but you can’t leave them,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「就有點像那種你跟一個人結婚，你邊罵他，但是你又離不了他那種感覺，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Limits on Virtual Friends</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>對虛擬朋友的限制</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For a time, China’s A.I. push created a boom in virtual companion apps, including ones offering romantic partners, personal tutors and A.I. avatars of family members.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有一段時間，中國對人工智慧的推動引發了虛擬伴侶應用軟體的繁榮，其中包括提供戀愛伴侶、個人導師和家庭成員人工智慧化身的應用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a country already struggling with a shrinking population and a historically low birthrate, the proliferation has led to concerns from Beijing about A.I. replacing human relationships. State media quoted experts saying people could soon find it hard to navigate real interactions. Reports cited a 2025 survey by the China Youth and Children Research Center of more than 8,500 minors that showed more than 20 percent “only wanted to chat with A.I. and did not want to talk with real people.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一個正面臨人口減少和歷史最低出生率困境的國家，這種泛濫引發了北京對人工智慧取代人際關係的擔憂。官方媒體援引專家的話稱，人們可能很快就會發現，難以應對現實中的社交互動。報導引用了中國青少年研究中心2025年對8500多名未成年人進行的一項調查，結果顯示，超過20%的受訪者「只想和AI聊天，不想和真人聊天」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That mirrored the concerns of some parents like Vivian Lyu, a stay-at-home mother in Hangzhou who two years ago introduced her 5-year-old daughter, Polly, to Doubao, an A.I. assistant created by ByteDance, the parent company of TikTok.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這反映了一些父母的擔憂，比如杭州的全職媽媽維維安·呂（音），兩年前，她讓五歲的女兒波莉開始使用豆包——一款由TikTok母公司字節跳動開發的人工智慧助手。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年2月，在北京首都國際機場，一則宣傳字節跳動人工智慧工具的廣告。中國政府如今要求，若用戶對人工智慧伴侶表現出不健康的依賴，相關平台必須予以干預。" data-src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-03-zvhg/30int-china-ai-reliance-03-zvhg-master1050.jpg" src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-03-zvhg/30int-china-ai-reliance-03-zvhg-master1050.jpg"/></div><figcaption><span>今年2月，在北京首都國際機場，一則宣傳字節跳動人工智慧工具的廣告。中國政府如今要求，若用戶對人工智慧伴侶表現出不健康的依賴，相關平台必須予以干預。</span> <cite>Adek Berry/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon, the child was chatting with the A.I. and a personalized companion on the app nearly every day. At first, Ms. Lyu thought the A.I. was good at keeping Polly entertained when the mother had to take care of household tasks. “When you feel like you don’t have a choice, you use Doubao,” she said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">很快，孩子幾乎每天都在該應用上與人工智慧和個性化伴侶聊天。起初，維維安·呂認為當她需要料理家務時，人工智慧可以讓波莉解悶。「那沒得選擇情況下就是我給一個豆包，」她說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over time, though, Polly started asking for Doubao instead of seeking out activities that used to interest her, like playing with other children or drawing pictures. Ms. Lyu said she worried that the chatbot was warping her daughter’s understanding of how relationships worked, saying that Polly sometimes talked to Doubao in a “very self-centered, doing-whatever-she-wants kind of way.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，隨著時間的推移，波莉開始主動要求使用豆包，而不是去從事她以前感興趣的活動，比如和其他孩子玩耍或畫畫。維維安·呂表示，她擔心聊天機器人會扭曲女兒對人際關係運行方式的理解，她說，波莉有時以一種「完全以她自我為中心、想怎麼樣就怎麼樣的方式」與豆包交談。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In July, the government imposed limits on A.I. companions that require platforms to step in if users exhibited unhealthy dependencies. Under the new rules, platforms must intervene if users show signs of self-harm.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年7月，政府對人工智慧伴侶施加限制，要求平台在用戶表現出不健康依賴時予以干預。根據新規，如果用戶表現出自殘跡象，平台必須進行干預。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The rules also banned virtual relationships between chatbots and minors, which forced ByteDance to shut down the feature on Doubao that allowed users to create companions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">規則還禁止聊天機器人與未成年人建立虛擬戀愛關係，這迫使字節跳動關閉了豆包上允許用戶創建虛擬伴侶的功能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Polly can no longer access her personalized A.I. companion, but she is still talking to Doubao’s A.I. chatbot, Ms. Lyu said. The mother considered banning her daughter from using chatbots but concluded that such a step could make it harder for Polly to adjust to the technology as she grows older. Instead, Ms. Lyu has limited Polly’s chatbot time to one hour a day.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">維維安·呂說，波莉現在無法再使用她個性化的人工智慧伴侶，但她仍在與豆包的人工智慧聊天機器人對話。她曾考慮禁止女兒使用聊天機器人，但最終得出結論，這樣做可能會使波莉長大後更難適應這項技術。因此，維維安·呂將波莉使用聊天機器人的時間限制在每天一小時。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My hope is for her to understand from a young age that these electronic products, or all of these things related to A.I., are just tools,” Ms. Lyu said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我比較希望從小時候就讓她能感受到，就是說這些電子產品，或者說你所有的AI這些東西只是一個工具，」維維安·呂說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Real World Problems</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>現實世界的問題</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Just as in many countries, China is<strong> </strong>struggling with so-called A.I. literacy — understanding how the technology works and its limits. In recent months, the media has documented a growing number of A.I. mishaps involving people who blindly believed in the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">和許多國家一樣，中國也在應對所謂的「人工智慧素養」問題，也就是理解這項技術的工作原理及其局限性。近幾個月來，媒體報導了越來越多因盲目相信該技術而引發的人工智慧事故。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was the case of a hiker who became stranded atop a mountain in August after A.I.-generated instructions left him improperly equipped. In several separate cases earlier in the summer, people fell ill after eating poisonous mushrooms that were misidentified by A.I., including a 9-year-old boy who spent eight days in a hospital.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年8月，一名徒步旅行者因遵循人工智慧生成的指南而裝備不足，被困在山頂。今年夏天早些時候，還發生了多起因食用被人工智慧誤識的毒蘑菇而致病的情況，其中一名九歲男孩在醫院住院八天。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the most widely covered cases involved a farmer in the eastern province of Anhui who lost 25 acres of sesame seedlings in July after following a pesticide regimen drawn up by an A.I. assistant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最受關注的案例之一發生在東部的安徽省，由於遵循人工智慧助手制定的農藥施用方案，一名農民7月損失了150畝的芝麻幼苗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The 67-year-old farmer, whom the reports identified only by his last name, Wu, lost 150,000 yuan, or about $22,000, worth of crops after the A.I. recommended an herbicide that turned out to be unsuitable, the reports said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">報導稱，這位67歲的農民（報導中僅透露其姓氏為吳）在人工智慧推薦了一種後來被證明不適用的除草劑後，損失了價值15萬元人民幣的農作物。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Communist Party’s mouthpiece, People’s Daily, argued in a commentary that A.I. in sectors like agriculture should use only information that comes from authoritative sources.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中共官方媒體《人民日報》在一篇評論文章中指出，農業等領域的人工智慧應該只使用來自權威管道的信息。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="北京的一家咖啡館裡，一名用戶通過中國科技公司百度開發的人工聊天機器人「萬話」展示她的虛擬男友。" data-src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-04-zvhg/30int-china-ai-reliance-04-zvhg-master1050.jpg" src="https://static01.nyt.com/images/2026/09/30/multimedia/30int-china-ai-reliance-04-zvhg/30int-china-ai-reliance-04-zvhg-master1050.jpg"/></div><figcaption><span>北京的一家咖啡館裡，一名用戶通過中國科技公司百度開發的人工聊天機器人「萬話」展示她的虛擬男友。</span> <cite>Jade Gao/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It also called for farmers to be trained in “critical thinking about A.I. suggestions, helping farmers transform from passive implementers of technology into active participants who can control the tools.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">文章還呼籲對農民進行「對AI建議的批判性思維」的培訓，「幫助農民從被動的技術執行者轉變為能主動掌控工具的參與者」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A Backlash Against Cheap A.I. Fodder</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>對廉價人工智慧「飼料」的反感</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. has also become ubiquitous in micro dramas, the wildly popular short-form, soapy shows that are made for mobile viewing. In the first eight months of the year, more than 90 percent of the 430,000 micro dramas released in China were generated by A.I., the government said in late September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧在短劇中也變得無處不在，短劇是一種專為移動端觀看而製作、極受歡迎的短篇肥皂劇。政府在9月下旬表示，今年前八個月在中國上映的43萬部微短劇中，90%以上是由人工智慧生成的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">These dramas can be churned out cheaply in minutes with no cameras, production crews or human performers. But they have come under fire for their low quality and for taking the jobs of humans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些短劇無需攝像機、製作人員或真人演員，幾分鐘內就能以低成本批量生產。但它們因質量低下以及搶走人類的工作受到抨擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An article in August in Beijing Youth Daily, the official publication of the Communist Youth League, complained that production companies were churning out A.I.-created micro dramas with boring, interchangeable characters.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">共青團官方出版物《北京青年報》8月的一篇文章抱怨稱，製作公司正在批量生產由人工智慧創作的短劇，其中角色單調乏味、千篇一律。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some influential voices have gone as far as to say they will boycott micro dramas generated entirely by A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些有影響力的人士甚至表示，他們將抵制完全由人工智慧生成的短劇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hu Xijin, the former editor of the state-run Global Times, told his 25 million followers on the social media platform Weibo recently that he would not watch such dramas to avoid “filling up our recreational time with cheap A.I. fodder like pig feed.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國有《環球時報》前總編輯胡錫進最近在社群媒體平台微博上向其2500萬粉絲表示，他不會看這類短劇，以避免「拿廉價的AI飼料像餵豬一樣填充我們的娛樂時間」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Siyi Zhao對本文有研究貢獻。</p><p class="cn-p">Yan Zhuang是時報駐首爾記者，報導突發新聞。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261009/china-ai-overuse/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
