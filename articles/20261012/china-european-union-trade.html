@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中歐避免經貿摩擦升級 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中歐避免經貿摩擦升級</h1>
+    <h2 class="en-headline">China and Europe Step Back From Trade War With Limits on Chinese Car Exports</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-10-12</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="歐盟委員會貿易和經濟安全委員馬羅什·謝夫喬維奇在北京出席記者會。" height="700" src="https://static01.nyt.com/images/2026/10/09/multimedia/09Biz-China-EU-tzgq/09Biz-China-EU-tzgq-master1050.jpg" width="1050"/><figcaption><span>歐盟委員會貿易和經濟安全委員馬羅什·謝夫喬維奇在北京出席記者會。</span> <cite>Kyodo, via Reuters Connect</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">High-level talks in Beijing between the European Union and China ended on Friday with an unexpected agreement that could pull the two sides back from an imminent trade war.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟與中國在北京舉行的高級別會談於週五結束，雙方出人意料地達成一項協議，有望避免一場迫在眉睫的貿易戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The most notable feature of the agreement involved what both sides described as an understanding on China’s exports of hybrid electric-gasoline cars, which have been among the most contentious points of tension between the two sides.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項協議最引人注目的內容涉及中國出口的混動汽車。雙方均表示，已就這一問題達成諒解。混動汽車一直是中歐貿易關係中最具爭議的問題之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maros Sefcovic, the trade commissioner of the 27-nation bloc, said that the understanding could lead to China’s halving the number of hybrid gasoline-electric cars that it sends to the European Union in the next four years. Neither side made any mention of any tariffs on those cars, which China has resolutely opposed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟委員會貿易和經濟安全委員馬羅什·謝夫喬維奇表示，根據雙方達成的諒解，中國可能在未來四年內將出口歐盟的混動汽車數量削減一半。雙方均未提及對這類汽車徵收關稅的問題，中國一直堅決反對加徵關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Ministry of Commerce said in a separate statement that the two sides had “reached an understanding on trade in hybrid vehicles in a manner consistent with World Trade Organization rules.” Complying with those rules makes it difficult for Europe to impose tariffs quickly. Tariffs also make it hard to know how many cars will continue to arrive from China, but Mr. Sefcovic said that the understanding would achieve specific reductions in imported cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部在另一份聲明中說，雙方「以符合世貿組織規則的方式就混動汽車貿易達成諒解」。遵守世貿組織規則意味著歐洲很難迅速加徵關稅。此外，即使徵收關稅，也難以確定還會有多少汽車繼續從中國運來，但謝夫喬維奇表示，這項諒解將實現具體的進口汽車數量削減目標。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The compromise described by Mr. Sefcovic appeared to address the European Union’s need for immediate caps on the number of cars imported from China. It also addressed China’s need for an arrangement that would limit the often fierce competition among Chinese automakers in the European market, which has contributed to the Chinese automakers’ heavy losses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">謝夫喬維奇所描述的妥協方案似乎既滿足了歐盟立即限制中國汽車進口數量的要求，也回應了中國希望通過某種安排緩解中國車企在歐洲市場激烈競爭的需求。這種競爭往往十分慘烈，也是造成中國汽車製造商巨額虧損的原因之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agreement on hybrid cars appeared to have a strong resemblance to the two sides’ deal in 2013 for China to reduce the number of solar panels that it shipped each year to Europe, while Europe agreed to forgo its previous plans for tariffs on those shipments. This allowed Chinese solar panel makers to raise prices sharply in Europe for their limited supply of solar panels, producing large profits for Chinese solar panel manufacturers that previously were losing money.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項關於混動汽車的協議似乎與雙方2013年達成的太陽能電池板協議極為相似。當時，中國同意減少每年向歐洲出口的太陽能電池板數量，歐洲則同意放棄此前對這些產品加徵關稅的計劃。這使中國太陽能電池板製造商得以大幅提高在歐洲市場的售價，憑藉受到限制的供應量獲得豐厚利潤，扭轉了此前的虧損局面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese manufacturers invested those profits in more research and new factories, and now produce almost all of the world’s solar panels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國製造商隨後將這些利潤投入更多研發及新工廠的建設，如今幾乎生產了全球所有的太陽能電池板。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s exports of plug-in hybrids to Europe have rapidly gained market share there and have contributed to Volkswagen’s recent plans to cut another 50,000 workers by the end of the decade, bringing its total reduction in its work force to 100,000.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國出口歐洲的插電式混合動力汽車迅速擴大了在當地的市場份額，也是大眾汽車最近計劃在本十年結束前再裁員5萬人、使其裁員總人數達到10萬人的原因之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The European Union imposed tariffs of 7.8 to 35.3 percent on Chinese electric cars two years ago, on top of the region’s usual 10 percent tariff on imported cars. But the bloc did not impose extra tariffs then on plug-in hybrids.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩年前，歐盟在通常對進口汽車徵收的10%關稅基礎上又對中國電動汽車徵收7.8%至35.3%的關稅。但歐盟當時沒有對插電式混合動力汽車加徵額外關稅。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="比亞迪電動車，2023年攝於慕尼黑。" data-src="https://static01.nyt.com/images/2026/10/09/multimedia/09Biz-China-EU-vbqk/09Biz-China-EU-vbqk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/09/multimedia/09Biz-China-EU-vbqk/09Biz-China-EU-vbqk-master1050.jpg"/></div><figcaption><span>比亞迪電動車，2023年攝於慕尼黑。</span> <cite>Felix Schmitt for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s exports of plug-in hybrids have soared to almost 200,000 a month, from fewer than 10,000 a month, in just three years. Many are going to Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">短短三年間，中國插電式混合動力汽車出口從每月不足1萬輛飆升至每月近20萬輛，其中許多銷往歐洲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has strenuously opposed the extra tariffs on its electric cars that the European Union imposed to limit the number of imports of these cars. Beijing has called for the tariffs on electric cars to be replaced instead with limits on the number of cars shipped.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國一直強烈反對歐盟為限制中國電動汽車進口數量而對其加徵的額外關稅。北京方面主張應該取消這些關稅，改為對汽車出口數量設定限制。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This would allow Chinese electric car manufacturers to raise prices and improve profitability — the arrangement for hybrid gasoline-electric cars that is now emerging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這樣一來，中國電動汽車製造商就能夠提高售價，改善盈利能力。這也正是目前逐漸成形的混動汽車安排所採用的思路。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asked on Friday whether the current agreement on hybrid cars resembled the solar panel deal, Mr. Sefcovic said that circumstances were different and that Europe needed immediate action on hybrid cars. “The public opinion and the leaders really expect very fast action from our side,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週五，當被問及目前的混動汽車協議是否與類似當年的太陽能電池板協議時，謝夫喬維奇說情況不同，而且歐洲需要立即採取行動應對混動汽車問題。他說：「公眾輿論和領導人都確實期待我們迅速採取行動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has contended that unilateral tariffs are a violation of W.T.O. trade rules, which Beijing and the European Union are both still committed to uphold. By contrast, the Trump administration has repeatedly taken unilateral actions in defiance of W.T.O. norms. President Trump’s trade advisers have contended that China has a government-guided economy that does not follow the free market principles on which the W.T.O. was founded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國認為，單方面加徵關稅違反世界貿易組織的貿易規則，而北京和歐盟都仍然致力於維護這些規則。相比之下，川普政府一再採取違背世貿組織規則的單邊行動。川普總統的貿易顧問聲稱，中國實行的是政府主導的經濟體制，並不遵循世貿組織賴以創立的自由市場原則。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Commerce Ministry dangled several carrots for the European Union to reach a compromise with Beijing. Mr. Sefcovic said that China had agreed to reduce tariffs on imports of European goods in categories like auto parts, olive oil and footwear with an annual value of almost 4 billion euros.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為促使歐盟與北京達成妥協，中國商務部提出了幾項優惠措施。謝夫喬維奇表示，中國已同意降低汽車零部件、橄欖油和鞋類等歐洲商品的進口關稅，這些商品的年貿易額接近40億歐元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This will save European exporters about €125 million a year in duties on their shipments to China, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，這將使歐洲出口商每年向中國出口商品時節省約1.25億歐元的關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A joint statement issued by China and the European Union was less specific, saying that “both sides will continue, within the framework of W.T.O. rules, to explore the possibility of tariff reductions or elimination for certain goods.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國與歐盟發表的聯合聲明則沒有如此具體，只是表示，「雙方將繼續探討在世貿組織規則框架下，降低部分商品關稅的可能性。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some issues were left unresolved, notably whether the European Union will also forgo plans to require that key components of technologies like electric cars and wind turbines be made in Europe. Also unresolved is whether the European Union will proceed with anti-subsidy tariffs on wind turbines. Mr. Sefcovic said that more talks were planned early next year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些問題仍未解決，尤其是歐盟是否會放棄要求電動汽車和風力渦輪機等技術產品的關鍵部件必須在歐洲製造的計劃，以及歐盟是否仍將對風力渦輪機徵收反補貼關稅。謝夫喬維奇說，雙方計劃於明年初舉行更多會談。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Sefcovic is scheduled to return to Brussels on Saturday and brief officials ahead of a meeting of European presidents and prime ministers next week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">謝夫喬維奇定於週六返回布魯塞爾，並將在下週歐洲各國領導人舉行會議之前，向有關官員通報此次會談的情況。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The first item on the agenda for the meeting of Europe’s leaders is how to handle the region’s weakening economic competitiveness — and trade with China is a central issue. European leaders have been warning of a hollowing out of Europe’s industrial base because of surging imports of manufactured goods from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲領導人下週會議的首要議題是如何應對該地區經濟競爭力不斷減弱的問題，而對華貿易是其中的核心議題。歐洲領導人一直警告說，隨著來自中國的製成品進口激增，歐洲的工業基礎正面臨被掏空的危險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Time is on China’s side, with each passing month producing more than $30 billion in trade surplus for China and further weakening European competitors of Chinese manufacturers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">時間站在中國一邊。每過去一個月，中國就能獲得超過300億美元的貿易順差，並進一步削弱中國製造商的歐洲競爭對手。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Commerce Ministry said in its statement that China would continue approving exports of rare earths and rare-earth magnets to Europe. China has restricted exports of rare earths and rare-earth magnets since April 2025 and has threatened further restrictions if Europe takes action against China’s exports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部在聲明中說，中國將繼續批准對歐洲出口稀土和稀土磁體。自2025年4月以來，中國一直限制這兩類產品的出口，並威脅如果歐洲對中國出口採取行動，將實施進一步限制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ministry also said that Europe had agreed to help resolve disputes over its export controls.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部還表示，歐盟已同意協助解決圍繞其出口管制措施的爭端。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under pressure from President Joseph R. Biden Jr. and now President Trump, European companies have avoided selling to China the latest equipment used to make semiconductors with potential military applications. Beijing officials have contended that one of the fastest ways for Europe to narrow somewhat its trade deficit with China would be to sell the most advanced equipment regardless of American objections.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在前總統拜登以及現任總統川普的壓力下，歐洲企業一直避免向中國出售最先進的半導體製造設備，因為這些設備生產的晶片可能被用于軍事目的。北京官員認為，歐洲若想較快縮小對華貿易逆差，一個辦法就是不顧美國反對，向中國出售最先進的設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Europe has also been preparing legislation to impose a made-in-Europe requirement for important components of products like electric cars or wind turbines. China used to have similar requirements for cars and wind turbines, but repealed them after years of complaints from Europe and other trading partners. Beijing now contends that Europe should not adopt such rules, which would force Chinese companies to invest in factories in Europe instead of exporting from factories at home, where their costs are often lower.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐洲還一直在籌備立法，要求電動汽車或風力渦輪機等產品的重要零部件必須在歐洲製造。中國過去曾對汽車和風力渦輪機實施類似要求，但在歐洲和其他貿易夥伴多年抱怨後取消了這些規定。北京如今主張，歐洲不應出台這樣的規定，因為這將迫使中國企業在歐洲投資建廠，而無法繼續從生產成本通常更低的中國本土工廠向歐洲出口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese statement said that China and the European Union had “agreed to explore investment cooperation to foster mutual economic development and to discuss future-oriented cooperation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部的聲明稱，中歐雙方「同意探討投資合作，促進彼此經濟發展，並討論開展面向未來的合作」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261012/china-european-union-trade/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
