@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歐洲為何對中國電動汽車愛恨交加 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">歐洲為何對中國電動汽車愛恨交加</h1>
+    <h2 class="en-headline">Europeans Have a Love-Hate Relationship With Chinese Cars</h2>
+    <div class="meta-line">JAMES PATON <span style="margin: 0 8px;">•</span> 2026-10-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="位於英國利茲的一家比亞迪展廳。在歐洲售出的汽車中，大約每10輛就有一輛是中國汽車。" height="700" src="https://static01.nyt.com/images/2026/10/12/multimedia/12Biz-Europe-China-EV-hwbq/12Biz-Europe-China-EV-hwbq-master1050.jpg" width="1050"/><figcaption><span>位於英國利茲的一家比亞迪展廳。在歐洲售出的汽車中，大約每10輛就有一輛是中國汽車。</span> <cite>Owen Richards for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">BYD, China’s dominant maker of electric vehicles, aims to open so many outlets in Germany that no one has to travel more than 20 minutes to buy one of its cars. One of its Chinese rivals, Xiaomi, sees Germany as the foundation of its European expansion plans, after selling 700,000 cars back home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國領先的電動汽車製造商比亞迪計劃在德國開設大量銷售網點，使任何人前往最近的比亞迪門店買車，路上用時都不超過20分鐘。其中國競爭對手之一小米在中國本土售出70萬輛汽車後，將德國視為其歐洲擴張計劃的基礎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Germany is the birthplace of the automobile and the home of Volkswagen, BMW and Mercedes-Benz. These days, it is also a top destination for Chinese companies selling cars at a considerable discount to European vehicles.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國是汽車的誕生地，也是大眾、寶馬和梅賽德斯-奔馳的故鄉。如今，這裡也已成為中國車企的首選市場，中國車的售價比歐洲車低得多。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Customers don’t care if it’s a Chinese car or a German car,” said Ferdinand Dudenhöffer, a German auto analyst and former executive at Porsche and other companies. What they do care about, he said, is the price.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「顧客不在乎它是中國車還是德國車，」德國汽車分析師、曾在保時捷等公司擔任高管的費迪南德·杜登赫費爾說。他說，他們真正在乎的是價格。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shut out of the United States by tariffs, Chinese automakers have focused on other overseas markets — and Europe is a prime target. Low-cost Chinese car brands are enticing customers across the continent as surging gasoline prices drive interest in electric vehicles. Chinese cars account for about one in every 10 cars sold in Europe, up from one in 100 five years ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由於被關稅擋在美國之外，中國汽車製造商專注於其他海外市場——歐洲正是主要目標。隨著汽油價格飆升，人們對電動汽車的興趣日益濃厚，低價中國汽車品牌正在吸引整個歐洲大陸的消費者。目前歐洲每售出10輛汽車中就有一輛是中國品牌，而五年前這一比例僅為百分之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese brands are rapidly gaining ground on leaders like Volkswagen. BYD’s sales in Europe have more than doubled this year. Sales of another popular Chinese manufacturer, Chery, have grown even faster. The company’s Jaecoo 7, known as the “Temu Range Rover” in a nod to the Chinese bargain-shopping app, was Britain’s best-selling vehicle in September. Xiaomi plans to add to the competition after teaming up with eight dealers in Germany.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國品牌正在迅速追趕大眾等領先品牌。比亞迪今年在歐洲的銷量增長了一倍多。另一家受歡迎的中國製造商奇瑞的銷量增長更快。該公司的傑酷7是英國9月份最暢銷的車型。這款車也被稱為「Temu版路虎攬勝」，借用了中國廉價購物應用Temu的名字。小米在與德國八家經銷商合作後，計劃加入競爭。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國汽車製造商奇瑞生產的傑酷7上個月成為英國最暢銷的車型。" data-src="https://static01.nyt.com/images/2026/10/12/multimedia/12Biz-Europe-China-EV-vgmp/12Biz-Europe-China-EV-vgmp-master1050.jpg" src="https://static01.nyt.com/images/2026/10/12/multimedia/12Biz-Europe-China-EV-vgmp/12Biz-Europe-China-EV-vgmp-master1050.jpg"/></div><figcaption><span>中國汽車製造商奇瑞生產的傑酷7上個月成為英國最暢銷的車型。</span> <cite>Toby Melville/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s a love-hate relationship, however. Consumers increasingly want to buy Chinese cars. Policymakers are trying to stem the flow. The European Union reached a deal with Beijing on Friday that European officials said<strong> </strong>could halve the number of hybrid gasoline-electric cars that China sends to the bloc in the next four years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這是一種愛恨交加的關係。消費者越來越希望購買中國汽車。而政策制定者正試圖阻止這股潮流。歐盟週五與北京達成一項協議，歐洲官員稱，該協議可能使中國在未來四年向歐盟出口的油電混合動力汽車數量減半。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agreement could help ease the pain for European carmakers, though much about implementation remains unclear. Cheaper imports from China are threatening the industry, which contributes about 7 percent of the E.U.’s economic output. The E.U. industry chief, Stéphane Séjourné, has warned that the sector is in “mortal danger.” Germany’s auto industry group has predicted the loss of up to 225,000 jobs by 2035.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管具體實施細節尚不明確，但該協議或有助於緩解歐洲汽車製造商的困境。來自中國的廉價進口車正威脅該行業，該行業貢獻了歐盟約7%的經濟產出。歐盟工業主管斯特凡納·塞茹爾內警告說，該行業正處於「致命危險」之中。德國汽車工業協會預測，到2035年將有多達22.5萬個工作崗位流失。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The E.U. has faced growing pressure to impose tougher measures to shield industries from what companies see as unfair competition. Left unchecked, Chinese carmakers could triple their share of the European auto market to as much as 30 percent by 2035, said Harald Hendrikse, a managing director at Citi Research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟面臨越來越大的壓力，要求其採取更嚴厲措施，保護產業免受企業視為不公平競爭的影響。花旗研究董事總經理哈拉爾德·亨德里克塞說，如果放任不管，到2035年，中國汽車製造商在歐洲汽車市場的份額可能增加兩倍，達到30%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In taking on China, Europe faces a conundrum: How can the region protect its industries while keeping prices affordable? Efforts to insulate the sector would come with a cost.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在與中國的較量中，歐洲面臨一個難題：該地區如何在保護其產業的同時保持價格可負擔？保護該行業的努力將伴隨成本。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s no free lunch in protectionism,” said David Bailey, a professor and industrial policy expert at University of Birmingham. “European and British automakers may gain some breathing room, but consumers could face higher prices and less choice, especially at the lower end of the market.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「保護主義中沒有免費的午餐，」伯明翰大學工業政策專家、教授戴維·貝利說。「歐洲和英國汽車製造商可能獲得一些喘息空間，但消費者可能面臨更高價格和更少選擇，尤其是在低端市場。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For example, one proposal being considered would steer public spending toward European companies, prioritizing battery cells made in the region. But such a rule could raise the price of an electric car by 2,100 euros, or more than $2,300, according to researchers at Bruegel, a think tank in Brussels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">例如，正在考慮的一項提案將把公共支出引向歐洲公司，優先使用該地區製造的電池電芯。但布魯塞爾智庫布魯蓋爾的研究人員稱，這樣的規定可能使一輛電動汽車的價格提高2100歐元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Who will potentially lose from all of this?” asked Simone Tagliapietra, a deputy director at Bruegel. “I would say the middle class. They need to buy cars, right? And pushing up the cost with such provisions might be costly and even prevent them from accessing technology that, given the current energy crisis, is existentially important for Europeans.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這一切最終可能讓誰蒙受損失？」布魯蓋爾副主管西蒙娜·塔利亞皮耶特拉問道。「我會說是中產階級。他們需要買車，對吧？而此類條款帶來的推高成本可能代價高昂，甚至可能使他們無法獲得這項技術——鑒於當前的能源危機，這項技術對歐洲人至關重要。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2024, the European Union imposed tariffs as high as 45 percent on Chinese electric cars to try to counter Beijing’s subsidies. But the bloc spared hybrid vehicles, which were then still a small segment of the market. Chinese manufacturers pivoted, boosting exports of hybrids, which are subject to only a 10 percent tariff.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，歐盟對中國電動汽車徵收高達45%的關稅，試圖抵消北京補貼的影響。但歐盟對混合動力汽車予以豁免，當時該車型在市場上仍僅占很小份額。中國製造商隨即調整策略，增加混合動力汽車出口，而這類車僅適用10%的關稅。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese hybrids have since poured into Europe, accounting for more than a fifth of the category’s total sales and pushing policymakers to consider wider trade restrictions. In Poland, Hungary and Romania, Chinese companies have gained more than half of the plug-in hybrid market, according to Dataforce, which tracks the auto sector.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此後，中國混合動力汽車湧入歐洲，占該類別總銷量的五分之一以上，促使政策制定者考慮更廣泛的貿易限制。根據追蹤汽車行業的Dataforce的數據，在波蘭、匈牙利和羅馬尼亞，中國公司已獲得插電式混合動力市場一半以上的份額。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">History shows restricting supplies of those Chinese cars would probably increase prices,<strong> </strong>which over time could benefit the country’s manufacturers in Europe. In 2013, China agreed to reduce the number of solar panels that it shipped to Europe. In turn, Chinese manufacturers raised prices, pulling in larger profits that they could invest in research and new factories.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歷史表明，限制這些中國汽車的供應可能會推高價格，而從長遠來看，這反而可能使中國汽車製造商在歐洲獲益。2013年，中國同意減少向歐洲出口的太陽能電池板數量。作為回應，中國製造商提高了價格，從而獲得了更高的利潤，並可將這些利潤用於投資研發和新工廠建設。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today China dominates the world’s solar industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國主導著全球太陽能產業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies have their eye on the long term, seeing this period as a “bridge” toward making cars on European soil, said Matthias Schmidt, an industry analyst in Germany. He pointed to Leapmotor’s production partnership with Stellantis and BYD’s plan to produce cars in Hungary.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國行業分析師馬蒂亞斯·施密特說，中國公司著眼於長期，將這一時期視為邁向在歐洲本土生產汽車的「橋樑」。他提到零跑汽車與斯泰蘭蒂斯的生產合作，以及比亞迪在匈牙利生產汽車的計劃。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="像奇瑞這樣的中國企業仍然認為歐洲市場蘊藏著巨大的機遇，即使新的貿易措施會放緩它們在歐洲的擴張步伐。" data-src="https://static01.nyt.com/images/2026/10/12/multimedia/12Biz-Europe-China-EV-kqbz/12Biz-Europe-China-EV-kqbz-master1050.jpg" src="https://static01.nyt.com/images/2026/10/12/multimedia/12Biz-Europe-China-EV-kqbz/12Biz-Europe-China-EV-kqbz-master1050.jpg"/></div><figcaption><span>像奇瑞這樣的中國企業仍然認為歐洲市場蘊藏著巨大的機遇，即使新的貿易措施會放緩它們在歐洲的擴張步伐。</span> <cite>— Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies still see significant opportunity in Europe, even if new trade measures slow their advance. Spain is among the countries where they have seen strong demand and taken advantage of an increasing appetite for electric and hybrid vehicles. Electric cars have caught up with gas-powered vehicles, and electrics and hybrids together make up more than two thirds of the European market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管新的貿易措施放緩了中國企業的擴張步伐，但它們仍認為歐洲市場蘊藏著巨大機遇。西班牙便是其中之一：中國公司在那裡發現了強勁需求，抓住了當地人對電動車和混動車越來越感興趣的機會。電動汽車的銷量已追平燃油車，而電動汽車和混合動力車合計佔據了歐洲市場三分之二以上的份額。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the end of last year, Spain had about 600 dealerships selling Chinese brands. By the end of 2026, that number will likely grow to 1,000, according to Faconauto, a dealership association in Madrid. The market share of Chinese brands in Spain has risen fivefold in three years to about 15 percent, led by BYD and MG, the iconic British automaker now owned by a Chinese state-run company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年年底，西班牙約有600家銷售中國品牌的經銷商。根據馬德里經銷商協會Faconauto的預測，到2026年底，這一數字可能增長到1000家。在比亞迪和名爵帶動下，中國品牌在西班牙的市場份額三年內增至五倍，達到約15%，名爵是標誌性的英國汽車製造商，現為中國國有企業所有。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“For the Spanish people, this is very good,” said Marta Blázquez, Faconauto’s president.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這對西班牙人來說是好事，」Faconauto總裁瑪爾塔·布拉斯克斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese brands have retained a significant edge on price compared with their European peers, though the gap has narrowed from a discount of as much as 30 percent in recent years, she said. The Center for European Policy Analysis in February estimated that the average starting price for a BYD electric vehicle in Europe ranged from €30,000 to €45,000, compared with prices closer to €50,000 for European E.V.s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說，與歐洲同行相比，中國品牌在價格上保持了顯著優勢，但這一差距已從近年高達30%的折扣幅度有所收窄。歐洲政策分析中心2月估計，比亞迪電動汽車在歐洲的平均起售價在3萬至4.5萬歐元之間，而歐洲電動汽車的價格接近5萬歐元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Germany, even though Chinese car brands remain smaller players, they’re growing quickly. BYD said it planned to expand to as many as 300 dealerships by the end of the year. After more than doubling in 2025, sales of Chinese cars in Germany have continued to surge this year, according to Inovev, a consulting firm in Paris.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在德國，儘管中國汽車品牌仍是較小的參與者，但它們增長迅速。計劃在今年年底前將經銷商網路擴展至多達300家。根據巴黎諮詢公司Inovev的數據，中國汽車在德國的銷量在2025年增長一倍多後，今年繼續激增。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Stefan Bratzel, director of the Center of Automotive Management in Germany, invoked Frank Sinatra in explaining the importance of the country for Chinese car companies. The way they see it, “if you can make it there, you can make it anywhere.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">德國汽車管理中心主任斯特凡·布拉策爾在解釋德國對中國汽車公司的重要性時引用了弗蘭克·辛納屈的歌詞——在他們看來，「如果你能在那裡成功，就能在任何地方成功。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">James Paton是《紐約時報》國際商業與經濟記者，常駐倫敦。</p><div class="" data-poster=""><br/></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261013/europe-china-evs-hybrids/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
