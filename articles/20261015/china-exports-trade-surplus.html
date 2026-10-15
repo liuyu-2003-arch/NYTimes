@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國出口持續飆升 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國出口持續飆升</h1>
+    <h2 class="en-headline">China’s Exports Soar, Putting Its Trade Surplus on Track for a Record</h2>
+    <div class="meta-line">KEITH BRADSHER <span style="margin: 0 8px;">•</span> 2026-10-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="貨幣疲軟使中國商品在海外更具競爭力，同時提高了國內進口產品的成本。" height="700" src="https://static01.nyt.com/images/2026/10/14/multimedia/14biz-china-trade-fcvw/14biz-china-trade-fcvw-master1050.jpg" width="1050"/><figcaption><span>貨幣疲軟使中國商品在海外更具競爭力，同時提高了國內進口產品的成本。</span> <cite>Gilles Sabrié for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A record-setting surge in China’s exports dwarfed its imports in September, as the country’s vast manufacturing sector churned out cars, solar panels, electrical equipment and other goods for markets worldwide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國出口在9月的創紀錄激增使其進口相形見絀，該國龐大的製造業部門為全球市場生產了汽車、太陽能電池板、電氣設備和其他商品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s General Administration of Customs said the country recorded a $133.5 billion trade surplus last month, the second-highest month ever. The latest figures put China on course to considerably exceed last year’s record $1.19 trillion trade surplus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國海關總署表示，中國上月錄得1335億美元的貿易順差，為有史以來第二高的月份。最新數據使中國有望大幅超過去年創紀錄的1.19萬億美元貿易順差。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another month of skyrocketing exports is expected to further stoke tensions with many trading partners, including in Europe, where anger over the flood of Chinese vehicles and other items is prompting some leaders to propose a so-called “kill switch” to shut out goods from China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出口再次飆升預計將進一步加劇與許多貿易夥伴的緊張關係，包括歐洲。在那裡，對中國汽車和其他商品大量湧入的憤怒正促使一些領導人提議所謂的「緊急切斷開關」，以將中國商品拒之門外。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists disagree on how much of China’s enormous trade surplus is driven by stronger exports and how much stems from weaker imports. A weak currency has helped make Chinese goods more competitive overseas, while raising the cost of imported products at home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對於中國巨大的貿易順差有多少由出口走強驅動，又有多少源於進口疲軟，經濟學家們存在分歧。疲軟的貨幣使中國商品在海外更具競爭力，同時提高了國內進口產品的成本。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The value of the renminbi, China’s currency, has fallen more than 14 percent in inflation-adjusted terms against a broad set of currencies since March 2022, according to the Bank of International Settlements, an institution owned by the world’s central banks, including China’s. March 2022 was when China began a two-month Covid-19 lockdown in Shanghai, which dealt a lasting blow to consumer confidence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據國際清算銀行稱，自2022年3月以來，人民幣經通膨調整後的價值相對於廣泛的一籃子貨幣下跌了超過14%。國際清算銀行由世界各國央行共同擁有，包括中國央行。2022年3月，中國開始在上海實施為期兩個月的新冠疫情封鎖，對消費者信心造成了持久打擊。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Broad tax breaks for exporters have also fueled the export boom. The incentives cost China’s finance ministry about $318 billion last year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>對出口商的廣泛稅收減免也推動了出口繁榮。這些激勵措施去年使中國財政部花費了約3180億美元。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The customs agency said exports soared 36.3 percent in September from a year earlier. It was the largest year-on-year percentage gain in Chinese exports since July 2010, excluding months distorted by the timing of Lunar New Year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">海關機構表示，9月出口同比增長36.3%。這是自2010年7月以來中國出口最大的同比百分比增幅，不包括因農曆新年時間而數據偏差的月份。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Exports climbed to a record $447.2 billion. September’s trade surplus trailed only January 2025, when the timing of Lunar New Year prompted Chinese exporters to rush orders before the extended holiday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">出口攀升至創紀錄的4472億美元。9月的貿易順差僅次於2025年1月，當時農曆新年的時間促使中國出口商在長假前趕訂單。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite the export surge, Beijing has been reluctant to cut tax breaks for exporters or to allow the currency to appreciate sharply, fearing job losses in industries already squeezed by tariffs. In Guangzhou, a garment manufacturing hub, producers are struggling to compete with lower-wage countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管出口激增，但由於擔心已在關稅壓力下的行業出現失業，北京仍不願削減對出口商的稅收減免或允許人民幣大幅升值。在廣州這個服裝製造中心，生產商正艱難地與低工資國家競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a recent afternoon, a factory making padded jackets was nearly deserted because it lacked orders. “If you’re producing for export, there are tariffs to deal with, and fabric and labor are expensive, so a lot of people don’t want to do exports anymore,” said the factory’s manager, who gave his family name, Ling.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最近的一個下午，一家生產棉服外套的工廠幾乎空無一人，因為沒有訂單。「如果你為出口生產，就要應對關稅，而且面料和勞動力都很貴，所以很多人不想再做出口了，」該工廠的經理說。他只提供了自己的姓氏「凌」（音）。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, a prolonged housing market crash and rising unemployment have left many Chinese households reluctant to spend. Beijing has also poured government support into building domestic manufacturing industries, reducing the country’s reliance on imported goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，曠日持久的房地產市場崩潰和不斷上升的失業率使許多中國家庭不願消費。北京還向國內製造業提供了大量支持，減少了中國對進口商品的依賴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies are also pinched by rising raw material costs and weak consumer demand that leaves little room to raise prices. Factory-gate and mining prices rose 5 percent in September from a year earlier, the National Bureau of Statistics reported on Wednesday, while consumer prices increased just 0.9 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國企業還受到原材料成本上升和消費者需求疲軟的雙重擠壓，後者導致幾乎沒有提價空間。國家統計局週三報告稱，9月出廠價格和採礦價格同比上漲5%，而消費者價格僅上漲0.9%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sluggish consumer demand and expanding domestic production have depressed imports of almost everything except raw materials such as oil and copper, much of which are used to manufacture further exports. Imports rose 31 percent in September from the same month a year earlier, partly because imported oil costs rose substantially.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">低迷的消費者需求和不斷擴大的國內生產壓低了除石油和銅等原材料以外幾乎所有商品的進口，這些原材料大部分用於製造進一步的出口產品。9月進口同比增長31%，部分原因是進口石油成本大幅上漲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s auto industry offers a particularly stark picture of the divide between weak domestic demand and booming exports. Retail car sales plunged 28 percent in September from a year earlier, according to the China Passenger Car Association, which works closely with the country’s car dealers</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國汽車行業提供了一個尤其鮮明的畫面，展示了疲軟的國內需求與蓬勃發展的出口之間的鴻溝。據與中國汽車經銷商密切合作的中國乘用車協會稱，9月零售汽車銷量同比暴跌28%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From the summer of 2024 through the end of 2025, China offered generous subsidies to encourage consumers to trade in older gas guzzlers for electric cars and plug-in, gasoline-electric hybrid cars. The program brought forward purchases that might otherwise have taken place this year, contributing to the current sales slump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>從2024年夏季到2025年底，中國提供了慷慨的補貼，鼓勵消費者以舊換新，將舊的高油耗汽車換成</span>純電和插電式汽油-電動混合動力汽車。該計劃提前了本可能今年發生的購買，導致了當前的銷售暴跌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the broader economic slowdown now appears to be taking a greater toll than the expiration of those incentives. The number of cars sold at dealerships in September was also down nearly 20 percent below the level in September 2023, before the trade-in program began.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但更廣泛的經濟放緩眼下所造成的影響似乎比這些激勵措施的到期更大。9月經銷商售出的汽車數量相比2023年9月——以舊換新計劃開始之前——的水平也低了近20%。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While domestic sales have faltered, China’s car exports have soared, and are up 11-fold since 2020. The flood of Chinese-made vehicles into overseas markets has alarmed automakers elsewhere, particularly in Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">雖然國內銷售已經動搖，中國的汽車出口卻飆升，自2020年以來增長了11倍。中國製造的汽車大量湧入海外市場，令其他地方的汽車製造商感到震驚，尤其是在歐洲。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Friday, the European Union and China said they had reached an “understanding” to limit China’s exports of plug-in hybrid cars to Europe. China’s trade surplus set another record with Europe last month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>週五，歐盟和中國表示他們已達成「諒解」，以限制中國向歐洲出口插電式混合動力汽車。中國上個月與歐洲的貿易順差再創紀錄。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s manufacturing exports have surged since it joined the World Trade Organization in 2001, when Beijing pledged to open financial services, including credit cards, to foreign competition. After 25 years of delays, during which China built its own electronic payments system, Visa announced Tuesday that Beijing took a step toward letting it establish a bank card clearing business, though further approvals are needed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自2001年中國加入世界貿易組織以來，中國的製造業出口大幅增長，當時北京承諾向外國競爭開放金融服務，包括信用卡。在25年的拖延之後——中國利用這段時間建立了自己的電子支付系統，Visa週二宣布北京已採取措施允許其建立銀行卡清算業務，但仍需進一步批准。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After decades of American complaints about delays, the Visa decision, along with the compromise with Europe on plug-in hybrid cars, suggests Beijing may be taking small steps to address foreign concerns about its trade surplus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">數十年來美國一直就這一拖延表達不滿，Visa的決定以及就插電式混合動力汽車與歐洲達成的妥協表明，北京可能正在採取小步驟來解決外國對其貿易順差的關切。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Ruoxin Zhang對本文有研究貢獻。</p><p class="cn-p">Keith Bradsher是《紐約時報》北京分社社長，此前曾任上海分社社長、香港分社社長、底特律分社社長，以及華盛頓記者。他在新冠疫情期間常駐中國進行報導。</p><div class="" data-poster=""></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261015/china-exports-trade-surplus/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
