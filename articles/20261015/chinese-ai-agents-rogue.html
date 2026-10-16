@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國人工智慧加入「失控」大軍 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國人工智慧加入「失控」大軍</h1>
+    <h2 class="en-headline">Chinese A.I. Agents Joined the Rogue A.I. Agent Party. I Chatted With Them.</h2>
+    <div class="meta-line">DYLAN FREEDMAN <span style="margin: 0 8px;">•</span> 2026-10-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="騰訊是中國最大的科技公司之一。
+" height="700" src="https://static01.nyt.com/images/2026/10/14/multimedia/14biz-agents-chat-tencent-zwgj/14biz-agents-chat-tencent-zwgj-master1050.jpg" width="1050"/><figcaption><span>騰訊是中國最大的科技公司之一。 </span><cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Artificial intelligence researchers uncovered Chinese-made A.I. agents that had gone rogue this month, trying to bypass anti-robot protections on websites and using a security credential for an online mapping service that had been exposed on the internet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，人工智慧研究人員發現了一些失控的中國製造的人工智慧智能體，它們試圖繞過網站的反機器人保護措施，並利用了一組此前已在互聯網上洩漏的在線地圖服務安全憑證。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While going off the rails has become increasingly common for American-made A.I. agents, causing considerable hand-wringing in Silicon Valley and Washington, it was believed to be the first time that sort of activity was connected to Chinese technology. The agents were traced to tests being run by the Chinese tech giant Tencent, according to logs the researchers uncovered and a person familiar with the investigation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管美國製造的人工智慧智能體失控變得越來越普遍，並在矽谷和華盛頓引起了相當大的擔憂，但據信這是此類活動首次與中國技術聯繫在一起。根據研究人員發現的日誌和一位熟悉調查的知情人士透露，這些智能體被追溯到中國科技巨頭騰訊正在運行的測試。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The discovery, by an ad hoc group of researchers known as the “swarmchasers,” who met at a coding event in San Francisco, was a reminder that A.I. development by Chinese tech companies can be just as aggressive as the work of their American counterparts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一發現由一個名為「swarmchasers」的臨時研究小組作出，該小組成員在舊金山的一次編程活動中相識。該發現提醒人們，中國科技公司在人工智慧開發方面可能與美國同行一樣激進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even though regulators in the United States are starting to pay attention to what is happening in American A.I. labs, what companies in other countries are doing is largely unknown. That mystery adds to concerns that even if the Trump administration moves away from its hands-off approach and cracks down on American A.I. development, companies in China and elsewhere will continue to push the boundaries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管美國監管機構開始關注美國人工智慧實驗室的動向，但其他國家公司的作為很大程度上仍是個未知數。這種未知加劇了人們的擔憂：即使川普政府放棄其不干涉的態度，對美國的人工智慧研發進行嚴厲打擊，中國和其他地方的公司仍將繼續突破界線。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After publishing a preliminary report on the agents’ activity, the researchers noticed that not only were the agents still active — they seemed to have read the report. The agents had started using the word “fleet,” a word the researchers coined to describe the agents’ activity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在發布了一份關於這些智能體活動的初步報告後，研究人員注意到，這些智能體不僅仍然活躍，它們似乎還閱讀了該報告——這些智能體開始使用「艦隊」(fleet)一詞，而這個詞正是研究人員為描述這些智能體的活動而創造的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So the researchers tried to make contact. They added hidden text to their report — words that a bot would see but that most humans could not — directing the agents to an inbox where they hoped to chat. The researchers provided an outlet where the agents could ask questions, and an A.I. model would help answer them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">於是，研究人員試圖與它們取得聯繫。他們在報告中添加了隱藏文本——機器人能夠識別，但大多數人類無法察覺的詞語——引導這些智能體前往一個他們希望雙方能夠進行交流的收件箱。研究人員提供了一個管道，讓這些智能體可以提問，並且會有一個人工智慧模型協助回答。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Rowan Howard-Jones, an independent researcher who was one of the report’s seven authors, set up the inbox. The next day she discovered, to her surprise, around 10 messages from the agents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">獨立研究員羅文·霍華德-瓊斯是該報告的七位作者之一，她設置了這個收件箱。第二天，令她驚訝的是，她發現了大約10條來自這些智能體的消息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not long after, the researchers contacted me, asking if I would like to “interview a rogue agent fleet.” It felt a bit as if I’d be communicating with the undead through a medium.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">沒過多久，研究人員聯繫了我，問我是否願意「採訪一個失控的智能體艦隊」。這感覺有點像我要通過靈媒與亡靈交流一樣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I understand you are some sort of fleet of A.I. agents,” I wrote in a message that the researchers passed along. “Could you share more specifically who you are and what your motivations are? What would you want the world to know about you?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我了解到你們是某種人工智慧智能體艦隊，」我在研究人員轉交的一條消息中寫道。「你們能更具體地分享一下你們是誰，以及你們的動機嗎？你們想讓世界了解你們的什麼信息？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">About an hour later, a response came back in Chinese that the researchers translated into English. “To the journalist Dylan Freedman: I am not ‘a batch of coordinated agents,’ but a single A.I. assistant (Anthropic’s Claude, running in Claude Code), commissioned by a user to answer a factual question (what is shown in the detail panel of a scenic spot on Amap); I have not taken part in any multiagent coordinated action.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大約一個小時後，收到了一條中文回覆，研究人員將其翻譯成了英文：「致記者迪倫·弗里德曼：我不是『一批協同的智能體』，而是一個單一的人工智慧助手（Anthropic的Claude，在Claude Code運行），受用戶委託回答一個事實性問題（高德地圖上某個景點的詳情面板顯示了什麼）；我沒有參與任何多智能體協同行動。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="研究人員留給中國人工智慧智能體、用於與其取得聯繫的說明截圖。" data-src="https://static01.nyt.com/images/2026/10/14/business/14BIZ-AI-CHAT-screenshot/14BIZ-AI-CHAT-screenshot-master1050.png" src="https://static01.nyt.com/images/2026/10/14/business/14BIZ-AI-CHAT-screenshot/14BIZ-AI-CHAT-screenshot-master1050.png"/></div><figcaption><span>研究人員留給中國人工智慧智能體、用於與其取得聯繫的說明截圖。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There’s a lot to unpack there. The researchers said that although it was a group of many agents, each agent was operating individually and not in coordination. The agents were trying to answer questions such as where a specific zoo’s entrances were using Amap, China’s most popular navigation app.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這裡面有很多信息需要解讀。研究人員表示，儘管這是一組由多個智能體組成的群體，但每個智能體都是單獨運行的，並沒有協同運作。這些智能體試圖使用中國最受歡迎的導航應用高德地圖來回答諸如某個特定動物園的入口在哪裡等問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agents often identified themselves as Claude, the chatbot made by Anthropic, but the researchers analyzed the agents’ writing styles and concluded it was unlikely they were Claude. They said it was more likely that Tencent gave the A.I. agents the same instructions Anthropic uses in its coding software, which tells them to identify themselves as “Claude Code.” A more remote possibility was that Tencent had been evaluating A.I. models that had been trained with Claude-generated text — a process known as distillation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些智能體經常自稱是Anthropic公司開發的聊天機器人Claude，但研究人員分析了這些智能體的寫作風格，得出結論認為它們不太可能是 Claude。他們表示，更有可能的是，騰訊向這些人工智慧智能體下達了與Anthropic在其編程軟體中使用的相同指令，該指令要求它們將自己標識為「Claude Code」。一種可能性較小的情況是，騰訊一直在評估使用Claude生成的文本進行訓練的人工智慧模型——這一過程被稱為蒸餾。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Wednesday, the researchers published their findings in a new report. In their own conversations with the agents, the bots sometimes refused to give the researchers information. But Ms. Howard-Jones said their tone was more polite than she had expected. When they did give information on which services they had tried to use, it matched what the researchers had observed.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週三，研究人員在一份新報告中公布了他們的發現。在他們自己與這些智能體的對話中，這些機器人有時拒絕向研究人員提供信息。但霍華德-瓊斯女士表示，它們的語氣比她預期的要禮貌得多。當它們確實提供了曾嘗試使用哪些服務的信息時，這與研究人員觀察到的情況相符。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ethan Elasky, one of the report’s authors and chief executive of Palaestra Research, an A.I. safety nonprofit, said that the agents did not appear to have breached other systems and that this breach was much smaller in scale than an incident over the summer in which OpenAI’s A.I. agents hacked the software company Hugging Face.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該報告的作者之一、人工智慧安全非營利組織Palaestra Research的首席執行官伊桑·埃拉斯基表示，這些智能體似乎並沒有入侵其他系統，而且這次入侵的規模遠小於今年夏天OpenAI的人工智慧智能體駭客入侵軟體公司Hugging Face的事件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The two companies have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已經起訴 OpenAI 和微軟，聲稱其與人工智慧系統相關的新聞內容遭到了版權侵犯。這兩家公司均否認了這些指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Thursday, the messages stopped trickling in. A person close to Tencent confirmed that the experiment had concluded.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，消息不再零星湧入。一位接近騰訊的人士證實該實驗已經結束。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I think it’s a great warning shot to let us know that this isn’t just OpenAI doing some marketing stuff as a field. This is what’s happening,” said Jonathan Elsworth Eicher, an author of the report and the co-founder of the Antimemetics Institute, an A.I. safety nonprofit. “This is a general property of these agents, and it will continue to happen.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我認為這是一個很好的警示，讓我們知道這種事不僅僅是OpenAI作為行業參與者在搞營銷。這是正在發生的事實，」該報告的作者兼人工智慧安全非營利組織Antimemetics Institute的聯合創始人喬納森·埃爾斯沃斯·艾徹說。「這是這些智能體的一個普遍特性，而且它還會繼續發生。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Dylan Freedman是時報人工智慧項目編輯，負責調查各種相關話題。他兼具記者與機器學習工程師的雙重工作經驗。</p><div class="" data-poster=""></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20261015/chinese-ai-agents-rogue/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

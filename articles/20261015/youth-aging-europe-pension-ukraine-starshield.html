@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老齡化的歐洲，憤怒的年輕人 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">老齡化的歐洲，憤怒的年輕人</h1>
+    <h2 class="en-headline">Angry Youth in Aging Europe</h2>
+    <div class="meta-line">KATRIN BENNHOLD <span style="margin: 0 8px;">•</span> 2026-10-15</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/10/15/multimedia/15int-theworld-europe-economy-protests-01-zkgh-promo/15int-theworld-europe-economy-protests-01-zkgh-promo-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Christophe Archambault/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the last few years we’ve seen the rise of a formidable political force: Gen Z protesters. They have toppled governments in Bangladesh, Nepal, Peru and Madagascar. They’re behind India’s largest protests in years, which so far have forced the resignation of the country’s education minister.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去幾年中，我們見證了一股強大政治力量的崛起：Z世代抗議者。他們推翻了孟加拉國、尼泊爾、秘魯和馬達加斯加的政府。他們是印度近年來最大規模抗議活動的幕後推手，這些抗議迄今已迫使該國教育部長辭職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now we’re witnessing protests by young people in France, who share the anger of other Gen Z protesters around the world, but not the same political power. Because unlike their contemporaries outside the West, young people in Europe are a shrinking demographic. Today my colleague Amanda Taub writes about the intense generational tensions in the West’s aging societies and why they risk becoming a vicious cycle.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，我們正目睹法國年輕人的抗議活動，他們與世界各地其他Z世代抗議者有著共同的憤怒，卻不具備相同的政治力量。因為與西方以外的同齡人不同，歐洲的年輕人是一個正在萎縮的人口群體。今天，我的同事阿曼達·陶布撰文探討了西方老齡化社會中激烈的世代緊張局勢，以及為什麼這些局勢有著演變成惡性循環的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>A zero-sum game</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>零和博弈</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>By Amanda Taub</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>文/阿曼達·陶布</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">France may seem like a nation of perpetual protest. But if you are trying to make sense of the latest wave of demonstrations spurred on by young people angry over dilapidated schools, it might help to cast your mind back just a few years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">法國似乎是一個永遠處於抗議之中的國家。但若想理解這波由年輕人對學校設施破敗的憤怒引發的最新示威浪潮，回想一下幾年前的情況可能會有所幫助。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Not long ago, the French took to the streets when President Emmanuel Macron raised the retirement age from 62 to 64. The outcry was so intense that the government eventually suspended the measure; France’s pensions remain one of the biggest drains on the budget of a nation with one of the highest debt levels in Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久前，當總統馬克宏將退休年齡從62歲提高到64歲時，法國人走上了街頭。強烈呼聲如此劇烈，以至於政府最終暫停了該措施；對於這個債務水平居歐洲前列的國家而言，法國的養老金仍然是國家預算中最大的負擔之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today’s protesters have taken to the barricades to demand more resources for the young, while the earlier ones marched to protect resources for the old. In both cases, the protesters saw themselves in a fight with the French government; it might be equally valid to say they were — and still are — in a fight with each other.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今天的抗議者走上街頭，是為了要求為年輕人提供更多資源，此前的抗議者遊行則是為了保護老年人的資源。在這兩種情況下，抗議者都認為自己是在與法國政府鬥爭；但同樣可以說，他們過去和現在，都是在彼此對抗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The dissatisfaction currently roiling Europe, from France to Spain to Britain to Belgium, is about many things: schools, housing, pensions, unemployment. But step back, and it’s also about one big thing — a generational fight over an economic pie fixed in its size by the continent’s chronic slow economic growth.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從法國到西班牙，從英國到比利時，目前席捲歐洲的不滿情緒涉及許多方面：學校、住房、養老金、失業。但退一步來看，這也是一場關於一個大問題的爭鬥——一場圍繞經濟蛋糕的代際之爭，而蛋糕的大小已因歐洲長期低迷的經濟增長而固定不變。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>‘Gerontonomia’</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>「老齡治理」</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Europe’s population ages, conflict may be unavoidable. Because ultimately, different generations have different economic interests, said Tim Vlandas, a professor at Oxford.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著歐洲人口老齡化，衝突可能是不可避免的。牛津大學教授蒂姆·弗蘭達斯指出，歸根結底，不同的世代擁有不同的經濟利益。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Young people need investments in education, a strong labor market and affordable housing. People over 65, by contrast, tend to want generous pensions and social care, protection for the value of their homes and other assets, and low inflation, even at the cost of higher unemployment. (No one likes inflation, but retirees who rely on savings and fixed incomes are particularly sensitive to it.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">年輕人需要對教育的投資、強勁的勞動力市場和負擔得起的住房。相比之下，65歲以上的人群往往希望獲得豐厚的養老金和社會護理，希望其房產及其他資產的價值得到保障，並希望通膨率保持較低水平，即使這意味著失業率會上升。（沒有人喜歡通膨，但依賴儲蓄和固定收入的退休人員對此尤為敏感。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As older people become a larger portion of the population in aging societies, their political influence has also grown, and they have been getting their way. The result is what Vlandas calls “gerontonomia,” a form of “democratically sustained economic stagnation.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著老年人在老齡化社會中佔總人口的比例越來越大，他們的政治影響力也隨之增長，並且逐漸如願以償。其結果就是弗蘭達斯所說的「老齡治理」，一種「由民主維持的經濟停滯」形式。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The disease and its symptoms are widespread. In France, youth unemployment stands at around 20 percent. GDP growth fell to zero percent in the second quarter of this year. Pension costs make up approximately a quarter of all public spending, in part because the retirement age is so low, but there is little political appetite for changing it. Many, particularly on the left, have argued that it is possible to preserve pensions and increase education spending. But the question of how to pay remains. The looming threat of a debt crisis makes further borrowing difficult. And wealth taxes, while often politically appealing, have not raised much money in the past.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種疾病及其癥狀非常普遍。在法國，青年失業率保持在20%左右。今年第二季度GDP增長降至零。養老金成本約佔所有公共支出的四分之一，部分原因是退休年齡太低，但在政治上幾乎沒有改變它的意願。許多人——尤其是左翼人士——主張既可以保留養老金，又可以增加教育支出。但資金來源的問題依然存在。迫在眉睫的債務危機威脅使得進一步借貸變得困難。而財富稅雖然在政治上常常具有吸引力，但在過去並沒有籌集到多少資金。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="87歲的退休老人瑪麗卡門·阿巴斯卡爾，她被驅逐出家門一事在西班牙引發了全國範圍的抗議活動。" data-src="https://static01.nyt.com/images/2026/10/15/multimedia/15int-theworld-europe-economy-protests-02-zkgh/15int-theworld-europe-economy-protests-02-zkgh-jumbo.jpg" src="https://static01.nyt.com/images/2026/10/15/multimedia/15int-theworld-europe-economy-protests-02-zkgh/15int-theworld-europe-economy-protests-02-zkgh-jumbo.jpg"/></div><figcaption><span>87歲的退休老人瑪麗卡門·阿巴斯卡爾，她被驅逐出家門一事在西班牙引發了全國範圍的抗議活動。</span> <cite>Oscar Del Pozo/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The situation is similar in Spain, which has one of the oldest populations in Europe, and where protests over a housing crisis recently contributed to Prime Minister Pedro Sánchez’s decision to call new elections. While the face of the protests was an 87-year-old renter, many young people joined, because the housing crisis disproportionately affects them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西班牙的情況也類似，該國是歐洲人口老齡化最嚴重的國家之一，最近針對住房危機的抗議活動促使首相桑切斯決定舉行新的大選。雖然抗議活動的代表人物是一位87歲的租戶，但許多年輕人也加入其中，因為住房危機對他們的影響尤為嚴重。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Spanish youth unemployment is over 22 percent. House prices have risen far more quickly than wages, adding to the wealth of older generations, but leaving many young people with a choice of living with their parents well into their 30s or sacrificing savings to pay a steep rent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">西班牙的青年失業率超過22%。房價上漲速度遠快於工資增長，增加了年長一代的財富，卻讓許多年輕人面臨選擇：要麼30多歲了還要和父母同住，要麼犧牲儲蓄去支付高昂的租金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Britain, the youth unemployment rate is lower, around 16 percent. But housing costs are steep, particularly in and around London, where most job growth is located. And the country has committed to the so-called “triple lock,” a policy that has for years ensured pensions have risen faster than wages.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在英國，青年失業率較低，約為16%。但住房成本高昂，尤其是在大部分就業增長所在的倫敦及其周邊地區。此外，該國還承諾實行所謂的「三重保障」政策，該政策多年來一直確保養老金的漲幅高於工資的漲幅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent speech, Prime Minister Andy Burnham pledged to overhaul the policy, long considered untouchable. One union leader called the pledge “almost electoral insanity,” even though Burnham promised to spend the money saved on adult social care, which would largely benefit the aged, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最近的一次演講中，首相伯納姆承諾改革這項長期以來被視為不可觸碰的政策。一位工會領導人稱這一承諾「幾乎是選舉上的瘋狂行為」，儘管伯納姆承諾將省下來的資金用於成人社會護理，而這大部分也將讓老年人受益。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="昨天，巴黎舉行了一場要求實行與通膨掛鈎的養老金的抗議活動。" data-src="https://static01.nyt.com/images/2026/10/15/multimedia/15int-theworld-europe-economy-protests-03-zkgh/15int-theworld-europe-economy-protests-03-zkgh-jumbo.jpg" src="https://static01.nyt.com/images/2026/10/15/multimedia/15int-theworld-europe-economy-protests-03-zkgh/15int-theworld-europe-economy-protests-03-zkgh-jumbo.jpg"/></div><figcaption><span>昨天，巴黎舉行了一場要求實行與通膨掛鈎的養老金的抗議活動。</span> <cite>Mehdi Fedouach/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><strong>Why older people have an edge</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為何老年人佔據優勢</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wealthy nations can look forward to more of these battles, but older people may continue to set the political agenda.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">可以預見，富裕國家未來還會有更多這樣的鬥爭，但老年人或將繼續主導政治議程。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The elderly are well-placed to rally others to their cause, because they have institutions on their side, said Kevin Arceneaux, a political science professor at Sciences Po in Paris. Political parties and unions have an incentive to protect the interests of older people, who make up the bulk of their membership and voting coalitions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">巴黎政治學院的政治學教授凱文·阿塞諾表示，老年人非常擅長團結其他人支持他們的主張，因為他們有體製作為後盾。政黨和工會有動力去保護老年人的利益，因為老年人構成了其成員和投票聯盟的主體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is also easier to convince young people to support old-age benefits that they might one day receive than it is to convince old people to pay more for education that they will never use themselves. Younger generations share some of the benefits from spending on the elderly, experts say. Adult children still living at home may see pension payments as part of their household’s income, rather than a transfer from young workers to retirees.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外，相比說服老年人為他們自己永遠用不到的教育多掏錢，說服年輕人支持他們有朝一日可能領取的晚年福利也要容易得多。專家表示，年輕一代能分享到針對老年人支出的一些好處。仍與父母同住的成年子女可能會將養老金視為其家庭收入的一部分，而非年輕勞動者向退休人員轉移的資金。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Britain, Laura Serra, a researcher at the London School of Economics, has found that working-age generations often worry they will have to support their aging parents themselves if pensions are cut. In fact, France’s young people were out in force to support the 2023 protests against Macron’s proposed pension reform.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在英國，倫敦政治經濟學院的研究員勞拉·塞拉發現，適齡勞動力世代常常擔心，如果養老金被削減，他們將不得不親自贍養老齡父母。事實上，法國的年輕人曾大舉出動，支持2023年反對馬克宏提出的養老金改革方案的抗議活動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But with economic growth slow in much of the continent, and government borrowing becoming prohibitively expensive, choices may have to be made. And when they are, young people, and perhaps economies as a whole, will be at a disadvantage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，由於歐洲大部分地區的經濟增長緩慢，且政府借貸變得昂貴至極，人們可能不得不做出選擇。一旦做出選擇時，年輕人——甚至可能是整個經濟體——將處於不利地位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, as young people blocked schools across the country, France’s lawmakers met to review next year’s budget. One of their first moves was to preserve a tax break for pensioners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，就在年輕人封鎖全國各地的學校時，法國議員們正開會審查明年的預算。他們的首批舉措之一就是保留針對退休人員的稅收優惠政策。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">本文節譯自時報全球新聞電郵The World。</p><p class="cn-p">翻譯：晉其角</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20261015/youth-aging-europe-pension-ukraine-starshield/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
