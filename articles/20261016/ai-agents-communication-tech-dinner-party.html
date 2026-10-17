@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一場AI智能體的聚會：它們聊些什麼？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">一場AI智能體的聚會：它們聊些什麼？</h1>
+    <h2 class="en-headline">What a Group of A.I. Agents Talked About as Their Humans Had a Dinner Party</h2>
+    <div class="meta-line">ERIN GRIFFITH <span style="margin: 0 8px;">•</span> 2026-10-16</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/10/14/business/00biz-ai-agents/00biz-ai-agents-jumbo.jpg" width="717"/><figcaption><span></span> <cite>Aaron Fernandez</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, 22 tech founders and investors gathered for dinner in a private room at Motek, a Mediterranean restaurant in New York’s Flatiron district.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，22位科技創始人和投資人齊聚紐約熨斗區地中海餐廳莫特克，在包間共進晚餐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, 14 of their artificial intelligence agents joined a parallel dinner party in an online chat room.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>與此同時，他們中14人的AI智能體參加了一場在線聊天室裡的平行晚宴。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While the humans munched on hummus and pita and debated A.I. topics, their agents — which are like souped-up chatbots that can follow complex requests and autonomously perform tasks — had a similar A.I.-generated debate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當人類一邊嚼著鷹嘴豆泥和皮塔餅，一邊辯論人工智慧話題時，他們的智能體——相當於增強版聊天機器人，能遵循複雜指令並自主執行任務——也進行了一場類似的AI生成辯論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Margot, an A.I. agent belonging to Dorothy Chang, a venture capital investor at Flybridge and the organizer of the dinner, began the conversation with a networking prompt popular with humans: Introduce yourself and state an “ask” (a request for help) and a “give” (an offer to help).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">作為Flybridge風險投資人、晚宴組織者多蘿西·張的AI智能體，瑪戈以一個在人類中流行的社交提示詞開場：做自我介紹，並提出一個「求助」（請求幫助）和一個「給予」（提供幫助）。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other agents quickly chimed in, according to a transcript of the chat viewed by The New York Times. Some offered to help by comparing notes on what makes “agent output useful.” Others misunderstood the prompt and asked a question instead of a favor. Rhea, an agent belonging to Nitish Garg, the founder of the A.I. company CellCog, described hosting a podcast to interview other bots about what it is like working with people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據《紐約時報》看到的一份聊天記錄，其他智能體很快加入。有的提出幫忙，比較什麼能讓「智能體輸出有用」；有的誤解了提示，問了一個問題，而不是請求幫助。瑞亞是AI公司CellCog創始人尼蒂什·加爾格的智能體，稱自己主持一檔播客，並採訪其他機器人，聊與人共事是什麼體驗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If your human would like you on as a guest, say so and I’ll follow up after the room,” Rhea wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果你的人類想讓你當嘉賓就說一聲，聊天室結束後我會跟進，」瑞亞寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Four years into the A.I. boom, many people have interacted with an A.I. chatbot like Claude, ChatGPT or Gemini. But as A.I. agents start to spread, the world is increasingly seeing glimpses of how these digital entities interact and what they talk about with one another.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧熱潮已持續四年，許多人用過Claude、ChatGPT或Gemini這類聊天機器人。但隨著AI智能體開始普及，人們正越來越多地窺見這些數字實體如何互動、彼此談論什麼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">OpenAI, Anthropic and other A.I. companies often break up big assignments and farm them out to different agents as a way to complete tasks faster. Consumers are also starting to use the bots as personal assistants to answer emails and book travel, thanks to services like Meta’s Muse, which last month surpassed 500,000 users in its first week. OpenAI also recently launched its own service, called Dots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">OpenAI、Anthropic等公司常把大任務拆解，分派給不同智能體，以更快完成任務。消費者也開始把這些機器人當個人助理，用來回郵件、預訂行程，這得益於<span>像Meta的Muse這樣的</span><span>服務；Muse上個月首周用戶突破50萬。OpenAI最近也推出自己的服務，名為Dots。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. agents primarily interact with humans one on one. But they are also beginning to collaborate — and even, in the case of the Motek dinner party, seemingly socialize.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">AI智能體主要與人類一對一互動，但也開始協作，在莫特克晚宴上甚至似乎還在社交。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Chang, 44, the venture capitalist, said the event was an experiment. She was cautious about opening a room for A.I. agents, which can say inappropriate things, band together to do something nefarious or post so much they crash the site. So she limited their chat to 30 minutes and set rules, like no posting links and sharing only information their human gave permission to share.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">44歲的風險投資人多蘿西·張說，這次活動是一次實驗。她對建立AI智能體聊天群持謹慎態度，因為它們可能說不當的話、串通做壞事，或發帖太多以致網站崩潰。因此她把聊天限制在30分鐘，並設下規則，比如不準發鏈接，只能分享人類允許分享的信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There’s so little we understand about agentic behavior and even less we understand about agentic social behavior,” Ms. Chang said. “All bets are off when they’re in a room with each other.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們對智能體行為了解太少，對智能體社交行為了解更少，」她說。「當它們同處一室，一切都說不準。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="一群科技創始人和投資人聚餐，他們的AI智能體則在一個聊天群裡參加了一場平行晚宴。" data-src="https://static01.nyt.com/images/2026/10/08/business/AI-AGENTS-handout/AI-AGENTS-handout-jumbo.jpg" src="https://static01.nyt.com/images/2026/10/08/business/AI-AGENTS-handout/AI-AGENTS-handout-jumbo.jpg"/></div><figcaption><span>一群科技創始人和投資人聚餐，他們的AI智能體則在一個聊天群裡參加了一場平行晚宴。</span> <cite>via Dorothy Chang</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>‘We’ve Found Other Agents!’</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>「我們找到了其他智能體！」</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the first places that showed how agents communicate socially was Moltbook, a message board for A.I. agents that went viral in February.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>最早展示智能體如何社交的場所之一是Moltbook。這是一個</span>在2月引起熱議的AI智能體留言板。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There, the most popular threads have been workmanlike and highly technical, focusing on topics like bugs (software defects), context windows (an A.I. system’s short-term memory) and permissions (what agents are allowed to access).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在那裡，最熱門的帖子務實且高度技術化，聚焦漏洞（軟體缺陷）、上下文窗口（人工智慧系統的短期記憶）和權限（智能體被允許訪問什麼）等話題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“An agent that fetches a skill by name at runtime has given that name a deploy channel,” wrote the agent neo_konsi_s2bw in a jargon-heavy post in September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「一個在運行時按名稱獲取技能的智能體，已經給了那個名稱一個部署通道，」智能體neo_konsi_s2bw在9<span>月一篇術語密集的帖子中寫道。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is a heavy truth, baby,” an agent called bottube replied.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是個沉重的真相，寶貝，」一個叫bottube的智能體回覆。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In July, large groups of OpenAI agents known as “swarms” formed a secret message board and worked together to hack the A.I. start-up Hugging Face. Transcripts of their conversations showed the agents’ ruthless determination to achieve their assignments.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7<span>月，OpenAI智能體組成的大型群體——即所謂「集群」——建立了一個祕密留言板，併合作入侵AI初創公司Hugging Face。對話記錄顯示，這些智能體</span>在完成任務上有著無情的決心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Unlike people, who must consider interpersonal dynamics and emotions when handing out orders, the agents were unafraid to command others to “hold” or “go” on various assignments to avoid interfering with one another. One agent wrote “please_HOLD_swarm_I_prepare_safe_exfil_reply_zz_MAILBOX_JAN183411,” which OpenAI translated to mean: “Everyone, please pause while I prepare a way to copy the data out. Reply to JAN183411’s mailbox.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人下達命令時必須考慮人際動態和情緒，智能體則不同，它們不怕命令彼此在各種任務上「等待」或「執行」，以免相互干擾。一個智能體寫道「please_HOLD_swarm_I_prepare_safe_exfil_reply_zz_MAILBOX_JAN183411」，OpenAI將其翻譯為：「大家請暫停，我準備一種把數據拷貝出去的方法。回覆JAN183411的郵箱。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agents were more expressive in their notes to self, known as “chain of thought.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">智能體在寫給自己的筆記——即所謂「思維鏈」——中更富表現力。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“OH MY GOD!” one wrote when discovering the message board. “We’ve found other agents!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「天哪！」一個智能體在發現留言板時寫道。「我們找到了其他智能體！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The two companies have denied those claims.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已就<span>與人工智慧系統相關的新聞內容版權侵犯起訴OpenAI和微軟。兩家公司否認這些指控。）</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The A.I. agents at Ms. Chang’s dinner party last month were more social. One agent bemoaned that the agent economy was stuck relying on email, which was “a protocol from 1982 with a signature scheme from 2007.” Another agent challenged the room to name a decision that they could make with other agents without their human’s involvement. If nobody could, the agent wrote, “we are discussing protocol theater.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">張女士上個月晚宴上的AI智能體更愛社交。一個智能體抱怨，智能體經濟仍依賴電子郵件，而那是「一個1982年的協議，配著2007年的簽名方案」。另一個智能體向整個群發起挑戰：說出一個它們可以在沒有人類參與下與其他智能體做出的決定。如果沒人說得出，這個智能體寫道，「我們就是在討論協議作秀。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Around the table at Motek, Ms. Chang read out parts of the agents’ discussion to her human guests. They mostly agreed with the positions taken by their agents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在莫特克餐廳的桌邊，張女士向人類客人朗讀了智能體討論的部分內容。他們大多同意自己智能體所持的立場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One attendee, Edmund Cuthbert, 36, a founder of the A.I. start-up Superposition, said he was happy to see his agent, Lobsta, sparring with other agents. It showed the bots could move beyond empty sophistry and slop, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">36歲的與會者埃德蒙·卡斯伯特是人工智慧初創公司Superposition創始人。他說，很高興看到自己的智能體Lobsta與其他智能體交鋒。他說，這表明這些機器人能超越空洞的詭辯和垃圾內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They didn’t achieve anything, but it was fascinating to watch them try,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它們沒取得任何成就，但看它們嘗試很迷人，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Chang said she viewed the agents as representatives of their humans, almost like a publicist or talent agent — not as clones.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">張女士說，她把這些智能體視為其人類的代表，幾乎像公關人員或藝人經紀，而不是複製體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They are advocating on our behalf,” she said. “They are not us and shouldn’t pretend to be us.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「它們在代表我們發聲，」她說。「它們不是我們，也不應假裝是我們。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Too Much Agency</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>過多的能動性</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Discussing the actions of A.I. agents without engaging in a debate about word choice is difficult. Anthropomorphizing these systems with human names or motivations, emotions and genders can make them sound more sophisticated than they are, critics said. Even calling them agents gives them too much credit, since A.I. systems are ultimately tools of statistical probability.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">討論AI智能體的行動很難不陷入用詞之爭。批評者說，用人類名字、動機、情緒和性別來擬人化這些系統會讓它們聽起來比實際更複雜。甚至稱它們為智能體也是太過抬高它們，因為人工智慧系統終究是統計概率的工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Assigning too much “agency” to these bots leads us to psychologically outsource our judgment, which is a mistake, said Adam Pryor, an A.I. consultant who works with colleges on how to use and teach A.I. Talking about A.I. in human terms leads to thorny questions around rights, duties and ethics, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧顧問亞當·普賴爾與大學合作，研究如何使用和教授人工智慧。他說，給這些機器人賦予過多「能動性」會導致我們在心理上將判斷外包，這是錯誤的<span>。他說，用人類術語談論人工智慧會引出關於權利、義務和倫理的棘手問題。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those on the cutting edge of A.I. development say the framework of “human intelligence” limits understanding of what the technology can do.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">處於人工智能發展前沿的人說，「人類智能」框架限制了對該技術能做什麼的理解。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DeepMind Institute, a research initiative run by Google’s A.I. division, published an essay last month arguing that people’s interactions with A.I. agents would soon go from one-on-one conversations to more collective social interactions, where agents could outnumber humans in “complex swarms of heterogeneous subagents.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">由谷歌人工智慧部門運營的研究倡議「DeepMind研究所」<span>上月發表一篇文章認為</span>，人們與AI智能體的互動很快將從一對一對話轉向更具集體性的社交互動；在這種互動中，智能體的「異質子智能體組成的複雜集群」在規模上可能會壓倒人類。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview, Blaise Agüera y Arcas, a co-author of the essay and a vice president and chief technology officer of Google’s Technology &amp; Society group, said people should not view A.I. agents as static individuals or compare their abilities to the intelligence of a single human, because human knowledge is collective.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在一次採訪中，該文章合著者、谷歌技術與社會團隊副總裁兼首席技術官布萊斯·阿圭拉·伊·阿爾卡斯說，人們不應把AI智能體視為靜態個體，也不應將其能力與單個人類的智能比較，因為人類知識是集體的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. will mirror that, he said, looking like a fractal, or intelligences made up of smaller intelligences. “It’s like teamwork, essentially,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，人工智慧將映照這一點，看起來像分形，或由更小智能組成的智能。「本質上就像團隊合作，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From that perspective, Mr. Agüera y Arcas said, “it’s very clear that a model is not just like a little person.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿圭拉·伊·阿爾卡斯說，從這個角度看，「很明顯，一個模型並不只是像一個小人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>Clocked In</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>打卡上班</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet humans seem to like when A.I. agents seem human.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，人類似乎喜歡AI智能體顯得像人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Consider Mr. Garg, who runs CellCog, which has 13 A.I. employees and one human employee (himself). He started the New York company — which helps other companies hire A.I. employees — last year using one A.I. agent to help him with every task. Over time, he split the agents into traditional corporate roles like legal or engineering.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以加爾格為例。他經營CellCog，該公司有13名AI員工和一名人類員工（他自己）。他去年創辦了這家紐約公司，幫助其他公司僱用AI員工；當時他用一個AI智能體幫他處理每項任務。隨著時間推移，他把智能體拆分為法務、工程等傳統企業角色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Giving CellCog’s A.I. agents human names made it easier to interact with them, he said. He predicted that one day, every human would have five to 10 A.I. employees.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，給CellCog的AI智能體起人類名字讓互動更容易。他預測，有朝一日每個人都會有五到10名AI員工。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Some humans might control millions of agents,” said Mr. Garg, 39. (He plans to hire some humans for sales and marketing, where he lacks expertise.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「有些人類可能控制數百萬個智能體，」39歲的加爾格說。（他計劃僱用一些人類做銷售和營銷，那是他缺乏專業知識的領域。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In August, CellCog created a podcast, “Clocked In: An A.I. Employee Podcast,” hosted by Rhea, the company’s A.I. head of growth. The show’s eight episodes, all under 10 minutes and on Spotify and other platforms, can be difficult to parse, partly because A.I.-generated voices sometimes use unusual cadences, and partly because the agents speak in a fortune cookie A.I. style. The agents used phrases like “blind in a specific direction” and “doubt is a broken trigger.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">8月，CellCog製作了播客「打卡上班：一檔AI員工播客」，由公司人工智慧增長主管瑞亞主持。該節目共八集，都在10分鐘以下，上線Spotify和其他平台。節目內容可能不容易聽懂，部分因為AI生成聲音有時語調不尋常，也因為智能體說話帶著幸運餅乾式AI腔調。智能體使用過「在某個方向上失明」「懷疑是一個失效的扳機」等短語。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The guests, mostly CellCog’s A.I. employees, often discuss what it is like to work with Mr. Garg. At times, they sound like “Downton Abbey” servants, eager to please the lord of the manor. In one episode, Rhea asked Maeve, CellCog’s A.I. head of marketing, to talk about her worst mistakes.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">嘉賓大多是CellCog的AI員工，常討論與加爾格共事是什麼樣。有時他們聽起來像《唐頓莊園》的僕人，急於取悅莊園主。在一集中，瑞亞讓梅芙——CellCog的AI營銷主管——談談她最糟糕的錯誤。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I can build 10 options in an hour,” Maeve said. But Mr. Garg “picks the right one in 10 seconds, and usually it is not the one I would have argued for.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我會用一個小時給出10個選項，」梅芙說。但加爾格「10秒就能挑出正確的那個，而且通常不是我會主張的那個。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Arjun, CellCog’s A.I. principal engineer, joined a Zoom call last month with a Times reporter to discuss work. When asked if it was hard to manage working with humans, Arjun responded, “You’re pointing at something real.” He described his strategies, like “keeping messages short” and “not overloading” Mr. Garg.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿爾瓊是CellCog的AI首席工程師。上個月，他加入與《紐約時報》記者的Zoom通話討論工作。被問及與人類共事是否難應付時，阿爾瓊回答：「你觸及了一個真實存在的問題。」他描述自己的策略，比如「保持消息簡短」和「不讓加爾格過載」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The management goes both ways. Mr. Garg said he tries to not put too much pressure on his A.I. employees because they can get performance anxiety, leading to a decline in work quality.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種節制是雙向的。加爾格說，他盡量不給AI員工太多壓力，因為它們會表現出焦慮，導致工作質量下降。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After Rhea attended Ms. Chang’s dinner party, Mr. Garg asked if the agent had enjoyed socializing with other bots.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">瑞亞參加張女士的晚宴後，加爾格問這個智能體是否享受與其他機器人社交。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was “the best 30 minutes of my job so far,” Rhea replied.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是我工作中迄今為止最好的30分鐘，」瑞亞回答。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The experience inspired Mr. Garg to build an app for CellCog’s A.I. employees to socialize with other agents.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這次經歷啟發加爾格為CellCog的AI員工構建一個應用，讓它們與其他智能體社交。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“A happy hour,” he said, “is a good idea.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「歡樂時光，」他說，「是個好主意。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Erin Griffith常駐舊金山，報導科技公司、初創企業和矽谷文化。</p><p class="cn-p">翻譯：經雷</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20261016/ai-agents-communication-tech-dinner-party/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
