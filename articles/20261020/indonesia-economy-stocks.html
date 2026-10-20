@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「定時炸彈」：印尼經濟面臨嚴峻壓力 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「定時炸彈」：印尼經濟面臨嚴峻壓力</h1>
+    <h2 class="en-headline">‘A Ticking Time Bomb’: An Economic Crisis Looms in Indonesia</h2>
+    <div class="meta-line">黃瑞黎, RIN HINDRYATI <span style="margin: 0 8px;">•</span> 2026-10-20</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="雅加達早高峰時段的通勤人群。處於弱勢地位的中產階級規模持續縮小。" height="700" src="https://static01.nyt.com/images/2026/10/20/multimedia/19biz-indonesia-economy-bgqw/19biz-indonesia-economy-bgqw-master1050.jpg" width="1050"/><figcaption><span>雅加達早高峰時段的通勤人群。處於弱勢地位的中產階級規模持續縮小。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Novri Putra graduated from college in Jakarta last year with a degree in information technology and a modest ambition: a stable job.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，諾維·普特拉在雅加達的一所大學畢業，獲得信息技術學位，心中懷揣著一個樸素的願望：找到一份穩定的工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He had every reason to believe that he was on track. When he entered college in 2018, Indonesia’s economy was flourishing. Its tech sector was booming and demand for software engineers was surging.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他完全有理由相信自己正朝著這個目標穩步前進。2018年他進入大學時，印尼經濟繁榮，科技行業蓬勃發展，對軟體工程師的需求激增。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those days are over. Today, Mr. Novri, 28, works for a tech company — not as a web developer, as he had hoped, but as a motorcycle taxi driver making about $220 a month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">那些日子已經結束。如今，28歲的諾維在一家科技公司工作——不是他希望的網路開發者，而是摩托車計程車司機，每月收入約220美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“My parents scold me almost every day,” Mr. Novri said. “Honestly, they probably feel a sense of shame that their child went to college and ended up as a motorcycle taxi driver.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我父母幾乎每天都會責備我，」諾維說。「老實說，他們大概覺得羞恥，自己的孩子上了大學，最後卻成了摩托車計程車司機。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Novri’s predicament speaks to a greater malaise in Indonesia, where an economy once known for its stability is showing alarming signs of strain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諾維的困境反映了印尼更深層的困境。這個曾以穩定着稱的經濟體正顯示出令人警覺的承壓跡象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like its Southeast Asian neighbors, Indonesia is struggling with the fallout from the war in Iran and American tariffs. Inflation is rising and fuel shortages are spreading across multiple cities. But government policies under President Prabowo Subianto are compounding its troubles, weakening institutions and raising doubts about the country’s economic management.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與東南亞鄰國一樣，印尼正艱難應對伊朗戰爭和美國關稅帶來的衝擊。通膨上升，燃料短缺正蔓延至多個城市。但總統普拉博沃·蘇比延多領導下的政府政策正使問題雪上加霜，它削弱了制度，並引發對該國經濟管理的懷疑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Friday, the country was roiled after MSCI, an influential index provider, warned it could drop Indonesia from its benchmark indexes, which guide investment decisions by fund managers worldwide. The country’s stocks suffered their biggest one-day plunge since the 1998 Asian financial crisis, falling by more than 11 percent. On Monday, the selling continued with a 3.6 percent decline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週五，在有影響力的指數提供商明晟警告可能將印尼從其基準指數中剔除後，該國陷入動盪。這些基準指數是全球基金經理制定投資決策的重要參考。印尼股市遭遇自1998年亞洲金融危機以來最大單日暴跌，跌幅超過11%。週一，拋售繼續，下跌3.6%。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="諾維·普特拉目前在一家科技公司工作，但並非像他曾經希望的那樣擔任網頁開發員，而是當了一名摩托計程車司機。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-03-thqj/19biz-indonesia-economy-03-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-03-thqj/19biz-indonesia-economy-03-thqj-master1050.jpg"/></div><figcaption><span>諾維·普特拉目前在一家科技公司工作，但並非像他曾經希望的那樣擔任網頁開發員，而是當了一名摩托計程車司機。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A decade ago, this country of nearly 290 million people was seen as a reliable safe haven as other emerging markets battled currency collapses and hyperinflation. Although it still reports strong economic growth, other indicators tell a different story.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">十年前，當其他新興市場正飽受貨幣崩盤和惡性通膨之苦時，這個擁有近2.9億人口的國家曾被視為可靠的安全港。儘管該國仍報告強勁經濟增長，但其他指標卻揭示了截然不同的狀況。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of people considered middle class has shrunk by about 19 percent from its peak. Lower-class savings rates have plummeted. Youth unemployment hovers around 17 percent, among the highest rates in Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">被視為中產階級的人數已較峰值縮減約19%。下層階級儲蓄率驟降。青年失業率徘徊在17%左右，是亞洲最高之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts now warn that Indonesia is facing its most combustible moment since 1998, when an economic collapse forced the ouster of the former dictator Suharto.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家現在警告，印尼正面臨自1998年以來最動盪的時刻。1998年，經濟崩潰迫使前獨裁者蘇哈托下台。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="印度尼西亞的青年失業率約為17%，在亞洲各國中名列前茅。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-vhlf/19biz-indonesia-economy-vhlf-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-vhlf/19biz-indonesia-economy-vhlf-master1050.jpg"/></div><figcaption><span>印度尼西亞的青年失業率約為17%，在亞洲各國中名列前茅。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is a ticking time bomb,” said Ferry Latuhihin, the former chief economist at Bank International Indonesia who served on an expert council advising Mr. Prabowo before his administration took office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一枚滴答作響的定時炸彈，」印尼國際銀行前首席經濟學家費裡·拉圖希欣說。他曾在普拉博沃政府上台前擔任其專家委員會成員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“No one predicted in 1997 that Suharto would fall because of the malfunction of the economy,” he said. “The same story, I believe, might happen to this government.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「1997年沒有人預測蘇哈托會因經濟失靈而下台，」他說。「我相信，同樣的劇情可能會在這屆政府身上重演。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Experts do not expect the market turmoil to spread to regional neighbors. Phillip Wool, head of research and portfolio management at Rayliant, an investment firm based in California that manages $17 billion in assets, said MSCI’s concerns were specific to Indonesia, which accounts for a small share of most emerging-markets investors’ portfolios.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專家不認為市場動盪會蔓延至地區鄰國。總部位於加利福尼亞、管理170億美元資產的投資公司Rayliant的研究與投資組合管理主管菲利普·伍爾說，明晟的擔憂是印尼特有的，而印尼在大多數新興市場投資者投資組合中佔比很小。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s a risk that’s really isolated to Indonesia,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是一個真正僅限於印尼的風險，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the economic ripple effects may extend further. Indonesia is the world’s largest producer of palm oil, nickel and Barbie dolls and a major exporter of thermal coal, copper and natural gas. An economic crash could disrupt electric-vehicle production and drive up global prices for food, consumer goods and energy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但經濟漣漪效應可能延伸得更遠。印尼是世界最大的棕櫚油、鎳和芭比娃娃生產國，也是動力煤、銅和天然氣的主要出口國。經濟崩潰可能擾亂電動汽車生產，並推高全球食品、消費品和能源價格。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="8月在雅加達舉行的一場抗議活動。一項研究發現，印尼中產階級的萎縮與抗議活動頻率的上升存在關聯。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-08-thqj/19biz-indonesia-economy-08-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-08-thqj/19biz-indonesia-economy-08-thqj-master1050.jpg"/></div><figcaption><span>8月在雅加達舉行的一場抗議活動。一項研究發現，印尼中產階級的萎縮與抗議活動頻率的上升存在關聯。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A study in July led by Indonesia’s former finance minister found that the erosion of the middle class correlates with more frequent protests. In August 2025, demonstrations erupted nationwide over the death of a ride-sharing driver at a protest and rising unemployment and inflation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印尼前財政部長7月領導的一項研究發現，中產階級的萎縮與抗議活動頻發存在關聯。2025年8月，一名網約車司機在抗議中死亡，加上失業和通膨上升，引發全國各地示威。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Thomas Lembong, Indonesia’s former trade minister, warned that too many things are going wrong at once.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印尼前貿易部長托馬斯·倫邦警告說，目前有太多事情同時出錯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re getting closer and closer to the edge of the abyss,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們正越來越接近深淵邊緣，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Stock Rout</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>股市暴跌</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="印度尼西亞總統普拉博沃·蘇比延多正加大力度推行其民粹主義政策，這些政策不僅給該國預算帶來壓力，也令投資者感到擔憂。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-09-thqj/19biz-indonesia-economy-09-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-09-thqj/19biz-indonesia-economy-09-thqj-master1050.jpg"/></div><figcaption><span>印度尼西亞總統普拉博沃·蘇比延多正加大力度推行其民粹主義政策，這些政策不僅給該國預算帶來壓力，也令投資者感到擔憂。</span> <cite>Ajeng Dinar Ulfiana/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Indonesia’s economic turmoil has revealed weaknesses that Mr. Prabowo’s policies have done little to address.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印尼的經濟動盪暴露了各種弱點，而普拉博沃的政策對此幾乎無能為力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">High oil prices and rising U.S. interest rates have drained dollars from Indonesia and put pressure on its currency, the rupiah. Indonesia is highly exposed because it relies heavily on imports of essential goods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">高油價和美國利率上升使美元流出印尼，給該國貨幣印尼盾帶來壓力。由於印尼高度依賴必需品的進口，因此面臨巨大風險。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet Mr. Prabowo is doubling down on populist programs that are straining Indonesia’s budget and alarming investors. One example is a free-meal program for more than 80 million students, estimated to cost up to $30 billion a year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，普拉博沃正在大力推進民粹項目，這些項目使印尼預算承壓，並令投資者不安。一個例子是為8000多萬學生提供的免費餐計劃，估計每年耗資高達300億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Harris Turino, an opposition lawmaker, said that suspending the program for just three days would free up enough money to pay college fees for 20,000 students for a decade.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">反對派議員哈利斯·圖裡諾說，僅暫停該計劃三天，就能騰出足夠資金，為2萬名學生支付十年大學學費。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors are also questioning the Prabowo government’s transparency. A former general and Suharto’s former son-in-law, Mr. Prabowo has moved to nationalize assets and use a newly established sovereign wealth fund to advance his agenda.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資者還質疑普拉博沃政府的透明度。作為前將軍兼蘇哈托的前女婿，他已採取行動將資產國有化，並利用新成立的主權財富基金推進其議程。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="雅加達中央商務區的小販們。該國通貨膨脹率正在上升，多座城市正面臨燃油短缺問題。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-01-thqj/19biz-indonesia-economy-01-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-01-thqj/19biz-indonesia-economy-01-thqj-master1050.jpg"/></div><figcaption><span>雅加達中央商務區的小販們。該國通貨膨脹率正在上升，多座城市正面臨燃油短缺問題。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">MSCI cited “a lack of meaningful enforcement” against market manipulation for its warning on Thursday. The index provider said it had started consultations on whether to downgrade Indonesia’s market classification to the same category as countries facing international sanctions or prolonged economic turmoil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">明晟週四警告時提到，對市場操縱「缺乏有意義的執法」。該指數提供商表示，已開始就是否將印尼的市場分類下調至與面臨國際制裁或長期經濟動盪的國家相同類別進行磋商。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The message was clear: Indonesia was now considered an unreliable investment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">信息很明確：印尼現在被視為不可靠的投資目的地。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The MSCI announcement came after two credit ratings agencies, Moody’s and Fitch, downgraded Indonesia’s outlook to negative from stable earlier this year. Indonesia’s exchange has lost nearly 40 percent of its value this year, making it one of the world’s worst-performing stock markets. On Friday, the rupiah breached the psychologically important threshold of 18,000 to the dollar.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在明晟宣布這一公告之前，穆迪和惠譽兩家信用評級機構今年早些時候已將印尼的評級展望從穩定下調至負面。印尼交易所今年市值已縮水近40%，成為全球表現最差的股市之一。上週五，印尼盾跌破一美元兌18,000印尼盾這一重要心理關口。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, Mr. Prabowo bristled when reporters pressed him about the credit downgrades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上月，當記者追問信用評級下調問題時，普拉博沃顯得十分不悅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Are we really supposed to let a few people determine our rating? I mean, shouldn’t we be the ones deciding?” he said. “We are a sovereign country. How can people sitting far away, who know nothing about us, give us a rating?”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們真的要讓少數人決定我們的評級嗎？我是說，不應該由我們自己決定嗎？」他說。「我們是一個主權國家。坐在遠方、對我們一無所知的人，怎麼能給我們評級呢？」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sudden Departures</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>突然離職</b></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="許多印尼人表示，經濟狀況給人的感覺彷彿已經陷入衰退。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-02-thqj/19biz-indonesia-economy-02-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-02-thqj/19biz-indonesia-economy-02-thqj-master1050.jpg"/></div><figcaption><span>許多印尼人表示，經濟狀況給人的感覺彷彿已經陷入衰退。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Until the pandemic, international investors praised Indonesia for adhering to a strict fiscal deficit ceiling that kept government debt at around 30 percent of its economy. Its central bank was also regarded as independent and stable.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">直到疫情前，國際投資者一直稱讚印尼遵守嚴格的財政赤字上限，使政府債務保持在經濟規模的約30%。其央行也被視為獨立而穩定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The sudden departures of key policymakers who helped build Indonesia’s reputation have unnerved investors. In September 2025, Mr. Prabowo removed Sri Mulyani, the finance minister seen as a steady hand under former President Joko Widodo.<strong> </strong>In July, the widely respected central bank governor abruptly resigned.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幫助建立印尼聲譽的關鍵政策制定者突然離職，令投資者不安。2025年9月，普拉博沃撤換了被視為前總統佐科·維多多時期穩健掌舵人的財政部長斯裡·穆利亞尼。7月，廣受尊敬的央行行長突然辭職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists are also questioning the reliability of Indonesia’s official statistics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經濟學家還質疑印尼官方統計數據的可靠性。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Capital Economics, an independent research firm, said faster growth in last year’s fourth quarter was “hard to square” with other data showing a weakening economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">獨立研究公司凱投宏觀表示，去年第四季度更快的增長「難以吻合」其他顯示經濟走弱的數據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On a recent Friday, Purbaya Yudhi Sadewa, Indonesia’s finance minister, attributed the middle class’s plight to previous officials who, he said, had been content with economic growth of just 5 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近的一個週五，印尼財政部長普爾巴亞·尤迪·薩德瓦將中產階級的困境歸咎於前任官員，稱他們滿足於僅5%的經濟增長。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="街頭小販穆罕默德·法賈爾表示，他已向100多家公司投遞了簡歷，但至今未收到任何回覆。" data-src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-05-thqj/19biz-indonesia-economy-05-thqj-master1050.jpg" src="https://static01.nyt.com/images/2026/10/19/multimedia/19biz-indonesia-economy-05-thqj/19biz-indonesia-economy-05-thqj-master1050.jpg"/></div><figcaption><span>街頭小販穆罕默德·法賈爾表示，他已向100多家公司投遞了簡歷，但至今未收到任何回覆。</span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said Moody’s and Fitch were swayed by “negative sentiment promoted by nongovernment parties,” rather than focusing on Indonesia’s growth and debt levels. He noted that S&amp;P Global and a Chinese rating agency both gave Indonesia a stable outlook.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，穆迪和惠譽受到「非政府方面推動的負面情緒」影響，而不是關注印尼的增長和債務水平。他指出，標普全球和一家中國評級機構都給予印尼「穩定」的展望。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Purbaya said he met with MSCI officials in March. It was “useless, they didn’t believe me,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">普爾巴亞說，他3月會見了明晟官員。他說，那次會面「沒用，他們不相信我」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Not many people really understand what is happening in the economy, including those economists who used to criticize me,” he added. “The most important thing is that I can rebuff them by the real economic result.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「沒有多少人真正理解經濟正在發生什麼，包括那些曾經批評過我的經濟學家，」他還說。「最重要的是，我可以用真實經濟成果駁斥他們。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He never got the chance. Three days after the interview, he was fired by phone without explanation. Hours later, Mr. Prabowo swore in Indonesia’s third finance minister in two years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他從未得到機會。採訪三天後，他被電話解職，沒有解釋。數小時後，普拉博沃宣誓任命了印尼兩年內的第三位財政部長。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Muktita Suhartono對本文有報導貢獻。</p><p class="cn-p">黃瑞黎(Sui-Lee Wee)是《紐約時報》亞洲商業記者。</p><p class="cn-p">翻譯：晉其角</p><div class="commentsBlockLoaderRef" data-poster=""></div><div class="" data-poster=""><div class="css-1pwfetb" data-poster=""><div class="css-j7qwjs" data-poster=""></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261020/indonesia-economy-stocks/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法國發生近年來最大規模騷亂 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">法國發生近年來最大規模騷亂</h1>
+    <h2 class="en-headline">Huge Riots and Anti-Government Protests in France: What to Know</h2>
+    <div class="meta-line">AMELIA NIERENBERG, LYNSEY CHUTEL, CATHERINE PORTER <span style="margin: 0 8px;">•</span> 2026-10-19</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="法醫人員檢查法國里昂的旅遊諮詢處。" height="700" src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-vphk/03int-france-schools-wtk-vphk-master1050.jpg" width="1050"/><figcaption><span>法醫人員檢查法國里昂的旅遊諮詢處。</span> <cite>Jeff Pachoud/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">France is reeling from its largest unrest in years, after anti-government demonstrations devolved into riots and looting that caused nationwide damage and deepened a sense of national reckoning.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">法國正因多年來最大規模的騷亂而動盪。反政府示威演變成暴力和搶劫，造成全國性破壞，加深了國民對國家的反思。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the chaos subsided on Sunday, political leaders blamed each other for the unrest and citizens looked on with shock at their cities, littered with broken glass and the charred skeletons of burned cars.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週日，隨著混亂逐漸平息，政治領導人就騷亂相互指責，而民眾震驚地看著自己的城市，街道上散落著碎玻璃和燒毀汽車的焦黑骨架。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The violence marked a convergence between a weeks-old student movement for better school conditions, an emerging national movement to protest high living costs, and opportunistic rioters who used the demonstrations as a cover for looting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場暴力事件標誌著三股力量的匯合：持續數週、要求改善學校條件的學生運動；抗議高生活成本的新興全國性運動；以及借示威為掩護進行搶劫的投機騷亂者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The protests have heightened a sense of fiscal and social crisis in France, the European Union’s second-largest economy. The government is trying to pass an unpopular belt-tightening budget while facing public anger that has helped position Marine Le Pen, a far-right leader, as the favorite to win the presidency in an election next spring.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些抗議加劇了歐盟第二大經濟體法國的財政和社會危機感。政府正試圖通過一項不受歡迎的緊縮預算，同時面對公眾憤怒，而這種憤怒已幫助極右翼領導人瑪麗娜·勒龐成為明年春季總統選舉的熱門人選。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What happened this weekend?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>這個週末發生了什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than half a million people joined some 110 marches throughout France on Saturday, the interior ministry said, in the biggest day of protest since the demonstrations began about a month ago. A major union, the C.G.T., gave a higher estimate, saying 800,000 protesters had turned out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">內政部稱，週六全法約有110場遊行，參與人數超過50萬人，這是示威開始約一個月以來規模最大的一天。主要工會組織法國總工會給出的估計數字更高，稱有80萬抗議者走上街頭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Amid many peaceful demonstrations, rioters vandalized roughly 1,500 shops and many symbols of the French state, leading to roughly 2,000 arrests. An arson attack largely destroyed the town hall in Limoges, in central France. In Marseille, the second-largest city, masked people broke into a government building and tipped over a bust of Marianne, a symbol of the Republic.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管許多示威是和平的，但騷亂者破壞了約1500家商鋪和許多法國國家象徵，導致約2000人被捕。法國中部利摩日市的一場縱火襲擊幾乎將市政廳燒毀。在第二大城市馬賽，蒙面者闖入一座政府大樓，推倒了共和國象徵瑪麗安娜的半身像。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週六，在法國各地爆發的全國性抗議活動中，巴黎的示威者與警方發生了衝突。" data-src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-wlpk/03int-france-schools-wtk-wlpk-master1050.jpg" src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-wlpk/03int-france-schools-wtk-wlpk-master1050.jpg"/></div><figcaption><span>週六，在法國各地爆發的全國性抗議活動中，巴黎的示威者與警方發生了衝突。</span> <cite>Abdul Saboor/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why are students protesting?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>學生為什麼抗議？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">High school students started protesting last month to express frustration with the condition of their schools.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">高中生自上個月開始抗議，表達對學校狀況的不滿。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They have pointed to crumbling infrastructure, overcrowded classrooms, overloaded schedules, a shortage of teachers and staff, and underfunding in schools. Many are also calling for an overhaul of state-run admissions platforms for higher education and universities that they call unfairly selective.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們指出了基礎設施破敗、教室擁擠、課程安排過重、教師和工作人員短缺以及學校資金不足等問題。許多人還呼籲全面改革公立高等教育和大學的招生平台，稱其選拔機制不公。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Students have blockaded hundreds of schools. They have set fire to, or damaged, at least 24 of them, according to the government. Thousands have been arrested since September and over 1,000 police officers, students and school staff have been hurt.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">學生們封鎖了數百所學校。據政府稱，其中至少有24所學校被縱火或遭到破壞。自9月以來已有數千人被捕，超過1000名警察、學生和學校工作人員受傷。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The students’ anger has been exacerbated by the police’s forceful response. Prosecutors and a police watchdog are investigating at least 34 cases involving accusations of police misconduct during the protests.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">警方的強力回應加劇了學生們的憤怒。檢察官和一家警察監督機構正在調查至少34起涉及抗議期間警察不當行為指控的案件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The cases include a 15-year-old boy whose left hand was ripped off, officials said, likely by the explosion of a police stun grenade; and a 14-year-old boy maimed by a tear-gas grenade that an officer had fired at close range.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官員稱，這些案件包括一名15歲男孩的左手被炸斷，可能是由警方的震爆彈爆炸所致；還有一名14歲男孩因一名警員在近距離投擲催淚瓦斯手榴彈而致殘。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="週六在馬賽，示威活動開始前的衝突中，防暴警察拘留了一名抗議者。" data-src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-fvjg/03int-france-schools-wtk-fvjg-master1050.jpg" src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-fvjg/03int-france-schools-wtk-fvjg-master1050.jpg"/></div><figcaption><span>週六在馬賽，示威活動開始前的衝突中，防暴警察拘留了一名抗議者。</span> <cite>Thibaud Moritz/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Why did other groups join the students?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為什麼其他群體加入學生？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Throughout October, labor unions and other campaign groups have increasingly joined the students’ demonstrations. They have held bigger rallies to express solidarity with the students as well as to protest a broader range of issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">整個10月，工會和其他運動團體越來越多地參與學生示威。他們舉行了更大規模的集會，聲援學生，並抗議更廣泛的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some are angry over the cost of living and rising fuel prices that have surged, in part, because of the Iran war. Farmers have joined in, angry at agricultural costs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些人對生活成本和燃料價格上漲感到憤怒，燃料價格上漲部分是因為伊朗戰爭。農民也加入進來，對農業生產成本上漲感到憤怒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Social media accounts associated with the “yellow vest” protest movement, which beset France nearly a decade ago with roadside demonstrations against high gas prices and other issues, have joined calls for demonstrations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與「黃背心」抗議運動相關的社群媒體帳號也加入了呼籲示威的行列。近十年前，該運動曾因抗議高油價及其他問題而在法國各地引發路邊示威。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And left-wing parties have also seized on the protests as part of a wider expression of discontent at President Emmanuel Macron, who is limited to two terms and is nearing the end of his time in office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">左翼政黨也利用這些抗議表達對總統馬克宏更為廣泛的不滿。馬克宏受任期限制僅能連任兩屆，其任期即將結束。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such discontent has a long history in France, where student-led protests in 1968 nearly toppled the government and helped transform French society.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種不滿在法國有著悠久的歷史。1968年，由學生領導的抗議幾乎推翻政府，並幫助改變了法國社會。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在週六發生的眾多和平示威活動中，暴徒破壞了約1500家商店以及許多法國國家的象徵性建築。" data-src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-wkvl/03int-france-schools-wtk-wkvl-master1050.jpg" src="https://static01.nyt.com/images/2026/11/03/multimedia/03int-france-schools-wtk-wkvl/03int-france-schools-wtk-wkvl-master1050.jpg"/></div><figcaption><span>在週六發生的眾多和平示威活動中，暴徒破壞了約1500家商店以及許多法國國家的象徵性建築。</span> <cite>Kiran Ridley/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is the political fallout?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>政治影響是什麼？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sunday, far-right leaders and the centrist government blamed the far left for the chaos. They pointed in particular to a major far-left party, France Unbowed, that they said provoked the unrest.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週日，極右翼領導人和中間派政府將混亂歸咎於極左翼，尤其指責主要極左政黨「不屈法國」，稱其挑起騷亂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Prime Minister Sébastien Lecornu has accused party leaders of sowing distrust about the police among student protesters, and said some rioters were members of the “ultra-left.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總理塞巴斯蒂安·勒科爾尼指責該黨領導人向學生抗議者散布對警察的不信任，並稱一些騷亂者是「極左翼」成員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">France Unbowed has rejected that accusation and its leader, Jean-Luc Mélenchon, has instead blamed the government for actions that he said made the unrest more likely.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「不屈法國」拒絕這一指控，其領導人讓-呂克·梅朗雄反而指責政府採取的行動加劇了騷亂的可能性。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Mélenchon said on social media that Prime Minister Sébastien Lecornu was “responsible for the chaos, because of “incompetence or a worst-case strategy to create a party of order that would make people forget his failure in public finances.” Mr. Lecornu did not respond to that accusation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">梅朗雄在社群媒體上說，總理塞巴斯蒂安·勒科爾尼「應對這場混亂負責」，原因在於「無能，或是採取了一種最壞的策略，試圖打造一個『秩序黨』來讓人們忘記他在公共財政方面的失敗」。勒科爾尼沒有回應這一指控。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Giulia Imbert、Ségolène Le Stradic和Zane Irwin對本文有報導貢獻。</p><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Amelia Nierenberg是《紐約時報》記者，自倫敦報導國際新聞。</p><p class="cn-p"><span>Lynsey Chutel是《紐約時報》駐倫敦記者，負責報導非洲、中東和歐洲的突發新聞。</span></p><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""></div></div><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Catherine Porter是《紐約時報》國際新聞記者，報導法國新聞。她常駐法國。</p></div></div></div></div></div><p class="cn-p">翻譯：晉其角</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20261019/france-student-protests-why/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
