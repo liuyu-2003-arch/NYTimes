@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美AI競爭白熱化 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美AI競爭白熱化</h1>
+    <h2 class="en-headline">China Criticizes U.S. Ban on DeepSeek A.I. in Government Systems</h2>
+    <div class="meta-line">EPHRAT LIVNI <span style="margin: 0 8px;">•</span> 2026-10-21</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="深度求索北京辦公室的招牌。" height="700" src="https://static01.nyt.com/images/2026/10/20/multimedia/20int-DeepseekAI-China-cjqh/20int-DeepseekAI-China-cjqh-master1050.jpg" width="1050"/><figcaption><span>深度求索北京辦公室的招牌。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China on Tuesday accused the United States of discrimination “under the pretext of so-called national security” after a U.S. order banned products by the Chinese artificial intelligence start-up DeepSeek from the technological systems of many U.S. government agencies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國週二指責美國「以所謂國家安全為由」實施歧視。此前美國發布了一項命令，禁止中國人工智慧初創企業深度求索的產品進入許多美國政府機構的技術系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The American order, published on Monday but issued in July, and the Chinese recriminations inflamed tensions between the two nations amid their frenzied race for A.I. primacy. Some experts have likened the close competition to the nuclear arms race of the 20th century, with potentially huge stakes for humanity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項於週一公布但早在7月就已頒佈的美國禁令，以及中方隨之而來的指責，在兩國為爭奪人工智慧主導權展開的激烈角逐中，進一步加劇了兩國間的緊張局勢。一些專家將這場激烈的競爭比作20世紀的核軍備競賽，對人類的潛在影響可能極其深遠。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Citing fears that China may gain access to sensitive U.S. data from DeepSeek to “produce actionable intelligence,” the Department of Homeland Security ordered the removal of all the company’s products — and those from other firms reliant on its open-source offerings — from the informational technology systems in civilian executive branch agencies. It also banned future acquisitions of the products.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國國土安全部以擔心中國可能通過深度求索獲取美國敏感數據，「生成可採取行動的情報」為由，下令將該公司的所有產品，以及依賴其開源產品的其他公司的產品，從行政部門民用機構的信息技術系統中移除。該命令還禁止未來採購這些產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In issuing the order, which went into effect this summer, U.S. officials contended that the Chinese legal system allows that government extensive access to Chinese company infrastructure, making the U.S. government vulnerable to the exposure of sensitive information.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在發布這項於今年夏天生效的命令時，美國官員聲稱，中國法律體系允許中國政府廣泛訪問中國公司的基礎設施，使美國政府面臨敏感信息洩漏的風險。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials on Tuesday accused the United States of using disingenuous national security concerns to suppress Chinese companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，中國官員指責美國利用虛假的國家安全關切打壓中國公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Ministry of Commerce said in a statement that China had passed laws to protect cybersecurity and data privacy to ensure that its companies can comply with relevant laws worldwide. It called on the United States to “withdraw” any restrictive measures.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部在聲明中說，中國已通過法律保護網路安全和數據隱私，以確保中國企業能夠遵守世界各地的相關法律。聲明呼籲美國「撤銷」任何限制性措施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China has consistently opposed the overgeneralization of the concept of national security and the politicization of science, technology and trade issues,” Mao Ning, a spokeswoman for China’s foreign ministry, said at a briefing on Tuesday. “We will resolutely safeguard the legitimate rights and interests of Chinese enterprises.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國一貫反對泛化國家安全概念，將科技和經貿問題政治化，」中國外交部發言人毛寧週二在記者會上說。「我們將堅決維護中國企業合法權益。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DeepSeek stunned the world last year when it announced that it had built one of the most powerful A.I. systems with far fewer computer chips than many thought necessary, and at a remarkably low training cost of less than $6 million.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年，深度求索宣布其構建了目前最強大的人工智慧系統之一，所用計算機晶片數量遠低於許多人的預期，且訓練成本僅不到600萬美元，這一成就令世界震驚。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">U.S. agencies accused DeepSeek last month of being “misleading,” saying that figure did not reflect “the true cost” of data acquired maliciously. The accusations echoed those made by major American A.I. companies like Anthropic and OpenAI.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國機構上月指責深度求索「誤導」，稱這一數字並未反映惡意獲取數據的「真實成本」。這些指控呼應了Anthropic和OpenAI等美國主要人工智慧公司提出的說法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Commerce Ministry called those claims groundless, and part of a U.S. effort to monopolize the A.I. industry. It vowed that “China will take resolute countermeasures” if Chinese companies are suppressed or restricted as a result.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國商務部稱這些說法毫無根據，是美國試圖壟斷人工智慧產業的一部分。它誓言，如果中國企業因此受到打壓或限制，「將採取一切必要措施」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government rejected accusations by the F.B.I. and other agencies that DeepSeek and other major Chinese A.I. companies engaged in “aggressive, malicious and targeted” industrial-scale copying of frontier A.I. models developed in the United States “in an attempt to bridge the technological and performance gaps,” most “likely” with their government’s awareness.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府駁斥聯邦調查局和其他機構的指控，即深度求索和其他中國主要人工智慧公司對美國開發的前沿人工智慧模型進行了「激進、惡意和有針對性的」工業規模複製，「試圖縮小技術和性能差距」，而且「很可能」是在中國政府知情的情況下進行的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, China’s Commerce Ministry and its Ministry of Science and Technology proposed new export and licensing controls on some A.I. technologies to protect its domestic industry, mirroring the American approach. While the Chinese proposal has not been finalized and excludes open-source models that have already been released, the newly listed technologies now face registration requirements.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週，中國商務部和科技部提議對某些人工智慧技術實施新的出口和許可管制，以保護國內產業，此舉與美國的做法如出一轍。雖然中國的提議尚未最終確定，並且不包括已經發布的開源模型，但新列入清單的技術現在面臨登記要求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Tensions between the two countries are growing at a time when some say that coordination is paramount to the A.I. race.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正當一些人認為雙方的協調對人工智慧競賽至關重要之際，兩國之間的緊張局勢卻在加劇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The United States has in recent years restricted the exports of advanced computer chips to limit China’s A.I. development. DeepSeek and other Chinese companies have raced forward despite the limits. And this past spring, DeepSeek said its new model relied on chips made by the Chinese tech firm Huawei, a milestone in China’s effort to reduce the need for foreign technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，美國限制先進計算機晶片出口，以遏制中國的人工智慧發展。儘管面臨限制，深度求索和其他中國公司仍在快速前進。今年春天，深度求索表示其新模型採用了中國科技公司華為製造的晶片，這標誌著中國在減少對外國技術依賴方面邁出了重要一步。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DeepSeek is among several prominent Chinese companies, like Moonshot AI and Alibaba, that allow developers to download open-source systems free and build products with them, unlike OpenAI and Anthropic, which can charge fees.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">深度求索和月之暗面和阿里巴巴等幾家知名中國公司一樣，允許開發者免費下載開源系統並用其構建產品，而OpenAI和Anthropic 則可能收取費用。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That has made Chinese A.I. appealing to American businesses, giving them access to models deemed nearly as effective by many experts at a much lower cost and potentially raising challenges for Anthropic and OpenAI ahead of planned initial public offerings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這使中國人工智慧技術對美國企業具有吸引力，令它們能夠以低得多的成本，獲得許多專家認為效果幾乎相當的模型，並可能在Anthropic和OpenAI計劃進行首次公開募股之前對這兩家公司構成潛在挑戰。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">(The New York Times has sued OpenAI and Microsoft, claiming copyright infringement of news content related to A.I. systems. The companies have denied the suit’s claims.).</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">（《紐約時報》已起訴OpenAI和微軟，聲稱與人工智慧系統相關的新聞內容侵犯版權。這些公司否認了訴訟中的指控。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is not clear how reliant U.S. agencies have been on DeepSeek or on products that integrate its technology. The Homeland Security order gave no specifics, and when reached for comment, the department did not answer questions about the extent to which the targeted products had been integrated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚美國機構在多大程度上依賴深度求索或整合其技術的產品。國土安全部的命令沒有提供具體細節，該部門在被要求置評時也沒有回答有關目標產品整合程度的問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a statement to The New York Times on Tuesday, a spokesperson for the U.S. Cybersecurity and Infrastructure Security Agency said that new exclusion and removal orders addressing DeepSeek were issued on Friday by the heads of the Department of Defense, Homeland Security and the National Intelligence Program requiring agencies to identify and remove DeepSeek and affiliated products.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週二給《紐約時報》的一份聲明中，美國網路安全和基礎設施安全局發言人表示，國防部、國土安全部和國家情報計劃負責人週五發布了針對深度求索新的排除和移除命令，要求各機構識別並移除深度求索及其關聯產品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DeepSeek could not be reached by phone on Monday, and it did not immediately respond to an email seeking comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一無法通過電話聯繫到深度求索，它也沒有立即回覆尋求置評的電子郵件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Homeland Security Department is not the first federal or state agency to restrict or ban the use of DeepSeek in its official systems or devices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國土安全部並不是第一個限制或禁止在其官方系統或設備中使用深度求索的聯邦或州機構。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Commerce Department, the Navy, the Defense Information Systems Agency and NASA have all barred its use, and states including Texas, New York and Virginia have prohibited the use of DeepSeek products in government work.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">商務部、海軍、國防信息系統局和美國國家航空航天局都已禁止使用深度求索，得克薩斯州、紐約州和維吉尼亞州等州也禁止在政府工作中使用深度求索產品。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other countries have made similar moves. Among them, France and Australia last year blocked the use of DeepSeek tech from all government systems. Italy also banned its products from app stores, citing concerns about data protection.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他國家也採取了類似行動。其中，法國和澳洲去年阻止在所有政府系統中使用深度求索的技術。義大利也以數據保護擔憂為由，禁止其產品進入應用商店。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Xinyun Wu對本文有報導貢獻。</p><p class="cn-p">Ephrat Livni是《紐約時報》記者，報導全球突發新聞。她常駐華盛頓。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20261021/china-deepseek-us-ban/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
