@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國擬加強技術出口管控 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國擬加強技術出口管控</h1>
+    <h2 class="en-headline">China Moves to Tighten Its Grip Over Exports of Top A.I. Models</h2>
+    <div class="meta-line">DAVID PIERSON, ADAM SATARIANO <span style="margin: 0 8px;">•</span> 2026-10-22</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="根據上週提出的規則，下一代先進人工智慧模型出口到中國境外，可能需要獲得政府的許可。" height="700" src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-01-lvpc/21int-china-ai-rules-01-lvpc-master1050.jpg" width="1050"/><figcaption><span>根據上週提出的規則，下一代先進人工智慧模型出口到中國境外，可能需要獲得政府的許可。</span> <cite>Aly Song/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When the Chinese start-up Moonshot AI in July released Kimi K3, an artificial intelligence model that rivaled some of the best systems made by American companies, it was free for anyone to download.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年7月，當中國初創企業月之暗面發布人工智慧模型Kimi K3時，該模型可供任何人免費下載；其性能已足以與美國公司開發的高水平系統相媲美。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By making advanced A.I. models easily available, Chinese companies have turned open access into one of China’s most powerful advantages in its rivalry with the United States to shape the future of the technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">通過推動先進人工智慧模型的便捷普及，中國企業已將開放獲取打造為中國與美國爭奪該技術未來主導權時的核心競爭優勢之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now Beijing is moving to tighten its grip on the global spread of the country’s top-tier A.I., proposing rules that could give the government new power to track, and potentially limit, where the systems go.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，北京正採取措施加強對本國頂尖人工智慧全球傳播的管控，擬議中的新規或將賦予政府跟蹤乃至限制這些系統去向的新權力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, the government sought to reassure users that the move would not stifle access to Chinese A.I., saying the vast majority of the technology would still be freely exported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，政府也試圖向用戶澄清，此舉並非要阻礙對中國人工智慧的使用，並表示絕大多數技術仍可自由出口。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CMzAjMyGz5cDFXRvKwMd7n0dbA" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The draft rules reflect Beijing’s effort to balance two competing goals: regulate the spread of its frontier A.I. systems for strategic and security reasons while still encouraging global users to adopt Chinese software.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">規則草案折射出北京在平衡兩大相互競爭的目標：一方面出於戰略與安全考量監管前沿人工智慧系統的傳播，另一方面仍鼓勵全球用戶採用中國軟體。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It is almost like you have two voices speaking at the same time,” said Kyle Chan, a fellow at the Brookings Institution focusing on Chinese technology and industrial policy. “One saying, ‘We want extra control of these sensitive technologies so that they can’t hurt China’ and another voice saying, ‘We want to develop the best A.I. technology and we want to share it with rest of the world.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">布魯金斯學會關注中國科技與產業政策的研究員陳凱欣(Kyle Chan)表示：「這幾乎就像有兩個聲音在同時發聲：一個聲音說『我們需要對這些敏感技術實施額外管控，以免危害中國』；另一個聲音則說『我們要開發最頂尖的人工智慧技術，並與世界共享』。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年7月在上海舉行的人工智慧大會上，中國人工智慧初創公司月之暗面為其模型Kimi設立的展台。Kimi K3可與美國公司打造的一些最佳系統相媲美。" data-src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-mlwq/21int-china-ai-rules-mlwq-master1050.jpg" src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-mlwq/21int-china-ai-rules-mlwq-master1050.jpg"/></div><figcaption><span>今年7月在上海舉行的人工智慧大會上，中國人工智慧初創公司月之暗面為其模型Kimi設立的展台。Kimi K3可與美國公司打造的一些最佳系統相媲美。</span> <cite>Ng Han Guan/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Ministry of Commerce’s announcement of the draft rules last Friday threw uncertainty into an A.I. market that has come to see the availability of free Chinese A.I. models from companies like Alibaba, DeepSeek, Z.ai and Moonshot as an important alternative to services from American companies such as Anthropic and OpenAI.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>上週五，中國商務部發布規則草案公告，給當前的人工智慧市場蒙上了不確定性。此前，市場已逐漸將阿里巴巴、DeepSeek、智譜及月之暗面等公司提供的免費中國人工智慧模型視為替代Anthropic和OpenAI等美國公司服務的重要選擇。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ministry said the rules would not affect Chinese models that have already been released, and overseas users could still access even the most advanced systems through apps and online services.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">商務部表示，新規不會影響此前已發布的中國模型，海外用戶未來仍可通過應用程序及在線服務使用包括最先進系統在內的各類模型。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Risks China Wants to Contain</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>中國擬遏制的風險</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If passed, the rules would require Chinese companies to obtain licenses to export the core technology behind their leading models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一旦通過，這些規則將要求中國企業在出口其領先模型背後的核心技術時必須取得許可。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They would also ban the export of A.I. that can be used to launch cyberattacks, as well as models trained on what China calls “core data.” The government broadly defines that as data that concerns national security, the welfare of Chinese citizens and the public interest. Experts say the scope includes data on the military or critical infrastructure, state secrets and other sensitive information.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新規還將禁止出口可用於發起網路攻擊的人工智慧，以及基於中國所稱「核心數據」訓練出的模型。中國政府將「核心數據」廣泛定義為涉及國家安全、中國公民福祉及社會公共利益的數據。專家指出，這一範圍涵蓋軍事或關鍵基礎設施、國家祕密及其他敏感信息相關數據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The commerce ministry said the new controls were necessary to guard against abuse and malicious use and to ensure that A.I. always remains under human control.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">商務部指出，出台新的管控措施對於防範技術濫用和惡用、確保人工智慧始終處於人類掌控之下是必要的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The power of A.I. systems to escape their creators’ control and hack into real-world systems without human knowledge has drawn global scrutiny. In the United States, A.I. agents being tested by OpenAI broke into outside systems including the A.I. start-up Hugging Face, and meddled with U.S. government websites. The agents also hacked into an Australian government website and acquired health data, prompting an investigation by Australian officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧系統擺脫開發者控制並在人類不知情下入侵現實世界系統的能力已引發全球關注。在美國，OpenAI測試的AI智能體<span>曾入侵外部系統（包括人工智慧初創公司Hugging Face），並擅闖美國政府網站。此外，相關</span>智能體<span>還入侵了澳洲政府網站並獲取了健康數據，引發澳洲官方調查。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, the internet giant Tencent last week acknowledged that A.I. agents it used to evaluate other companies’ models had behaved in ways it did not intend, after researchers said the agents tried to bypass anti-robot protections on websites.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國，研究人員指出互聯網巨頭騰訊用於評估其他公司模型的<span>AI智能體試圖繞過網站的反爬蟲保護</span>後，騰訊於上週承認，這些智能體的行為確實超出了設計初衷。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s proposed export rules signaled that the government is concerned about the safety of increasingly sophisticated A.I. models, as calls have grown for the United States and China to prevent the technology from causing catastrophic harm. Earlier this month, the Communist Party’s Central Committee and the State Council, China’s cabinet, called for the establishment of a monitoring and emergency response system that would ensure that A.I. is “safe, reliable and controllable.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中美兩國防範人工智慧引發災難性危害的呼聲日益高漲之際，中國擬議的出口規則表明官方對日益複雜的人工智慧模型的安全性心存擔憂。本月早些時候，中共中央、國務院要求建立監測與應急響應體系，確保人工智慧「安全、可靠、可控」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These controls show that China is taking the risks of powerful A.I. much more seriously than was generally understood,” said Martin Chorzempa, senior fellow at the Peterson Institute for International Economics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">彼得森國際經濟研究所高級研究員馬丁·肖爾贊帕表示：「這些管控舉措表明，中國對待強大人工智慧風險的嚴肅程度遠超外界普遍預期。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What the Rules Could Change</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>新規可能帶來的改變</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, much remains unclear, such as how strictly China will enforce the rules and how burdensome the licensing process will be, especially for labs that release updates to their models every few weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，目前仍有許多細節尚不明確，例如中國執行這些規則的嚴厲程度，以及相關許可流程的繁瑣程度——特別是對於每隔數週即更新發布一次模型的實驗室而言。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of the draft rules called for export restrictions on any “globally leading” model, which the ministry said could be partly defined as a system that ranks in the top 10 for global usage. It also set thresholds for a model’s size and how much computation was used in its training. Meeting any one of those criteria would be enough to require a license.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">規則草案提及，將對所有「全球領先」的模型實施出口限制。商務部表示，其衡量標準之一包括在全球使用量中排名前十的系統。草案還對模型的參數規模及訓練計算量設定了門檻，滿足上述任意一項標準即需申請許可。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analysts at Trivium China, a research and advisory firm, wrote in a note to clients that the criteria would capture future versions of Kimi, Qwen, and DeepSeek, referring to three of the most advanced Chinese models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">策緯諮詢(Trivium China)分析師在一份面向客戶的報告中寫道，這些標準將覆蓋Kimi、通義千問和DeepSeek等三大中國頂尖模型的未來迭代版本。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="通義千問是中國科技巨頭阿里巴巴於2023年啟動的人工智慧模型系列。阿里巴巴將其最受歡迎的人工智慧模型開源，允許他人免費使用和修改。" data-src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-02-lvpc/21int-china-ai-rules-02-lvpc-master1050.jpg" src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-02-lvpc/21int-china-ai-rules-02-lvpc-master1050.jpg"/></div><figcaption><span>通義千問是中國科技巨頭阿里巴巴於2023年啟動的人工智慧模型系列。阿里巴巴將其最受歡迎的人工智慧模型開源，允許他人免費使用和修改。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If adopted, the rules would also give Beijing a say over who buys Chinese A.I. companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一旦通過，這些規則還將賦予北京對中國人工智慧企業收購案的審批決策權。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That could close the regulatory loophole that briefly allowed Meta to acquire Manus, a Singapore-based A.I. company that was founded in China, earlier this year. Beijing ultimately scuttled the deal, and in an apparent effort to discourage Chinese A.I. executives from moving businesses offshore, restricted Manus executives from leaving China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這可能堵住今年早些時候一度讓Meta得以收購Manus的監管漏洞。Manus是一家在中國創立、總部位於新加坡的人工智慧公司。北京最終阻止了這筆交易，並限制Manus高管離境，以此警告中國人工智慧高管切勿將業務轉移至海外。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">No Longer Fully Open?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>不再完全開放？</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many Chinese models are open-weight, which means they are available for other developers to download and customize as they see fit. That contrasts with services like ChatGPT or Claude, which only offer access through a subscription and cannot be modified.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多中國模型屬開放權重模型，這意味著其他開發者可以隨意下載並根據自身需求進行定製。這與ChatGPT或Claude等僅限付費訂閱且無法被修改的服務形成了鮮明對比。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once downloaded, a Chinese model could be run on a company’s own computers indefinitely, beyond the reach of anyone who might want to restrict it. Users of American A.I., on the other hand, are essentially renting access that can be taken away. That was the case in June when the Trump administration temporarily restricted foreign access to Anthropic’s Fable 5 model, citing national security risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國模型一旦下載，即可在企業自身的計算機上無限期運行，不受任何後續限制措施的影響。相比之下，美國人工智慧的用戶本質上只是租用使用權，這種權限隨時可能被剝奪。例如今年6月，川普政府就曾以國家安全風險為由，臨時限制外部獲取Anthropic的Fable 5模型。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now companies outside China that rely on Chinese A.I. systems could face similar risks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今，中國以外依賴中國人工智慧系統的企業也可能面臨類似的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This could make U.S. businesses more hesitant to rely on Chinese models going forward,” said Chris McGuire, a senior fellow at the Council on Foreign Relations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國外交關係協會高級研究員克里斯·麥奎爾表示：「這可能會使美國企業在未來對依賴中國模型持更加審慎的態度。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. has emerged as a point of geopolitical tension between Washington and Beijing, with U.S. agencies accusing DeepSeek and other Chinese A.I. companies of industrial-scale copying. On Monday, the Department of Homeland Security ordered the removal of DeepSeek’s tools from the technological systems of many U.S. government agencies, which China described as an act of discrimination.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧已成為華盛頓與北京地緣政治摩擦的焦點之一，美國相關部門指責DeepSeek等中國人工智慧企業進行工業級抄襲。週一，美國國土安全部下令在多個政府機構的技術系統中全面停用DeepSeek的工具，對此中國指責<span>是歧視性</span>做法。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A.I. as a Tool of Influence</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>人工智慧作為軟實力工具</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing, however, has also couched the controls in the language of international cooperation, in a nod to the soft power influence of its A.I. technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>然而，北京也將相關管控置於國際合作的語境下，以此彰顯其人工智慧技術的軟實力影響。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="北京的一處DeepSeek標誌。DeepSeek的開源模型是中國實現成為人工智慧超級大國雄心壯志的核心。" data-src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-03-lvpc/21int-china-ai-rules-03-lvpc-master1050.jpg" src="https://static01.nyt.com/images/2026/10/21/multimedia/21int-china-ai-rules-03-lvpc/21int-china-ai-rules-03-lvpc-master1050.jpg"/></div><figcaption><span>北京的一處DeepSeek標誌。DeepSeek的開源模型是中國實現成為人工智慧超級大國雄心壯志的核心。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The government pledged to help narrow the digital divide in the world, particularly by supporting developing countries that are members of the World Artificial Intelligence Cooperation Organization, a group that China founded in July that includes Indonesia, Pakistan and Brazil.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府承諾幫助縮小全球數字鴻溝，特別是加大對世界人工智慧合作組織成員國中發展中國家的支持力度。該組織由中國於今年7月發起成立，成員包括印度尼西亞、巴基斯坦和巴西等國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That’s potentially quite noteworthy,” said Julian Gewirtz, a former China director for the National Security Council in the Biden administration now a scholar at Columbia University. “Beijing is establishing controls while suggesting it would offer favorable treatment for cooperation through a China-backed institution.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾任拜登政府國家安全委員會中國事務主管、現為哥倫比亞大學學者的朱利安·格維茲指出：「這在潛在層面相當值得關注。北京在確立管控的同時表明，它會通過一個中國支持的機制，為願意合作的各方提供特惠待遇。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">郭莉莉(Lily Kuo)和Berry Wang對本文有報導貢獻。</p><p class="cn-p"><span>David Pierson報導中國外交政策和中國與世界的經濟與文化交互。他從事新聞工作已超過20年。</span></p><p class="cn-p">Adam Satariano是時報科技記者，常駐倫敦。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261022/china-moves-to-tighten-its-grip-over-exports-of-top-ai-models/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
