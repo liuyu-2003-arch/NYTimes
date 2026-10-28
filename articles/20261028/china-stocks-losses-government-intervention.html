@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「國家隊」救市不靈了？ - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「國家隊」救市不靈了？</h1>
+    <h2 class="en-headline">What China’s Patriotic Stock Buying Tells Us About Its Economy</h2>
+    <div class="meta-line">艾莎, MURPHY ZHAO <span style="margin: 0 8px;">•</span> 2026-10-28</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國國家主席習近平召集了高級領導人，以制定政府的施政綱領，但經濟問題很可能要讓位於政治問題。" height="700" src="https://static01.nyt.com/images/2026/10/27/multimedia/27biz-china-stocks-02-cfmq/27biz-china-stocks-02-cfmq-master1050.jpg" width="1050"/><figcaption><span>中國國家主席習近平召集了高級領導人，以制定政府的施政綱領，但經濟問題很可能要讓位於政治問題。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As investor pessimism pushed China’s stock market into a bear market last week, officials responded as they often do, deploying a group of state-owned funds to arrest the slide.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著上週投資者悲觀情緒將中國股市推入熊市，官員們採取了慣常的應對措施，調集了一批國有基金來遏制跌勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The group of Beijing-backed investment companies, known colloquially as the “national team,” pumped $6.8 billion into stocks in a single session last Thursday, providing a temporary reprieve to a market that had fallen for 11 straight weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這批由北京支持的投資公司——俗稱「國家隊」——在上週四的單日交易中向股市注入了68億美元，為連續11周下跌的市場提供了暫時的喘息機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mainland stocks are down more than 20 percent from a recent peak — the threshold for a bear market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大陸股市已從近期高點下跌超過20%，這正是熊市的臨界點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But this time, investors are signaling that the old playbook may not be enough. By Tuesday, markets fell again, declining 1.3 percent. Stocks in China are among the worst performers in Asia this year, along with Indonesia and India.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這一次，投資者發出的信號表明，舊有的應對套路可能不再管用。到了週二，市場再次下跌1.3%。中國、印尼和印度股市是今年亞洲表現最差的幾個市場。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The intervention may have helped to “prop up the market,” said Shi Shusi, a financial commentator with 2.6 million followers on Chinese social media. But, he added, “it couldn’t prop up investors’ confidence.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國的社群媒體上有260萬粉絲的財經評論員石述思表示，這種干預可能有助於「托得住盤面」。但他還說，「卻托不住人心。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The effort to stabilize stocks came just days before Xi Jinping, China’s leader, convened one of the country’s most important political meetings of the year. Hundreds of the Communist Party’s most senior officials are meeting to set the government agenda. While economic policy has traditionally been a priority at such gatherings, many observers expect it to take a back seat to politics this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">穩定股市的努力發生在中國領導人習近平召開今年國家最重要政治會議的幾天前。數百名共產黨最高級別官員正聚在一起，制定政府議程。雖然經濟政策歷來是此類會議的重點，但許多觀察人士預計，今年的經濟政策將讓位於政治議題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The market sell-off reflects a deeper unease about China’s economy and growing doubts about whether policymakers are doing enough to turn things around. China’s manufacturing juggernaut has powered a surge in exports, sustaining economic growth and helping Beijing meet its targets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">股市拋售反映了人們對中國經濟更深層次的不安，以及對政策制定者是否採取了足夠措施來扭轉局面日漸懷疑。中國的製造巨輪推動了出口的激增，維持了經濟增長，並幫助北京實現了既定目標。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But that strength has obscured persistent weakness at home.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但這種強勢掩蓋了國內持續的疲軟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Wage growth is slowing. Companies are struggling to raise prices. And households, whose savings are largely tied up in real estate, continue to see their wealth eroded by falling home prices.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">工資增長正在放緩。企業難以提高價格。而積蓄大部分與房地產掛鈎的家庭，財富繼續因房價下跌而遭受侵蝕。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="上海陸家嘴金融區的天際線。中國官員一直致力於安撫市場，但投資者希望看到更多實質性舉措。" data-src="https://static01.nyt.com/images/2026/10/27/multimedia/27biz-china-stocks-01-cfmq/27biz-china-stocks-01-cfmq-master1050.jpg" src="https://static01.nyt.com/images/2026/10/27/multimedia/27biz-china-stocks-01-cfmq/27biz-china-stocks-01-cfmq-master1050.jpg"/></div><figcaption><span>上海陸家嘴金融區的天際線。中國官員一直致力於安撫市場，但投資者希望看到更多實質性舉措。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If the government keeps pumping money in, we will see short-term gains, but this will not continue,” said Gary Ng, a senior economist for Asia Pacific with Natixis Corporate &amp; Investment Banking, referring to the national team, which also intervened in July to steady the market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果政府繼續注入資金，我們會看到短期上漲，但這不會持續下去，」法國外貿銀行企業與投資銀行部亞太區高級經濟學家吳卓殷在提到「國家隊」時表示，「國家隊」在今年7月也曾介入市場以穩定行情。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The government will try to set a floor here, but whether there could be a strong momentum for rebound will take a lot more than what we see right now,” he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「政府會試圖在這裡設定一個底線，但要產生強勁的反彈勢頭，所需要的遠比我們現在看到的要多，」他還說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For many investors, the bigger concern is that Mr. Xi seems more focused on his political aims than on stimulating growth. That priority is on display this week as officials meet to lay the groundwork for his fourth term as party leader.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對許多投資者來說，更大的擔憂在於，習近平似乎更專注於其政治目標而非刺激增長。本週，隨著官員們齊聚一堂為其第四個黨內領導任期奠定基礎，這一優先事項已顯而易見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing has intensified an anti-corruption campaign that ensnares around one million officials each year. Under Mr. Xi, China has tightened scrutiny of money flowing overseas and stepped up regulatory and antitrust actions against prominent companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">北京已加強反腐敗行動，每年約有100萬名官員因此受查。在習近平的領導下，中國加強了對資金流向海外的監管，並加大了對知名企業的監管和反壟斷行動。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those measures have unnerved entrepreneurs, analysts said, adding to uncertainty about the business environment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析人士表示，這些措施讓企業家感到不安，加劇了商業環境的不確定性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Local governments have also pulled back subsidies and tax breaks, making companies more cautious about investing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">地方政府也削減了補貼和稅收優惠，使企業在投資方面變得更加謹慎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of the sharpest declines in recent weeks have come from artificial intelligence companies, once among the market’s biggest sources of optimism.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近幾週，部分跌幅最劇烈的股票來自人工智慧公司，這些公司曾是市場最大的樂觀情緒來源之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shares of Cambricon Technologies, a state-backed chipmaker seen as a Chinese rival to Nvidia, have fallen more than 10 percent over the past month. The CSI Artificial Intelligence Index, which tracks leading Chinese A.I. companies, has dropped 19 percent over the same period.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">寒武紀科技是國家支持的晶片製造商，被視為英偉達的中國競爭對手，其股價在過去一個月中下跌了超過10%。跟蹤中國主要人工智慧公司的中證人工智慧指數在同一時期下跌了19%。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Investors are now searching for signs that Beijing will go beyond buying stocks and introduce broader measures to revive the economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投資者目前正在尋找跡象，看北京是否會超越單純的購買股票，推出更廣泛的舉措來振興經濟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We’re reaching the pain point where officials feel they must intervene,” said Christopher Beddor, deputy director of China research at Gavekal Dragonomics.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們正在達到官員們認為必須干預的痛點，」佳富龍洲中國研究副總監克里斯托弗·貝多爾表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2024, China’s central bank unveiled a sweeping package of measures to bolster confidence and stimulate growth. It cut short-term interest rates and freed up state-controlled banks to lend more. At a rare news conference, the central bank governor signaled that it could provide further support.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2024年，中國央行公布了一攬子全面措施以提振信心和刺激增長。它下調了短期利率，並允許國有銀行增加貸款。在一次罕見的新聞發布會上，央行行長暗示可能會提供進一步的支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Stocks surged, posting their biggest gains since the 2008 financial crisis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">股市大漲，創下了自2008年金融危機以來的最大漲幅。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國證券監督管理委員會主席吳清試圖向投資者保證，政府正在維護市場穩定。" data-src="https://static01.nyt.com/images/2026/10/27/multimedia/27biz-china-stocks-03-cfmq/27biz-china-stocks-03-cfmq-master1050.jpg" src="https://static01.nyt.com/images/2026/10/27/multimedia/27biz-china-stocks-03-cfmq/27biz-china-stocks-03-cfmq-master1050.jpg"/></div><figcaption><span>中國證券監督管理委員會主席吳清試圖向投資者保證，政府正在維護市場穩定。</span> <cite>Vincent Thian/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But analysts are skeptical that policymakers will adopt the same approach this time. Even large purchases by the national team are no substitute for the wide-ranging stimulus investors have long hoped for.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但分析人士對政策制定者這次是否會採取同樣的做法持懷疑態度。即使是「國家隊」的大規模購買，也無法替代投資者長期以來所期待的全面刺激計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Instead, Chinese officials have focused on reassuring markets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相反，中國官員將重點放在了撫平市場情緒上。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Speaking at a forum last week, Wu Qing, chairman of the China Securities Regulatory Commission, told investors that market steadiness remained a priority. The government was “making every effort to safeguard the security and stability of the capital market,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國證監會主席吳清上週在一次論壇上表示，市場穩定仍是一項優先事項。他說，政府正在「全力維護資本市場安全穩定」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">State media have amplified the message.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">官方媒體進一步強化了這一信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the same day, China’s state broadcaster declared that “positive signs are increasing,” and that “the basis for market resilience remains firmly in place.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">同一天，中國國家廣播電視台宣布「積極信號在增多」，「市場韌性基礎仍然紮實」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The People’s Daily, the Communist Party’s official newspaper, also struck an upbeat tone this week, pointing to China’s “reasonable” economic growth despite geopolitical conflicts and a fragile global economy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">共產黨的官方報紙《人民日報》本週也表達了樂觀基調，指出儘管存在地緣衝突和全球經濟脆弱的局面，中國仍實現了「合理」的經濟增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Emphasizing the importance of “high-quality development,” the article described growth as a “long-term endeavor,” warning that “winds and rains are inevitable along the way.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該文章在強調「高質量發展」的重要性時，將增長描述為一項「長期過程」，並警告稱「前進道路上難免有風有雨」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">艾莎(Alexandra Stevenson)是時報記者，主要報導中國經濟及其在全球的影響。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261028/china-stocks-losses-government-intervention/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

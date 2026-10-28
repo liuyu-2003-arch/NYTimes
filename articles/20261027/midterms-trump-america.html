@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關乎美國國運的一次期中選舉 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">關乎美國國運的一次期中選舉</h1>
+    <h2 class="en-headline">None of This Is Normal</h2>
+    <div class="meta-line">紀思道 <span style="margin: 0 8px;">•</span> 2026-10-27</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo small-span-photo"><img alt="" height="1024" src="https://static01.nyt.com/images/2026/10/25/multimedia/24kristof-gpkt/24kristof-gpkt-jumbo.jpg" width="820"/><figcaption><span></span> <cite>Aleksey Kondratyev for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">America’s midterm elections will probably be determined primarily by issues like affordability. But what is at stake goes far beyond the quotidian concerns that many voters are focused on.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國期中選舉可能主要由生活成本等議題決定。但真正涉及的利害關係遠超許多選民關注的日常事務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The principles and strategies that over multiple generations have made the United States the world’s leading nation in effect are on the ballot, and these midterms mark a potential turning point.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾代人以來使美國實際上成為世界頭號強國的原則和戰略如今在選票上面臨考驗，此次期中選舉可能成為一個轉折點。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Let’s focus on three pillars that explain the rise, strength and resilience of our nation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">讓我們來關注可以闡釋我們國家崛起、實力和韌性的三大支柱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">First is education: The United States pioneered mass education in the 19th century and today operates great universities and research institutions that are among the nation’s crown jewels. These have given us an edge in the global economic competition. Yet President Trump, with the acquiescence of congressional Republicans, is vandalizing education, from Head Start for 4-year-olds living in poverty to elite universities researching new treatments for cancer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">首先是教育：美國在19世紀開創了大眾教育，如今運營著眾多偉大的大學和研究機構，它們是美國的皇冠明珠，使我們在全球經濟競爭中佔據優勢。然而，在國會共和黨人的默許下，川普總統正在破壞教育——從面向貧困四歲兒童的「啟蒙計劃」到研究癌症新療法的精英大學，無一倖免。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump is trying to dismantle the Department of Education, cut student aid and slash support for the National Science Foundation and the National Institutes of Health. His war on America’s leading universities is particularly alarming, for he has variously attempted to defund them, cancel their tax-exempt status and make it harder for foreign students to enroll.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普試圖解散教育部，削減學生助學金，並大幅削減對國家科學基金會和國家衛生研究院的支持。他對美國頂尖大學的打壓尤其令人震驚，因為他曾試圖切斷它們的資金、取消其免稅地位，並增加外國學生入學的難度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The U.S. is committing suicide,” Yasheng Huang, a professor at M.I.T., told me, referring to the Trumpian campaign to demonize higher education and hobble cutting-edge research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國正在自殺，」麻省理工學院教授黃亞生對我說，他指的是川普陣營將高等教育妖魔化並扼殺前沿研究的行徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another source of American greatness that Trump is throttling is immigration. The United States gained immensely from successive waves of newcomers from around the world, often arriving destitute and without English (like my father in 1952) but lifting their families up over a generation or two. One reason we’re a global leader in science and technology is that we’ve been able to recruit the brightest minds and hardest workers from across the globe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普正在扼殺的另一項美國偉大之源是移民。美國從世界各地一波又一波新來者中獲益巨大。他們往往一貧如洗、不會英語（像我父親1952年那樣），但僅用一兩代人的時間就讓整個家庭過上了更好的生活。我們在科技領域成為全球領導者的原因之一，就是我們能夠從全球招募最聰明的人才和最勤奮的勞動者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When I lived in China decades ago, I was an interviewer of applicants to Harvard, and one of the students I told the university it would be lucky to have was a brilliant young woman named Sofie Qiao. She was admitted and went on to earn a Ph.D. and become an American. Today she is a serial biotechnology entrepreneur in Silicon Valley, helping develop treatments for breast and prostate cancers and for mesothelioma. She is now helping save the lives of other Americans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾十年前我住在中國時，曾擔任哈佛大學申請者面試官。有一次我告訴哈佛，如果它能錄取一位名叫索菲·喬（音）的傑出年輕女性，將是大學之幸。她被錄取，後來獲得博士學位併入籍美國。她是矽谷的一位連續創業者，致力於生物技術領域，幫助開發乳腺癌、前列腺癌和間皮瘤的治療方法。她現在正在幫助拯救其他美國人的生命。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under Trump, fewer of today’s Sofies are coming to America. The number of international students arriving in August 2025 for the fall semester dropped by almost one-fifth, and the number in August 2026 fell by another 12 percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普治下，像索菲這樣的優秀人才來到美國的數量減少了。2025年8月抵達美國攻讀秋季學期的國際學生人數下降了近五分之一，2026年8月又下降了12%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A third pillar that has made America the world’s leading country is the bundle of norms that govern our politics, economics and society.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">使美國成為世界頭號國家的第三大支柱是一套規範我們政治、經濟和社會運作的規範體系。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Until Trump came along, I believed it was laws and the Constitution that were the country’s primary guardrails, but as I’ve seen how Trump has bullied his way past Congress and the courts, I’ve come to think that norms are just as important in underpinning democracy and economic strength. I’m thinking of simple traditions — such as that presidents will honor election results, won’t persecute rivals and will refrain from starting reckless trade wars with, well, everyone.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在川普出現之前，我相信法律和憲法是這個國家的主要護欄。但目睹川普如何蠻橫地繞過國會和法院後，我開始認為，這些規範在支撐民主和經濟實力方面同樣重要。我想到的是一些簡單的傳統——比如總統會尊重選舉結果，不迫害對手，不輕率地與所有人發動貿易戰。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Norms of self-restraint historically made the system work. Presidents did not try to crush law firms or universities, nor did their administrations mislead federal courts or send armed officers into cities, where they shot people. Presidents quarreled with allies but didn’t threaten to invade Greenland.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自我剋制的規範歷來使這個體製得以正常運轉。總統們不會試圖壓垮律師事務所或大學，他們的政府也不會誤導聯邦法院或派遣武裝人員進入城市開槍。總統們與盟友爭吵，但不會威脅入侵格陵蘭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump has tried to pulverize those norms by vilifying immigrants, denigrating women and threatening to “annihilate” Iran. Just this month, he called a female federal judge a “crazed lunatic.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普試圖通過妖魔化移民、貶低女性以及威脅「消滅」伊朗來粉碎這些規範。就在本月，他稱一名聯邦女法官是「瘋狂的瘋子」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The vitriol is toxic,” says David Beasley, the former Republican governor of South Carolina, “and it is undeniably feeding into the hearts, minds and souls of Americans.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種惡毒言論是有毒的，」南卡羅來納州前共和黨州長戴維·比斯利說，「而且它無疑正在滲入美國人的心靈、思想和靈魂。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump is attempting to establish what feels to me like a personality cult, putting his name on the Kennedy Center and his photo on national park passes and some passports; I’m reminded of Bangladesh under its last dictator, who had herself named “mother of humanity” and put her picture and her father’s everywhere. Other presidents redecorated; Trump tore down the East Wing of the White House, is building a ballroom and aims to construct a so-called Arc de Trump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普正試圖建立一種在我看來像是個人崇拜的東西：把他的名字掛在甘迺迪中心，把他的照片印在國家公園通行證和部分護照上。這讓我想起孟加拉國上一位獨裁者，她自封為「人類之母」，到處懸掛自己和父親的照片。其他總統會重新裝修，川普卻拆除了白宮東翼，正在建一個宴會廳，並打算建造所謂的「川普凱旋門」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Then there’s the greed, on a new level altogether. Trump reaped at least $2.2 billion last year, in his first year back in the White House, much of it from his family’s cryptocurrency businesses, a Times analysis found. That’s more than $6 million per day. When Amazon reportedly paid $40 million to acquire the Melania Trump documentary, I recalled covering corruption in Indonesia in the 1990s, when the wife of the president, Madame Tien, was nicknamed Madame Tien Percent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此外還有貪婪，而且達到了全新的水平。《紐約時報》分析發現，川普在重返白宮的第一年至少獲利22億美元，大部分來自其家族的加密貨幣業務。這相當於每天超過600萬美元。據報導，亞馬遜支付4000萬美元購買梅拉尼婭·川普的紀錄片，這我想起上世紀90年代報導印尼腐敗時，總統夫人蒂恩女士被戲稱為「百分之十夫人」（「十」與蒂恩諧音，指任何人想在印尼做生意，都要給她百分之十好處——編注）。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The mix of grandiosity, authoritarianism and sleaze dribbling out of the White House is polluting government, civil society and the economy. Having spent much of my journalistic career reporting in two-bit dictatorships, I see so much that is familiar; it’s heartbreaking to see this unfold in my own country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從白宮流出的浮誇、威權主義和齷齪的混合體正在污染政府、公民社會和經濟。我新聞生涯的大部分時間都報導那些二三流的獨裁政權，我看到太多熟悉的東西，看到這一切在我的祖國上演，真令人心碎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Trump has worked to undermine the entire international system the United States created after World War II — for our benefit and the world’s — to promote peace, trade, prosperity and health. Ebola, poverty and Vladimir Putin are beneficiaries. Imagine if in 1943 President Franklin Roosevelt had abandoned Britain and switched to back the Third Reich; that is a bit like Trump’s seeming pivot from Ukraine to Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普一直致力於破壞美國在第二次世界大戰後建立的整個國際體系——該體系既是為了我們的利益，也是為了全世界的利益，旨在促進和平、貿易、繁榮與健康。伊波拉病毒、貧困和弗拉基米爾·普丁都從他的行為中受益。試想一下，如果1943年，富蘭克林·羅斯福總統拋棄英國，轉而支持第三帝國，那會是怎樣一番景象？川普似乎從烏克蘭轉向支持俄羅斯與之頗為相似。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We may not have reached bottom. A particularly dangerous step would be for Trump to invoke the Insurrection Act and dispatch troops to crush protests or seize ballot boxes. Asked about the Insurrection Act, Trump told Time magazine: “I could use it. A lot of people think I should use it sometimes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們可能尚未觸底。如果川普援引《鎮壓叛亂法》並派遣軍隊鎮壓抗議活動或扣押投票箱，那將是一個極其危險的舉措。當被問及《鎮壓叛亂法》時，川普告訴《時代》雜誌：「我可以用它。很多人認為我有時應該用它。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">None of this is normal. We are betraying other countries but also our own history and culture. I always wondered what citizens of ancient Rome, a proud and sophisticated empire, thought when one of their crazy emperors came to power; now I have a glimmer of understanding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一切都不正常。我們背叛其他國家，也背叛自己的歷史和文化。我一直想知道，當一位瘋狂的皇帝上台時，那個自豪而成熟的古羅馬帝國的公民們會作何感想。現在我略有所悟。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is the greatest heist in the history of the world: stealing America,” the singer Bono said of what has unfolded. “Everything we love is on the line,” he told me.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是世界歷史上最大的盜竊：偷走美國，」歌手博諾(Bono)談到已發生的一切時說。「我們所愛的一切都岌岌可危，」他告訴我。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">So those are the stakes in this election: Will we accept the loss? Or will we try to get our nation back?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">所以，這就是這次選舉涉及的利害關係：我們會接受失敗嗎？還是會努力奪回我們的國家？</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">紀思道(Nicholas Kristof) 2001起成為時報專欄作家，曾兩次獲得普立茲獎。他最新出版的回憶錄名為《追逐希望：一名記者的報導生涯》(「Chasing Hope: A Reporter’s Life」)。歡迎在X上關注他：@NickKristof。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20261027/midterms-trump-america/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
