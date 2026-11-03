@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幣安63億美元駭客攻擊事件始末 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">幣安63億美元駭客攻擊事件始末</h1>
+    <h2 class="en-headline">How Binance’s $6.3 Billion Hack Went Down</h2>
+    <div class="meta-line">DAVID YAFFE-BELLANY <span style="margin: 0 8px;">•</span> 2026-11-02</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="全球最大加密貨幣交易所幣安表示，這起被業內稱為史上最大規模加密貨幣駭客攻擊的事件涉及約63億美元資金。" height="700" src="https://static01.nyt.com/images/2026/11/01/business/00biz-binance-ticktock/00biz-binance-ticktock-master1050.jpg" width="1050"/><figcaption><span>全球最大加密貨幣交易所幣安表示，這起被業內稱為史上最大規模加密貨幣駭客攻擊的事件涉及約63億美元資金。</span> <cite>SeongJoon Cho/Bloomberg</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At about 4:20 p.m. on Thursday, a string of unusual transactions started to cause alarm at Binance, the world’s largest cryptocurrency exchange.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四下午4點20分左右，一連串異常交易開始引起全球最大加密貨幣交易所幣安的警覺。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Money was pouring out of the company’s accounts, a multibillion-dollar deluge of digital coins. It had all the hallmarks of a crypto heist — a high-speed bank robbery conducted over the internet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">資金正從公司的帳戶中大量流出，價值數十億美元的數字貨幣如洪水般傾瀉而去。種種跡象都表明，這是一場加密貨幣盜竊案——一場在互聯網上高速進行的銀行搶劫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the news spread, Binance’s top executives put together an informal war room on Wea, the company’s internal messaging system, with about 100 participants, including specialized cryptocurrency tracers and security personnel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著消息傳開，幣安高管在公司內部通訊系統Wea上臨時組建起一個危機應對群組，約有100人參與，其中包括專門追蹤加密貨幣流向的專家和安全人員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They eventually transitioned to a mass conference call, with 100 boxes on the screen, where employees took turns muting and then unmuting, communicating in a mixture of English and Chinese. Among them was He Yi, Binance’s co-chief executive, who is seven months pregnant, and worked through the night from her base in Abu Dhabi, taking a call at 3 a.m. local time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">後來，他們轉而召開大型電話會議，螢幕上顯示著100個影片窗口。員工們輪流關閉和打開麥克風，時而說英語，時而說中文。參與者中包括幣安聯席首席執行官何一。懷孕七個月的她在阿布達比的辦公地點徹夜工作，當地時間凌晨3點還在接聽電話。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. He and her colleagues were navigating one of the most damaging crises in Binance’s long and troubled history. A team of North Korean hackers had penetrated the exchange and drained more than $6 billion in the largest crypto heist of all time. Binance was forced to halt deposits and withdrawals, and posted a series of frantic messages on X, promising that it would cover any losses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">何一和她的同事們正在應對幣安漫長而風波不斷的歷史上最具破壞性的危機之一。一個朝鮮駭客團隊侵入了這家交易所，盜走逾60億美元，製造了有史以來規模最大的加密貨幣盜竊案。幣安被迫暫停充值和提現，並在X平台上發布一系列措辭急切的消息，承諾承擔所有損失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was a surreal situation made even more surreal by the actions of Binance’s founder, Changpeng Zhao, who spent the evening narrating the events to his 12.9 million followers on X. He posted prayer hand emojis, publicly jousted with the site’s owner, Elon Musk, and insisted that “user funds are SAFU” — using a bit of crypto slang to reassure customers that hundreds of millions of dollars in deposits would not simply vanish into thin air.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場危機本已令人難以置信，而幣安創始人趙長鵬的舉動又給它增添了幾分超現實色彩。他整晚都在X平台上向自己的1290萬名粉絲實時講述事態進展。他發布雙手合十的表情符號，與X平台所有者伊隆·馬斯克公開交鋒，還堅稱「用戶資金SAFU」，這是借用幣圈的行話向客戶保證，他們數億美元的存款不會憑空消失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It hurts, but we will survive,” Mr. Zhao declared.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這很痛苦，但我們會挺過去的。」趙長鵬宣稱。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="幣安創始人趙長鵬，攝於8月。駭客攻擊當晚，他通宵在X上向1290萬粉絲描述事件進展。" data-src="https://static01.nyt.com/images/2026/11/01/multimedia/00biz-binance-ticktock2-mqhz/00biz-binance-ticktock-mqhz-master1050.jpg" src="https://static01.nyt.com/images/2026/11/01/multimedia/00biz-binance-ticktock2-mqhz/00biz-binance-ticktock-mqhz-master1050.jpg"/></div><figcaption><span>幣安創始人趙長鵬，攝於8月。駭客攻擊當晚，他通宵在X上向1290萬粉絲描述事件進展。</span> <cite>Tyrone Siu/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The impact of the Binance attack rippled across the crypto industry, from Abu Dhabi to New York, setting off a frantic effort to salvage some of the stolen funds and prompting law enforcement inquiries. This account of how the hack unfolded is based on interviews with four people with knowledge of the events, as well as analyses by crypto forensics firms and documents reviewed by The New York Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幣安遭受攻擊的影響波及整個加密貨幣行業，從阿布達比到紐約，各方慌忙採取緊急行動，試圖追回部分被盜資金，也促使執法機構開始介入調查。基於對四名知情人士的採訪、加密貨幣取證公司的分析，以及《紐約時報》查閱的相關文件，本文對這場駭客攻擊經過進行了還原。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For years, Binance has been the most important and contentious company in the crypto world. After Mr. Zhao founded it in 2017, it quickly turned into a behemoth, the No. 1 destination for customers looking to convert traditional currencies into digital coins like Bitcoin and Ether.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來，幣安一直是幣圈最重要也最具爭議的公司。趙長鵬2017年創立幣安後，該公司迅速發展成為行業巨頭，成為希望將傳統貨幣兌換成比特幣、以太幣等數字貨幣的客戶首選平台。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It also became a haven for crime. In 2023, Binance pleaded guilty to anti-money-laundering violations that had allowed criminals to move money and paid $4.3 billion in penalties to U.S. regulators. Mr. Zhao was sentenced to four months in prison.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但幣安也成了犯罪活動的溫床。2023年，幣安承認違反反洗錢規定，致使犯罪分子得以通過其平台轉移資金，並向美國監管機構支付了43億美元罰款。趙長鵬被判處四個月監禁。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For all its troubles, however, Binance never lost popularity among the crypto faithful. It remains the world’s largest exchange by a distance, and Mr. Zhao, who lives in Abu Dhabi, is something of an industry folk hero. Binance’s main platform is banned in the United States. But last year, the company forged a business relationship with World Liberty Financial, the Trump family crypto start-up. President Trump granted a pardon to Mr. Zhao last October, paving the way for Binance to expand into the U.S. market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管麻煩不斷，幣安在加密貨幣忠實擁躉中的人氣卻始終不減。它仍然以遙遙領先的優勢穩居全球最大加密貨幣交易所的地位，而居住在阿布達比的趙長鵬在業內儼然是一位民間英雄。幣安的主要交易平台在美國被禁，但去年，該公司與川普家族創辦的加密貨幣初創企業世界自由金融公司建立了業務關係。去年10月，川普總統赦免了趙長鵬，為幣安拓展美國市場鋪平了道路。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But on the night of Oct. 29, the company had to deal with the aftermath of the $6 billion hack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，10月29日夜裡，幣安不得不面對這場60億美元駭客攻擊造成的後果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such attacks have become commonplace in the crypto world. In February 2025, the North Koreans stole $1.5 billion from Bybit, a rival exchange. Bybit was breached after Ben Zhou, its chief executive, approved a seemingly routine transaction that granted the thieves access to the exchange’s internal system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此類攻擊在加密貨幣領域已司空見慣。2025年2月，朝鮮人從幣安的競爭對手Bybit盜走15億美元。Bybit被入侵是因為其首席執行官周雨辰批准了一筆看似常規的交易，使竊賊得以進入交易所內部系統。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s not clear precisely how the North Koreans got around Binance’s defenses. An initial investigation pointed to a compromised laptop, Binance said Friday. But the company later said it had uncovered “additional points of breach.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚朝鮮駭客究竟是如何突破了幣安的防禦系統。幣安週五表示，初步調查指向一台遭到入侵的筆記型電腦。但該公司後來又稱，發現了「更多入侵點」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the drama played out in public. Almost all crypto transactions are recorded on the blockchain, a ledger of money movements that anyone can look up. That meant crypto analysts could see funds leaving Binance in real time.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場危機的許多情節都在公眾眼皮底下上演。幾乎所有加密貨幣交易都會記錄在區塊鏈上，這是一套任何人都可以查詢的資金流動賬本。這意味著，加密貨幣分析師能夠實時看到資金從幣安流出。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Thursday afternoon, Jonathan Levin, the chief executive of the crypto analytics firm Chainalysis, was on a video call with a former senior U.S. official, discussing the need for the U.S. government to deploy cyber attacks against adversaries. Then Mr. Levin got the news about Binance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四下午，加密貨幣分析公司Chainalysis首席執行官喬納森·萊文正在與一名前美國高級官員影片通話，討論美國政府有必要對敵對勢力動用網路攻擊手段。就在這時，萊文收到了幣安遭到攻擊的消息。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I looked at my phone and was like, ‘Oh, this doesn’t look good,’” he said in an interview.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我看了一眼手機，心想，『哦，情況看起來不妙。』」他在接受採訪時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A group of Chainalysis employees gathered in a conference room in New York named “Silk Road,” after another crypto platform that was famously hacked. They worked until the early hours of Friday morning, eating Malaysian food and analyzing transactions to get a clearer picture of what had happened.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 一群Chainalysis員工聚集在紐約一間名為「絲綢之路」的會議室裡。這個名字來自另一個曾因遭到駭客攻擊而聞名的加密貨幣平台。他們一邊吃著馬來西亞菜，一邊分析交易記錄，一直工作到週五凌晨，試圖進一步釐清究竟發生了什麼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon both Chainalysis and another analytics firm, TRM Labs, attributed the attack to an elite North Korean hacking unit called TraderTraitor. The F.B.I. confirmed their findings. North Koreans have targeted crypto companies for years, using the proceeds of those thefts to fund its nuclear program, according to Western officials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不久，Chainalysis和另一家分析公司TRM Labs都認定，這次攻擊出自朝鮮一個名為TraderTraitor的精銳駭客組織。美國聯邦調查局證實了他們的調查結果。西方官員表示，朝鮮多年來一直將加密貨幣公司作為攻擊目標，並利用竊取的資金資助其核武器計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The hackers have developed increasingly complex strategies to steal crypto and launder the proceeds, a painstaking endeavor that can take months to complete. In a blog post on Friday, Chainalysis said the attackers had deployed “laundering patterns we have not seen before,” conducting thousands of transactions over a short period, probably with the help of automation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">駭客們開發出越來越複雜的策略來竊取加密貨幣並洗白收益，這一過程十分繁瑣，可能需要數月才能完成。Chainalysis週五在一篇部落格文章中說，攻擊者使用了「我們從未見過的洗錢模式」，在短時間內進行數千筆交易，可能藉助了自動化工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, Binance’s colleagues in the industry mobilized to intercept some of the laundered crypto. Certain digital coin issuers can freeze funds, allowing them to halt a money-laundering operation in its tracks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，幣安的行業同行也行動起來，試圖攔截部分被洗白的加密貨幣。某些數字貨幣發行方可以凍結資金，從而及時阻止洗錢操作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Soon after the hack, Tether and Circle, two major issuers, announced that they had frozen stashes of their own coins that the hackers had seized from Binance, a combined total of more than $2 billion in crypto. Binance is now working to gain access to those funds, the company said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">駭客攻擊發生後不久，兩家主要數字貨幣發行商Tether和Circle宣布，已凍結駭客從幣安竊取的部分由它們發行的數字貨幣，總價值超過20億美元。幣安表示，目前正設法重新取得這些資金的控制權。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But $2.4 billion in crypto is already “beyond any issuer’s reach,” according to TRM. In a social media post on Friday, Binance said that it had set aside $6.34 billion to cover losses from the hack.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但TRM指出，已有價值24億美元的加密貨幣「超出了任何發行商能夠控制的範圍」。幣安週五在社群媒體發文稱，已撥出63.4億美元，用於彌補此次駭客攻擊造成的損失。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How much money Binance has in reserve is not publicly known. After midnight, Mr. Musk posted a grimacing emoji underneath an X post comparing Mr. Zhao to Sam Bankman-Fried, the disgraced crypto mogul whose FTX exchange collapsed in 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幣安究竟持有多少儲備資金，外界並不清楚。午夜過後，馬斯克在一條將趙長鵬比作薩姆·班克曼-弗里德的X帖子下發布了一個齜牙表情；後者是聲名狼藉的加密巨頭，其創辦的FTX交易所於2022年倒閉。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Bad time to troll,” Mr. Zhao responded. “Please stop.” He noted that Binance owns over $1 billion in shares in SpaceX, Mr. Musk’s rocket company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「現在不是起鬨的時候，」趙長鵬回應道。「請住手。」他指出，幣安持有馬斯克火箭公司SpaceX超過10億美元的股份。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="趙長鵬週五在X上與伊隆·馬斯克打起了口水仗。" data-src="https://static01.nyt.com/images/2026/10/30/multimedia/00biz-binance-ticktock-musk-1-ztlg/00biz-binance-ticktock-musk-1-ztlg-master1050.jpg" src="https://static01.nyt.com/images/2026/10/30/multimedia/00biz-binance-ticktock-musk-1-ztlg/00biz-binance-ticktock-musk-1-ztlg-master1050.jpg"/></div><figcaption><span>趙長鵬週五在X上與伊隆·馬斯克打起了口水仗。</span> <cite>Demetrius Freeman for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Zhao’s comment got the attention of Ms. He, Binance’s co-chief executive and his longtime romantic partner. (Mr. Zhao is Binance’s majority shareholder but doesn’t have a formal role at the company.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">趙長鵬的這番話引起了幣安聯席首席執行官何一的注意。何一也是他多年的伴侶。（趙長鵬是幣安的控股股東，但並未在公司擔任正式職務。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Our company’s revenue for the year is sufficient to cover the losses, so we do not yet need to sell the SpaceX shares,” Ms. He wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們公司今年的收入足以覆蓋這次損失，因此目前還不需要出售SpaceX的股份。」何一寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With the industry reeling, Ms. He and her co-chief executive, Richard Teng, told Binance employees to “stay disciplined,” according to a message reviewed by The Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據《紐約時報》看到的一條內部信息，在行業震盪之際，何一和聯合首席執行官鄧偉政要求幣安員工要「嚴守紀律」。 </div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">"Do not speculate internally or externally,” the message said. “We know this is an intense moment, and we deeply appreciate everyone working overtime to make this right.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「無論在公司內外，都不要妄加猜測，」信息寫道。「我們知道現在形勢嚴峻，非常感謝大家加班加點，努力解決問題。」 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They also tried to address the growing unease in the crypto world. Speaking in Mandarin in a video posted to X on Friday, Ms. He said that the rise of artificial intelligence had turned hacking into “a threat to the entire industry.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們還試圖回應幣圈日益加劇的不安。週五在X發布的一段影片中，何一用普通話表示，人工智慧的興起已使駭客攻擊成為「整個行業的威脅」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Of course, there are many things that we have done wrong,” she said. “We should have invested in security much earlier and more extensively, and established more rigorous standards.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當然，我們也有很多做得不對的地方。」她說，「我們應該更早地、更多地去做安全投入，建立更嚴謹的標準。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Word of Binance’s hack even reached Mr. Trump, who was asked about it by a reporter on Friday. “People never see the money anymore,” he said. “I’ve always felt it was a little bit dangerous. But they say they have it pretty much under control. We’ll see.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幣安被攻擊的消息甚至傳到了川普那裡，週五有記者問及此事。「人們再也看不到錢了，」他說。「我一直覺得這有點危險。但他們說基本控制住了。我們拭目以待。」 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the companies that rushed to Binance’s aid was the Trump family firm, World Liberty, the issuer of a coin known as USD1.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在迅速向幣安伸出援手的公司中，包括川普家族的世界自由金融。這家公司發行了一種名為USD1的數字貨幣。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Zach Witkoff, the company’s chief executive and the son of one of Mr. Trump’s top advisers, announced on X that World Liberty had frozen $27 million in USD1 that was “associated with the Binance hack.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司首席執行官扎克·威特科夫是川普一名高級顧問的兒子。他在X平台宣布，世界自由金融已凍結價值2700萬美元與「幣安駭客攻擊事件有關」的USD1。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We stand by our industry partners,” he wrote.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們堅定支持業內合作夥伴。」他寫道。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Thank you!” Mr. Zhao responded, followed by three prayer hand emojis.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「謝謝！」趙長鵬回覆道，後面跟著三個雙手合十的表情符號。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">傅才德(Michael Forsythe)和Dustin Volz對本文有報導貢獻。</p><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">David Yaffe-Bellany自紐約為時報報導加密貨幣行業新聞。可以通過電子郵件聯繫他：davidyb@nytimes.com</p><p class="cn-p">翻譯：杜然</p><div class="" data-poster=""></div></div></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20261102/binance-hack-crypto-north-korea/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

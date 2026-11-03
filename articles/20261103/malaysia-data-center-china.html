@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球人工智慧熱潮中的「黑馬」 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">全球人工智慧熱潮中的「黑馬」</h1>
+    <h2 class="en-headline">How One Country Became the Unlikely Crossroads of the Global A.I. Boom</h2>
+    <div class="meta-line">ADAM SATARIANO, XINYUN WU <span style="margin: 0 8px;">•</span> 2026-11-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="700" src="https://static01.nyt.com/images/2026/10/30/multimedia/Biz-Malaysia-Video-Still-bvqt/Biz-Malaysia-Video-Still-bvqt-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Ulet Ifansasti for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Across a stretch of southern Malaysia once carpeted with palm-oil and pineapple plantations, signs of China’s global technology ambitions are taking shape.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在馬來西亞南部一片曾遍布棕櫚和菠蘿種植園的地帶，中國全球科技野心的跡象正在顯現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More than 15 cranes tower over 100 acres of excavated earth, where DayOne, a company with corporate roots in one of China’s biggest data center operators, is building a sprawling complex. A short drive away, at the edge of dense tropical forest, hundreds of workers are completing another facility expected to serve Chinese tech companies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">超過15台起重機矗立在約40公頃已開挖土地上，DayOne正在這裡建造一座龐大的綜合設施，這家公司的企業淵源可追溯至中國最大的數據中心運營商之一。不遠處的茂密熱帶森林邊緣，數百名工人正在完成另一座預計服務於中國科技公司的設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Inside these data centers will be some of the world’s most advanced artificial intelligence chips. The semiconductors, made by Nvidia, are largely banned from shipment to China under American export controls. Yet those restrictions generally do not prevent Chinese companies like ByteDance — DayOne’s biggest customer — from gaining access to the same chips in data centers outside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些數據中心內將部署一些全球最先進的人工智慧晶片。根據美國出口管制，這些由英偉達製造的半導體基本被禁止運往中國。但這些限制通常無法阻止像字節跳動這樣的中國公司從中國境外的數據中心獲取同樣的晶片，字節跳動是DayOne最大的客戶。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That distinction has helped turn Malaysia, a country of 35 million people, into an unlikely frontier of the A.I. boom. Drawn by cheap land and electricity, and proximity to undersea cables that carry internet traffic to China and the rest of the world, technology companies are pouring billions of dollars into the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正是這種政策差異推動馬來西亞——一個3500萬人口的國家——成為了人工智慧熱潮中一個出人意料的前沿地帶。受廉價土地和電力、以及靠近通往中國和世界其他地區的海底互聯網電纜所吸引，科技公司正向該國投入數十億美元。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Malaysia has carved out an uncommon position in an A.I. industry increasingly divided along geopolitical lines between China and the United States. Rather than choosing sides, it has welcomed both.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">人工智慧產業正日益沿地緣政治路線在中美之間分化，而馬來西亞在其中佔據了一個不尋常的位置：它沒有選邊站，而是對雙方都敞開大門。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The frenzy has reshaped Malaysia’s economy and landscape, raised fears about strains on electricity and water supplies, and drawn scrutiny from American officials concerned about Chinese access to advanced A.I. chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這股熱潮重塑了馬來西亞的經濟與地貌，引發了對電力和水資源供應緊張的擔憂，也引起了美國官員的審視——他們擔心中國獲取先進人工智慧晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nowhere is that transformation more striking than in Johor, the southern state at the center of the building boom. Across the state, 65 data center projects are operational, under construction or in various stages of planning and approval.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">轉變在柔佛最為顯著——這個位於馬來西亞南部的州屬正處於建設熱潮的中心。全州有65個數據中心項目正在運營、建設或處於不同的規劃和審批階段。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="位於馬來西亞柔佛州努沙再也科技園內的DayOne數據中心。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-01-qghk/Biz-Malaysia-AI-01-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-01-qghk/Biz-Malaysia-AI-01-qghk-master1050.jpg"/></div><figcaption><span>位於馬來西亞柔佛州努沙再也科技園內的DayOne數據中心。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The facilities already consume more than two gigawatts of electricity, enough to power more than one-third of Malaysian homes. If all planned projects are completed, demand could exceed 10 gigawatts, according to Invest Johor, a state agency, making it one of the world’s largest concentrations of computing power. Chinese and Western tech companies are expected to account for roughly equal shares of that capacity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些設施已消耗超過2吉瓦電力，足以供應超過三分之一的馬來西亞家庭。據州屬機構「投資柔佛」稱，若所有規劃項目完工，需求可能超過10吉瓦，使其成為全球最大的算力集中地之一。預計中國和西方科技公司將各占約一半的容量。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is really mind-boggling and beyond imagination,” said Steven Tan, chief executive of Pro3c, a Taiwanese company that makes optical parts for Nvidia chips. “Everyone is coming here.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這真的令人難以置信，超乎想像，」為英偉達晶片製造光學部件的台灣公司Pro3c首席執行官陳添順(Steven Tan)說，「所有人都來這裡。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American technology giants, including Microsoft, Google and Oracle, are investing heavily in Malaysia to be closer to Asian customers. At the same time, the country has become an offshore computing hub for Chinese companies like ByteDance, Tencent and Alibaba. In some of Johor’s industrial parks, infrastructure serving American and Chinese companies is being built almost side by side.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">包括微軟、谷歌和甲骨文在內的美國科技巨頭正在馬來西亞大舉投資，以更接近亞洲客戶。與此同時，馬來西亞已成為字節跳動、騰訊和阿里巴巴等中國公司的離岸計算樞紐。在柔佛的一些工業園區，服務美國公司和中國公司的基礎設施幾乎並排建設。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is the only place in the world at the moment where we are seeing this,” said Lee Ting Han, a Johor government official involved in data center approvals. “What makes Malaysia so special for this A.I. wave at the moment is our nonaligned neutral status.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是目前世界上我們唯一看到這種情況的地方，」參與數據中心審批的柔佛州政府官員李廷漢說，「當前馬來西亞在這波人工智慧浪潮中如此特別，就在於我們的不結盟中立地位。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="馬來西亞政治人物、律師李廷漢表示，中立地位令該國顯得與眾不同。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-04-qghk/Biz-Malaysia-AI-04-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-04-qghk/Biz-Malaysia-AI-04-qghk-master1050.jpg"/></div><figcaption><span>馬來西亞政治人物、律師李廷漢表示，中立地位令該國顯得與眾不同。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The China Boom</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>中國熱潮</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Malaysia’s boom began around 2021. After neighboring Singapore banned new data center construction because of electricity constraints, companies soon began moving across the border.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬來西亞的這輪繁榮大約始於2021年。鄰國新加坡因電力局限禁止新建數據中心後，企業很快開始遷往邊境另一側。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gary Goh, who runs a Malaysian data center consulting firm, recalled searching Johor for land near transmission lines to get access to the electricity they needed. “There’s ‘K-pop Demon Hunters’ — I’m the transmission line hunter,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">經營一家馬來西亞數據中心諮詢公司的加里·吳(Gary Goh)回憶，他當時在柔佛尋找靠近輸電線路的土地，以獲得所需的電力。「有個『K-Pop獵魔女團』——我就是那個輸電線路獵人，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese companies arrived first, including what would become DayOne. Originally an international subsidiary of GDS Holdings, one of China’s largest data center developers, it announced its first Johor facility in 2021 to help Chinese customers expand overseas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國公司最先抵達，其中包括後來成為DayOne的企業。它最初是中國最大數據中心開發商之一萬國數據控股的國際子公司，於2021年宣布在柔佛的首個設施，以幫助中國客戶向海外擴張。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Renamed DayOne in 2025, it has become one of Malaysia’s largest data center developers. At one Johor site, DayOne bought an 18-hole golf course for a new facility.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該公司於2025年更名為DayOne，現已成為馬來西亞最大的數據中心開發商之一。在柔佛的一個選址，DayOne買下了一座18洞高爾夫球場用於新設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Its expansion coincided with growing tensions between Washington and Beijing. In 2022, the U.S. government imposed export controls that prevented Nvidia from selling its most advanced chips directly to China, seeking to slow its A.I. development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其擴張恰逢華盛頓與北京之間緊張關係加劇。2022年，美國政府實施出口管制，阻止英偉達直接向中國出售其最先進的晶片，試圖減緩中國的人工智慧發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DayOne, which has headquarters in Singapore, illustrates how Chinese firms have maintained a foothold in the A.I. data center boom despite American restrictions. It has raised billions from international investors, including the American investment firm Coatue Management and Japan’s SoftBank, and recently announced plans for an initial public offering.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於新加坡的DayOne展示了中國公司如何在美國限制之下仍在人工智慧數據中心熱潮中保住立足點。它已從國際投資者處籌集數十億美元，包括美國投資公司高都(Coatue Management)和日本軟銀，並於近期宣布了首次公開募股計劃。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="DayOne的企業淵源可追溯至中國最大的數據中心運營商之一。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-02-qghk/Biz-Malaysia-AI-02-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-02-qghk/Biz-Malaysia-AI-02-qghk-master1050.jpg"/></div><figcaption><span>DayOne的企業淵源可追溯至中國最大的數據中心運營商之一。</span> <cite></cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="該公司正在馬來西亞努沙再也科技園建造一座數據中心綜合體。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-07-qghk/Biz-Malaysia-AI-07-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-07-qghk/Biz-Malaysia-AI-07-qghk-master1050.jpg"/></div><figcaption><span>該公司正在馬來西亞努沙再也科技園建造一座數據中心綜合體。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet DayOne maintains strong ties to China’s tech industry. GDS remains a major investor, alongside Hillhouse Investment, a Singapore-based firm founded by the Chinese billionaire Zhang Lei. Jamie Khoo, GDS’s former chief operating officer, now leads DayOne, and William Huang, GDS’s chairman, sits on its board.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但DayOne與中國科技產業保持著牢固聯繫。萬國數據仍是主要投資者，與中國億萬富翁張磊創立、總部位於新加坡的高瓴創投並列。萬國數據前首席運營官傑米·邱(Jamie Khoo)現在執掌DayOne，萬國數據董事長黃偉在其董事會任職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">ByteDance, TikTok’s parent company in China, is DayOne’s biggest customer, according to analysts. In a recent securities filing, DayOne said an unnamed customer operating a “leading short-form video” service accounted for nearly 70 percent of its revenue in the first half of 2026.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析師稱，TikTok的中國母公司字節跳動是DayOne最大的客戶。在最近的一份證券文件中，DayOne表示，一家運營「領先短片」服務的未具名客戶占其2026年上半年收入的近70%。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">ByteDance did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">字節跳動未回應置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, DayOne joined Nvidia’s data center partner network, which helps develop facilities for handling the most advanced A.I. computing gear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年4月，DayOne加入了英偉達的數據中心合作夥伴網路，該網路幫助開發處理最先進人工智慧計算設備的設施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia said remote access to computing capacity hosted abroad is consistent with American export controls because the chips remain outside restricted countries. The business “promotes U.S. national security and brings tens of billions of dollars and high-paying jobs home,” the company said in a statement.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達表示，遠程訪問託管在國外的算力符合美國出口管制，因為晶片仍位於受限國家之外。該公司在一份聲明中表示，這項業務「促進了美國國家安全，並將數百億美元和高薪工作帶回國內」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The American Bans</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>美國禁令</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American officials have taken notice of Southeast Asia’s role as a hub for offshore data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員已注意到東南亞作為離岸數據中心樞紐的角色。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國數據中心公司ZDATA正在馬來西亞柔佛州建造一座龐大的數據中心。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-08-qghk/Biz-Malaysia-AI-08-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-08-qghk/Biz-Malaysia-AI-08-qghk-master1050.jpg"/></div><figcaption><span>中國數據中心公司ZDATA正在馬來西亞柔佛州建造一座龐大的數據中心。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A report circulated within U.S. government agencies identified direct or indirect Chinese ownership in 38 of 128 data center projects across Southeast Asia. It estimated that the computing power available to Chinese companies through Malaysia, Thailand, Vietnam, Indonesia and Singapore was nearly as substantial as that from all of mainland China, where U.S. export restrictions have held back development. The report was shared with The New York Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一份在美國政府機構內部流傳的報告認定，東南亞128個數據中心項目中有38個存在直接或間接的中國所有權。報告估計，中國企業通過馬來西亞、泰國、越南、印度尼西亞和新加坡可獲得的算力，幾乎與受制於美國出口限制的中國大陸全部算力相當。該報告被分享給了《紐約時報》。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In July, Michael Kratsios, a White House adviser involved in A.I. policy, accused the Chinese company Moonshot of using high-end chips in Thai data centers to train its models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">7月，參與人工智慧政策的白宮顧問麥可·克拉齊奧斯指責中國公司月之暗面利用泰國數據中心的高端晶片訓練其模型。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Jimmy Goodrich, a former semiconductor industry executive and now a researcher at the University of California, San Diego, said U.S. export controls failed to adequately address Chinese companies’ use of chips through overseas data centers. Enforcement has instead focused on chip smuggling through Southeast Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前半導體行業高管、現加州大學聖地牙哥分校研究員吉米·古德里奇表示，美國出口管制未能充分解決中國公司通過海外數據中心使用晶片的問題。執法一直側重於通過東南亞的晶片走私。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“None of this is illegal,” he said. “It’s a gaping hole in export controls that nobody has fixed. These loopholes give China access to massive computing power and room to catch up in the A.I. race.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這一切都不違法，」他說，「這是出口管制中一個巨大的漏洞，沒有人去修補。這些漏洞讓中國獲得了大規模算力，並在人工智慧競賽中有了追趕空間。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This week, The Times reported that an executive for Megaspeed, a Singapore-based data center company operating in Malaysia, was under investigation for steering advanced Nvidia A.I. chips to China, and could be a Chinese intelligence asset.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>本週，《紐約時報》報導稱，在馬來西亞運營的新加坡數據中心公司Megaspeed的一名高管因涉嫌將先進的英偉達人工智慧晶片</span>轉至中國而接受調查，並可能是中國的情報資產。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DayOne warned investors this month that new U.S. restrictions on remote access to A.I. computing power through countries like Malaysia could undercut demand and hurt its “financial condition.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">DayOne本月警告投資者，美國對通過馬來西亞等國遠程訪問人工智慧算力的新限制可能削弱需求，並損害其「財務狀況」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>The Fallout</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>後果</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Malaysian officials have begun questioning the pace of growth, with the government recently imposing what some officials described as a de facto moratorium on new data centers. Under the policy, only facilities with their own off-grid power sources and independent water supplies for cooling will be approved — a difficult threshold to meet.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">馬來西亞官員已開始質疑增長步伐，政府最近實施了部分措施，一些官員稱之為對新數據中心的事實上的暫停令。根據該政策，只有擁有自有離網電源和用於冷卻的獨立水源的設施才會獲批——這是一個難以達到的門檻。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="由於許多居民投訴ZDATA數據中心施工產生灰塵，該公司提供了免費洗車服務。" data-src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-06-qghk/Biz-Malaysia-AI-06-qghk-master1050.jpg" src="https://static01.nyt.com/images/2026/10/28/multimedia/Biz-Malaysia-AI-06-qghk/Biz-Malaysia-AI-06-qghk-master1050.jpg"/></div><figcaption><span>由於許多居民投訴ZDATA數據中心施工產生灰塵，該公司提供了免費洗車服務。</span> <cite></cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For now, dozens of approved projects are moving ahead.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前，數十個已批准的項目正在推進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Eric Yong, a real estate agent who shifted his focus to data center development in 2023 and regularly travels to China to meet clients, was asked whether geopolitical tensions complicated business.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">埃里克·楊(Eric Yong)是一名2023年將重心轉向數據中心開發的房地產經紀人，他定期前往中國會見客戶。他被問及地緣政治緊張是否給生意造成困難。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Quite the opposite, he said. U.S.-Chinese tensions are driving business.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說，恰恰相反。美中緊張關係正在推動生意。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Only when it’s complicated do we have things to do,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「只有事情複雜的時候，我們才有事可做，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">攝影：Ulet Ifansasti</p><p class="cn-p">Zunaira Saieed自馬來西亞對本文有報導貢獻。</p><p class="cn-p">Adam Satariano是紐約時報科技記者，常駐倫敦。</p><p class="cn-p">Xinyun Wu是《紐約時報》記者/研究員，常駐台北，報導科技、台灣和中國新聞。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261103/malaysia-data-center-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

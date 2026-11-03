@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國技術出口管制升級 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國技術出口管制升級</h1>
+    <h2 class="en-headline">China’s Message to Its Rivals: You Need What We Make</h2>
+    <div class="meta-line">DAVID PIERSON, BERRY WANG <span style="margin: 0 8px;">•</span> 2026-11-03</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="一台盾構機正在中國一家工廠組裝。北京近期採取行動，管制數十項技術的出口，其中包括這類機器。" height="700" src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-01-pqvb/02int-china-export-controls-01-pqvb-master1050.jpg" width="1050"/><figcaption><span>一台盾構機正在中國一家工廠組裝。北京近期採取行動，管制數十項技術的出口，其中包括這類機器。</span> <cite>CHINATOPIX, via Associated Press</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">They are among the biggest machines in the world: steel cylinders, some as long as a football field, armed with rotating discs that can chew through rock to clear the way for roads and railways. Known as tunnel boring machines, they are made by only a handful of companies, mostly in factories in China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">它們是世界上最大的機器之一：有些長度堪比一座足球場，鋼製筒形機身配備了旋轉刀盤，能夠切削岩石，為公路和鐵路開闢通道。這種機器被稱為盾構機，全球只有少數幾家企業能夠製造，且大多在中國的工廠生產。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">India uses them to dig tunnels, including in the Himalayas, to improve its ability to send troops to defend its contested border with China. But starting next month, Beijing is likely to be able to control whether India gets to buy them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印度用它們來挖掘隧道，包括在喜馬拉雅山地區，以提升向與中國存在爭議的邊境投送兵力、進行防衛的能力。但從下個月起，北京可能有權決定印度能否購買這些設備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The machines are part of a broader effort by China to control what leaves Chinese factories and laboratories for foreign lands. In the past month, Beijing has moved to control the exports of dozens of technologies, including drones, artificial intelligence models and agents, and certain processes used to develop advanced medicines and to make solar panels.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些機械設備是中國一項更廣泛行動的一部分，目的是加強對中國工廠和實驗室向海外輸出產品與技術的控制。過去一個月，北京已採取措施對數十項技術實施出口管制，包括無人機、人工智慧模型和智能體，以及某些用於研發先進藥物和製造太陽能電池板的工藝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The overall push could make it much harder for companies in the United States and elsewhere to set up solar energy equipment factories that would compete against Chinese manufacturers. And it could soon make it more difficult for anyone outside China to gain access to the latest and most powerful Chinese A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一系列舉措可能使美國及其他國家的企業更難建立與中國製造商競爭的太陽能設備工廠。與此同時，它還可能很快使中國境外的人更難獲得中國最新、最強大的人工智慧模型。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國北方戈壁中的太陽能電池板。北京正加大力度，使外國競爭對手更難建立自己的太陽能設備工廠。" data-src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-02-pqvb/02int-china-export-controls-02-pqvb-master1050.jpg" src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-02-pqvb/02int-china-export-controls-02-pqvb-master1050.jpg"/></div><figcaption><span>中國北方戈壁中的太陽能電池板。北京正加大力度，使外國競爭對手更難建立自己的太陽能設備工廠。</span> <cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The planned restrictions show that Beijing is doubling down on its strategy of making Chinese factories indispensable to the world, even as many governments are alarmed by their countries’ dependence on China and are pushing to be less reliant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些擬議中的限制措施表明，北京正加大力度實施一項戰略：讓中國工廠成為世界不可或缺的一環。與此同時，許多國家的政府卻對本國依賴中國的程度感到擔憂，正努力降低這種依賴。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, concern over China’s grip on rare earths has spurred the government to revive the country’s own mining and processing industry for the minerals. In Europe, Japan and elsewhere, governments are trying to reclaim their ability to make antibiotics and active ingredients of medicines, many of which now come from China. In India, the transport minister has urged companies to make tunnel boring machines locally.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國，對中國控制稀土的擔憂促使政府重振自己的稀土採礦和加工產業。在歐洲、日本和其他地方，各國政府正努力恢復生產抗生素和藥物活性成分的能力，因為其中許多產品如今都依賴中國供應。在印度，交通部長已敦促企業在國內製造盾構機。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CJGbivn26pcDFc314wcdzDQDbg" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Xi Jinping, the Chinese leader, the controls are the realization of a plan he laid out years ago, when the pandemic exposed China’s dependence on foreign countries for advanced medical equipment like ventilators and life-support systems, as well as for raw materials and specialized parts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對中國領導人習近平而言，這些出口管制措施意味著他多年前提出的一項計劃正在付諸實施。新冠疫情期間，中國在呼吸機、生命維持系統等先進醫療設備以及原材料、專用零部件方面對外國的依賴暴露無遺，習近平正是在那時提出了這一計劃。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He declared that China would develop “trump card” technologies in industries such as high-speed trains, renewable energy and telecommunications. That would make China not only more self-sufficient, but deter countries from trying to cut China off.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他宣布，中國將在高速列車、可再生能源和電信等行業開發「王牌」技術。這將使中國不僅更加自給自足，還能威懾其他國家不要試圖切斷與中國的聯繫。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Digging In for a ‘Great Struggle’ With the West</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>為與西方展開「偉大鬥爭」做準備</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi has depicted China as locked in a long struggle with the West, which he sees as trying to contain China’s rise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平將中國描繪成正與西方陷入一場曠日持久的鬥爭，而在他看來，西方正試圖遏制中國的崛起。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing needs leverage to ensure that China can still get what it needs from other countries — namely their customers and advanced technologies like jet engines and high-end chips, said Kirsten Asdal, a founder of Asdal Advisory, a consultancy that focuses on Chinese political research.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專注於中國政治研究的諮詢公司Asdal Advisory的創始人之一柯爾斯滕·阿斯達爾表示，北京需要籌碼，以確保中國仍能從其他國家獲得所需之物，也就是海外市場，以及噴氣式發動機和高端晶片等先進技術。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Xi and the party see themselves as naturally embattled” against the West, she said, and have been “angling for a confrontation sooner or later, whenever the opportunity and capability present itself.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她說：「習近平和共產黨認為自己天然就處於與西方對抗的境地」，而且一直在「伺機展開對抗，只要時機和實力允許，遲早會採取行動」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At home, the Communist Party has framed China’s push for industrial and technological might as a fight for survival, echoing the struggles of the party’s revolutionary past.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在國內，黨把中國推動工業和科技實力提升的舉措描繪為一場生存之戰，與黨在革命年代的鬥爭遙相呼應。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In recent days, the party has repeatedly invoked the Long March, the Red Army’s epic 6,000-mile strategic retreat that cemented Mao Zedong’s leadership and became its defining myth of triumph over impossible odds. By drawing on that history, the party may be trying to reassure ordinary Chinese that endurance under its leadership will carry China through a time of slower economic growth, a prolonged housing crisis and growing hostility abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近日，中共反覆提及長征。長征是紅軍一次漫長而艱難的戰略撤退，行程近1萬公里，它鞏固了毛澤東的領導地位，也成為中共戰勝絕境的標誌性敘事。借用這段歷史，中共或許正試圖向普通中國民眾傳遞這樣的信息：面對經濟增長放緩、房地產危機久拖不決以及外部敵意日益加劇，只要在黨的領導下堅持下去，中國就能渡過難關。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="10月，中國領導人習近平和其他官員出席紀念長征勝利90週年的活動，意在傳遞這樣一個信息：在黨的領導下，中國能夠渡過當前的艱難時期。" data-src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-03-pqvb/02int-china-export-controls-03-pqvb-master1050.jpg" src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-03-pqvb/02int-china-export-controls-03-pqvb-master1050.jpg"/></div><figcaption><span>10月，中國領導人習近平和其他官員出席紀念長征勝利90週年的活動，意在傳遞這樣一個信息：在黨的領導下，中國能夠渡過當前的艱難時期。</span> <cite>Cnsphoto, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a recent front-page editorial commemorating the 90th anniversary of the Long March, People’s Daily, the party’s mouthpiece, called for the country to “focus on the ‘chokehold’ key core technologies” and “stiffen the Chinese backbone” of self-reliance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">最近，《人民日報》在紀念長征勝利90週年的頭版社論中，呼籲全國「瞄準關鍵核心技術特別是 『卡脖子』問題」，並「挺起科技自立自強的中國脊樑」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a clear reference to the United States, the editorial praised China for weathering tariffs and trade wars and urged readers to prepare for a “great struggle.” The call to secure technological choke points was also likened to the way the Red Army took the “strategic initiative” on the battlefield to ultimately defeat the Nationalists.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">社論還明顯指向美國，讚揚中國經受住了關稅和貿易戰的考驗，敦促讀者做好開展「偉大鬥爭」的準備。文章還將搶佔技術領域關鍵制約環節的努力與紅軍當年在戰場上奪取「戰略主動」、最終擊敗國民黨軍隊的做法相提並論。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has said that the recent flurry of export controls and proposed rules are needed to protect Chinese business interests. The country has spent decades and billions of dollars developing its dominance of the manufacturing of solar equipment, for instance, and it argues that it must restrict the export of core equipment to prevent competitors from trying to replicate China’s supply chain domestically.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國表示，近期密集出台的一系列出口管制措施和擬議規定是為了保護中國企業的利益所必需的。以太陽能設備製造業為例，中國花費了數十年時間、投入數十億美元，才建立起這一領域的主導地位。中國認為，必須限制核心設備出口，防止競爭對手試圖在本國複製中國的供應鏈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has also said that more controls are needed to guard against threats to national security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國還表示，需要實施更多管制措施，以防範國家安全受到威脅。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is beginning to more systematically consider which technologies and equipment can be exported, to whom they should be sold and what their ultimate applications will be,” said Sun Chenghao, a foreign relations expert at Tsinghua University in Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國開始更系統地考慮哪些技術和設備可以出口、應賣給誰以及最終用途是什麼，」北京清華大學國際關係專家孫成昊說。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He said, for instance, that the risks that A.I. could be used for cyberattacks or that machines that bore tunnels and that dredge mud could be used by militaries against China are legitimate reasons for Beijing to vet where these technologies go.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他舉例說，人工智慧可能被用於網路攻擊，而盾構機和疏浚設備也可能被外國軍隊用來對付中國。這些風險足以成為北京審查相關技術流向的正當理由。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Learning From the United States</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>向美國學習</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The proposed controls may also be a part of tit-for-tat actions that China and the United States have traded in recent months, despite a broader trade truce. The Trump administration added BGI, a major Chinese genomics company to a trade blacklist aimed at barring products made with forced labor in China. Earlier, the Treasury Department proposed regulations prohibiting U.S. companies and investors from taking investment stakes in Chinese biotechnology firms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管中美之間達成了更廣泛的貿易休戰協議，這些擬議中的管制措施也可能是兩國近幾個月來一系列針鋒相對行動的一部分。川普政府將中國大型基因組學企業華大列入一份貿易黑名單，該名單旨在禁止使用中國強迫勞動生產的產品進入美國市場。此前，美國財政部還提出規定，擬禁止美國企業和投資者入股中國生物技術公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump and Mr. Xi are expected to meet in China later this month and next month in Miami.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">預計川普總統與中國領導人將於本月晚些時候在中國會面，並於下個月在邁阿密再次會面。 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國領導人習近平與川普總統9月在白宮。預計兩人將於11月在中國會面。" data-src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-04-pqvb/02int-china-export-controls-04-pqvb-master1050.jpg" src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-04-pqvb/02int-china-export-controls-04-pqvb-master1050.jpg"/></div><figcaption><span>中國領導人習近平與川普總統9月在白宮。預計兩人將於11月在中國會面。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American restrictions and sanctions on China helped teach Beijing that great powers need economic weapons as much as they need aircraft carriers and long-range missiles, some analysts have said. Washington first cut two of China’s largest technology companies, Huawei and ZTE, off from American chips and software, then restricted exports of advanced chips to China broadly, curbs that continue to hurt China’s A.I. ambitions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些分析人士表示，美國對中國實施的限制和制裁讓北京認識到，大國不僅需要航空母艦和遠程導彈，也同樣需要經濟武器。華盛頓最初切斷了華為和中興這兩家中國大型科技企業獲取美國晶片和軟體的管道，隨後又全面限制向中國出口先進晶片。這些限制至今仍是中國實現人工智慧雄心的一大障礙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During its trade war with the second Trump administration, Beijing choked off exports to the United States of rare earths, the minerals needed to make fighter jets, cars and everyday technologies. That pressured Washington into a truce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在與第二屆川普政府的貿易戰中，北京切斷了對美國的稀土出口。稀土是製造戰鬥機、汽車和各種日常技術產品所需的礦物。這一舉措迫使華盛頓同意休戰。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some Chinese analysts worry that Beijing’s rare earths strategy has been too successful. The United States and many of its allies and partners are now scrambling to develop alternative sources.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些中國分析人士擔心，北京的稀土戰略過於成功。美國及其許多盟友和夥伴如今正爭相開發替代供應來源。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Part of this month’s flood of Chinese controls was aimed at establishing new points of leverage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月中國密集出台管制措施的部分目的是建立新的制衡籌碼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is concerned that it might lose its ‘rare earths card,’” said Zhao Minghao, an international relations scholar at Fudan University in Shanghai. “So, what other cards does China still hold? How can China effectively counter U.S. sanctions or tariff measures? I believe Beijing is prioritizing this highly at the present.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國擔心自己可能失去『稀土牌』，」上海復旦大學國際關係學者趙明昊說。「那麼，中國手裡還有哪些牌？中國如何才能有效反制美國的制裁或關稅措施？我認為，北京目前正在高度重視這個問題。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Costly Bet</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>代價高昂的賭注</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s single-minded focus on technological self-sufficiency carries risks for Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國一門心思追求技術自主可能給北京帶來風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economists have long urged Beijing to invest in pensions, health care and unemployment benefits so that residents feel secure enough to spend.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，經濟學家一直敦促北京加大對養老金、醫療保障和失業救濟的投入，讓居民擁有足夠的安全感，從而願意增加消費。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That obsession with developing technology and protecting it is leading to a massive misallocation of resources in China that is generating slower growth and higher debt,” said Scott Kennedy, a researcher on the Chinese economy at the Center for Strategic and International Studies in Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「這種對發展技術和保護技術的執念正在導致中國出現嚴重的資源錯配，造成經濟增長放緩和債務攀升，」華盛頓戰略與國際問題研究中心的中國經濟研究員甘思德 (Scott Kennedy)說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new controls could also alarm other trading partners like Europe, which is already uneasy about a flood of cheap Chinese exports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新的管制措施也可能令歐洲等其他貿易夥伴感到不安。歐洲已經對大量廉價中國商品的湧入感到憂慮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That kind of business by threat is not going to be something that is sustainable,” Mr. Kennedy said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種靠威脅做生意的做法是不可持續的，」 甘思德說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even some Chinese analysts acknowledge the danger.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">甚至一些中國分析人士也承認這種危險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If uncertainty becomes too high, customers may seek alternatives,” Mr. Sun of Tsinghua said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果不確定性變得過高，客戶可能會尋找替代方案，」清華大學的孫成昊說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is already happening in India. Experts say that China had been holding up exports of tunnel boring machines as early as 2024, before it added them to its list of export controls. As a result, India has had to seek out other suppliers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種情況已經在印度出現。專家表示，中國早在2024年就開始拖延盾構機的出口，當時這類設備尚未被列入出口管制清單。結果，印度不得不尋找其他供應商。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="一台盾構機正在新德里一條新建地鐵線路的施工現場作業。專家稱，中國早在2024年就一直在拖延盾構機的出口。" data-src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-05-pqvb/02int-china-export-controls-05-pqvb-jumbo.jpg" src="https://static01.nyt.com/images/2026/11/02/multimedia/02int-china-export-controls-05-pqvb/02int-china-export-controls-05-pqvb-jumbo.jpg"/></div><figcaption><span>一台盾構機正在新德里一條新建地鐵線路的施工現場作業。專家稱，中國早在2024年就一直在拖延盾構機的出口。</span> <cite>Karan Deep Singh for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet New Delhi had few ways to retaliate because its economic ties with China were so thin, said Pranay Kotasthane, chair of the High Tech Geopolitics Program at the Takshashila Institution in Bengaluru, India.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印度邦加羅爾智庫塔克沙希拉研究所高科技地緣政治項目主任普拉奈·科塔斯塔內表示，由於印度與中國的經濟聯繫較為有限，新德里幾乎沒有什麼反制手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China is indiscriminately expanding the scope of their export controls to include basic equipment that aren’t even strategic,” he added. “They are demonstrating that in any political conflict, they can counter with industrial leverage.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國正在不加區分地擴大出口管制範圍，甚至把那些根本不具戰略意義的基礎設備也納入其中，」他補充說。「他們正在表明，無論發生什麼政治衝突，他們都可以動用工業領域的優勢作為反制籌碼。」 </div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">David Pierson報導中國外交政策和中國與世界的經濟與文化交互。他從事新聞工作已超過20年。</p><div class="" data-poster=""><span><p class="cn-p">Berry Wang是《紐約時報》記者/研究員，常駐香港。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261103/chinas-message-to-its-rivals-you-need-what-we-make/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
