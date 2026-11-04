@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聚焦美國期中選舉 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">聚焦美國期中選舉</h1>
+    <h2 class="en-headline">6 Themes to Watch for When the Midterm Election Results Arrive</h2>
+    <div class="meta-line">REID J. EPSTEIN <span style="margin: 0 8px;">•</span> 2026-11-04</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週日，安克拉治的選民們。民主黨計劃在該州參議院競選中推舉一名攪局的候選人，此舉激怒了共和黨人。" height="700" src="https://static01.nyt.com/images/2026/11/03/multimedia/03pol-what-to-watch-bvkm/03pol-what-to-watch-bvkm-master1050.jpg" width="1050"/><figcaption><span>週日，安克拉治的選民們。民主黨計劃在該州參議院競選中推舉一名攪局的候選人，此舉激怒了共和黨人。</span> <cite>Erin Schaff/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the last two months, President Trump has offered a consistent plea: Pretend he’s on the ballot.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去兩個月來，川普總統一直反覆向選民發出一個呼籲：就當他的名字也在選票上。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The midterm elections on Tuesday will give voters an opportunity to do just that. They are set to render the first national referendum on a second-term Trump agenda characterized by far-reaching tariffs, an unpopular war with Iran and an aggressive immigration crackdown.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二的期中選舉將給選民一個這樣做的機會。這場選舉預計將成為對川普第二任期議程的首次全國性公投，該議程以影響深遠的關稅、不受歡迎的對伊朗戰爭以及激進的移民打擊為特徵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Republican officials are bracing for a harsh judgment and potentially significant defeats. They widely expect to lose control of the House. They have grown increasingly worried about losing the Senate, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">共和黨官員正為選民可能作出的嚴厲裁決，以及潛在的重大選舉失利做準備。他們普遍預計，共和黨將失去眾議院控制權。與此同時，他們也越來越擔心，參議院可能同樣失守。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats have sought to define their campaigns through anger over high prices driven by tariffs and the war, focusing heavily on the idea of making life cost less. Led by Mr. Trump, Republicans have struggled to articulate an affirmative counterargument, with the president dismissing concerns about the economy and sending an often scattered message.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨人試圖圍繞選民對關稅和戰爭推高物價的憤怒來展開競選，將降低民眾生活開支作為核心訴求。在川普的領導下，共和黨人一直難以提出有說服力的正面回應。總統本人不僅淡化選民對經濟的擔憂，傳遞的政治信息也往往雜亂無章。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American politics is of course full of surprises. While Republicans have underperformed in both midterm elections of the Trump era, the president has demonstrated his ability to turn out his most loyal supporters. He has also stepped up his baseless attacks on the U.S. election system, raising fears of federal interference in the results.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當然，美國政治從來不乏意外。儘管共和黨在川普時代的前兩次期中選舉中表現均不及預期，但川普已經證明，他有能力動員最忠實的支持者投票。他還加大了對美國選舉制度毫無根據的攻擊，引發人們對於聯邦政府可能干預選舉結果的擔憂。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats need a net gain of just three House seats to win a majority. The Senate is a heavier lift: Democrats must hold all of their seats and flip at least four Republican-held ones. They are competing in states like Texas, which has not elected a Democratic senator since 1988, and Kansas, which has not done so since 1932.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨只需在眾議院凈增三個席位，就能取得多數席位。參議院的難度則大得多：民主黨必須守住全部現有席位，同時從共和黨手中奪取至少四席。他們正在得克薩斯州和堪薩斯州等地展開角逐。得州自1988年以來就沒有選出過民主黨籍聯邦參議員，而堪薩斯州上一次選出民主黨籍聯邦參議員更要追溯到1932年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And if Democrats flip at least two Republican-held governorships, they will hold a majority of them for the first time since 2010, when a backlash to President Barack Obama fueled a Republican wave that has shaped American politics ever since.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果民主黨人至少翻轉兩個共和黨控制的州長職位，他們將自2010年以來首次獲得州長多數。當年，對歐巴馬總統的不滿情緒推動共和黨掀起勝選浪潮，並深刻影響了此後的美國政治格局。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在川普總統的帶領下，共和黨人一直難以明確其競選方針。" data-src="https://static01.nyt.com/images/2026/11/03/multimedia/03pol-what-to-watch-trump-cpkw/03pol-what-to-watch-trump-cpkw-master1050.jpg" src="https://static01.nyt.com/images/2026/11/03/multimedia/03pol-what-to-watch-trump-cpkw/03pol-what-to-watch-trump-cpkw-master1050.jpg"/></div><figcaption><span>在川普總統的帶領下，共和黨人一直難以明確其競選方針。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Polls will close starting at 6 p.m. Eastern. The results that follow will shape the country for at least the next two years, and perhaps much longer. Here are six themes to watch as voting ends:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">投票站將從東部時間下午6點開始關閉。隨後的結果將至少在未來兩年、甚至更長時間裡塑造這個國家。以下是投票結束後值得關注的六個方面：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How deep into Republican territory can Democrats reach?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>民主黨能在多大程度上深入共和黨的傳統地盤？ </b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Look at where the competitive races were in the final days of the campaign.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">看看競選最後幾天，哪些地方的選情依然膠著。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-google-query-id="CLa09qWv7ZcDFYRvKwMd9YgpOQ" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1" style="display: none;"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Solidly red Kansas and Ohio have tossup Senate races. Democrats are seriously contending in House districts like the one in northern New York being vacated by Representative Elise Stefanik — where Mr. Trump won by 21 percentage points two years ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在共和黨根基深厚的堪薩斯州和俄亥俄州，參議院選舉陷入勝負難料的局面。民主黨還在一些眾議院選區形成了有力競爭，例如紐約州北部由眾議員埃莉斯·斯特凡尼克騰出的席位。兩年前，川普曾在該選區以21個百分點的優勢獲勝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Governor’s races are tight in conservative states like Florida, Nebraska and Oklahoma, where Gov. Andy Beshear of Kentucky, the chairman of the Democratic Governors Association, spent Monday night stumping for the party’s nominee. The last Democratic presidential candidate to win even a single county in Oklahoma was Al Gore in 2000.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在佛羅里達州、內布拉斯加州和奧克拉荷馬州等保守州，州長選情膠著。民主黨州長協會主席、肯塔基州州長安迪·貝希爾週一晚上就在奧克拉荷馬州為該黨候選人拉票。自2000年阿爾·高爾以來，再沒有任何民主黨總統候選人能在奧克拉荷馬州贏得哪怕一個縣。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the weekend, Republicans rushed money into Louisiana’s Senate race, which had not been considered a competitive contest before then. Both parties have also directed late money to the Senate races in Mississippi and South Carolina, states that have been out of reach for Democrats for a generation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上週末，共和黨緊急向路易斯安那州的參議院選舉投入資金。而此前這場選舉一直被認為勝負毫無懸念。兩黨還在最後關頭向密西西比州和南卡羅來納州的參議院選戰追加資金。民主黨已經幾十年未能在這兩個州贏得參議院選舉。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">With Democrats widely expected to win races in at least some red House districts and threatening to flip Senate seats in deep-red states, the question is how far into Republican terrain they can prevail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外界普遍預計，民主黨將在至少部分共和黨佔優勢的眾議院選區獲勝，甚至有望奪取一些共和黨根基極為深厚的州的參議院席位。現在的問題是，民主黨究竟能在共和黨的傳統地盤上取得多大突破。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How angry are voters about Trump’s handling of the economy?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>選民對川普處理經濟問題的方式有多憤怒？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Voters care most about whether they can afford their everyday needs, and polls suggest that they are angered about the high prices brought on by tariffs and a war ordered by Mr. Trump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選民最關心的是日常生活開支能否負擔得起。民調顯示，川普實施的關稅政策以及他下令發動的戰爭推高了物價，引發選民不滿。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president spent the day before the election talking about his alterations to the Reflecting Pool in Washington. Over the last few weeks, some of his most memorable rally lines have been about the anatomies of Republican Senate candidates.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選舉前一天，川普卻把時間花在談論自己對華盛頓倒影池所作的改造上。過去幾週，他在競選集會上最令人印象深刻的一些言論涉及共和黨參議員候選人的身體部位。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s approval ratings have sunk to record lows. Republican candidates who have recast their political identities in his image are struggling to convince voters that they can be independent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的支持率已跌至歷史低點。那些按照他的形象重塑政治身份的共和黨候選人正努力說服選民相信，他們能夠保持獨立。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In many cases, Republicans have not even tried to make a case that the economy is in good shape. Instead, they have tried to change the subject.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在許多情況下，共和黨人甚至沒有試圖論證經濟狀況良好，而是試圖轉移話題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Michigan’s Senate race, former Representative Mike Rogers has sought to push the Muslim faith and family background of his Democratic opponent, Dr. Abdul El-Sayed, to the center of the campaign. In Texas, voters have seen an onslaught of Republican ads about how James Talarico, the Democratic Senate nominee, talked about transgender rights in the past. And in Maine, Senator Susan Collins is selling voters on the idea that her seniority after four terms is best for her state.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在密西根州的參議院選戰中，前眾議員邁克·羅傑斯試圖將其民主黨對手阿卜杜勒·埃爾-賽義德博士的穆斯林信仰和家庭背景推到競選活動的中心。在得克薩斯州，選民看到了大量共和黨廣告，內容是關於民主党參議院提名人詹姆斯·塔拉里科過去對跨性別權利的表態。在緬因州，參議員蘇珊·柯林斯向選民推銷這樣的理念：她四屆任期積累的資歷最有利於本州。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="包括柴油在內的燃料價格上漲是選民們關注的問題。" data-src="https://static01.nyt.com/images/2026/11/03/multimedia/03pol-what-to-watch-07-fhcv/03pol-what-to-watch-07-fhcv-master1050.jpg" src="https://static01.nyt.com/images/2026/11/03/multimedia/03pol-what-to-watch-07-fhcv/03pol-what-to-watch-07-fhcv-master1050.jpg"/></div><figcaption><span>包括柴油在內的燃料價格上漲是選民們關注的問題。</span> <cite>Hilary Swift for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Democrats win the House, how big will their majority be?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>如果民主黨人贏得眾議院，他們的多數席位優勢會有多大？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">We could know fairly early in the evening what kind of night it will be for the House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我們可能在晚上較早時候就能知道眾議院將迎來怎樣的夜晚。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Indiana and the eastern half of Kentucky, polls close at 6 p.m. Eastern. There are tight races in Kentucky’s Sixth Congressional District, which Mr. Trump carried by 15 points in 2024, and Indiana’s Fifth District, which he won by 17 points.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在印第安納州和肯塔基州東半部，投票站於東部時間下午6點關閉。肯塔基州第六國會選區（川普曾在2024年以15個百分點獲勝）和印第安納州第五選區（川普以17個百分點獲勝）選情膠著。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both are competitive races that will reveal some of the first clues about the rest of the electoral map. They are districts that combine rural and suburban voters and are usually safe for Republicans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這兩場選戰都競爭激烈，將揭示關於其餘選區格局的一些初步線索。這些選區彙集了農村和郊區選民，通常是共和黨的安全選區。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are dozens of similar House districts across the country.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全國還有數十個類似的眾議院選區。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What’s the fallout from the national redistricting fight?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>全國重新劃分選區之爭帶來了什麼影響？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Starting with Texas last summer, Republican-led states began redrawing their congressional district lines to try to secure more House seats for their party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">從去年夏天得克薩斯州開始，共和黨主導的各州陸續著手重新劃定國會選區邊界，試圖為本黨爭取更多眾議院席位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new maps were based on the idea that the electorate in 2026 would look somewhat like the one that carried Mr. Trump to victory in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新選區圖基於這樣的想法：2026年的選民結構將與2024年助川普贏得大選時的選民結構大致相似。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That does not seem to be the case.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">實際情況似乎並非如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Latino voters have turned against Mr. Trump, shifting the politics of South Texas and South Florida, where Republicans tried to lock in advantages. Rural voters are furious about the price of diesel fuel. Black voters, early voting data suggests, are turning out in huge numbers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拉丁裔選民已轉而反對川普，改變了南得克薩斯州和南佛羅里達州的政治格局，共和黨人原本曾經試圖在那裡鎖定優勢。農村選民對柴油價格高漲感到憤怒。早期投票數據表明，黑人選民的投票率正大幅攀升。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The result is that House districts drawn with the express intent of putting them in Republican hands instead have competitive races. In Texas, Florida, Tennessee and North Carolina, there are increasingly tight races in districts Mr. Trump would have carried by double digits had they existed in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">結果是，那些原本明確旨在確保共和黨獲勝而劃定的眾議院選區，如今反而出現了競爭激烈的選戰。在得克薩斯州、佛羅里達州、田納西州和北卡羅萊納州，一些選區的選情日益膠著，如果這些選區在2024年就已存在，川普本可以在那裡以兩位數的優勢獲勝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Meantime in California, voters approved a plan aimed at delivering five House seats for Democrats, and redistricting does not seem to have placed any of the party’s seats at risk.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，在加利福尼亞州，選民批准了一項旨在為民主黨人帶來五個眾議院席位的計劃，而重新劃分選區似乎沒有讓民主黨的任何席位面臨風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What about all the Republican money?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>那麼共和黨的巨額資金呢？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Elon Musk spent at least $474 million to back Republicans in the midterm elections. The next four biggest donors are also Republicans. And Mr. Trump had an unmatched war chest.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊隆·馬斯克至少花費了4.74億美元支持期中選舉中的共和黨人。排在他後面的四位最大捐助者也是共和黨人。而川普擁有無人能及的競選資金儲備。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If Republicans defy expectations, it will be at least in part because of a financial advantage built long before races became tight in the campaign’s final weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果共和黨人出乎意料地取得好成績，至少部分在於，早在競選最後幾週選情趨緊之前，他們就已經建立了資金優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, Democratic officials involved in House and Senate races have lamented that they do not have the money to compete in as many districts and states as they would like.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，參與眾議院和參議院選戰的民主黨官員感嘆資金不足，無法在盡可能多的選區和州展開競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Will Democrats be hurt by their Senate-race dramas?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>民主黨人會在參議院選戰的戲劇性選情中受挫嗎？</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The red-state Senate races in Iowa, Kansas, Mississippi, Ohio, Texas and South Carolina are competitive in part because Democrats have nominated a generally strong slate of candidates who have mostly avoided major problems on the campaign trail.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">愛荷華州、堪薩斯州、密西西比州、俄亥俄州、得克薩斯州和南卡羅來納州的紅州參議院選戰競爭激烈，部分原因是民主黨人提名了一批總體上實力強勁的候選人，他們大多在競選過程中避免了重大問題。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That’s not the case for their blue-state brethren.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">藍州候選人則並非如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Maine Democrats switched out their candidate in July after the primary winner, Graham Platner, was forced out of the race after a rape allegation, which he denied.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">緬因州民主黨人在7月更換了候選人，此前初選獲勝者格雷厄姆·普拉特納因強姦指控被迫退出競選，他否認這一指控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Michigan was convulsed this weekend by a late endorsement flip, with Representative Haley Stevens, who lost the Senate primary to Dr. El-Sayed, defecting and backing the Republican in the race, Mr. Rogers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根州週末因一次遲來的背書反轉而震動，眾議員海莉·史蒂芬斯在參議院初選中輸給埃爾-賽義德，倒戈支持該州共和黨候選人羅傑斯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And in light-blue Minnesota, Lt. Gov. Peggy Flanagan has led in polling in her Senate race despite being trailed by the state’s major fraud scandal and being viewed as running one of the party’s weakest campaigns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在淺藍色的明尼蘇達州，儘管副州長佩吉·弗拉納根捲入了該州一起重大欺詐醜聞，且其競選活動被視為該黨最薄弱的活動之一，但她在參議院競選的民調中仍保持領先。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There’s also Alaska, where a New York Times report last week about Democratic chicanery to help Mary Peltola, the party’s nominee for Senate, by recruiting a second Dan Sullivan into the race set off a wave of Republican anger.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有阿拉斯加州，《紐約時報》上週報導稱，民主黨人為幫助該党參議院提名人瑪麗·佩爾托拉耍花招，辦法是招募另一個丹·沙利文參加競選，這引發了共和黨人的憤怒浪潮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Polls show the Democratic nominees leading or with an edge in all four races, but some of these contests — especially in Michigan and Maine, where Ms. Collins, the incumbent Republican, is a formidable opponent — have required more resources and attention than party leaders would have preferred.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民調顯示，民主黨提名人在這四場競選中領先或略佔優勢，但其中一些選戰耗費的資源和精力已超出黨內領導層的預期，尤其是在密西根州和緬因州——緬因州現任共和黨參議員柯林斯是一名強大的對手。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Reid J. Epstein是《紐約時報》記者，自華盛頓報導競選活動及選舉新聞。</p><p class="cn-p">翻譯：杜然、晉其角</p></div></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20261104/midterm-elections-trump-democrats-republicans-key-themes/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
