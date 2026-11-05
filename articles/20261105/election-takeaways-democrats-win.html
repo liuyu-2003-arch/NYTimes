@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>共和黨慘敗之夜 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">共和黨慘敗之夜</h1>
+    <h2 class="en-headline">America Punishes Trump’s Party: 8 Takeaways From a Democratic Landslide</h2>
+    <div class="meta-line">SHANE GOLDMACHER, PATRICIA MAZZEI <span style="margin: 0 8px;">•</span> 2026-11-05</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週二在奧斯汀舉行的詹姆斯·塔拉里科的開票派對。他贏得了得克薩斯州參議員席位，民主黨在這場選舉中取得壓倒性勝利。" height="700" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-01-tlwg/03pol-midterms-takeaways-01-tlwg-master1050.jpg" width="1050"/><figcaption><span>週二在奧斯汀舉行的詹姆斯·塔拉里科的開票派對。他贏得了得克薩斯州參議員席位，民主黨在這場選舉中取得壓倒性勝利。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats marched to a landslide victory in the midterm elections on Tuesday as voters across the country raged at President Trump’s party, dealing Republicans stunning defeats from the Deep South to the prairie lands.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨在週二的期中選舉中取得壓倒性勝利，全國選民對川普總統政黨的憤怒情緒高漲，從深南部到草原地帶，共和黨人遭遇了令人震驚的慘敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For the first time in decades, Democrats won statewide in Texas, taking not just a Senate seat but also the governor’s mansion. They won a Senate seat in Kansas, which had not happened in nearly 100 years. They flipped a Senate seat in South Carolina, a state that had barely been on the battleground map. And they seized House seats in such deep-red territory that Democrats are on a glide path to their biggest congressional majority in years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>民主黨數十年來首次在得克薩斯州贏得了全州範圍的選舉，不僅拿下了一個參議院席位，還拿下了州長職位。他們在堪薩斯州贏得了一個參議院席位，這在近100年來未曾發生過。他們在南卡羅來納州翻轉了一個參議院席位，這個州原本幾乎不在戰場版圖上。而且他們在深紅地區奪取了眾議院席位，使得民主黨正沿著平穩的路徑邁向他們多年來最大的國會多數優勢。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Economic anxieties at home and a war abroad proved to be a politically toxic combination for Mr. Trump and his party. Democrats were on track to win the national House popular vote by the largest margin in a half-century.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">事實證明，對川普及其政黨而言，國內的經濟焦慮與國外的戰爭是一個在政治上具有毒性的組合。民主黨有望取得半個世紀以來最大的眾議院全國總票數優勢。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The results amounted to an unambiguous mandate from the public for a check on a president who has pushed the limits of his power, and they imperiled whatever was left of a legislative agenda for Mr. Trump. Now he and his administration will face investigations that are expected to consume much of the next Congress.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選舉結果意味著，<span>公眾明確授權對一位挑戰自身權力極限的總統進行制衡，這也危及了川普</span>僅存的一些立法議程。現在，他和他的政府將面臨預計會消耗下一屆國會大部分精力的各項調查。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are eight takeaways from a brutal night for Republicans:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下是共和黨慘敗之夜的八個要點：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats stormed to power in the Senate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>民主黨</b></span><b>一舉</b><span><b>奪取參議院控制權。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A pediatrician in South Carolina. A minister in Kansas. A seminarian in Texas. A Paralympic gold medalist in Iowa. A logger in Maine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名南卡羅來納州兒科醫生。一名堪薩斯州牧師。一名得克薩斯州神學生。一名愛荷華州殘奧會金牌得主。一名緬因州伐木工。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats had flipped half a dozen Senate seats by the time the clock struck midnight, taking control of the chamber in a sweep that seemed unthinkable just a year ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">午夜鐘聲敲響時，民主黨已翻轉六個參議院席位，以一年前似乎不可想像的席捲之勢奪取了控制權。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="州眾議員喬什·圖雷克在愛荷華州為民主黨贏得了又一場關鍵的參議院席位爭奪戰。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-turek-kgbw/03pol-midterms-takeaways-turek-kgbw-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-turek-kgbw/03pol-midterms-takeaways-turek-kgbw-master1050.jpg"/></div><figcaption><span>州眾議員喬什·圖雷克在愛荷華州為民主黨贏得了又一場關鍵的參議院席位爭奪戰。</span> <cite>KC McGinnis for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Entering Tuesday, Democrats did not hold a single Senate seat in a state that Mr. Trump had won all three times he ran for president. By Wednesday, they had senators-elect in six of them — including five that the president won by double digits in 2024. Democrats will enter 2027 with at least 54 seats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週二之前，民主黨在川普三次競選總統均獲勝的州中未佔有任何一個參議院席位。而到了週三，他們在這其中六個州擁有了當選參議員——包括總統在2024年以兩位數優勢贏得的五個州。民主黨將以至少54個席位進入2027年。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The rout meant that for the rest of Mr. Trump’s second term, none of his nominees — whether for the Supreme Court or top administration posts — will be confirmed without Democratic consent. And because senators serve for six years, the Democratic victories promise to remake the chamber’s complexion into the next presidency.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這場潰敗意味著在川普第二任期的剩餘時間裡，他的任何提名人——無論是最高法院還是政府高層職位——都無法在未獲民主黨同意的情況下得到確認。由於參議員任期為六年，民主黨的勝利勢必將重塑該院的格局，並一直延續到下一屆總統任期。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Democrats who flipped seats included Dr. Annie Andrews in South Carolina, the Rev. Adam Hamilton in Kansas, James Talarico in Texas, Josh Turek in Iowa and Troy Jackson in Maine.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">翻轉席位的民主黨人包括南卡羅來納州的安妮·安德魯斯醫生，堪薩斯州的亞當·漢彌爾頓牧師，得克薩斯州的詹姆斯·塔拉里科，愛荷華州的喬什·圖雷克以及緬因州的特洛伊·傑克遜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In North Carolina, Roy Cooper, a former governor, became the first Democrat to win a Senate race in the state since 2008. In Ohio, former Senator Sherrod Brown completed a comeback two years after being voted out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北卡羅萊納州，前州長羅伊·庫珀成為自2008年以來首位在該州贏得參議院選舉的民主黨人。在俄亥俄州，前參議員謝羅德·布朗在被選民淘汰兩年後成功復出。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The breadth of the Democratic victories suggested that the dire political climate for Republicans did more to power the opposition party’s successes than anything else.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨勝利的廣度表明，共和黨面臨的嚴峻政治氣候比其他任何因素都更能推動反對黨的成功。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="前州長羅伊·庫珀成為自2008年以來首位在北卡羅萊納州參議院選舉中獲勝的民主黨人。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-02-tlwg/03pol-midterms-takeaways-02-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-02-tlwg/03pol-midterms-takeaways-02-tlwg-master1050.jpg"/></div><figcaption><span>前州長羅伊·庫珀成為自2008年以來首位在北卡羅萊納州參議院選舉中獲勝的民主黨人。</span> <cite>Travis Dove for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats are amassing a big House majority.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>民主黨正在積聚</b></span><b>巨大的</b><b>眾議院多數席位</b><b>優勢</b><span><b>。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats flipped House seats in rural North Carolina and central Kentucky, in the suburbs of St. Louis and Omaha, and all along the Texas border. They seized three seats in Iowa and four in Pennsylvania. They rebuffed redrawn lines in Florida.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨翻轉了北卡羅萊納州農村地區、肯塔基州中部、聖路易斯和奧馬哈郊區，以及沿得克薩斯州邊境各地的眾議院席位。他們在愛荷華州奪取了三個席位，在賓夕法尼亞州奪取了四個。他們還挫敗了佛羅里達州重新劃分選區的圖謀。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was a romp.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這是一場輕而易舉的勝利。<b></b></span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats made inroads deep into Republican territory, prevailing in a Kentucky district, for instance, that Mr. Trump carried by 15 percentage points in 2024. But they also ousted some of the sturdiest Republican survivors, like Representative Brian Fitzpatrick of Pennsylvania, who had been the lone House Republican to win election three times in a district that Mr. Trump lost three times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨深入共和黨腹地取得了進展，例如在肯塔基州的一個選區獲勝，而川普在2024年曾以15個百分點的優勢贏下該選區。同時，他們還擊敗了一些最穩固的共和黨倖存者，例如賓夕法尼亞州的眾議員布萊恩·菲茨派翠克，他曾是在川普輸過三次的選區中唯一連續三次贏得選舉的眾議院共和黨人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now Democrats are on track for a sizable House majority, with Representative Hakeem Jeffries of New York poised to become the first Black speaker in American history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，民主黨即將取得可觀的眾議院多數席位，紐約州眾議員哈基姆·傑弗里斯有望成為美國歷史上首位黑人議長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Jeffries rushed to the rooftop of the Democratic Party headquarters in Washington on Tuesday night to film a video declaring that Republicans were “shook.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二晚上，傑弗里斯衝上華盛頓民主黨總部的屋頂，錄製了一段影片，宣稱共和黨人「不知所措」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The final size of the Democratic majority was still to be decided. But as of early Wednesday, Republicans had yet to win any of the most competitive races.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨最終能取得多大的多數優勢尚未確定。但截至週三早些時候，共和黨在爭奪最激烈的選戰中悉數落敗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">War, prices and an unpopular president cost the G.O.P.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>戰爭、物價和不受歡迎的總統讓共和黨付出了代價。</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Pretend I am on the ballot,” the president said. His problem was that voters listened.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「就當我在選票上<span>，」總統曾說。他的問題在於選民真的聽進去了。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before he lost the election, Mr. Trump lost the public’s trust on the issue that got him elected in the first place: the economy. And as the war in Iran dragged on, he struggled to defend a conflict that caused gas prices to rise, his MAGA coalition to fracture and Democrats to unite.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在輸掉選舉之前，川普在經濟這個最初讓他當選的議題上失去了公眾的信任。隨著伊朗戰爭的拖延，他難以為這場導致汽油價格上漲、他的MAGA聯盟破裂以及民主黨人團結的衝突找到合理依據。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The president aggressively campaigned in the final month, jumping from one red state to another in hopes of reviving the energy of his flagging base. But the results showed the extent of the rebuke for Republicans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總統在最後一個月積極競選，穿梭於各個紅州之間，希望能重新激發其疲軟基本盤的活力。但結果凸顯了共和黨人面臨的選民反擊程度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2018 in Mr. Trump’s first midterm election, Republicans lost the House as suburban women revolted against his leadership. This time, the rejection seemed to come from virtually every corner of his coalition, including white working-class voters in places like Iowa, Ohio and Pennsylvania.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2018年川普的第一次期中選舉中，郊區女性反抗他的領導，導致共和黨失去眾議院。這一次，排斥態度似乎來自他的聯盟的幾乎每一個角落，包括愛荷華州、俄亥俄州和賓夕法尼亞州等地的白人工薪階層選民。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在競選活動的最後階段，川普總統在紅州為共和黨人進行了密集的競選活動。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-05-tlwg/03pol-midterms-takeaways-05-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-05-tlwg/03pol-midterms-takeaways-05-tlwg-master1050.jpg"/></div><figcaption><span>在競選活動的最後階段，川普總統在紅州為共和黨人進行了密集的競選活動。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump, unsurprisingly, was defiant, distancing himself from his own defeat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普毫不意外地拒絕低頭，試圖與自身的失敗撇清關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He began Tuesday morning by calling into Fox News to downplay the war in Iran. “When you talk about war, this isn’t really war,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二早上，他致電福克斯新聞以淡化伊朗戰爭的影響。「當你們談論戰爭時，這並不真的是戰爭，」他說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He ended election night back on the phone with his favorite network that he sometimes loves to hate, speaking with the Fox News anchor Bret Baier.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選舉之夜結束時，他再次與這家他有時愛恨交加的最青睞的電視網通話，與福克斯新聞主播布雷特·拜爾交談。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It’s just a point in time, Bret. Just a point in time. It’s the way it is,” Mr. Trump mused. “There was a mood in the air, I guess.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這只是一個時間點，布雷特。只是一個時間點。事情就是這樣，」川普若有所思地說。「我猜，當時空氣中瀰漫著某種情緒。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats scored seismic victories in Texas.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>民主黨在得克薩斯州取得具有劃時代意義的勝利。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats had dreamed for a generation of winning in Texas, one of the nation’s largest states, but they repeatedly fell short.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一代人以來，民主黨一直夢想著在全美最大州之一的得克薩斯州獲勝，但屢屢受挫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Tuesday, they stormed to victory in the marquee statewide races. Mr. Talarico toppled Ken Paxton in the Senate contest, and Gina Hinojosa, a huge underdog, ousted Gov. Greg Abbott, a three-term incumbent.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週二，他們在關鍵的全州範圍選舉中大獲全勝。塔拉里科在參議院競選中擊敗了肯·帕克斯頓，而原本極不被看好的吉娜·伊諾霍薩則擊敗了連任三屆的現任州長格雷格·阿博特。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Either outcome would have been momentous on its own. Both at once? That was more than Democrats could have hoped for not long ago.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">無論哪一種結果，單就其本身而言都已意義重大。而兩者同時實現？這超出了民主黨人不久前的最高期望。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At 37, Mr. Talarico is now one of the Democratic Party’s biggest stars. He overcame Mr. Trump’s attempt to cast him as outside the mainstream — “Talafreako” was the president’s derisive nickname — as well as the more than $200 million that Elon Musk spent trying to keep the state red.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">37歲的塔拉里科現在是民主黨最耀眼的明星之一。他成功抵禦了川普試圖將他描繪成非主流人物的努力——總統用「塔拉怪胎」 這個蔑稱來嘲諷他——也抵擋住了伊隆·馬斯克為維持該州紅州地位而投入的超過2億美元資金。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="吉娜·希諾霍薩在得克薩斯州州長競選中為民主黨創造了一場令人矚目的爆冷勝利。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-07-tlwg/03pol-midterms-takeaways-07-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-07-tlwg/03pol-midterms-takeaways-07-tlwg-master1050.jpg"/></div><figcaption><span>吉娜·希諾霍薩在得克薩斯州州長競選中為民主黨創造了一場令人矚目的爆冷勝利。</span> <cite>Ashley Landis/Associated Press</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="塔拉里科頂住了共和黨鋪天蓋地的競選開支和攻擊性廣告的攻勢，最終贏得了得克薩斯州參議員席位的競選。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-06-tlwg/03pol-midterms-takeaways-06-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-06-tlwg/03pol-midterms-takeaways-06-tlwg-master1050.jpg"/></div><figcaption><span>塔拉里科頂住了共和黨鋪天蓋地的競選開支和攻擊性廣告的攻勢，最終贏得了得克薩斯州參議員席位的競選。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We just took back Texas,” Mr. Talarico told supporters in Austin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們剛剛奪回了得州，」塔拉里科在奧斯汀向支持者表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At least some Hispanic voters in South Texas, a region that had swung toward Mr. Trump in 2024, swung back. Democrats claimed all four districts in Texas that border Mexico, which have some of the densest Latino populations anywhere in America.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在2024年曾倒向川普的南得克薩斯州，至少有部分拉美裔選民重新轉回了民主黨陣營。民主黨拿下了得克薩斯州與墨西哥接壤的全部四個選區，這些選區的拉美裔人口密度位居全美前列。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The nation will look at Texas and say we want something far more important than an election,” Ms. Hinojosa said in her victory speech. “They will look at Texas and say that faith in government has been restored.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「全國都會關注得克薩斯州，並說我們想要的遠不止是一場選舉，」伊諾霍薩在勝選演講中說。「他們會關注得克薩斯州，並說對政府的信心已經恢復了。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Republicans’ redistricting gambit sputtered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>共和黨的選區重劃策略遇挫。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the summer of 2025, the White House pushed Republican state legislators to redraw their congressional lines to bolster the party’s chances of holding a majority.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年夏天，白宮推動共和黨州議員重新劃分國會選區界線，以增加該黨保住多數席位的機會。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The effort started in Texas and spread to North Carolina, Ohio and Florida. A Supreme Court ruling that dealt a new blow to the Voting Rights Act expanded the efforts to Alabama, Tennessee and Louisiana.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項行動始於得克薩斯州，隨後蔓延至北卡羅萊納州、俄亥俄州和佛羅里達州。最高法院的一項裁決對《投票權法案》造成了新的打擊，使這一行動進一步擴展至阿拉巴馬州、田納西州和路易斯安那州。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the surge of Democratic voters on Tuesday overwhelmed some of the bespoke new G.O.P. seats.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但週二民主黨選民的激增衝垮了部分為共和黨量身定製的新席位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The first Democratic House flip of the night came in North Carolina, a state that Republicans had remapped. Jamie Ager, a Democratic farmer, won a western North Carolina district that Mr. Trump had carried by 10 points. And the chairman of the House Republican campaign arm, Representative Richard Hudson of North Carolina, was in danger of losing his seat.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當晚，眾議院首個被民主黨翻轉的席位出現在北卡羅萊納州，這是共和黨重新劃分過選區的州。民主黨籍農民傑米·阿格贏得了北卡羅萊納州西部的一個選區，而此前川普曾以10個百分點的優勢贏下該選區。此外，眾議院共和黨競選團隊主席、北卡羅萊納州眾議員理查德·哈德森面臨失去席位的危險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Florida, Representatives Kathy Castor and Jared Moskowitz survived despite a new map that put them into more Republican territory.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在佛羅里達州，儘管新的選區劃分將凱西·卡斯托和賈里德·莫斯科維茨兩位眾議員置於更傾向共和黨的選區，但他們仍成功保住了席位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an interview, Mr. Jeffries praised House Democrats who ran in new, tougher terrain.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在接受採訪時，傑弗里斯讚揚了在更艱難的全新選區環境中競選的眾議院民主黨人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“So many of our colleagues made the patriotic and courageous decision to stay and fight,” Mr. Jeffries said, adding, “They didn’t run away from the fire. They ran toward the fire and helped put it out.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們有那麼多同事做出了愛國和勇敢的決定，留下來戰鬥，」傑弗里斯說，他還說，「他們沒有逃避火場。他們迎著大火衝去，並幫助撲滅了它。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He ticked eight of them off by name. As of early Wednesday, none of those lawmakers had lost, and at least six had won.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他逐一列舉了其中八位議員的名字。截至週三早些時候，這些議員無一敗選，且至少有六人已經獲勝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Governors’ races made history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>州長選舉創造了歷史。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Democrats reclaimed a majority of the nation’s governor’s offices for the first time in two decades. They won at least five competitive races, in Georgia, Iowa, Ohio, Texas and Wisconsin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">20年來，民主黨首次贏得了全國大多數州的州長席位。他們在喬治亞州、愛荷華州、俄亥俄州、得克薩斯州和威斯康辛州贏得了至少五場競爭激烈的州長競選。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Voters also elected three new Black governors: a Republican, Byron Donalds, in Florida, and two Democrats, Keisha Lance Bottoms in Georgia and David Crowley in Wisconsin. Before Tuesday, only three Black governors had ever been elected in the country’s history.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選民還選出了三位新的黑人州長：佛羅里達州的共和黨人拜倫·唐納茲，以及兩位民主黨人，即喬治亞州的凱莎·蘭斯·波頓斯和威斯康辛州的大衛·克勞利。在週二之前，美國歷史上總共只有三位黑人州長當選。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="在喬治亞州勝選的民主黨人基莎·蘭斯·博頓斯，是歷史上首位當選州長的黑人女性。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-11-tlwg/03pol-midterms-takeaways-11-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-11-tlwg/03pol-midterms-takeaways-11-tlwg-master1050.jpg"/></div><figcaption><span>在喬治亞州勝選的民主黨人基莎·蘭斯·博頓斯，是歷史上首位當選州長的黑人女性。</span> <cite>Nicole Craine for The New York Times</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="共和黨眾議員拜倫·唐納茲將成為佛羅里達州首位黑人州長。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-12-tlwg/03pol-midterms-takeaways-12-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-12-tlwg/03pol-midterms-takeaways-12-tlwg-master1050.jpg"/></div><figcaption><span>共和黨眾議員拜倫·唐納茲將成為佛羅里達州首位黑人州長。</span> <cite>Rebecca Blackwell/Associated Press</cite></figcaption></figure><figure class="article-inline-photo large"><div class="img-box"><img alt="民主黨人戴維·克勞利將成為威斯康辛州首位黑人州長。" data-src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-10-tlwg/03pol-midterms-takeaways-10-tlwg-master1050.jpg" src="https://static01.nyt.com/images/2026/12/03/multimedia/03pol-midterms-takeaways-10-tlwg/03pol-midterms-takeaways-10-tlwg-master1050.jpg"/></div><figcaption><span>民主黨人戴維·克勞利將成為威斯康辛州首位黑人州長。</span> <cite>Jamie Kelter Davis for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Bottoms is the first female Black governor ever to be elected.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">波頓斯是歷史上首位當選的女性黑人州長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Hinojosa was the first Latina elected to lead Texas. Another Democrat, Xavier Becerra, was the first Latino elected governor of California. Deb Haaland, a Democrat, will be the nation’s first female Native American governor after winning in New Mexico.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊諾霍薩是首位當選得克薩斯州州長的拉丁裔女性。另一位民主黨人哈維爾·貝塞拉成為首位當選加利福尼亞州州長的拉丁裔。民主黨人德布·哈蘭德在贏得新墨西哥州選舉後，將成為全國首位美國原住民女性州長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There were other historic firsts, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>此外還有其他具有歷史意義的第一次。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Michigan elected the nation’s first Muslim senator, Dr. Abdul El-Sayed, a Democrat. New Hampshire elected a Democrat, Representative Chris Pappas, who will become the first openly gay man to serve in the Senate.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密西根州選出了全國首位穆斯林參議員：民主黨人阿卜杜勒·埃爾-賽義德醫生。新罕布什爾州選出的民主黨人、眾議員克里斯·帕帕斯將成為第一位在參議院任職的公開同性戀身份的男性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Peggy Flanagan, a Democrat from Minnesota, became the first Native American woman to win election to the Senate. A second Indigenous woman, the Democrat Mary Peltola, could join her if she is elected in Alaska.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">來自明尼蘇達州的民主黨人佩吉·弗拉納根成為首位贏得參議院選舉的美國原住民女性。如果民主黨人瑪麗·佩爾托拉在阿拉斯加當選，她將成為第二位當選參議員的原住民女性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Musk’s millions didn’t make a difference.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>馬斯克的巨額資金未能扭轉局勢。</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Musk, the world’s richest man, spent nearly half a billion dollars on the midterms. His party lost anyway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">全球首富馬斯克在期中選舉中投入了近5億美元。然而他的政黨依然敗北。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Republicans, powered by Mr. Musk’s money and Mr. Trump’s $400 million super PAC, dominated Democrats in spending in this year’s Senate races. The Democrats still swept through the battlegrounds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在馬斯克的資金和川普4億美元超級政治行動委員會的助力下，共和黨在今年參議院競選的支出方面壓倒了民主黨。但民主黨依然席捲了這些戰場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was the second consecutive election in which the national party that spent more lost, after former Vice President Kamala Harris’s cash advantage was not enough in 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是連續第二次出現支出更多的全國性政黨落敗的情況，此前前副總統賀錦麗的現金優勢在2024年亦未能助其獲勝。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Now Republicans face a daunting financial future. Democrats continue to dominate them at raising small-dollar donations online. And the lone Republican who has energized Republican small donors for the last decade is Mr. Trump. He will not be atop the ticket again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現在，共和黨面臨著嚴峻的財務前景。民主黨在通過網路籌集小額捐款方面繼續佔據優勢。而過去十年來，唯一能激發共和黨小額捐贈者熱情的共和黨人只有川普。他將不再作為總統候選人領銜參選。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Early in his term, Mr. Trump had suggested targeting some top Democratic donors for investigation, a move that seemed to put a chill on some contributors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在其任期初期，川普曾表示要針對部分頂級民主黨捐款人進行調查，此舉似乎令一些捐款者感到不安。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of those whom the president had named, Reid Hoffman, the billionaire venture capitalist and LinkedIn co-founder, captured the Democratic Party’s emotions early on Tuesday evening with three emojis: “”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾被總統點名的人物之一，億萬富翁風險投資家、領英聯合創始人里德·霍夫曼在週二傍晚早些時候用三個表情符號（眼睛、美國國旗、愛心）精準概括了民主黨的情緒。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Shane Goldmacher《紐約時報》國內政治記者。</p><p class="cn-p">Patricia Mazzei是《紐約時報》國內政治記者，常駐邁阿密。</p><p class="cn-p">翻譯：晉其角、經雷</p><div class="" data-poster=""><br/></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20261105/election-takeaways-democrats-win/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
