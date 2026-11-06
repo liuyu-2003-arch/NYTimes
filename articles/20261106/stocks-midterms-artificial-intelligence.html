@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股遭遇歷史性暴跌 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">美股遭遇歷史性暴跌</h1>
+    <h2 class="en-headline">Stocks Plunge as Midterm Results Renew A.I. Anxiety</h2>
+    <div class="meta-line">JOE RENNISON <span style="margin: 0 8px;">•</span> 2026-11-06</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="標準普爾500指數每日變化。數據來源：LSEG。" height="591" src="https://static01.nyt.com/images/2026/11/05/multimedia/c06biz-stocks-01/c06biz-stocks-master1050.png" width="1050"/><figcaption><span>標準普爾500指數每日變化。數據來源：LSEG。</span> <cite>By The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Stocks had their worst day in nearly two years as investors’ concerns about weaknesses in the A.I. industry re-emerged after Democratic midterm victories raised the prospect of tighter regulation.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨在美國期中選舉中獲勝後，投資者擔心人工智慧行業可能面臨更嚴格的監管，加之對該行業自身弱點的憂慮再度浮現，美股遭遇近兩年來最慘重的單日跌幅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The S&amp;P 500 fell 4.4 percent on Thursday, marking the most severe drop for the index since April 2025, when President Trump unveiled sweeping global tariffs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，標普500指數下跌4.4%，創下自2025年4月以來的最大單日跌幅。當時，川普總統宣布對全球實施大規模關稅。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tech-heavy Nasdaq Composite dropped 5.5 percent, putting the index into correction, defined as a drop of 10 percent or more from its recent peak. The Philadelphia Semiconductor Index, a benchmark for the industry, tumbled over 12 percent. That index has fallen over 30 percent since the beginning of October and is almost 40 percent below its peak in June.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以科技股為主的納斯達克綜合指數下跌5.5%，進入回調區間，也就是較近期高點下跌至少10%。作為半導體行業基準指標的費城半導體指數暴跌逾12%。自10月初以來，該指數累計下跌超過30%，較6月的峰值已下跌近40%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">After the Democrats won majorities in the House and Senate, the market initially rallied on Wednesday, as gridlock in Washington has broadly been welcomed by investors because it reduces the likelihood of new rules and laws being imposed on businesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">民主黨贏得眾議院和參議院多數席位後，市場週三最初上漲。投資者普遍樂見華盛頓陷入政治僵局，因為這意味著政府出台新法律法規、加強對企業監管的可能性降低。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But by Thursday morning, concerns about the midterms ushering in a period of heightened scrutiny of A.I. compounded the fears of runaway spending and rising debt at tech firms that had been swirling in the market for weeks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但到了週四上午，市場開始擔心期中選舉可能開啟一個人工智慧行業受到更嚴格審查的時期，這進一步加劇了此前已持續數週對科技企業支出失控、債務攀升的憂慮。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some analysts noted that Democrats had flipped key governorships in states that are becoming important hubs for data centers, and that this could create a meaningful roadblock to the A.I. build-out.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些分析師指出，民主黨在幾個正逐漸成為重要數據中心樞紐的州奪得了州長職位，這可能對人工智慧基礎設施建設構成實質性阻礙。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The declines gathered pace through the day, engulfing all sectors of the S&amp;P 500. And as stocks tumbled, the 10-year Treasury note, seen as a haven during periods of market stress, rallied, meaning its yield fell, dropping to 4.83 percent, its lowest since September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">當天股市跌勢愈演愈烈，標普500指數所有板塊無一倖免。股價暴跌之際，被視為市場動盪時期避險資產的10年期美國國債價格上漲，收益率隨之降至4.83%，創下9月以來的最低水平。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Gene Goldman, chief investment officer at Cetera Financial Group, said the sell-off had become “exaggerated” as selling accelerated through the day. He predicted the market would recover.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Cetera金融集團首席投資官吉恩·戈德曼表示，隨著拋售在當天不斷加速，市場跌勢已經有些「過頭」。他預計股市將會出現反彈。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When you have a correction in a bull market they are typically short lived,” he said. “It’s ugly right now but we do think we will see a bounce back soon.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「牛市中的回調通常不會持續太久，」他說。「現在的情況確實很難看，但我們確實認為市場很快就會反彈。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="納斯達克綜合指數：美國科技股為主的指數走勢。註：數據至少延遲15分鐘。數據來源：FactSet。" data-src="https://static01.nyt.com/images/2026/11/05/multimedia/c06biz-stocks-02/c06biz-stocks-02-master1050.png" src="https://static01.nyt.com/images/2026/11/05/multimedia/c06biz-stocks-02/c06biz-stocks-02-master1050.png"/></div><figcaption><span>納斯達克綜合指數：美國科技股為主的指數走勢。註：數據至少延遲15分鐘。數據來源：FactSet。</span> <cite>The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Thursday’s decline rekindled a sell-off that had paused in the immediate run-up to the election. That sell-off had intensified last week when tech giants like Meta and Amazon reported their quarterly results that included huge spending plans on A.I., amplifying concerns about how quickly these investments would result in increased profits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四的下跌重新點燃了在選舉前夕暫停的拋售。上週，當Meta和亞馬遜等科技巨頭公布季度業績、披露了龐大的人工智慧支出計劃時，引發更猛烈的拋售。投資者愈發擔心，這些投資究竟需要多久才能轉化為利潤增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Thursday, some of the biggest losses occurred among the chip makers. Qualcomm, a large chipmaker, sank 9.5 percent on Thursday after the company dialed down its earnings forecast; it said high demand for chips was raising its own costs faster than it has been able to raise prices. The sharp stock move reflected broader concerns that supply bottlenecks created by the rush to build A.I. infrastructure could slow the industry’s growth, which means slowing the time it takes for investors to realize profits on their A.I. bets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四跌幅最大的一些股票來自晶片製造商。大型晶片製造商高通週四股價下跌9.5%。此前，該公司下調了盈利預期，表示晶片需求旺盛使其自身成本上升速度快於其提價能力。高通股價大跌也反映出市場更廣泛的擔憂：人工智慧基礎設施建設熱潮造成的供應瓶頸可能拖慢整個行業的增長，進而延長投資者從人工智慧投資中獲得回報所需的時間。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Arm Holdings, another chipmaker, fell 13.1 percent after reporting underwhelming revenue from its push into A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一家晶片製造商安謀控股因進軍人工智慧領域的業務收入不及預期，股價下跌13.1%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia, a chip industry leader, dropped 9.3 percent, dragging its stock into negative territory for the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">晶片行業領頭羊英偉達下跌9.3%，使其今年以來的累計漲幅化為烏有，轉為下跌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Shares of Elon Musk’s Tesla and SpaceX fell sharply for a second day. The two companies are run by the world’s richest person — and Republican megadonor — and have come under particular focus after the elections, with potential investigations and regulatory scrutiny in store.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">伊隆·馬斯克旗下的特斯拉和SpaceX股價連續第二天大幅下跌。這兩家公司均由世界首富、共和黨巨額捐款人馬斯克掌管。選舉結束後，兩家公司受到格外密切的關注，未來它們可能面臨調查和更嚴格的監管審查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The stocks of some of the large “hyperscalers,” like Alphabet and Microsoft, fell less on Thursday than the broader market. Some analysts suggested that a slowdown in the race to build A.I infrastructure could favor these large, entrenched players, securing their dominant position and slowing the rapid pace of spending that has put pressure on their businesses.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">相比整體市場，Alphabet和微軟等大型「超大規模雲計算服務商」週四的股價跌幅較小。一些分析師認為，人工智慧基礎設施建設競賽如果放緩，反而可能有利於這些根基穩固的大型企業，既能鞏固它們的主導地位，也能減緩此前令其承受壓力的快速支出增長。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The underlying intuition is that a slower build out could be relatively favorable for those doing the spending, and potentially less so for those receiving it,” said Frank Flight, head of macro strategy at Citadel Securities.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這裡的基本邏輯是，建設速度放緩，對那些花錢投資的企業可能相對有利，而對那些收取投資資金的企業則未必是好事，」城堡證券宏觀策略主管弗蘭克·弗萊特說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Analysts broadly remained sanguine about the outlook for the stock market, expecting major indexes to rally once the current volatility subsides, though some expected choppy trading to continue through the end of the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">分析師總體上仍對股市前景樂觀，預計一旦當前波動消退，主要指數將反彈，不過，也有人認為，市場的劇烈震盪可能持續到年底。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many saw the tech sell-off as part of the move out of some of the companies that have led the market higher and into the next cohort of companies to benefit from the adoption of the technology, such as health care companies and financials.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">許多分析師認為，此輪科技股拋售是市場資金輪動的一部分。資金正從此前引領股市上漲的部分企業撤出，轉向下一批有望從人工智慧技術普及中受益的公司，例如醫療保健和金融企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many also noted that the S&amp;P 500 has risen over the 12 months after every midterm election since the Second World War. The index remains 7.4 percent higher for the year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不少分析師還指出，自第二次世界大戰以來，每次美國期中選舉結束後的12個月裡，標普500指數均實現上漲。今年以來，該指數仍累計上漲7.4%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The valuations in some of these names had just got so frothy, it’s not a complete surprise that we are seeing this,” said Alan McKnight, chief investment officer at Regions Bank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「其中一些股票的估值此前已經被炒得過高，因此如今出現這樣的情況，並不完全令人意外，」Regions Bank首席投資官艾倫·麥克奈特說。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="標普500指數：美國股市交易情況。註：數據至少延遲15分鐘。數據來源：FactSet。" data-src="https://static01.nyt.com/images/2026/11/05/multimedia/c06biz-stocks-03/c06biz-stocks-03-master1050.png" src="https://static01.nyt.com/images/2026/11/05/multimedia/c06biz-stocks-03/c06biz-stocks-03-master1050.png"/></div><figcaption><span>標普500指數：美國股市交易情況。註：數據至少延遲15分鐘。數據來源：FactSet。</span> <cite>The New York Times</cite></figcaption></figure></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">Joe Rennison撰寫有關金融市場的文章，內容包括記錄股市的變幻莫測、解釋華爾街內部人士常常難以理解的交易決策等。</p><p class="cn-p">翻譯：杜然</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261106/stocks-midterms-artificial-intelligence/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
