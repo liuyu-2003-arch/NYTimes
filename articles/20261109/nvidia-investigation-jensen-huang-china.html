@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黃仁勛出軌中國間諜 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">黃仁勛出軌中國間諜</h1>
+    <h2 class="en-headline">Nvidia Opens Investigation Into Jensen Huang’s Relationship With Chinese Spy</h2>
+    <div class="meta-line">TRIPP MICKLE, MAGGIE HABERMAN, JONATHAN SWAN, JULIAN E. BARNES, ANA SWANSON <span style="margin: 0 8px;">•</span> 2026-11-09</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="英偉達首席執行官黃仁勛是人工智慧革命中最有影響力的人物之一，也是川普總統頗具影響力的盟友。" height="700" src="https://static01.nyt.com/images/2026/11/08/multimedia/08biz-jensen-bqpz/08biz-jensen-bqpz-master1050.jpg" width="1050"/><figcaption><span>英偉達首席執行官黃仁勛是人工智慧革命中最有影響力的人物之一，也是川普總統頗具影響力的盟友。</span> <cite>Demetrius Freeman for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia said on Sunday that it was opening an investigation into Jensen Huang, its chief executive and co-founder, after he acknowledged to the company’s board that he had been intimate with a business executive who U.S. intelligence determined was a Chinese spy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達週日表示，已對公司首席執行官兼聯合創始人黃仁勛展開調查。此前，黃仁勛向公司董事會承認，他曾與一名企業高管發生親密關係，而美國情報部門認定，該女子是中國間諜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang’s relationship with the woman, who goes by Alice Huang, became a U.S. government concern after surveillance revealed that she was feeding information directly to Beijing. The revelation raised troubling possibilities because Mr. Huang is one of the most powerful figures in the A.I. revolution as well as an influential ally of President Trump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這名女子名叫黃樂(音，其英文名為Alice Huang)。美國政府的監控發現，她一直直接向北京提供情報，此後，黃仁勛與她的關係引起了美國政府的關注。這一發現引發了令人不安的種種可能性，因為黃仁勛不僅是人工智慧革命中最有影響力的人物之一，也是川普總統的重要盟友。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In a message to the company, Mr. Huang apologized. “I was unfaithful to my wife,” he said. “My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛在給公司的情況說明中道歉說：「我對妻子不忠。我的行為傷害了她和我們的孩子。我的所作所為沒有任何藉口。我深感抱歉。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia’s board said that it had “no reason to believe that either national security or Nvidia secrets were compromised,” but that “the board’s inquiry will examine all available information.” It said Mr. Huang “fully supports the review and has committed to cooperating with it.” The board did not provide more details about the investigation or how long it would take.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達董事會表示，「沒有理由認為國家安全或英偉達的商業機密受到了損害」，但「董事會的調查將審查所有可獲得的信息」。董事會表示，黃仁勛「完全支持此次審查，並承諾予以配合」。董事會沒有透露調查的更多細節，也沒有說明調查將持續多長時間。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang, 63, will continue to lead the company during the investigation, the board said. As a co-founder, he has set up a unique structure at Nvidia where he dictates all aspects of its business while overseeing some 60 people who directly report to him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">董事會表示，63歲的黃仁勛將在調查期間繼續領導公司。作為聯合創始人，他在英偉達建立了一套獨特的管理架構，掌控公司業務的方方面面，並直接管理約60名向他彙報的員工。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Today’s news will not slow Nvidia,” said John Rizzo, a company spokesman. “Jensen is committed to continuing to lead Nvidia as C.E.O. without interruption.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「今天的新聞不會拖慢英偉達的步伐，」公司發言人約翰·裡佐說。「黃仁勛將繼續不受干擾地履行首席執行官職責，領導英偉達。」 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The New York Times reported last month that American intelligence agencies had discovered that Mr. Huang had developed a close relationship with a Chinese citizen and chip buyer, who U.S. officials concluded was gathering intelligence for Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》上個月報導，美國情報機構發現，黃仁勛與一名中國公民建立了密切關係。此人從事晶片採購業務，美國官員認定她正在為北京搜集情報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The chip buyer was Ms. Huang or Huang Le, whose biography said she worked in China as a TV reporter before becoming a top executive at a Singapore-based data center company that had become one of Nvidia’s biggest customers in Southeast Asia. It bought more than $4.8 billion in chips since June 2024.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這名晶片採購商就是黃樂。據她的個人履歷介紹，她曾在中國擔任電視記者，之後成為一家總部位於新加坡的數據中心公司的高管。這家公司後來成為英偉達在東南亞最大的客戶之一，自2024年6月以來購買了價值超過48億美元的晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia has continued doing business with Ms. Huang’s company, Megaspeed, even after The Times reported last year that the Commerce Department was investigating whether the company was helping China smuggle restricted A.I. chips. (Mr. Huang and Ms. Huang are not related.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這家公司名為Megaspeed。去年，《紐約時報》曾報導，美國商務部正在調查Megaspeed是否協助中國走私受到出口限制的人工智慧晶片，但英偉達此後仍繼續與該公司開展業務。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia and Mr. Huang initially said there was nothing problematic or unusual about his relationship with Ms. Huang. In an interview with Bloomberg News last month, he said that his interactions with Ms. Huang had been “related to Megaspeed, and it was all completely normal and not unusual.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達和黃仁勛最初堅稱，他與黃樂的關係沒有任何問題，也沒有任何不尋常之處。上個月接受彭博新聞社採訪時，黃仁勛表示，他與黃樂的往來「都與Megaspeed有關，完全正常，沒有什麼特別之處」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The relationship and affair are a rare misstep for Mr. Huang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這段關係和婚外情對黃仁勛來說是罕見的一次行差踏錯。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past three years, he could do no wrong. His chipmaker, which makes the technology to build artificial intelligence, grew into one of the world’s most valuable companies and the engine of the data center boom powering the U.S. economy. Mr. Trump became an ally and invited him on Air Force One. He started being followed by autograph-seeking throngs at events. And his black leather jackets, which he wears daily, became collectors’ items.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去三年裡，黃仁勛可謂順風順水。他領導的晶片公司生產用於構建人工智慧系統的關鍵技術，發展為全球市值最高的企業之一，也成為推動美國經濟的數據中心建設熱潮的核心力量。川普與他結為盟友，還邀請他乘坐「空軍一號」總統專機。每逢出席活動，會有大批人群追著他索要簽名。他每天穿著的黑色皮夾克也成了收藏者追捧的物品。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As his business boomed, Mr. Huang moved his family to the center of it. Spencer, his son, is a director of product management who plays a leading role in the company’s robotics efforts. Madison, his daughter, is a senior director of product marketing, also works in robotics and on the company’s communications and marketing efforts. His son-in-law, Nico Caprez, is on the company’s business development team.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著業務蓬勃發展，黃仁勛也讓家人進入了公司的核心業務領域。他的兒子斯賓塞擔任產品管理總監，在公司的機器人業務中發揮主導作用。女兒麥迪遜是產品營銷高級總監，同樣參與機器人業務，並負責公司的傳播和營銷工作。他的女婿尼科·卡普雷斯則在公司的業務拓展團隊任職。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has credited his wife, Lori, whom he married in 1985, with making it possible for him to build the company. They met when he was a teenage engineering student at Oregon State University. She was one of three women in a 250-person engineering lab. Mr. Huang, who had skipped two grades of high school, arranged to be in her lab group and tried to impress her with his intellect.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛曾表示，自己創業成功離不開妻子洛麗的支持。兩人於1985年結婚，最初相識時，黃仁勛還是奧勒岡州立大學一名十幾歲的工程系學生。當時，在一個有250人的工程實驗室裡只有三名女生，洛麗就是其中之一。高中曾跳過兩級的黃仁勛設法與她分到同一個實驗小組，並試圖用自己的聰明才智打動她。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I know I look like a child and therefore her first impression of me is that I’m pretty smart,” Mr. Huang said during a 2024 discussion about his career at Hong Kong University of Science and Technology. “I walked up to her and said, ‘Do you want to see my homework?’ Then I made her a promise: ‘If you do homework with me every Sunday, I promise you, you’ll get straight A’s.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我知道我看起來像個孩子，所以她對我的第一印象是我很聰明，」2024年，黃仁勛在在香港科技大學談起自己職業生涯時說。「我走到她面前說：『你想看我的作業嗎？』然後我向她承諾：『如果你每週日都和我一起做作業，我保證，你肯定全拿A。』」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang also promised her that by the age of 30 he would be the chief executive of a company. He fulfilled that promise when he co-founded Nvidia in 1993 soon after he turned 30.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛還向她承諾，到30歲時他會成為一家公司的首席執行官。1993年，他剛滿30歲不久便聯合創立了英偉達，兌現了這個承諾。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Lori took care of everything and I don’t remember her complaining one time,” Mr. Huang said on the podcast “How I Built This.” “That’s the gift that she gave me.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛在播客「我是如何打造這一切的」中說：「洛麗照顧一切事情，我不記得她曾抱怨過一次。這是她送給我的禮物。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government, which had been investigating Megaspeed for possibly steering advanced Nvidia A.I. chips to China, began its surveillance of Ms. Huang more than a year ago. In the course of the surveillance, they found that she was in communication with a U.S. citizen who was identified as Mr. Huang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府一直在調查Megaspeed是否可能將英偉達先進人工智慧晶片轉運到中國，一年多前開始對黃樂進行監視。在監視過程中，他們發現她與一名被確認為黃仁勛的美國公民有通信。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Officials who had seen that intelligence said they were certain the relationship was romantic. That undercut Nvidia’s original misleading statements to The Times and others over the course of the last year about the nature of Mr. Huang’s relationship with Ms. Huang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">看過該情報的官員說，他們確信兩人之間存在戀愛關係。這削弱了英偉達過去一年向《紐約時報》和其他方面就黃仁勛與黃樂關係性質所作的最初誤導性聲明。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump was briefed roughly a year ago that the U.S. intelligence community had been electronically surveilling Ms. Huang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大約一年前，川普被告知美國情報界一直在對黃樂進行電子監視。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This past spring, Secretary of State Marco Rubio oversaw the drafting of a highly classified memo detailing intelligence showing that Alice Huang was recruited by the Chinese Ministry of State Security to target Mr. Huang. That memo was circulated not long before the president’s trip to China earlier this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年春天，國務卿魯比奧監督起草了一份高度機密備忘錄，詳細說明情報顯示黃樂被中國國家安全部招募來針對黃仁勛。該備忘錄在今年早些時候總統訪華前不久被傳閱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As news about the U.S. surveillance of Ms. Huang broke, Mr. Huang’s room to maneuver all but disappeared. Congress wanted him to testify, probably under oath, and reporting on the surveillance raised the possibility that U.S. intelligence knew the nature of his relationship with Ms. Huang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著美國監視黃樂的新聞曝光，黃仁勛的迴旋餘地幾乎消失。國會希望他作證——很可能是宣誓作證——而有關監視的報導讓人更加相信，美國情報部門可能已經知曉他與黃樂關係的性質。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There was also pressure on Nvidia’s board. In a social media post last month, Senator Elizabeth Warren, the Massachusetts Democrat who is the ranking member on the Senate Banking Committee, which oversees chip sales abroad, said that Mr. Huang and the company’s board “owe Congress answers” about his relationship with the spy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達董事會也面臨壓力。上個月，麻薩諸塞州民主党參議員、負責監督海外晶片銷售的參議院銀行委員會資深成員伊麗莎白·沃倫在社群媒體帖子中說，黃仁勛和公司董事會「有義務向國會解釋」他與這名間諜之間的關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Megaspeed was formed in 2023, when a Chinese online gaming company split off its Singaporean subsidiary. Shortly before, the U.S. government had issued its first broad ban on selling A.I. chips to China. Ms. Huang was listed as Megaspeeed’s managing director when it was created, and later described herself as its chief executive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Megaspeed成立於2023年，當時一家中國網路遊戲公司將其新加坡子公司剝離出來。不久之前，美國政府首次發布對華出售人工智慧晶片的廣泛禁令。公司成立時，黃樂被列為Megaspeed的董事總經理，後來她自稱該公司首席執行官。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Information on Ms. Huang’s background is largely absent from the Chinese internet, but according to an online biography, she worked at several major Chinese banks. She then joined a Shanghai-based fund that has ties to wealthy investors and technology companies with data center projects in China, according to a review of corporate and trade records compiled by the platforms WireScreen and Sayari, and an analysis by the Center for Advanced Defense Studies, a Washington nonprofit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國互聯網上基本沒有黃樂的背景信息，但根據一份網上簡歷，她曾在幾家中國大型銀行工作。根據WireScreen和Sayari平台彙編的公司和貿易記錄，以及華盛頓非營利組織高級國防研究中心的分析，她隨後加入了一家總部位於上海的基金，該基金與富有投資者和在中國有數據中心項目的科技公司有聯繫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That network of companies has helped to build a massive data center outside Shanghai that caters to the Chinese company Tencent. It also has financial links to the Chinese military establishment, through an investment in a cybersecurity subsidiary of China Electronics Technology Group, one of the country’s largest makers of military technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該網路中的公司幫助在上海郊外建設了一個大型數據中心，服務於中國公司騰訊。它還通過對中國電子科技集團一家網路安全子公司的投資，與中國軍工體系產生了財務聯繫；中國電子科技集團是中國最大的軍事技術製造商之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As Megaspeed’s chip purchases rolled in, Mr. Huang and Ms. Huang began spending time together. In June 2024, he joined her at a bar in Taipei after a local technology trade show. They drank whiskey alongside other A.I. executives. A year later, they dined at a restaurant in Taipei with other executives. Taiwanese media captured her giving him a kiss on the cheek and standing behind him as he spoke to journalists.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著Megaspeed的晶片採購不斷到來，黃仁勛和黃樂開始共處。2024年6月，在台北一場當地科技貿易展結束後，二人在台北一家酒吧見面。他們與其他人工智慧高管一起喝威士忌。一年後，他們與其他高管在台北一家餐廳用餐。台灣媒體拍到她親吻他的臉頰，以及他接受記者採訪時她站在他身後的畫面。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Their relationship became a preoccupation in Washington, where officials were already alarmed by the large volume of Megaspeed’s purchases.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他們的關係成為華盛頓的關注焦點，此前官員們已經對Megaspeed的大量採購感到警覺。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/technology_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“This is a classic move from the CCP’s playbook — and another example of why it can never be trusted,” Representative Michael McCaul, a Republican of Texas who is the vice chair of the House Committee on Homeland Security, wrote on social media, referring to the Chinese Communist Party. “The U.S. should immediately pause the shipment of advanced AI chips to China until we can get to the bottom of this incident and ensure our national security is not being undermined.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這是CCP慣用伎倆的典型手段——也是它為何永遠不可信任的又一例證，」 得克薩斯州共和黨眾議員、眾議院國土安全委員會副主席麥可·麥考爾在社群媒體上寫道，他指的是中國共產黨。「美國應立即暫停向中國出口先進的人工智慧晶片，直到我們查明此事的真相，並確保我們的國家安全不受損害。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">孟建國(Paul Mozur)對本文有報導貢獻。</p><p class="cn-p"><span>Tripp Mickle報導英偉達、谷歌和蘋果等全球最大的科技公司。他也報導整個科技行業的趨勢，包括裁員、生成式AI和機器人計程車等。</span></p><p class="cn-p">Maggie Haberman是《紐約時報》白宮記者，報導川普總統。</p><div class="" data-poster=""><span><p class="cn-p">Jonathan Swan是《紐約時報》白宮記者，報導川普總統。</p><div class="" data-poster=""><span><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p><div class="" data-poster=""><span><p class="cn-p">Ana Swanson報導貿易和國際經濟新聞，常駐華盛頓。她從事新聞工作已超過十年。</p><div class="" data-poster=""></div></span></div></span></div></span></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/technology/20261109/nvidia-investigation-jensen-huang-china/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
