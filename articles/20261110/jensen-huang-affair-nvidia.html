@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黃仁勛對英偉達的全面控制是否意味著他難以被懲罰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">黃仁勛對英偉達的全面控制是否意味著他難以被懲罰</h1>
+    <h2 class="en-headline">Is Jensen Huang Too Powerful to Be Punished by Nvidia?</h2>
+    <div class="meta-line">KALLEY HUANG, TRIPP MICKLE <span style="margin: 0 8px;">•</span> 2026-11-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="黃仁勛是英偉達的最大個人股東，他的子女也是公司的高管。" height="700" src="https://static01.nyt.com/images/2026/11/09/multimedia/09biz-jensen-influence-qbhw/09biz-jensen-influence-qbhw-master1050.jpg" width="1050"/><figcaption><span>黃仁勛是英偉達的最大個人股東，他的子女也是公司的高管。</span> <cite>Eric Lee for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past four years, Jensen Huang has become the maestro of the artificial intelligence boom and its most essential billionaire executive.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去四年裡，黃仁勛已成為人工智慧熱潮中的指揮家，也是這場熱潮中最不可或缺的億萬富翁高管。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia, the company he co-founded in 1993, controls an estimated 90 percent of the market for the computer chips used in the big artificial intelligence projects that are driving the U.S. economy. That dominance has made Mr. Huang one of the wealthiest people in the world, as well as an ally of President Trump.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他於1993年共同創立的英偉達估計控制著推動美國經濟增長的大型人工智慧項目所用計算機晶片市場的90%。這種主導地位使黃仁勛成為世界上最富有的人之一，也成為川普總統的盟友。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Few Silicon Valley executives, with the exception of Tesla’s Elon Musk and Apple’s Steve Jobs, have been as synonymous with their companies as Mr. Huang. He manages all aspects of Nvidia’s business as chief executive, and his family members have steadily risen through the ranks of the company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">除了特斯拉的伊隆·馬斯克和蘋果的史提夫·賈伯斯，很少有矽谷高管像黃仁勛那樣，與自己的公司如此密不可分。他作為首席執行官，管理著英偉達業務的方方面面，他的家庭成員也在公司內部穩步晉陞。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That sweeping control underscores the challenge now facing Nvidia’s board of directors. On Sunday, it opened an investigation into Mr. Huang’s conduct after he admitted to having a romantic relationship with a businesswoman who U.S. intelligence agencies have determined is a spy for China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種廣泛的控制凸顯了英偉達董事會如今面臨的挑戰。週日，在黃仁勛承認與一名女商人存在戀愛關係後，董事會對其行為展開了調查，美國情報機構已認定該女子是中國的間諜。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“While the board has no reason to believe that either national security or Nvidia secrets were compromised, the board’s inquiry will examine all available information,” Nvidia’s board said in a statement. “Jensen fully supports the review and has committed to cooperating with it.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「儘管董事會沒有理由認為國家安全或英偉達機密受到損害，但董事會的調查將審查所有可獲得的信息，」英偉達董事會在聲明中說。「黃仁勛完全支持這項審查，並承諾予以合作。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The company’s independent board members will choose an outside counsel to investigate, and a company spokesman said that Mr. Huang would not be part of the selection process.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">公司的獨立董事將選擇外部律師進行調查，公司發言人說黃仁勛不會參與選擇過程。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang, 63, will continue to lead Nvidia during the investigation. In a message to Nvidia’s employees on Sunday, he apologized. “I was unfaithful to my wife,” he wrote. “My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">63歲的黃仁勛將在調查期間繼續領導英偉達。週日，他在給英偉達員工的信中道歉。「我對妻子不忠，」他寫道。「我的行為傷害了她和我們的孩子。我的所作所為沒有任何藉口。我深感抱歉。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang, who is the largest Nvidia individual shareholder with a 3.56 percent stake, has led Nvidia to the top of Wall Street and elbowed his way through Washington. He has done it with a flat organizational structure and an executive team of more than 60 direct reports, putting him at the center of the company’s day-to-day operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛是英偉達最大的個人股東，持股3.56%，他帶領英偉達登上華爾街之巔，並在華盛頓闖出一片天地。他憑藉扁平的組織結構和由60多名直接下屬組成的高管團隊做到這一點，這使他處於公司日常運營的中心。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="英偉達以黃仁勛為核心，有60名員工直接向他彙報工作。" data-src="https://static01.nyt.com/images/2026/11/09/multimedia/09biz-jensen-influence-mvtz/09biz-jensen-influence-mvtz-master1050.jpg" src="https://static01.nyt.com/images/2026/11/09/multimedia/09biz-jensen-influence-mvtz/09biz-jensen-influence-mvtz-master1050.jpg"/></div><figcaption><span>英偉達以黃仁勛為核心，有60名員工直接向他彙報工作。</span> <cite>Benjamin Fanjoy/Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">If the board decides to punish Mr. Huang, there is no obvious successor, or even high-profile internal candidate, to run his giant chip company. That was not the case at Apple, when Tim Cook seamlessly took over for Mr. Jobs shortly before his death from pancreatic cancer.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如果董事會決定懲罰黃仁勛，這家晶片巨頭目前沒有明顯的繼任者，甚至沒有備受矚目的內部候選人。蘋果的情況並非如此，蒂姆·庫克在賈伯斯因胰腺癌去世前不久，無縫接替了他的角色。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In its early years, Nvidia made chips known as graphics processing units, which were mostly used in video games. Then, more than a decade ago, Mr. Huang bet that Nvidia’s chips could also be used for A.I. development and poured billions of dollars into making software and chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">早年，英偉達生產名為圖形處理器的晶片，主要用於電玩遊戲。然後，十多年前，黃仁勛押注英偉達的晶片也可用於人工智能開發，並在軟體和晶片研發方面投入了數十億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That gamble has paid off. Nvidia was the first publicly traded company to be valued at $5 trillion. Over this year and 2027, Amazon, Google, Meta and Microsoft are expected to spend a combined $1.842 trillion on capital expenditures like A.I. data centers, according to S&amp;P Global Visible Alpha. Nvidia’s chips fill those data centers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一賭注得到了回報。英偉達是第一家市值達到5萬億美元的上市公司。根據標普全球Visible Alpha的數據，今年和2027年，亞馬遜、谷歌、Meta和微軟預計將在人工智慧數據中心等資本支出上合計投入1.842萬億美元。。而這些數據中心中裝的正是英偉達的晶片。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Everything he talks about drives the industry,” Bob O’Donnell, the chief analyst at TECHnalysis Research, a technology research firm, said of Mr. Huang. “He’s had the Midas touch with technology.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他所談論的每一件事都推動著整個行業的發展，」技術研究公司TECHnalysis Research首席分析師鮑勃·奧唐奈談到黃仁勛時說。「他在技術方面有點石成金的能力。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The demand for Nvidia’s chips has been so intense that Larry Ellison, a co-founder of the software company Oracle, in 2024 recalled a sushi dinner in Palo Alto, Calif., where he and Elon Musk, the chief executive of Tesla and SpaceX, begged Mr. Huang for more chips.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對英偉達晶片的需求如此旺盛，以至於軟體公司甲骨文的聯合創始人拉里·埃里森在2024年回憶起在加州帕洛阿爾托的一頓壽司晚餐，當時他和特斯拉及SpaceX首席執行官伊隆·馬斯克懇求黃仁勛提供更多晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Please take our money,” Mr. Ellison recalled telling Mr. Huang. “Take more of it. You’re not taking enough of it. We need you to take more of our money, please.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「請拿走我們的錢，」埃里森回憶起他對黃仁勛說的話。「多拿一些。你拿得不夠多。我們需要你多拿我們的錢，拜託。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nvidia’s meteoric rise turned Mr. Huang into a celebrity. One of his signature black leather jackets sold at auction for nearly $1 million. Nvidia’s developer conference became the hottest ticket in Silicon Valley, with attendees queuing for hours to see Mr. Huang speak.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">英偉達的飛速崛起使黃仁勛成為名人。他標誌性的黑色皮夾克之一在拍賣會上以近100萬美元售出。英偉達的開發者大會成為矽谷最搶手的活動，參會者排隊數小時只為看黃仁勛演講。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang began being swarmed by people seeking autographs at events, including a woman who asked him to sign her chest. Amid all the hubbub, he has continued to lead Nvidia with what Silicon Valley veterans have called “a reality distortion field” akin to that of Apple’s Mr. Jobs.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛開始在活動中被索要簽名的人群包圍，甚至有一位女士要求他在她的胸前簽名。在這一切喧囂中，他繼續以矽谷資深人士所稱的那種類似蘋果賈伯斯的「現實扭曲力場」領導英偉達。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When I believe it in my mind — you know how it is — you manifest a future, and that future is so convincing, there’s no way it won’t happen,” Mr. Huang said on a podcast in March.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當我在腦海中相信它時——你知道那種感覺——你就會顯化出一個未來，而這個未來如此令人信服，以至於它不可能不發生，」黃仁勛在3月的一檔播客中說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang’s ascent helped him gain favor with Mr. Trump. After skipping the inauguration, which many tech executives attended, Mr. Huang flew to Mar-a-Lago for a donor dinner and impressed Mr. Trump with his personal story as a Taiwanese immigrant who had co-founded what had become the world’s most valuable company. (Nvidia’s share price has dipped in recent weeks, and Apple was more valuable as of last week’s trading.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛的崛起幫助他贏得川普的青睞。在缺席了許多科技高管都出席的總統就職典禮後，黃仁勛飛往馬阿拉歌莊園，參加了一場捐款人晚宴，並以自己作為台灣移民，共同創立了後來成為全球最有價值公司的個人經歷打動了川普。（英偉達股價近幾週有所下跌，截至上週交易，蘋果市值更高。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The two men speak regularly by phone. Mr. Trump has called and interrupted Mr. Huang during an appearance at a recent tech conference and also during one of Nvidia’s companywide meetings.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩人經常通電話。川普曾在黃仁勛最近出席一場科技會議時致電打斷他，也曾在英偉達一次全員會議上致電打斷他。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has played an outsize role in shaping Mr. Trump’s policy on A.I. Last year, he persuaded the administration to reverse restrictions on chip sales to China. This year, he helped derail a plan to create a regulatory process to evaluate A.I. systems and ensure they are safe, according to two people familiar with his involvement. In its place, he helped push through a pledge by the leaders of major A.I. companies to make sure their products adhere to voluntary safeguards.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛在塑造川普的人工智慧政策方面發揮了巨大作用。去年，他說服政府撤銷對中國的晶片銷售限制。據兩名了解其參與情況的人士說，今年，他幫助阻止了一項建立監管程序以評估人工智慧系統並確保其安全的計劃。取而代之的是，他幫助推動主要人工智慧公司領導人做出承諾，確保其產品遵守自願性保障措施。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“If I believe that I’m about to launch a product that is unsafe, it is completely in my ability, my power and my responsibility, and I’m incentivized to do so, to not launch the product,” Mr. Huang said as he explained his opposition to A.I. regulation on “The Ezra Klein Show” podcast in September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「如果我相信我即將推出一款不安全的產品，那麼不推出它，完全在我的能力、權力和責任範圍之內，而且我也有動力這樣做，」黃仁勛在9月的「埃茲拉·克萊因秀」播客中解釋他反對人工智慧監管時說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has become known for an unorthodox management style. On a podcast in 2023, he dismissed traditional organizational charts, saying that “none of that stuff makes any sense to me.” He leads Nvidia largely through meetings that focus on particular projects and include people from all levels of the company, from recent college graduates to top executives. He says he reads several thousands emails a day from people across the company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛以非正統的管理風格聞名。在2023年的一檔播客中，他對傳統的組織架構圖表示不屑，說「那些東西對我毫無意義」。他主要通過在聚焦特定項目的會議來領導英偉達，參會者包括公司各層級人員，從剛畢業的大學生到高層高管。他說自己每天要閱讀來自公司各處人員的數千封電子郵件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has also stacked Nvidia’s board with early investors and business partners. Two of the 10 board members have ties to the venture capital firms that first invested in Nvidia in 1993, and another two were executives at a chip designer that worked with Nvidia in the 1990s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛還在英偉達董事會中安插了早期投資者和商業夥伴。10名董事會成員中有兩人與1993年最初投資英偉達的風險投資公司有關聯，另外兩人是上世紀90年代與英偉達合作的一家晶片設計公司的高管。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the other board members are the former president of Taco Bell, the former chief marketing officer of the National Football League and an engineering professor. Mr. Huang has viewed Nvidia’s board primarily as a governance requirement, rather than as an important part of the company’s strategy or execution, according to three former employees.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他董事會成員包括塔可鍾前總裁、美國國家橄欖球聯盟前首席營銷官和一名工程學教授。據三名前員工說，黃仁勛主要將英偉達董事會視為治理要求，而非公司戰略或執行的重要組成部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Over the past few years, Mr. Huang has given his children more power and authority at Nvidia, according to five current and former employees. His son, Spencer, is a director of product management and plays a leading role in Nvidia’s robotics efforts. His daughter, Madison, is a senior director of product marketing who also works on robotics, as well as communications and marketing. And his son-in-law, Nico Caprez, works on business development for the company.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據五名現任和前任員工說，過去幾年，黃仁勛賦予子女在英偉達更多權力和權威。他的兒子黃勝斌是產品管理總監，在英偉達的機器人業務中發揮主導作用。他的女兒黃敏珊是產品營銷高級總監，也從事機器人以及傳播和營銷工作。他的女婿尼科·卡普雷斯負責公司業務發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The family’s growing role in the business has frustrated some at the company and created the impression that Mr. Huang is nurturing his children to eventually succeed him. It has created unusual power dynamics in meetings because the children have direct access to Mr. Huang, who has the final say on all major decisions at Nvidia. Some of the company’s customers, suppliers and advisers have also begun cultivating relationships with the children.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛家族在公司事務中日益擴大的影響力讓公司內部一些人感到不滿，並給人留下這樣一種印象：黃仁勛正在培養自己的子女，以便他們最終接替自己的職位。這在會議上造成了不尋常的權力態勢，因為子女可以直接接觸黃仁勛，而他對英偉達所有重大決策擁有最終決定權。公司一些客戶、供應商和顧問也已開始與他的子女建立關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It is unclear how long the board’s investigation will take. But even if it ousts Mr. Huang, he has said it should have many options for successors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚董事會的調查需要多長時間。但即使董事會驅逐黃仁勛，他也曾表示，董事會應有眾多接班人選可供選擇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His children are potentially among them.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他的子女很可能就在其中。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Don Clark對本文有報導貢獻。</p><div class="" data-poster=""></div><p class="cn-p">Kalley Huang是時報駐舊金山記者，報導蘋果公司和科技行業。</p><p class="cn-p"><span>Tripp Mickle報導英偉達、谷歌和蘋果等全球最大的科技公司。他也報導整個科技行業的趨勢，包括裁員、生成式AI和機器人計程車等。</span></p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261110/jensen-huang-affair-nvidia/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

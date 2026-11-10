@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京否認間諜指控 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">北京否認間諜指控</h1>
+    <h2 class="en-headline">China Rejects Espionage Claims Involving Nvidia C.E.O. Jensen Huang</h2>
+    <div class="meta-line">ADAM SATARIANO <span style="margin: 0 8px;">•</span> 2026-11-10</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="英偉達首席執行官黃仁勛10月在華盛頓。黃仁勛承認與一名商界高管有親密關係，美國官員懷疑該高管向中國情報部門提供情報。" height="700" src="https://static01.nyt.com/images/2026/11/09/multimedia/09biz-china-huang-jvhc/09biz-china-huang-jvhc-master1050.jpg" width="1050"/><figcaption><span>英偉達首席執行官黃仁勛10月在華盛頓。黃仁勛承認與一名商界高管有親密關係，美國官員懷疑該高管向中國情報部門提供情報。</span> <cite>Demetrius Freeman for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Chinese government spokesman on Monday rejected claims that a woman romantically involved with Jensen Huang, the chief executive of Nvidia, was a Chinese spy. The spokesman dismissed the reports as “pure fabrication out of thin air” and “nothing but a smear against China.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週一，中國外交部發言人否認了與英偉達首席執行官黃仁勛有親密關係的女性是中國間諜的說法。發言人將這些報導斥為「純屬捕風捉影」和「污衊抹黑」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The response by China’s Ministry of Foreign Affairs underscored how the revelations involving one of the world’s most prominent technology executives have spilled into the intensifying rivalry between Washington and Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國外交部的回應凸顯出，這起涉及全球最知名科技高管之一的事件已捲入華盛頓與北京之間日益激烈的競爭之中。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Sunday, Mr. Huang acknowledged having a relationship with Alice Huang, a Chinese business executive whom American officials suspected of providing information to Chinese intelligence. Nvidia said that it was opening an investigation into Mr. Huang’s conduct. The company’s board said it had no reason to believe that national security or Nvidia secrets were compromised.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週日，黃仁勛承認與一名中國商界高管黃樂（音，其英文名為Alice Huang）存在親密關係，美國官員懷疑她向中國情報機構提供信息。英偉達表示，正在對黃仁勛的行為展開調查。公司董事會表示，沒有理由認為國家安全或英偉達機密已受到損害。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">While American officials have raised national security concerns, with some lawmakers calling for Mr. Huang to testify before Congress, the reaction in China has been to downplay the significance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管美國官員提出了國家安全方面的擔憂，一些議員還呼籲黃仁勛到國會作證，但中國的反應是淡化此事的重要性。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials have sought to discredit the espionage allegations, while social media users seized on the personal tumult engulfing an American billionaire whose company is at the center of the race for dominance of the A.I. industry between the two countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員試圖否定間諜指控，而社群媒體用戶則抓住這位美國億萬富翁的個人風波不放，他的公司正處於美中爭奪人工智慧行業主導權的核心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Weibo, China’s heavily censored social media platform, users seemed to relish the fall from grace of a technology industry celebrity long admired across Asia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在受到嚴格審查的中國社群媒體平台微博上，用戶似乎樂於看到一位長期在亞洲廣受欽佩的科技界名人的形象崩塌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Jensen Huang’s 41-Year Loyal Husband Persona Falls Apart,” was the platform’s top trending topic on Monday morning. Other users accused the American news media of smearing Ms. Huang, who is not related to the Nvidia co-founder.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「黃仁勛41年愛妻人設崩塌」是週一上午該平台最熱門的議題。也有用戶指責美國新聞媒體抹黑黃樂，她與英偉達聯合創始人黃仁勛沒有親屬關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The controversy erupted after The New York Times reported that U.S. government officials had determined that Ms. Huang, an executive for a Singapore-based tech company called Megaspeed, was gathering intelligence for Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這場爭議始於《紐約時報》報導稱，美國政府官員認定，新加坡科技公司Megaspeed高管黃樂正在為北京收集情報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The U.S. government had been investigating whether Megaspeed was helping to divert advanced Nvidia A.I. chips to China in violation of American export controls. Authorities began surveilling Ms. Huang more than a year ago and discovered she was communicating with an American citizen later identified as Mr. Huang, The Times reported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國政府一直在調查Megaspeed是否是否違反美國出口管制規定，協助將英偉達的先進人工智慧晶片轉運至中國。《紐約時報》報導，當局一年多前開始監視黃樂，並發現她與一名美國公民有聯繫，該公民後來被確認為黃仁勛。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“I was unfaithful to my wife,” said Mr. Huang, 63, said on Sunday, after Nvidia had previously said their relationship was part of normal business interactions. “My actions hurt her and our children. There is no excuse for what I did. I am deeply sorry.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我對妻子不忠，」63歲的黃仁勛週日說。此前英偉達曾表示，他們的關係是正常業務往來的一部分。「我的行為傷害了她和我們的孩子。我的所作所為沒有任何藉口。我深感抱歉。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The investigation threatens to complicate Mr. Huang’s relationship with President Trump. Mr. Huang has emerged as an influential technology industry ally of the president, even as he has pressed the administration to ease export restrictions that limit Nvidia’s ability to sell advanced chips to Chinese companies. In May, Mr. Huang joined a delegation that traveled with Mr. Trump to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項調查可能使黃仁勛與川普總統的關係變得複雜。黃仁勛已成為總統在科技行業的一位有影響力的盟友，儘管他一直敦促政府放寬限制英偉達向中國公司出售先進晶片的出口限制。5月，黃仁勛隨川普的訪華代表團一同前往中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has argued that America’s national security concerns are overblown because the Chinese military does not need Nvidia’s chips to develop A.I. technology and that the United States risks conceding technological leadership by closing itself off from the vast Chinese market.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛辯稱，美國的國家安全擔憂被誇大了，因為中國軍方不需要英偉達的晶片來開發人工智慧技術，而美國若將自己與中國龐大市場隔絕，將面臨喪失技術領導地位的風險。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese officials have denied that Ms. Huang was a spy. Their position was echoed on Monday by prominent nationalist commentators.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國官員否認黃樂是間諜。週一，一些著名的民族主義評論員也表達了同樣的立場。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Hu Xijin, the former chief editor of the Global Times, a newspaper controlled by China’s ruling Communist Party, cast the uproar as a U.S. political conspiracy. He called the disclosure “a calculated move by the Democratic Party and the U.S. establishment to take down Jensen Huang, and by extension, go after Trump.” Similar claims circulated on social media.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國執政黨控制的《環球時報》前總編輯胡錫進將這場風波說成美國的政治陰謀。他稱這一爆料是「民主黨和美國建制派搞垮黃仁勛，並進而搞川普的一種方式」。類似說法也在社群媒體上流傳。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For Mr. Huang, the controversy is particularly striking because of his extraordinary popularity across Asia, where he enjoys a level of celebrity rarely accorded to corporate executives.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對黃仁勛來說，這場爭議尤其引人注目，因為他在亞洲各地擁有非凡的人氣，其名人地位在企業高管中非常罕見。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Born in Taiwan and raised in the United States, Mr. Huang has developed an image as a charismatic leader who can bridge the widening fractures dividing the technology industries in the United States and China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃仁勛出生於台灣，在美國長大，他塑造了一種富有魅力的領導人形象，能夠彌合美中科技行業之間日益擴大的裂痕。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His appearances in Taipei, Seoul and Beijing routinely draw crowds more commonly associated with Hollywood movie stars or professional athletes. At technology conferences, fans trail him for autographs and selfies. His signature black leather jacket has become instantly recognizable across the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他在台北、首爾和北京的露面常常會吸引通常只有好萊塢電影明星或職業運動員才能招來的擁擠人群。在科技會議上，粉絲追隨他索要簽名和合影。他標誌性的黑色皮夾克在整個地區變得一眼就能認出。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">During a visit to South Korea last year, Mr. Huang joined some of the country’s most powerful semiconductor executives for fried chicken and beer, attracting throngs of spectators and journalists. As crowds assembled outside, he handed out snacks to onlookers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">去年訪問韓國時，黃仁勛與該國一些最有影響力的半導體高管一起吃炸雞喝啤酒，吸引了大量圍觀者和記者。當人群聚集在外面時，他向圍觀者分發零食。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Beijing, he has frequented neighborhood restaurants and food stalls, slurping down noodles and mingling with locals. Videos of such outings have circulated widely on social media, reinforcing his image as an accessible billionaire.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在北京，他經常光顧社區餐館和食品攤，大口吸著麵條，與當地人打成一片。這類外出活動的影片在社群媒體上廣泛傳播，強化了他平易近人的億萬富翁形象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Taiwanese social media, some users expressed disbelief and disappointment that Mr. Huang, who is often treated like a returning hero and long seen as a devoted family man, could have exercised such poor judgment. His popularity is such that some Taiwanese refer to him as “dad,” a local term of endearment for an admired figure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在台灣社群媒體上，一些用戶對黃仁勛可能做出如此缺乏判斷力的行為表示難以置信和失望。他常被當作歸來的英雄，長期被視為忠誠的愛家男人。他的人氣極高，以至於一些台灣人稱他為「爸爸」，這是當地對受敬仰人物的親暱稱呼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Taiwan, where fears of a potential Chinese invasion loom over public life, online commentators expressed concern about spying, wondering how Ms. Huang gained entry to the self-governing island.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在台灣，對中國可能入侵的擔憂籠罩著公共生活，網路評論人士對間諜活動表示擔憂，想知道黃樂是如何進入這個自治島嶼的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Nevertheless, Mr. Huang could soon be returning to Asia. On Sunday, President Trump indicated he still planned to bring Mr. Huang on his upcoming trip to Asia for the Asia-Pacific Economic Cooperation, or APEC, forum hosted in China. Xi Jinping, China’s top leader, is hosting the event, where advanced semiconductor technology and artificial intelligence are expected to be a focus.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，黃仁勛可能很快返回亞洲。週日，川普總統表示，他仍計劃帶上黃仁勛參加即將到來的亞洲之行，出席在中國主辦的亞太經合組織論壇。中國最高領導人習近平將主持此次活動，先進半導體技術和人工智慧預計將是會議焦點。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">Xinyun Wu和Siyi Zhao對本文有研究貢獻。</p><p class="cn-p"><span>Adam Satariano是時報科技記者，常駐倫敦。</span></p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261110/jensen-huang-china-spying/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
