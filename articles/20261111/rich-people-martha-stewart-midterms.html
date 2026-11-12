@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>富人越來越富，也越來越壞 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">富人越來越富，也越來越壞</h1>
+    <h2 class="en-headline">Martha Stewart’s ‘Hobo’ Shows How Trump Emboldened Rich People</h2>
+    <div class="meta-line">MOLLY JONG-FAST <span style="margin: 0 8px;">•</span> 2026-11-11</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="" height="1050" src="https://static01.nyt.com/images/2026/11/11/opinion/10jongfast/10jongfast-master1050.jpg" width="1050"/><figcaption><span></span> <cite>Ryan Evans</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The weekend before Election Day, I opened up Instagram and saw an image so jarring that I first thought it was A.I.-generated. Martha Stewart had dressed up as a poor person for Halloween. She wore ripped jeans and a weather-beaten flannel, and had what looked like dirt smeared across her face. She held a sign that said “I AM HUNGRY HELP ME!!” and turned her lips down into a mocking frown. The caption directed her audience toward her branded candle collection.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">選舉日前的那個週末，我打開Instagram，看到一張令人震驚的照片，第一反應是這一定是人工智慧生成的。瑪莎·斯圖爾特在萬聖節把自己打扮成了一個窮人。她穿著破洞牛仔褲和一件顯得十分陳舊的法蘭絨襯衫，臉上好像抹了泥。她舉著一塊牌子，上面寫著「我餓了，幫幫我！！」，嘴角故意向下撇，做出嘲弄的苦相。配文則引導粉絲去購買她自己品牌的蠟燭系列。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Stewart’s Halloween costume is the sort of thing we’ve been seeing from rich people since President Trump’s second election. Many regular voters went for Mr. Trump in 2024 because of the high cost of groceries. But rich people felt empowered by his second victory, as if the public elected them, too.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">自川普總統第二次當選以來，我們經常看到富人做出斯圖爾特這種事。2024年，許多普通選民因為食品價格高企而把票投給川普。但他的再次勝選卻讓富人覺得自己也獲得了某種授權，彷彿選民把他們也選上了台。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And so it’s been two years of rich people going full Roman emperor — unleashed, unapologetic and, often, punching down.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">於是，過去兩年裡，富人們越來越像羅馬皇帝，肆無忌憚、毫無歉意，而且常常恃強凌弱。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For much of my life, I’ve spent a lot of time with wealthy people in places like New York City and Los Angeles. My family, literary types, were not Wall Street banker rich or industrialist rich, like some of my friends and neighbors. I miss that brand of rich person. They had some vague WASP-y reticence about showing off. Some of them drove old Volvos. Few of them flew first class, let alone private. Besides, the New York of the 1980s was a place where showoffs tended to get mugged. If someone was mind-bendingly wealthy, that person didn’t necessarily want you to know it.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">我人生中的大部分時間都經常在紐約和洛杉磯等地與富人打交道。我的家人都是文學圈人士，不像我的一些朋友和鄰居那樣，是華爾街銀行家或實業家級別的富豪。我懷念從前那種富人。他們多少還保留著一點盎格魯-撒克遜白人新教徒式的低調，不願炫耀財富。有些人開著舊富豪。很少有人坐頭等艙，更不用說私人飛機了。況且，1980年代的紐約是個愛炫富的人容易遭搶劫的地方。即使一個人富得令人難以想像，也未必願意讓別人知道。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Today’s rich people are richer than ever, and that seems to have made them worse than ever. More shameless. More out of touch. Less empathetic. Thinner-skinned. And, for some mysterious reason, angrier. They’re people who consider equality for others oppression for themselves.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今的富人比以往任何時候都更富有，而這似乎也讓他們變得比以往任何時候都更糟糕。他們更加無恥，更加脫離現實，更缺乏同理心，更受不得批評。而且，不知為什麼，他們還更加憤怒。在這些人看來，別人獲得平等，就意味著自己受到了壓迫。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Sometimes they’re nouveau riche ridiculous — Jeff Bezos throwing a foam party on his half-billion-dollar yacht and then occupying Venice for his star-studded wedding. Or they’re destabilizing — Elon Musk dancing with a chain saw and hacking away at the federal government, a move that threw hundreds of thousands of people out of the federal work force and cost taxpayers an estimated $135 billion last year. Too often, they’ve been flashing their wealth before our eyes. Mr. Trump’s billionaire buddies kissed up and paid up — pass the hat for the inauguration, boys! — and ended up with tax benefits. (See: “bonus depreciation,” which allows executives to write off depreciating assets and has led to a buying spree in both private planes and racehorses.)</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有時，他們像暴發戶一樣荒唐可笑——傑夫·貝索斯在價值5億美元的遊艇上舉辦泡沫派對，又為了那場眾星雲集的婚禮，把威尼斯變成了自己的私人會場。有時，他們則會造成嚴重破壞——伊隆·馬斯克揮舞著電鋸跳舞，對聯邦政府大砍大削，讓數十萬人丟了聯邦政府的飯碗，據估計去年還讓納稅人付出了1350億美元的代價。他們也太頻繁地在我們眼前炫耀財富。川普的億萬富豪朋友們一邊阿諛奉承，一邊慷慨解囊——來吧，哥兒幾個，為就職典禮湊錢！——最終換來了稅收優惠。（比如「額外折舊扣除」，允許企業高管對會貶值的資產進行稅務抵扣，並引發了私人飛機和賽馬的購買熱潮。）</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It’s well documented that extreme wealth melts one’s brain. As Helen Riess and Liz Neporent write in “The Empathy Effect”: “Scientific studies have shown there is an inverse relationship between power and empathy. This distance often insulates the rich and powerful from the suffering of the everyday person.” The richer you are, the more insular your life becomes, and the more out of touch you become. Money becomes a way of measuring yourself against other rich people. It’s not about worrying about your rent, filling up your gas tank or affording ground beef at the grocery store. Get rich enough, and your doctor probably doesn’t even take health insurance — and you don’t need him to.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">大量研究已經證明，巨額財富會把人的腦子燒壞。海倫·裡斯和莉茲·內波倫特在《同理心效應》一書中寫道：「科學研究表明，權力與同理心之間存在反比關係。這種距離往往使富人和權貴與普通人的苦難隔絕開來。」一個人越富有，生活圈子就越封閉，也就越脫離現實。金錢成了他們與其他富人比較的標尺。他們不必為房租、汽車加油或在超市買不買得起碎牛肉而發愁。只要足夠有錢，你的醫生很可能連醫療保險都不接受——而你也根本不需要他接受。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The wealthiest Americans’ X feeds must be puzzlingly filled with self-pity or the belief that somehow they are the ones being discriminated against in the world. Sergey Brin personally spent $100 million to help defeat the California wealth tax. And never mind all the squawking among the 17,000 New Yorkers who were asked by the Mamdani administration to prove that their $5-million-plus homes were not pieds-à-terre, and therefore subject to an extra tax.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國最富有的那些人，X上的信息流裡想必充斥著令人費解的自憐情緒，以及自己不知怎麼成了受歧視者的論調。謝爾蓋·布林個人花費了1億美元，出資助力否決加州財富稅。還有紐約那1.7萬名富人的抱怨也不必說了。馬姆達尼政府要求他們證明自己價值超過500萬美元的住房不是偶爾落腳的第二居所，否則就要繳納額外稅款，他們為此叫苦連天。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Once upon a time, the wealthiest Americans knew they had it good and that they owed something to the rest of us. They followed in the spirit of Andrew Carnegie’s “The Gospel of Wealth,” in which he argued that the rich have a moral duty to help better the world, for everyone. They funded libraries, museums, medical research, disease eradication projects and even entire universities. Maybe this was out of moral or even religious conviction. Maybe it was out of a desire to see their names on buildings. Or maybe it was out of fear, after decades of strikes and social movements and, in other countries, revolutions.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾幾何時，美國最富有的人知道自己生活優渥，也明白自己對社會其他成員負有某種責任。他們奉行安德魯·卡內基在《財富福音》中倡導的精神：富人有道德義務幫助建設一個對所有人都更美好的世界。他們出資興建圖書館、博物館，資助醫學研究、疾病根除項目，甚至創辦整所大學。也許他們這樣做出於道德或宗教信念，也許只是想讓自己的名字出現在建築物上。又或許，在經歷了數十年的罷工和社會運動，以及其他國家爆發的革命之後，他們心存恐懼。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those lessons have been mostly forgotten. The wealthiest Americans don’t seem to care that much about giving back. When billionaires do give, it’s often to causes that appear to come with perks, like Mr. Trump’s inaugural fund or his ridiculous ballroom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這些教訓如今大多被遺忘了。美國最富有的人似乎不再那麼關心回饋社會。即使億萬富豪願意捐款，也往往是捐給那些看起來能為自己帶來好處的項目，比如川普的就職基金，或者他那座荒唐的宴會廳。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/opinion_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It looks as if, finally, regular Americans have had enough. On the whole, voters rebuked Mr. Trump’s by-billionaires-for-billionaires government in stunning fashion in last week’s midterms. They won’t be bought or bribed away from reality, and they’ll turn out in droves before they’ll let Elon Musk buy their elections. When the president tried to dangle a $5,000 check in front of voters, they just said no.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">如今看來，普通美國人終於受夠了。總體而言，在上週的期中選舉中，選民以驚人的方式教訓了川普那個由億萬富翁組成、為億萬富翁服務的政府。他們不會被金錢收買，也不會被利益誘惑而無視現實。他們寧願大批走進投票站，也不願讓伊隆·馬斯克憑藉財力左右選舉。當總統試圖用一張5000美元的支票誘惑選民時，他們乾脆地說了不。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Affordability became a midterm buzzword because it’s a real crisis. During Mr. Trump’s second term, prices for staples like gas, diesel, beef and coffee have skyrocketed. Medicare and Obamacare cuts are throwing millions off health insurance. The One Big Beautiful Bill stripped millions of people of the SNAP benefits they need to feed their families. While Mr. Trump obsesses about a plethora of construction projects including a ballroom, normal people are poorer and angrier than they were when they elected him.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">生活負擔成為期中選舉的熱門詞彙，是因為這確實是一場危機。川普第二任期內，汽油、柴油、牛肉和咖啡等生活必需品價格飛漲。聯邦醫療保險和歐巴馬醫改項目遭到削減，導致數百萬人失去醫療保險。《大而美法案》使數百萬人失去了養家糊口所依賴的補充營養援助計劃(SNAP)福利。川普卻沉迷於包括宴會廳在內的一大堆建築工程。普通人的生活比當初選他上台時更加拮据，也更加憤怒。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Cue Martha Stewart: “I AM HUNGRY HELP ME!!”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這時輪到瑪莎·斯圖爾特登場了：「我餓了，幫幫我！！」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What was she expecting people to do, write “yaaaas Hobo Queen!” in the comments?</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她難道指望人們在評論區寫下「哇哦，流浪女王萬歲！」嗎？</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Stewart quickly took down her Instagram post and, after public outcry, apologized, multiple times. Then she started blaming someone else for her Halloween misstep. She said the “Today” show anchor Craig Melvin spilled chocolate on her sweater and that she dressed up that way because she had only 10 minutes to get ready. Shockingly, nobody’s really buying that excuse.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">斯圖爾特很快刪除了那條Instagram帖文，並在公眾強烈抗議後多次道歉。隨後，她又開始把萬聖節裝扮失當的責任推給別人。她說，《今日》節目主持人克雷格·梅爾文把巧克力弄到了她的毛衣上，而她只有10分鐘時間換裝，所以才打扮成那個樣子。不出所料，幾乎沒人相信這個藉口。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much like Mr. Trump and his billionaire buddies, she may have squandered her gilded age.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">和川普及他的億萬富豪朋友們一樣，她或許也已經揮霍掉了屬於自己的鍍金時代。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Molly Jong-Fast是播客「Fast Politics」的主持人，也是《如何失去你的母親：一個女兒的回憶錄》的作者。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/opinion/20261111/rich-people-martha-stewart-midterms/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
