@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「美人計」：中國如何利用親密關係套取情報 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">「美人計」：中國如何利用親密關係套取情報</h1>
+    <h2 class="en-headline">In China’s Spy Operations, Romance Can Be a Long Game</h2>
+    <div class="meta-line">郭莉莉 <span style="margin: 0 8px;">•</span> 2026-11-13</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2024年，英偉達首席執行官黃仁勛與黃樂在台灣台北。美國官員表示，一個間諜機構招募了她，以收集有關黃仁勛的情報。" height="600" src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-01-qvpc/12int-china-espionage-01-qvpc-jumbo.jpg" width="800"/><figcaption><span>2024年，英偉達首席執行官黃仁勛與黃樂在台灣台北。美國官員表示，一個間諜機構招募了她，以收集有關黃仁勛的情報。</span> <cite>Obtained By Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the height of the Cold War, a top official in China’s intelligence agency said that his country would never use seduction to entrap a person.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在冷戰正酣之時，中國情報機構的一名高官曾表示，中國絕不會利用美色給人設圈套。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such tactics might be for the C.I.A. or the K.G.B., the official named Kong Yuan, of the Central Investigation Department, told a group of agents in training in April 1960, but China was guided by principles. He looked at the few female comrades in the audience. “Rest assured, we will not be asking you to go run beauty traps.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">1960年4月，這位名叫孔原的中央調查部官員在對一批受訓特工講話時表示，此類策略也許是中央情報局或克格勃的作風，但中國做事是講原則的。他看著台下為數不多的女同志說：「放心，我們不會要求你們去施美人計。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Despite that pledge, captured in a 2010 memoir by a former Chinese diplomat, China’s intelligence services have for decades used romantic entanglements to compromise or extract information from prominent people.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管一名前中國外交官在2010年的回憶錄中記錄了這一保證，但數十年來，中國情報部門一直利用浪漫糾葛來牽制知名人士，或從中套取信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American officials say that China’s Ministry of State Security, which runs intelligence operations today, recruited a Chinese businesswoman to collect intelligence on Jensen Huang, the chief executive of Nvidia and one of the most powerful figures in the artificial intelligence boom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，目前負責情報行動的中國國家安全部招募了一名中國女商人，以收集有關英偉達首席執行官、人工智慧熱潮中最具權力的人物之一黃仁勛的情報。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">It was not clear what role the woman, Alice Huang, or Huang Le, might have had with the Chinese spy agency. Ms. Huang was a top executive of a Singapore company that operates data centers in Southeast Asia using Nvidia chips and that rents their computing power to Chinese firms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">目前尚不清楚這位名為Alice Huang或黃樂的女子與中國間諜機構有何種關係。她是一家新加坡企業的高管，該公司在東南亞使用英偉達晶片運營數據中心，並將其算力出租給中國公司。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang has acknowledged that he had an affair with Ms. Huang. President Trump has said that Mr. Huang told him that he was not aware that the woman was a spy. China has rejected the espionage allegations against Ms. Huang, calling them smears against the country. U.S. officials have not provided evidence for their claims. Ms. Huang has not responded to requests for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>黃仁勛已承認他與黃樂有染。川普總統曾表示，黃仁勛告訴他自己並不知道該女子是間諜。中國</span>否認了黃樂為間諜的指控，稱這是對中國的抹黑。美國官員並未提供支持其主張的證據。黃樂未對置評請求作出回應。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The use of relationships or seduction in the world of espionage is not new or unique to China. The tactic was made infamous by East Germany’s “Romeos,” male Stasi agents tasked with seducing the clerks of Western officials, and by the Soviet Union’s longtime use of sexual blackmail, among other examples.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在間諜領域，利用人際關係或美色並非新鮮事<span>，也非中國獨有。這一策略因東德的「羅密歐」（奉命誘惑西方官員</span>身邊職員的男性斯塔西特工）以及蘇聯長期以<span>使用性勒索而聞名</span>。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What is unique about China’s use of the tactic is the amount of time invested, according to Nicholas Eftimiades, a retired senior American intelligence officer who writes about China’s espionage operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">撰寫過關於中國間諜行動文章的退休美國高級情報官員尼古拉斯·埃夫蒂米亞德斯表示，中國使用這一策略的獨特之處在於其投入的時間。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They play this long term,” he said. “These are long-term relationships, sometimes marriages.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「他們放長線，」他說。「這些是長期的關係，有時甚至是婚姻。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Perhaps the most famous example involves Shi Peipu, a Peking Opera singer whose two-decade relationship with Bernard Boursicot, who worked on French diplomatic missions in Beijing and Ulan Bator in Mongolia, drew Mr. Boursicot into spying for China. Both were arrested in France, at which point Mr. Boursicot learned that his lover was a man. In 1986, they were convicted of espionage. Their story inspired the play “M. Butterfly” by David Henry Hwang.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">也許最著名的例子是京劇演員時佩璞。他與曾在法國駐北京和蒙古烏蘭巴托外交使團工作的伯納德·布爾西科維持了二十年的關係，使布爾西科開始<span>為中國從事間諜活動。兩人在法國被捕，此時布爾西科才得知他的情人是一名男性。1986年，他們被判犯有間諜罪。他們的故事啟發了黃哲倫(David Henry Hwang)創作的戲劇《蝴蝶君》(M. Butterfly)。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="曾任法國駐北京大使館僱員的伯納德·布爾西科於1986年被判間諜罪名成立。" data-src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-02-qvpc/12int-china-espionage-02-qvpc-master1050.jpg" src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-02-qvpc/12int-china-espionage-02-qvpc-master1050.jpg"/></div><figcaption><span>曾任法國駐北京大使館僱員的伯納德·布爾西科於1986年被判間諜罪名成立。</span> <cite>Laurent MAOUS/Gamma-Rapho, via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More recent cases include Christine Fang, or Fang Fang, who was believed by counterintelligence officials to be a Chinese spy and who was in a physical relationship with former U.S. Representative Eric Swalwell between 2012 and 2015<strong>.</strong></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>更近期的案例包括方芳(Christine Fang)，她被反間諜官員認為是一名中國間諜，並在2012年至2015年間與前聯邦眾議員埃里克·斯沃韋爾</span>發生了性關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Separately, a retired U.S. Army officer who was working as a contractor for the U.S. Pacific Command in Hawaii was sentenced to prison in 2014 for emailing defense secrets, including details about joint training exercises between the United States and South Korea, to a 27-year-old Chinese woman with whom he had been involved romantically for almost two years.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一起案件中，一名曾在夏威夷擔任美國太平洋司令部承包商的陸軍退役<span>軍官於2014年被判處入獄，罪名是向一名27歲的中國女子發送包括美韓聯合軍事演習細節在內的國防機密。他與該女子保持了近兩年的戀愛關係。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2003, an F.B.I. agent, James J. Smith, who worked in Chinese counterintelligence, admitted that he had an affair for nearly 20 years with a Chinese American businesswoman suspected of being a Chinese double agent. The woman, whom he had recruited as an asset, was found to have given classified U.S. government information to Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2003年，從事中國反間諜工作的聯邦調查局特工詹姆斯·J·史密斯承認，他與一名被懷疑是中美雙重間諜的華裔美國女商人<span>有近20年的婚外情</span>。這名被他招募為線人的女子被發現向北京提供了美國政府機密信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both the United States and China appear to be concerned about the possibility of emotional or other manipulation by the other side. Last year, the U.S. government prohibited American personnel in China from having romantic or sexual relationships with Chinese citizens, according to The Associated Press.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>美國和中國似乎都對遭到對方情感或其他操縱的可能性感到擔憂。據美聯社報導，去年，美國政府禁止在華的美國人員與中國公民</span>建立感情或性關係。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s intelligence agency itself frequently warns its citizens to look out for foreign operatives attempting to trap them. In May, China’s Ministry of State Security published an article on WeChat that called on residents to “be wary of sudden advances and overt displays of affection from seemingly perfect individuals of the opposite sex.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國情報機構本身也經常警告其公民提防試圖誘惑<span>他們的外國特工。今年5月，中國國家安全部在微信上發表了一篇文章，呼籲民眾警惕「</span>『完美異性』的突然靠近與主動示好」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Avoid falling into the ‘gentle trap,’” it said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「避免陷入『溫柔陷阱』，」文章稱。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2003年，退休聯邦調查局特工詹姆斯·J·史密斯離開洛杉磯一家聯邦法院。他承認曾與一名被懷疑是中美雙重間諜的華裔美國女商人保持了近20年的婚外情。" data-src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-04-qvpc/12int-china-espionage-04-qvpc-master1050.jpg" src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-04-qvpc/12int-china-espionage-04-qvpc-master1050.jpg"/></div><figcaption><span>2003年，退休聯邦調查局特工詹姆斯·J·史密斯離開洛杉磯一家聯邦法院。他承認曾與一名被懷疑是中美雙重間諜的華裔美國女商人保持了近20年的婚外情。</span> <cite>Ric Francis/Associated Press</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Alex Joske, managing director at Garnaut Global, an advisory firm, said the Chinese ministry’s warnings about espionage “are usually based on the kinds of things that they do rather than what other countries actually do.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諮詢公司加諾特全球的常務董事周安瀾(Alex Joske)表示，中國安全部門關於間諜活動的警告「通常是基於他們自己所做的事情，而不是其他國家實際做的事情」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Compared with Western intelligence agencies, the Chinese government is more willing to use blackmail and coercion in its operations, including romance and sexual activities, he argued. Western governments see blackmail as a less reliable way of motivating a source or asset, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他認為，與西方情報機構相比，中國政府在其行動中更願意使用勒索和脅迫手段，包括戀愛和性活動。他說，西方政府認為勒索是一種不太可靠的驅動線人或情報資產的方式。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s Ministry of State Security, which oversees operations abroad as well as security within the country, is known for its highly coercive methods that include threats of arrest and detention.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">負責海外行動和國內安全的中國國家安全部以使用包括威脅拘捕在內的高壓手段而聞名。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The agency also exploits other forms of relationships, like family ties. A former F.B.I. agent in New York was recruited, with the help of his mother in China, to pass information about the agency to<strong> </strong>Beijing. He pleaded guilty to the charges in 2016.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>該機構還利用其他形式的關係，如家庭紐帶。紐約的一名前聯邦調查局特工在其身在中國的母親的幫助下被招募，向北京傳遞有關該機構的信息。他於2016年認罪。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China does engage in the kind of sexually baited entrapment one might see in a spy drama, according to former American intelligence officers. “A diplomat walks into his hotel room, and there’s a girl in his bed. I mean, that stuff happens. It’s just kind of ridiculous,” Mr. Eftimiades said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">前美國情報官員表示，中國確實會使用那種在間諜劇中能看到的色誘圈套。「一名外交官走進他的酒店房間，床上躺著一個女孩。我是說，這種事情確實發生過。這簡直有些荒謬，」埃夫蒂米亞德斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Dennis Wilder, who was senior China director at the National Security Council during the George W. Bush administration and a former senior intelligence officer, describes how when he traveled to Beijing, a woman would often be waiting in the elevator for him when he returned to his hotel.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾在喬治·W·布希政府擔任國家安全委員會中國事務高級主任的前高級情報官員韋德寧(Dennis Wilder)描述了當他前往北京時，一名女子經常會在他回到酒店時在電梯裡等他。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“She’d say, ‘You know, I can come to your room.’ And I’d say, ‘Well why do you want to come to my room?’ And they did this over and over again to see if they could get me,” he said, noting that if he was ever to publicly accuse the Chinese of trying to entrap him, they could say the women were prostitutes working on their own volition.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「她會說，『你知道，我可以去你的房間。』我會說，『那麼你為什麼想去我的房間？』他們一遍又一遍地這樣做，看看能否釣到我，」他說。他指出，如果他公開指責中國試圖色誘他，他們可以說這些女子是自願從事賣淫活動的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“That’s the beauty of this kind of thing. It’s totally deniable,” Mr. Wilder said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這種事情妙就妙在這裡。完全可以否認，」韋德寧說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But more often than not, Mr. Eftimiades said, Beijing is not sending operatives to stage romantic encounters for blackmail. Instead, it looks for people whose personal or professional lives give them access to potential targets, he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但埃夫蒂米亞德斯說，多數情況下，北京並不是派特工去安排浪漫邂逅進行勒索。相反，它尋找的是那些個人或職業生活能讓他們接觸到潛在目標的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many details of the relationship between Mr. Huang and Ms. Huang, including when they met and under what circumstances Ms. Huang may have begun gathering information for Beijing, remain unclear.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於黃仁勛與黃樂關係的許多細節目前都尚不明確，包括他們何時相識，以及她可能在何種情況下開始為北京收集信息。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中天節目畫面顯示，2025年黃樂在台北一家餐廳與黃仁勛共進晚餐。" data-src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-qpmw/12int-china-espionage-qpmw-master1050.jpg" src="https://static01.nyt.com/images/2026/11/12/multimedia/12int-china-espionage-qpmw/12int-china-espionage-qpmw-master1050.jpg"/></div><figcaption><span>中天節目畫面顯示，2025年黃樂在台北一家餐廳與黃仁勛共進晚餐。</span> <cite>CTI, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s large diaspora includes executives, students and others who can be recruited in what Mr. Eftimiades calls the country’s “whole of society” approach to espionage.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國龐大的海外華人群體涵蓋企業高管、學生及其他人員，在埃夫蒂米亞德斯所稱的中國「全社會」間諜模式下，他們都可能成為招募對象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Of the many cases of Chinese spying that have come to light over the past few years, only a handful involve romantic relationships. In most cases, the best motivation is money, Mr. Joske says. But when it comes to targeting wealthy elites, money is not always as powerful a recruitment tool.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">過去幾年曝光的眾多中國間諜案中，僅有少數涉及感情關係。周安瀾表示，多數案件中最有效的動機是金錢。但針對富有的精英時，金錢並非總是如此有效的招募工具。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“So instead, you try to co-opt someone in their circle,” he said. That includes someone with whom that person has a close relationship.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「因此，取而代之的做法是試圖拉攏其圈子裡的人，」他說。這包括與目標人物關係密切的人。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A close relationship is also conducive to another major goal of China’s intelligence operations, which is to exert influence on key decision makers or gather information to sway other prominent figures to support policies favorable to Beijing.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">密切關係還有助於實現中國情報行動的另一主要目標，即對關鍵決策者施加影響，或收集情報以促使其他知名人士支持對北京有利的政策。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Once you become emotionally involved with somebody, your base line judgment changes,” said Matthew Brazil, a senior fellow at The Jamestown Foundation focusing on Chinese intelligence operations. “People want to please their lovers.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「一旦你對某人投入感情，你的基本判斷力就會改變，」專注於中國情報行動研究的詹姆斯敦基金會高級研究員馬修·布拉齊爾說。「人們都想取悅自己的戀人。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">David Pierson自香港、Pei-Lin Wu自台北對本文有報導貢獻。</p><p class="cn-p">郭莉莉(Lily Kuo)是《紐約時報》報導中國記者，常駐台北。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261113/china-spy-espionage-romance/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
