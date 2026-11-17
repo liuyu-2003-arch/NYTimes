@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10個數字，讓你更了解亞洲 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">10個數字，讓你更了解亞洲</h1>
+    <h2 class="en-headline">10 Numbers That Might Change How You See Asia</h2>
+    <div class="meta-line">DAMIEN CAVE <span style="margin: 0 8px;">•</span> 2026-11-17</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週一，各國領導人在馬尼拉舉行的東盟峰會上合影。" height="700" src="https://static01.nyt.com/images/2026/11/16/multimedia/16int-Asia-Index-kqmp/16int-Asia-Index-kqmp-master1050.jpg" width="1050"/><figcaption><span>週一，各國領導人在馬尼拉舉行的東盟峰會上合影。</span> <cite>Pool photo by Ted Aljibe</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">President Trump’s trip to Asia this week will largely be seen as a test of American power in the main region where the United States and China compete for influence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">亞洲是美國與中國爭奪影響力的主要地區。川普總統本週的亞洲之行在很大程度上將被視為對美國實力的一次考驗。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">His meetings in Manila and Shenzhen, China, will be scrutinized for shifts on trade and security. Deals he might strike with Beijing — plus a gathering with President Xi Jinping of China and President Vladimir V. Putin of Russia — will put the world’s great-power contest on display, as all three seek to show strength.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外界將密切關注川普在馬尼拉和中國深圳舉行的會晤，從中尋找貿易和安全政策可能出現變化的跡象。他可能與北京達成的協議、他與習近平和普丁舉行的三方會晤都將成為世界大國角力的舞台。三位領導人都希望藉此展示自己的實力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But Asia is not just a theater of competition. Many countries in the region have become wealthier, more technologically advanced and increasingly interconnected. Especially now, as China’s military becomes more threatening and the United States less reliable, they are hedging against greatness and relying more on neighbors.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但亞洲並不僅僅是大國競爭的舞台。該地區許多國家變得更加富裕，技術更加先進，彼此之間的聯繫也日益緊密。尤其是在中國的軍事力量構成越來越大威脅、美國越來越不可靠的當下，這些國家正努力減少對大國的依賴，更多地尋求鄰國的支持。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Asian students and workers are moving to neighboring states. Countries with expanding defense industries are selling weapons to new partners. Nations that compete for high-tech investment are even making plans to cooperate on energy and cybersecurity.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">亞洲的學生和勞動力正在向鄰近國家流動。國防工業不斷擴張的國家開始向新的合作夥伴出售武器。那些相互爭奪高科技投資的國家甚至在制定能源和網路安全合作計劃。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“They’re all looking at what more they can do together when the great powers are behaving so badly,” said Ted Osius, a former U.S. ambassador to Vietnam and adjunct professor of geopolitics at Fulbright University in Ho Chi Minh City. “If you’re a middle power, you’re thinking ‘I need more options.’”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當大國表現得如此糟糕時，這些國家都在思考還能通過合作做些什麼，」前美國駐越南大使、胡志明市富布賴特大學地緣政治學兼職教授泰德·奧修斯說。「如果你是一個中等強國，你就會想：『我需要更多選擇。』」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Here are a few numbers that provide a sense of what the region contributes to the global economy, and how its nations are becoming more bound together to shape the world.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">以下一些數字可讓人了解該地區對全球經濟的貢獻，以及該地區各國如何通過日益緊密的聯繫，共同塑造世界。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>700 million …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>7億</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The population of the 11 nations that make up the Association of Southeast Asian Nations, a regional grouping that is holding its annual summit in Manila. ASEAN approved a digital framework agreement on Saturday that aims to create a multilateral digital market. If it rolls out smoothly next year, a small business in Vietnam could sell and ship products to Singapore with invoices, payment and customs handled through a regional online system.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是東盟11個成員國的總人口。這是一個區域性組織，目前正在馬尼拉舉行年度峰會。東盟上週六批准了一項旨在建立多邊數字市場的數字經濟框架協議。如果明年順利實施，越南的一家小企業就可以通過區域性在線系統完成開具發票、支付和清關等手續，將商品銷售並運往新加坡。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>$70.77 billion …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>707.7億美元</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The value of the Asia-Pacific market for medical tourism — the world’s largest. With portable insurance and medical visas, it’s becoming common to travel for better or more affordable cancer care, orthopedics, dentistry or cosmetic surgery. Life expectancy in high-income countries (like Japan) is around 84, compared with 79.8 in the United States, where health care costs are roughly twice as high.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是亞太地區醫療旅遊市場的規模，也是全球最大的醫療旅遊市場。隨著跨境適用的醫療保險和醫療簽證日益普及，為了獲得更好的醫療服務或降低費用，人們前往其他國家接受癌症治療、骨科治療、牙科治療或整容手術的情況越來越普遍。日本等高收入國家的預期壽命約為84歲，而美國為79.8歲，醫療費用卻大約高出一倍。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>75 percent …</b></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>75%</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The share of the world’s semiconductor chips that are manufactured in Asia. Without China, about 55 to 60 percent are made in Asia, led by South Korea and Taiwan, which makes more than 90 percent of the world’s high-end chips. The global market is worth roughly $1.5 trillion.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是亞洲生產的半導體晶片佔全球總量的份額。如果不計中國，亞洲仍生產全球約55%至60%的晶片，其中韓國和台灣佔據主導地位。台灣生產了全球90%以上的高端晶片。全球半導體市場規模約為1.5萬億美元。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>6 out of 10 …</b></div></div><div class="col-lg-6"><div class="article-paragraph en-p"><b>6/10</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of top-grossing musical acts in Asia that were K-pop performers from August 2025 to July 2026. The top four earners for live shows in Asia were all K-pop stars, with Seventeen topping the list. Lady Gaga ranked fifth in the region.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年8月至2026年7月，亞洲的音樂人巡演收入排行榜前十中K-pop組合佔據六席。排名前四的全是K-pop組合，其中Seventeen位居榜首，Lady Gaga排名第五。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>33 …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>33所</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of universities in the Asia-Pacific region in the QS global top 100. Among them are 11 in mainland China and Hong Kong, plus nine in Australia. There are 37 in Europe and 26 in the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是亞太地區進入QS世界大學排名前100名的大學數量。其中中國大陸和香港共有11所，澳洲有九所。而歐洲有37所，美國有26所。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>1.7 billion …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>17億人次</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of airline passenger journeys across the Asia-Pacific, excluding China, in 2024. Driven by booming demand in India and Southeast Asia, regional traffic is projected to more than double to 4.1 billion passengers over the next two decades.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是2024年亞太地區（不含中國）的航空旅客運輸量。在印度和東南亞需求激增的推動下，預計未來20年，該地區的航空巴運量將增長一倍以上，達到41億人次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>$630 million …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>6.3億美元</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The approximate cost of Indonesia’s recent deal to buy India’s BrahMos supersonic missile systems for coastal defense. India has inked similar deals with Vietnam and the Philippines, as the region seeks alternatives to expensive Western weapons systems.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">印尼最近購買印度布拉莫斯超音速導彈系統用于海岸防禦的大致費用。印度已與越南和菲律賓簽署類似協議，該地區各國正尋求昂貴的西方武器系統之外的其他選擇。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>2,499 …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>2499家</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The total number of Uniqlo stores worldwide, up from 1,795 in 2016. Even as its retail footprint in China has declined, growth in Southeast Asia, India and Australia has continued. The Japanese fashion brand is now one of the world’s fastest growing clothing retailers.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是優衣庫在全球的門店總數，高於2016年的1795家。儘管優衣庫在中國的門店數量有所減少，但在東南亞、印度和澳洲仍在持續擴張。如今，這個日本時裝品牌已成為全球增長最快的服裝零售商之一。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>3.65 million …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>365萬人次</b> </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of Japanese visits to South Korea in 2025 — a record for two countries that have been gradually overcoming a long history of resentment. The curiosity goes both ways: Koreans also set a record for trips to Japan last year, with 9.46 million visits.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2025年日本人赴韓國旅行人次創下歷史紀錄。兩國長期以來積怨頗深，但近年來正逐步化解歷史恩怨。兩國民眾對彼此的興趣是雙向的：去年，韓國人赴日旅行也創下紀錄，達到946萬人次。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p"><b>18 …</b></div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>18個</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The number of cross-border energy projects planned among ASEAN countries. With high-voltage lines on land and plans for some of the longest power cables ever to be placed underwater, the goal is to more than double transmission capacity and to pave the way for a multilateral power market that is more reliant on renewable energy, like hydropower.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這是東盟國家計劃中的跨境能源項目數量。這些項目包括陸上高壓輸電線路<span>計劃和鋪設的史上最長海底電纜</span>，目標是使輸電能力提高一倍以上，並為建立一個更加依賴水電等可再生能源的多邊電力市場鋪平道路。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Damien Cave領導時報在越南胡志明市的新分社，報導亞洲及全球世界範圍內的權力轉移。</p><p class="cn-p">翻譯：杜然</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20261117/asean-trade-security-technology/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
