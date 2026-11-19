@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美圍繞人工智慧的緊張局勢加劇 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美圍繞人工智慧的緊張局勢加劇</h1>
+    <h2 class="en-headline">As Trump Goes to China, A.I. Tensions Surge Amid Spying and Safety Fears</h2>
+    <div class="meta-line">黃安偉, DUSTIN VOLZ <span style="margin: 0 8px;">•</span> 2026-11-18</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="對間諜活動的懷疑加劇了華盛頓與北京在人工智慧問題上的相互猜疑。" height="700" src="https://static01.nyt.com/images/2026/11/17/multimedia/17dc-china-ai-qblv/17dc-china-ai-qblv-master1050.jpg" width="1050"/><figcaption><span>對間諜活動的懷疑加劇了華盛頓與北京在人工智慧問題上的相互猜疑。</span> <cite>Haiyun Jiang/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When President Trump and Xi Jinping, the leader of China, met earlier this fall, they sounded committed to finding common ground on calibrating the rapid development of advanced artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年秋季早些時候，川普總統與中國領導人習近平會晤時，雙方似乎都致力於在如何規範先進人工智慧的快速發展方面尋求共識。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We have both the capability and responsibility to develop and manage A.I. for good and ensure that the development of A.I. is always under human control and serves the well-being of the people,” Mr. Xi said in September in the grand foyer of the White House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中美兩國都是人工智慧大國，有能力也有責任發展好、管控好人工智慧，確保人工智慧發展始終受控於人、造福於民，」習近平9月在白宮宏偉的門廳裡說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump leaned into that spirit, saying, “The decisions we make in these areas today can promote peace and prosperity for decades and decades to come.” But he has called fears of A.I. threats a “hoax,” and earlier that week said at the United Nations that he would label artificial intelligence “super intelligence” to give it a better branding.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普呼應了這種精神，他說：「我們今天在這些領域做出的決定，可以促進未來幾十年的和平與繁榮。」但他曾稱對人工智慧威脅的擔憂是「騙局」，並在那周早些時候在聯合國表示，他將把人工智慧稱為「超級智能」，給它一個更好的品牌形象。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the eve of their third leadership summit of the year, the two men and their administrations have made little if any progress on negotiating A.I. safety issues and development guidelines, despite growing fears about the technology, current and former U.S. officials say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現任和前任美國官員表示，在今年第三次領導人峰會前夕，儘管人們對這項技術的擔憂與日俱增，但兩人及其政府在談判人工智慧安全問題和發展指導方針方面，幾乎沒有取得任何進展。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">And that was before Jensen Huang was forced to resign last week as chief executive of Nvidia, the U.S. technology giant that supplies computer chips fueling the A.I. boom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而這還是在黃仁勛上週被迫辭去英偉達首席執行官一職之前發生的事情，英偉達供應的計算機晶片正是推動人工智慧熱潮的動力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Huang stepped down after The New York Times reported last month that the U.S. had gathered intelligence showing that a Chinese businesswoman in Singapore with whom he had a close relationship might have been secretly working or in contact with China’s main spy agency. Mr. Huang has publicly admitted that he had an affair.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》上月報導稱，美國收集的情報顯示，一名與黃仁勛關係密切的新加坡中國女商人可能一直在祕密為中國主要間諜機構工作或與其有聯繫，隨後黃仁勛辭職。黃仁勛已公開承認他有婚外情。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="今年5月，黃仁勛在北京人民大會堂出席中國國務院總理李強與美國商界代表的會晤，並向媒體發表講話。" data-src="https://static01.nyt.com/images/2026/11/17/multimedia/17dc-china-ai-pjwf/17dc-china-ai-pjwf-master1050.jpg" src="https://static01.nyt.com/images/2026/11/17/multimedia/17dc-china-ai-pjwf/17dc-china-ai-pjwf-master1050.jpg"/></div><figcaption><span>今年5月，黃仁勛在北京人民大會堂出席中國國務院總理李強與美國商界代表的會晤，並向媒體發表講話。</span> <cite>Pool photo by Go Nakamura</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Advancements in technology — and particularly on A.I. — have become a focal point in the superpowers’ economic and military rivalry in recent years, but never have those issues been more in the spotlight.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">近年來，技術的進步——尤其是人工智慧的進步——已成為這兩個超級大國經濟和軍事競爭的焦點，但這些問題從未像現在這樣備受矚目。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The primary point of competition between us is certainly on A.I., quantum computing, biotech, cyber, all those issues,” said R. Nicholas Burns, a former career U.S. diplomat who was ambassador to China in the Biden administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們之間的主要競爭點肯定在人工智慧、量子計算、生物技術、網路等所有這些問題上，」曾在美國拜登政府擔任駐華大使的前職業外交官R·尼古拉斯·伯恩斯說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“But obviously we’ve got a self-interest, and I think they do too,” he added, “in making sure the competition doesn’t veer off in a direction that would be destabilizing and potentially increase the probability of a conflict.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「但顯然，我們有自身的利益考量，我認為他們也是如此，」他還說。「我們要確保競爭不會偏離正軌，以免造成不穩定，並可能增加衝突爆發的概率。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Secretary of State Marco Rubio said last week that the governments have had conversations about A.I. safety “sort of at the technical level.” “Obviously, we’ve heard their perspective, they’ve heard ours, but that’s still a work in progress,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國務卿魯比奧上週表示，兩國政府已經在「某種程度上在技術層面」就人工智慧安全進行了對話。「顯然，我們聽取了他們的觀點，他們也聽取了我們的觀點，但這仍是一項正在進行中的工作，」他說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One reason there has been little momentum is that the two nations have differing views of the greatest risks posed by A.I., the current and former U.S. officials say.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">現任和前任美國官員表示，進展乏力的原因之一是，兩國對人工智慧帶來的最大風險有著不同的看法。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the United States, officials, executives and researchers talk about the possibility of A.I. becoming autonomous and working on its own outside human control or even dominating humans.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在美國，官員、高管和研究人員談論的是人工智慧可能實現自主化、在不受人類控制的情況下自行工作，甚至統治人類的可能性。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">That is a concern in China, too, but its government appears to be more worried about how A.I. could be used by humans to undermine the Chinese Communist Party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這在中國也是一個令人擔憂的問題，但中國政府似乎更擔心人工智慧會被人利用來動搖中國共產黨。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the same time, the party’s main spy and counterintelligence agency, the Ministry of State Security, aims to use A.I. for intelligence gathering both in the country and overseas, The Times has reported.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據《紐約時報》報導，與此同時，中共的主要間諜和反情報機構國家安全部，旨在利用人工智慧在國內和海外收集情報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Suspicions about espionage heighten the mutual distrust in Washington and Beijing over A.I. issues. Each side thinks the other is engaged in spying to learn more about rival A.I. secrets and to dominate development faster, the officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於間諜活動的懷疑加劇了華盛頓和北京在人工智慧問題上的互不信任。官員們說，雙方都認為對方在從事間諜活動，以了解更多關於競爭對手人工智慧機密的信息，並更快地主導技術發展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The murky trade and spying scandal involving Mr. Huang and Nvidia looms over the meeting between Mr. Trump and Mr. Xi scheduled for Thursday in Shenzhen, a technology and manufacturing hub in southern China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">涉及黃仁勛和英偉達撲朔迷離的交易與間諜醜聞給川普和習近平的會晤蒙上了陰影，峰會定於週四在中國南方科技和製造業中心深圳舉行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In his second term, Mr. Trump has ordered the U.S. government to loosen export restrictions to China on advanced chips. But on Monday, the Trump administration announced that it was moving forward with a new rule that would limit China’s ability to access certain chips through the use of data centers in other countries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在第二任期內，川普已下令美國政府放寬對中國先進晶片的出口限制。但在週一，川普政府宣布正在推進一項新規定，該規定將限制中國通過利用其他國家的數據中心獲取某些晶片的能力。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="去年在華盛頓會議中心舉辦的一場由英偉達參與的展覽活動中，與會者參觀展出的計算技術。" data-src="https://static01.nyt.com/images/2026/11/17/multimedia/17dc-china-ai-kphq/17dc-china-ai-kphq-master1050.jpg" src="https://static01.nyt.com/images/2026/11/17/multimedia/17dc-china-ai-kphq/17dc-china-ai-kphq-master1050.jpg"/></div><figcaption><span>去年在華盛頓會議中心舉辦的一場由英偉達參與的展覽活動中，與會者參觀展出的計算技術。</span> <cite>Eric Lee for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The policy on advanced chips is separate from the safety issues about A.I. development. The nascent dialogue on safety is being run by the Treasury Department. Critics say the talks are virtually nonexistent, though Treasury Secretary Scott Bessent insists they will happen.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">關於先進晶片的政策與人工智慧發展的安全問題是分開推進的。目前由財政部主導著關於安全問題的初步對話。批評人士表示，這些談判實際上並不存在，儘管財政部長史考特·貝森特堅稱它們將會進行。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The governments “expect to exchange best practices for evaluating and testing advanced models before their release, and for keeping human judgment firmly in command of this technology,” he said last week.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他上週表示，兩國政府「期望就發布前評估和測試先進模型的最佳實踐，以及讓這項技術牢牢受控於人類判斷的最佳實踐進行交流」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">He added that they are “establishing a direct channel to ensure that either nation can promptly alert the other to serious incidents involving” A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他還說，雙方正在「建立一個直接管道，以確保任何一國都能及時向另一國通報」涉及人工智慧模型的「嚴重事件」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As he eventually did with Mr. Trump, Mr. Xi agreed to start a dialogue on A.I. with the Biden administration. The first meeting was held in Geneva in May 2024. Mr. Biden’s aides had hoped China would send officials from the three agencies most involved in monitoring or regulating A.I. development, including the Ministry of State Security, the spy agency.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">正如他與川普最終所做的那樣，習近平同意與拜登政府就人工智慧展開對話。首次會議於2024年5月在日內瓦舉行。拜登的助手曾希望中國派出最密切參與監控或監管人工智慧發展的三個機構的官員，其中包括間諜機構國家安全部。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But China sent foreign ministry officials disappointing the Americans, former U.S. officials said. The two sides made little headway.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但前美國官員說，中國派出的是外交部官員，這讓美方感到失望。雙方几乎沒有取得任何進展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">However, that November, when Mr. Biden and Mr. Xi had their final meeting, in Lima, Peru, the two leaders announced one agreement on A.I. — that humans and not A.I. must have control over the two countries’ nuclear arsenals.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，在同年11月，當拜登和習近平在秘魯利馬舉行最後一次會晤時，兩位領導人宣布了一項關於人工智慧的協議——兩國核武庫必須由人類而不是人工智慧來控制。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But like Mr. Trump, some Chinese officials are wary of any constraints on broader development.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但與川普一樣，一些中國官員對任何可能限制更廣泛發展的舉措都持警惕態度。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For one thing, the Chinese government sees the technology as critical for addressing a coming demographic crisis. A.I. could power a wave of robot labor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一方面，中國政府認為這項技術對於應對即將到來的人口危機至關重要。人工智慧可以推動一波機器人勞動力浪潮。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The Chinese view any type of outreach that we are doing as a means to really keep them down or a ploy to not allow their industry to develop as rapidly as possible,” retired Gen. Paul M. Nakasone, the former head of the National Security Agency and U.S. Cyber Command, said in an onstage interview last month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「中國人將我們進行的任何類型的接觸，都視為一種為了真正壓制他們，或不讓他們的產業盡可能快速發展的策略，」前國家安全局兼美國網路司令部負責人、退役將軍保羅·中曾根上個月在一次台上採訪中表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even if China committed to an international agreement on A.I. safety, U.S. officials will likely doubt that Beijing would abide by the terms, given its history of violating past cybersecurity accords, a senior U.S. intelligence official said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一名美國高級情報官員表示，即使中國承諾遵守一項關於人工智慧安全的國際協議，考慮到其過去違反網路安全協議的歷史，美國官員也很可能會懷疑北京是否會遵守這些條款。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2015, Beijing signed an agreement with the Obama administration pledging that the two countries would not hack into each other’s companies for the purposes of stealing intellectual property. But U.S. intelligence agencies quickly concluded that China was violating the pact, the official said — and later Washington publicly accused Beijing of that.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">2015年，北京與歐巴馬政府簽署了一項協議，承諾兩國不會為了竊取知識產權而入侵對方的公司。但這名官員說，美國情報機構很快得出結論，認為中國違反了該協議——後來華盛頓公開指責了北京的這一行為。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Chinese Communist Party officials appear to think A.I., while posing new risks, could be used to monitor Chinese citizens and reinforce party control. The government’s internet regulator, the Cyberspace Administration of China, is also the A.I. overseer. That agency suppressed a relatively freewheeling Chinese internet earlier this century and transformed online space into a controlled zone that security officials use for surveillance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中共官員似乎認為，人工智慧雖然帶來了新的風險，但可用於監控中國公民，並加強黨的控制。政府的互聯網監管機構中國國家互聯網信息辦公室同時也是人工智慧的監督者。本世紀初，該機構壓制了相對自由的中國互聯網，並將網路空間轉變為安全官員進行監視的受控區域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On the flip side, the government’s anxiety over potential A.I. threats to party rule was made clear in a September article by Chen Yixin, the head of the main spy agency. He called for more party control over A.I. to prevent political instability, defend against cyberattacks and misinformation campaigns from “hostile forces,” and compete militarily with the United States.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一方面，主要間諜機構負責人陳一新在9月的一篇文章中清楚地表達了政府對人工智慧可能威脅黨的統治的焦慮。他呼籲加強黨對人工智慧的控制，以防止政治動盪，防禦來自「敵對勢力」的網路攻擊和虛假信息運動，並在軍事上與美國競爭。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Chen’s spy agency is involved in a range of activities involving A.I., including possibly gathering intelligence on Mr. Huang and other American technology executives, U.S. officials said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國官員表示，陳一新的間諜機構參與了一系列涉及人工智慧的活動，包括可能收集有關黃仁勛和其他美國科技高管的情報。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/usa_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese government has said the espionage concerns over Alice Huang, the Chinese executive who worked at Megaspeed, the technology company in Singapore, are a “fabrication.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國政府表示，對曾在新加坡科技公司Megaspeed工作的中國高管黃樂(Alice Huang)的間諜擔憂純屬「捕風捉影」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are signs China has turned to hackers in seeking more insight into U.S. strategies on A.I.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">有跡象表明，中國已動用駭客手段，以尋求更深入地了解美國在人工智慧方面的戰略。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last month, Proofpoint, a U.S.-based cybersecurity firm, released findings accusing China-aligned hacking groups of targeting A.I. experts at American research institutes, universities and law firms. Some of them work on regulation and export issues.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，總部位於美國的網路安全公司Proofpoint發布了調查結果，指責與中國有關聯的駭客組織將目標瞄準了美國研究機構、大學和律師事務所的人工智慧專家。其中一些人從事監管和出口工作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The campaign relied on emails in which the hackers impersonated A.I. policymakers, including a senior one at the White House.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該活動依賴於電子郵件，駭客在郵件中冒充人工智慧政策制定者，包括白宮的一名高級政策制定者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Proofpoint did not disclose whether the hacking attempts were successful, but it said the activity “aligns with the broader Chinese intelligence priorities amid growing U.S.-China competition over A.I., export controls and strategic technologies.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Proofpoint沒有透露駭客的企圖是否成功，但表示，在「中美在人工智慧、出口管制和戰略技術方面的競爭日益激烈之際，這一活動符合中國更廣泛的情報優先事項」。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Julian E. Barnes和Alan Rappeport自華盛頓、Michael Crowley自巴黎對本文有報導貢獻。</p><p class="cn-p">黃安偉(Edward Wong)為《紐約時報》報導全球事務、美國外交政策和國務院新聞。</p><div class="" data-poster=""><p class="cn-p">Dustin Volz為時報撰寫網路安全和情報方面的文章，他常駐華盛頓。</p></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/usa/20261118/trump-china-ai-tensions/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
