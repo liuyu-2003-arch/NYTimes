@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中美俄元首會晤背後 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中美俄元首會晤背後</h1>
+    <h2 class="en-headline">Behind Trump Meeting, Xi and Putin Share a Vision of Usurping U.S. Power</h2>
+    <div class="meta-line">黃安偉 <span style="margin: 0 8px;">•</span> 2026-11-20</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="週四，俄羅斯總統普丁、中國領導人習近平與川普總統在深圳舉行了三國領導人的首次正式三邊會晤。" height="700" src="https://static01.nyt.com/images/2026/11/19/multimedia/19int-xi-putin-kzfw/19int-xi-putin-kzfw-master1050.jpg" width="1050"/><figcaption><span>週四，俄羅斯總統普丁、中國領導人習近平與川普總統在深圳舉行了三國領導人的首次正式三邊會晤。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the end of a visit to Moscow more than three years ago, Xi Jinping, the leader of China, uttered a line to President Vladimir V. Putin of Russia that has come to define the outlook and actions of the two leaders.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">三年多前，在訪問莫斯科之行的最後，中國領導人習近平對俄羅斯總統弗拉基米爾·V·普丁說了一句話。如今這句話已成為兩位領導人觀念與行動的根本定義。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Right now there are changes, the likes of which we haven’t seen for 100 years, and we are the ones driving these changes together,” he said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「這是百年變局的一部分，我們共同來推動。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">What Mr. Xi meant is this: The two men and their nations are transforming the world order by usurping the role of America as the sole superpower, the undisputed victor of the Cold War.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>習近平的意思是：兩位領導人及其國家正在通過終結美國作為唯一超級大國、冷戰無可爭議的勝利者的地位來重塑世界秩序。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Both Mr. Xi and Mr. Putin share a sense of historical grievance shaped by the expansion and dominance of U.S. power in the more than three decades since the fall of the Soviet Union. But from Mr. Xi’s perspective, that situation is evolving, and, rightly or wrongly, he has embraced a vision of America in terminal decline.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平和普丁都懷著一種歷史層面上的怨恨<span>，這是由蘇聯解體三十多年來美國權力的擴張與主導所塑造的。但從習近平的角度來看，這種情況正在演變，而且他已經接受了美國正處於不可逆轉的衰落的觀點，</span>無論這個觀點是對還是錯。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi brazenly used a similar line about historical changes in his opening remarks at a summit with Mr. Putin and President Trump on Thursday. “A transformation not seen in a century is accelerating,” he said at the conclave in Shenzhen, China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">週四，在與普丁和川普總統舉行的峰會開場白中，習近平毫不避諱地使用了一句關於歷史變革的類似話語。在中國深圳舉行的這場閉門會議上，他說：「世界百年變局加速演進。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi said the same thing to Mr. Trump when the two met in Beijing in May.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>今年5月兩人在北京會面時，習近平也對川普說了同樣的話。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Putin, for his part, has demonstrated his own eagerness to challenge the United States by continuing his full-scale invasion of Ukraine, which he began in February 2022.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">而普丁<span>通過繼續其對烏克蘭的全面入侵展示了自己挑戰美國的渴望，這場入侵始於2022年2月。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="「我們真的在創造歷史，」川普週四在深圳舉行的三邊會晤上表示。" data-src="https://static01.nyt.com/images/2026/11/19/multimedia/19int-xi-putin-qhjw/19int-xi-putin-qhjw-master1050.jpg" src="https://static01.nyt.com/images/2026/11/19/multimedia/19int-xi-putin-qhjw/19int-xi-putin-qhjw-master1050.jpg"/></div><figcaption><span>「我們真的在創造歷史，」川普週四在深圳舉行的三邊會晤上表示。</span> <cite>Doug Mills/The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The trilateral summit hosted by Mr. Xi in Kylin Villa in Shenzhen was an extraordinary event, since the leaders of the three nations had never met in a formal three-way setting.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平在深圳麒麟山莊主辦的三邊峰會是一個非同尋常的事件，因為這三個國家的領導人從未在正式的三方場合會面過。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump, who has spoken for years with admiration about both autocrats, gushed about being welcomed by the two men. “We are really making history,” he said at their meeting. Earlier, he called each of the men his friend.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">多年來一直對這兩位專制領導人讚賞有加的川普興奮地談論著自己如何受到兩人的歡迎。「我們真的在創造歷史，」他在會晤時說。此前，他稱這兩人都是他的朋友。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But there is no sign that the summit will change the long-running anti-American stance of Mr. Xi or Mr. Putin, nor will Mr. Trump be able to build the same kind of relationship with either of those men that they have with each other.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但沒有跡象表明此次峰會將改變習近平或普丁長期以來的反美立場，川普也無法與其中任何一人建立起他們兩人之間那種同等的關係。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has a little more than two years left in his term. Both Mr. Xi and Mr. Putin can hold on to power indefinitely, and neither has designated a successor.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普的任期還剩兩年多一點。習近平和普丁都可以無限期地掌權，且均未指定繼任者。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“These are two deeply historically minded leaders who view geopolitics through the frame of their own national narratives,” said John Delury, a professor of international politics at the Hopkins-Nanjing Center in China. “They seem to regard themselves as ‘great men in history’ acting on a different plane than mere politicians. Even Trump can be seen as epiphenomenal in their eyes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">南京大學-約翰斯·霍普金斯大學中美文化研究中心國際政治學教授魯樂漢(John Delury)表示：「這是兩位深具歷史思維的領導人，他們通過本國國家敘事的框架來看待地緣政治。他們似乎將自己視為『歷史上的偉人』，在與普通政客不同的層面上行事。在他們眼中，即使是川普也可以被看作是旁枝末節。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Those two leaders have met more than 40 times. On one occasion, in Tajikistan, Mr. Putin even feted Mr. Xi on his 66th birthday with a champagne toast, cake and Russian ice cream.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>這兩位領導人已會面超過40次。在塔吉克斯坦的一次會面中，普丁甚至在習近平66歲生日時用香檳祝酒、蛋糕和俄羅斯冰淇淋款待了習近平。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">More consequentially, China has continued to support Russia through the war in Ukraine. Mr. Xi allows Chinese companies to sell microelectronics and other critical goods to Russian defense companies, helping Mr. Putin continue his invasion despite having lost 400,000 to 500,000 troops in the conflict, U.S. and European officials have said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">更重要的是，在整個烏克蘭戰爭期間，中國繼續支持俄羅斯。美國和歐洲官員表示，習近平允許中國企業向俄羅斯國防公司出售微電子產品及其他關鍵物資，幫助普丁繼續其入侵行動，儘管俄方在衝突中已損失了40萬至50萬名士兵。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has also bought oil from Russia throughout the war, providing important financial backing to Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在整個戰爭期間，中國還一直從俄羅斯購買石油，從而為其提供重要的資金支持。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">R. Nicholas Burns, the ambassador to China in the Biden administration and a former ambassador to NATO, said that he never got any sense of ambivalence from Chinese officials on their support for Russia throughout the war, even though they would insist they were neutral in the conflict.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">拜登政府駐華大使、前駐北約大使R·尼古拉斯·伯恩斯表示，儘管中國官員堅稱在衝突中保持中立，但在整個戰爭期間，他從未感到他們在對俄羅斯的支持上有任何含糊。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was quite hypocritical,” he said. “I actually think in the course of my time there as ambassador, they doubled down on their support for Russia.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這相當虛偽，」他說。「實際上我認為，在我擔任大使期間，他們愈發明確了對俄羅斯的支持。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It was very transparent that China wanted Russia to emerge stronger and gain an advantage over Ukraine,” he added. “They wanted to see NATO and the United States defeated.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他補充道：「非常明顯的是，中國希望俄羅斯變得更強大並對烏克蘭取得優勢。他們希望看到北約和美國被擊敗。」</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="2010年在莫斯科，時任俄羅斯總理普丁與時任中國國家副主席習近平。兩位領導人保持了長期的關係。" data-src="https://static01.nyt.com/images/2026/11/19/world/19int-xi-putin-bbb/19int-xi-putin-bbb-master1050.jpg" src="https://static01.nyt.com/images/2026/11/19/world/19int-xi-putin-bbb/19int-xi-putin-bbb-master1050.jpg"/></div><figcaption><span>2010年在莫斯科，時任俄羅斯總理普丁與時任中國國家副主席習近平。兩位領導人保持了長期的關係。</span> <cite>Misha Japaridze/Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In Shenzhen, the three leaders discussed the war in Ukraine, which Mr. Trump and Mr. Putin also talked about when they met privately earlier on Thursday. Western intelligence agencies assess that Mr. Putin is not ready to negotiate seriously on a peace settlement, The New York Times reported on Wednesday.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在深圳，三位領導人討論了烏克蘭戰爭，川普和普丁在週四早些時候私下會晤時也談到了這個問題。據《紐約時報》週三報導，西方情報機構評估認為，普丁尚未準備好就和平解決方案進行嚴肅談判。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi and Mr. Putin have both been shaped by the breakup of the Soviet Union, which they attribute to American machinations and the weakness of Soviet leaders at the time. In December 2012, the month after he became China’s leader, Mr. Xi gave an important internal Communist Party speech in Guangdong Province in which he said the Soviet Union collapsed because “nobody was man enough to stand up and resist.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">蘇聯的解體給習近平和普丁造成了決定性的影響，他們認為罪魁禍首是<span>美國的陰謀以及當時蘇聯領導人的軟弱。2012年12月，即他成為中國領導人的第二個月，習近平在廣東發表了一次重要的黨內講話，他在講話中表示蘇聯解體是因為「竟無一人是男兒，沒什麼人出來抗爭」。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There are other deep historical ties between the two nations that are foundational to the men’s partnership.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">兩國之間還有其他深厚的歷史淵源，這些構成了這兩人夥伴關係的基礎。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Beijing and Moscow fought on the same side in World War II against the Axis nations. Soon afterward, in the Korean War, the two powers sided with North Korea, another communist nation, against American and South Korean forces. That war has not formally ended, and Kim Jong-un, the leader of North Korea — whom Mr. Trump recently said he would like to meet again — has maintained formal security alliances with China and Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在第二次世界大戰中，北京和莫斯科站在同一陣營對抗軸心國。不久之後，在朝鮮戰爭中，這兩個大國與另一個共產主義國家朝鮮結盟，對抗美國和韓國軍隊。那場戰爭尚未正式結束，而朝鮮領導人金正恩——川普最近表示他希望能再次與其會面——與中國和俄羅斯保持著正式的安全聯盟關係。</span></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/world_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Days before Mr. Putin launched his full-scale invasion of Ukraine, he met with Mr. Xi at the Winter Olympics in Beijing, and the two governments announced that their nations had entered into a partnership with “no limits.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在對烏克蘭發動全面入侵的幾天前<span>，普丁與習近平在北京冬奧會上會面，兩國政府宣布他們的國家已建立起「無上限」的夥伴關係。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">There have been limits, though. Mr. Xi has been concerned about the global economic effects of the war in Ukraine, analysts say, and China generally has avoided sending weapons to Russia. In May, when Mr. Putin went to Beijing after Mr. Trump’s visit, the Russian and Chinese leaders did not finalize an agreement for the construction of a new gas pipeline and energy sales to China from Russia.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，限制依然存在。分析人士表示，習近平一直對烏克蘭戰爭給全球經濟帶來的影響感到擔憂，而中國總體而言沒有<span>向俄羅斯運送武器。今年5月，當普丁在川普訪問後前往北京時，俄中領導人未能最終敲定一項關於建設新天然氣管道和俄羅斯向中國出售能源的協議。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At a banquet on Wednesday night in Shenzhen, Mr. Xi and his wife, Peng Liyuan, a former army singer, welcomed Mr. Trump, Mr. Putin and other national leaders who were in town for an Asian economic summit. Mr. Xi had Mr. Trump sit next to him at the head table, while Mr. Putin sat farther away with Ms. Peng. Some people have interpreted that as the Chinese leader possibly snubbing Mr. Putin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在週三晚於深圳舉行的一場晚宴上，習近平及其曾為軍隊歌手的妻子彭麗媛作為東道主，向川普、普丁以及其他為參加亞洲經濟峰會而來到該市的國家領導人表示歡迎。習近平在主桌和川普相鄰，而與普丁則隔著彭麗媛。一些人將此解讀為中國領導人可能在冷落普丁。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But in two years, Mr. Trump will likely be gone from the world stage, and Mr. Putin and Mr. Xi could be dining together again as leaders of their nations and, in their eyes, great men.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但在兩年後，川普可能將從世界舞台上消失，而普丁和習近平可能會作為他們國家的領導人——且在他們自己眼中是偉人——再次共進晚餐。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">黃安偉(Edward Wong)為《紐約時報》報導全球事務、美國外交政策和國務院新聞。</p><div class="" data-poster=""></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/world/20261120/xi-putin-trump-meeting-china-russia/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
