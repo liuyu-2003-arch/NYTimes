@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京早已布局AI晶片戰 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">北京早已布局AI晶片戰</h1>
+    <h2 class="en-headline">China’s Spies Set Sights on A.I. Chips Years Before Nvidia Scandal</h2>
+    <div class="meta-line">儲百亮, JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-11-23</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國情報機構獲取晶片的行動至少已持續兩年，相關細節此前未曾見諸報導。" height="700" src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-01-bjfp/22int-china-mss-01-bjfp-master1050.jpg" width="1050"/><figcaption><span>中國情報機構獲取晶片的行動至少已持續兩年，相關細節此前未曾見諸報導。</span> <cite>Florence Lo/Reuters</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">When China’s top espionage agency updated its priorities this year, it added a revealing goal: overcoming Western barriers to technologies that Xi Jinping sees as crucial to China’s rise.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年，中國最高情報機構調整工作重心時新增了一個耐人尋味的目標：突破西方對那些被習近平視為中國崛起關鍵的技術所設置的壁壘。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the heart of that quest are the advanced semiconductors needed to power artificial intelligence, including chips that the United States has barred U.S. companies like Nvidia from exporting to China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在中國突破西方技術限制的努力中，獲取驅動人工智慧所需的先進半導體是重中之重，其中包括美國已禁止英偉達等本國企業向中國出口的晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China must “adopt extraordinary measures to intensify the drive for core technologies in priority sectors,” Mr. Xi told the Politburo, a council of senior officials, in January, according to an official text of his speech. “As swiftly as possible, solve the ‘chokehold’ problems holding back development of future industries.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據習近平今年1月在中共中央政治局會議上講話的官方文字記錄，中國必須「採取超常規措施，加大重點領域關鍵核心技術攻關力度」，「儘快解決制約未來產業發展的『卡脖子』問題」。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The spy agency, the Ministry of State Security, has long been dedicated to eliminating threats to Communist Party rule in China. Now, it has made it a priority to acquire advanced semiconductor chips and gather intelligence about them, according to several serving and former security and intelligence officials from governments outside China in Asia, the United States and Europe.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國國家安全部長期以來致力於消除對中國共產黨統治的威脅。據來自亞洲、美國和歐洲多國政府的現任和前任安全與情報官員稱，現在，該部門已將獲取先進半導體晶片及收集相關情報列為優先任務。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">How China’s spy agency is seeking to obtain advanced chips and intelligence about them has become a central question in the case of Alice Huang. She is a Chinese businesswoman whom U.S. officials say the Chinese agency was working with to spy on Jensen Huang, the chief executive of the American chip giant Nvidia, allegations that were first reported by The New York Times.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國情報機構如何尋求獲取先進晶片及相關情報已成為黃樂(Alice Huang)一案的核心問題。黃樂是中國的一名商界人士，美國官員稱，中國國家安全部曾與她合作，監視美國晶片巨頭英偉達的首席執行官黃仁勛。《紐約時報》率先報導了相關指控。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Ms. Huang has not responded to requests for comment and China has rejected the claims of espionage as “pure fabrication.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃樂沒有回應置評請求。中國則否認有關間諜活動的指控，稱其「純屬捕風捉影」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Chinese spy agency’s campaign to acquire chips, details of which have not been previously reported, has been underway for at least two years, according to the current and former officials. They spoke on the condition of anonymity to discuss sensitive intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據前述現任及前任官員透露，中國情報機構獲取晶片的行動至少已持續兩年，相關細節此前未曾見諸報導。由於涉及敏感情報，這些官員要求匿名。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Among the campaign’s main elements:</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該行動主要包括以下幾個方面：</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• The head of the spy agency, Chen Yixin, who holds the title of minister of state security, created a working team that is leading the effort and reports directly to him, multiple foreign officials said. Mr. Chen has worked under Mr. Xi since they were officials in Zhejiang Province in eastern China, a cradle of China’s high-tech boom.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 多名外國官員稱，情報機構負責人、國家安全部部長陳一新成立了一個工作組領導這項工作，並直接向他彙報。陳一新與習近平的上下級關係始於兩人在中國東部的浙江省任職期間。浙江是中國高科技產業的重要發源地之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• The group was assigned to help China’s “counter-blockade” work — efforts to overcome export controls imposed by the United States and its allies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 該工作組的任務之一是協助中國開展「反封鎖」工作，也就是突破美國及其盟友實施的出口管制。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• The campaign includes helping Chinese companies acquire and smuggle advanced chips into China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 這項行動還包括幫助中國企業獲取先進晶片，並將其走私到中國。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">• The group also collects intelligence about the semiconductor sector and its supply chains, according to several officials briefed on the campaign.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">• 據多名了解該行動的官員稱，該工作組還收集有關半導體行業及其供應鏈的情報。</div></div></div><figure class="article-inline-photo"><div class="img-box"><img alt="2018年，時任武漢市委書記的陳一新，他現為中國國家安全部部長。
+
+
+
+
+" data-src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-02-bjfp/22int-china-mss-02-bjfp-jumbo.jpg" src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-02-bjfp/22int-china-mss-02-bjfp-jumbo.jpg"/></div><figcaption><span>2018年，時任武漢市委書記的陳一新，他現為中國國家安全部部長。 </span><cite>Agence France-Presse — Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In April, Mr. Chen unveiled<strong> </strong>the new mission. “Deepen the struggle against blockades, and comprehensively advance artificial intelligence innovation, industry development, and applications,” Mr. Chen wrote in a Communist Party journal.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年4月，陳一新公開提出了這項新任務。他在一份中共刊物上寫道：「深入開展反封鎖鬥爭，全面推進人工智慧科技創新、產業發展和賦能應用。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Focus on tackling the ‘chokeholds’ of critical technologies,” he wrote, and solve the problem of technologies that “cannot be obtained by asking, buying or pleading.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「聚焦攻克『卡脖子』關鍵技術，」他寫道，並解決那些「要不來、買不來、討不來」的技術問題。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Chen is signaling to the party leadership and his own ranks that his agency is elevating A.I. competition with the U.S. as a long-term, top priority,” said Alex Joske, the managing director of security practice at Garnaut Global, a consultancy firm, who studies the Chinese security apparatus. “He is telling his officers to find more ways to wage this struggle.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「陳一新是在向黨的領導層和他自己的隊伍發出信號：他的部門正在將與美國的人工智慧競爭提升為一項長期的首要任務，」研究中國國家安全機構的諮詢公司Garnaut Global安全業務董事總經理亞歷克斯·喬斯克說。「他是在要求手下，要找到更多方式來開展這場鬥爭。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">A Central Strategy</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>一項中央戰略</b></div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The ministry’s campaign is part of a wider push by the ruling Communist Party to overcome Western-imposed restrictions on critical technology. China is determined to close its gap with the United States in the computing capacity needed for progress in artificial intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">國家安全部的這項行動是執政的中國共產黨為突破西方在關鍵技術領域施加的限制而採取的更廣泛舉措的一部分。中國決心縮小與美國在人工智慧發展所需算力方面的差距。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">At the top, that effort is being coordinated by the Central Science and Technology Commission. The commission is a secretive Communist Party organ that Mr. Xi established in 2023. This was not long after the U.S. Commerce Department, in late 2022, started banning exports of Nvidia’s advanced chips directly to China, out of concern the chips could help Beijing crack American encryption and design new weapons.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">在最高層面，這項工作由中央科技委員會統籌協調。這個行事隱秘的中共機構由習近平於2023年設立。此前不久，即2022年底，美國商務部開始禁止向中國直接出口英偉達的先進晶片，原因是擔心這些晶片可能幫助北京破解美國的加密技術以及研發新型武器。 </div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="英偉達的Blackwell和Rubin晶片，圖為黃仁勛今年3月所作的演示。" data-src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-03-bjfp/22int-china-mss-03-bjfp-master1050.jpg" src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-03-bjfp/22int-china-mss-03-bjfp-master1050.jpg"/></div><figcaption><span>英偉達的Blackwell和Rubin晶片，圖為黃仁勛今年3月所作的演示。</span> <cite>Manuel Orbegozo for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The party commission is ranked higher than ministries and is led by Ding Xuexiang, one of only seven members of the Communist Party’s Politburo Standing Committee, its inner circle of power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中央科技委員會的地位高於政府各部委，由丁薛祥領導，他是中共中央政治局七名常委之一，這個常委會是中共的最高權力核心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Computing power is a major indicator of overall national power,” Mr. Ding said in May when he visited energy and computing facilities in Beijing and nearby regions that are part of a planned nationwide A.I. computing network, according to Xinhua, China’s official news agency.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據中國官方通訊社新華社報導，今年5月，丁薛祥視察北京及周邊地區的能源和算力設施時表示：「算力是國家綜合國力的重要體現。」這些設施是中國規劃建設的全國人工智慧算力網的一部分。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Xi created the commission to better marshal the country’s scientists, institutes and labs across ministries, and companies, for national priorities such as achieving technological self-reliance.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">習近平設立中央科技委員會，是為了更好地統籌各部委、企業以及科研機構和實驗室的力量，服務於實現科技自立自強等國家優先事項。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Commission rarely surfaces in Chinese news reports; its budgets and plans are not made public. But it has become an engine of Mr. Xi’s plans for technological pre-eminence, said Christopher K. Johnson, a former Central Intelligence Agency analyst focused on China. The director of the commission, Mr. Ding, has long been a close aide to Mr. Xi and is also a vice premier overseeing science and technology policy.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該委員會很少出現在中國新聞報導中；其預算和規劃也不對外公開。但前美國中央情報局中國問題分析師張克斯(Christopher K. Johnson)表示，它已成為習近平推動中國取得技術領先地位的重要力量。該委員會主任丁薛祥長期以來是習近平的親信，同時也是負責科技政策的副總理。 </div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Spy Agency’s ‘Anti-Blockade Struggle’</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>情報機構的「反封鎖鬥爭」</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s espionage service and other parts of the government have for decades pursued technology and research from abroad, using both open and illicit methods. But under Mr. Xi, that effort assumed greater urgency, with more top-level coordination, including in artificial intelligence, several experts said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">幾十年來，中國的情報機構和其他政府部門一直通過公開及非法手段獲取國外技術和研究成果。但多名專家表示，在習近平上台後，這項工作變得更加緊迫，最高層的協調力度也有所加強，人工智慧領域尤其如此。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Throughout this year, Mr. Chen, the agency’s chief, has repeatedly said the “anti-blockade struggle” is one of the key duties of China’s Ministry of State Security.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年以來，國家安全部部長陳一新多次強調，「反封鎖鬥爭」是該部的關鍵職責之一。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Certain countries are going to every length to impose a ‘chokehold’ on China in fields of critical technology,” Mr. Chen wrote in a party journal last year. “Technology competition among the major powers has entered its most intense, most strenuous and most critical phase of close-quarters combat.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"> 「一些國家千方百計在關鍵技術領域對華『卡脖子』，」陳一新去年在一份黨刊上寫道。「主要國家科技競爭進入最激烈、最吃勁、最關鍵的『短兵相接期』。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國宿遷的一家半導體工廠。" data-src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-gwpj/22int-china-mss-gwpj-master1050.jpg" src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-gwpj/22int-china-mss-gwpj-master1050.jpg"/></div><figcaption><span>中國宿遷的一家半導體工廠。</span> <cite>Wang Li/VCG via Getty Images</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As American companies, followed by Chinese ones, developed successively powerful A.I. models, officials in Beijing have increasingly recognized the potential for artificial intelligence to threaten their power at home and abroad, said Gregory C. Allen, the founder and chief executive of Decision Tree Research, a firm that specializes in A.I. and other advanced technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">專門研究人工智慧及其他先進技術的Decision Tree Research公司創始人兼首席執行官格雷戈裡·艾倫表示，隨著美國企業以及隨後跟進的中國企業相繼開發出能力越來越強的人工智慧模型，北京官員日益認識到，人工智慧有可能威脅他們在國內外的權力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In September, Mr. Chen himself referred to U.S. tech companies and their A.I. models — like Claude Mythos and GPT-5.5-Cyber — as examples of new cybersecurity threats, as he described the risks that A.I. posed to the party’s hold on power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">今年9月，陳一新在談及人工智慧對共產黨執政地位構成的風險時，親自將美國科技公司及其人工智慧模型——例如Claude Mythos和GPT-5.5-Cyber——列為新型網路安全威脅的例子。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/china_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“China’s senior leadership understands that A.I. is critically, strategically essential, and that leadership in A.I. is obviously related to leadership in semiconductors,” said Mr. Allen, a former senior official at the U.S. Department of Defense’s Joint Artificial Intelligence Center.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">艾倫說：「中國最高領導層明白，人工智慧具有至關重要的戰略意義，而人工智慧領域的領導地位顯然與半導體領域的領導地位相關。」他曾擔任美國國防部聯合人工智慧中心的高級官員。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Chen became the state security minister in late 2022, and just over a year later the ministry issued a warning that A.I. was “highly likely in the near future to profoundly transform the national security landscape.” In 2024, the ministry said that its officers were scoring successes against the attempts of “the United States and other Western countries to lock us in at the low-end” of technology.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">陳一新於2022年底出任國家安全部部長，僅一年多後，該部就發出警告稱，人工智慧「很可能在不久的將來深刻改變現有國家安全格局」。2024年，該部表示，其官員有效破除了「美西方國家對我『低端鎖定』的惡毒幻想」，取得一系列鬥爭成果。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Role of Businesses and Other Groups</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><b>企業及其他組織的作用</b></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has sometimes used front organizations or researchers to collect information about foreign A.I. technology, said Mr. Joske, the consultant.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諮詢顧問喬斯克表示，中國有時會利用掩護機構或研究人員收集有關國外人工智慧技術的情報。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“M.S.S. is very comfortable using business covers,” he said, “and it’s very comfortable running people as assets without directly telling those people that they’re working for the M.S.S.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他說：「國家安全部非常善於利用商業身份作掩護，也非常善於在不直接告知相關人員他們是在為國家安全部工作的情況下，將其發展為情報線人。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Such covers could include organizations ostensibly focused on academic research. In September, MI5, the British security agency, asserted that a Chinese research institute linked to the Chinese spy agency had drawn in British scientists for research that, apparently unbeknown to the scientists, “directly improves M.S.S. technical capability for espionage.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">此類掩護可能包括表面上專注於學術研究的組織。今年9月，英國安全機構軍情五處聲稱，一家與中國間諜機構有關聯的中國研究所吸引英國科學家參與研究，而這些科學家顯然並不知道，他們的研究「直接提升了中國國家安全部從事間諜活動的技術能力」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Companies such as the one Alice Huang founded, Megaspeed, are viewed as another potential vehicle for gathering intelligence.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃樂創辦的Megaspeed等公司也被視為情報收集的另一種潛在工具。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The precise nature of Alice Huang’s role in the ministry’s chip effort remains unclear. U.S. officials say Ms. Huang, who was having an affair with the Nvidia founder Mr. Huang, passed information to Beijing about him. The U.S. government is also investigating Megaspeed for illegally smuggling advanced chips into China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">黃樂在國家安全部獲取晶片的行動中究竟扮演了什麼角色，目前仍不清楚。美國官員稱，黃樂與英偉達創始人黃仁勛有婚外情，並向北京提供了有關黃仁勛的信息。美國政府還在調查Megaspeed涉嫌非法向中國走私先進晶片一事。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="黃仁勛與黃樂在台北，攝於2024年6月。" data-src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-04-bjfp/22int-china-mss-04-bjfp-master1050.jpg" src="https://static01.nyt.com/images/2026/11/22/multimedia/22int-china-mss-04-bjfp/22int-china-mss-04-bjfp-master1050.jpg"/></div><figcaption><span>黃仁勛與黃樂在台北，攝於2024年6月。</span> <cite>Ann Wang/Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Megaspeed, which is based in Singapore, bought billions of dollars of Nvidia chips and entered the business of providing high-end computing capacity to Chinese companies. Such services have allowed Chinese businesses to use Nvidia chips at data centers abroad by sidestepping U.S. rules that ban sales of the most advanced A.I. chips directly to Chinese firms.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於新加坡的Megaspeed購買了價值數十億美元的英偉達晶片，並開始向中國企業提供高端算力的服務。這類服務使中國企業能夠通過使用境外數據中心的英偉達晶片，繞過美國禁止向中國企業直接銷售最先進人工智慧晶片的規定。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last week, The Times also reported that Megaspeed was possibly aiding a lab with links to China’s military, through Alibaba, the Chinese internet giant. Alibaba is a customer and financial backer of Megaspeed. Providing Nvidia chips to support research for China’s military would be a violation of U.S. law.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">《紐約時報》上週還報導，Megaspeed可能通過中國互聯網巨頭阿里巴巴為一家與中國軍方有關聯的實驗室提供支持。阿里巴巴既是Megaspeed的客戶，也是其資金支持者。利用英偉達晶片支持中國軍方研究是違反美國法律的。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">An Alibaba spokeswoman said: “Any suggestions that Alibaba provides services to the military is groundless. Alibaba Cloud’s service agreement strictly prohibits the use of our products and services for any military purpose.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">阿里巴巴集團的發言人表示：「任何有關阿里巴巴向軍方提供服務的說法都毫無根據。阿里雲的服務協議明確禁止將我們的產品和服務用於任何軍事目的。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In an effort to address what many in Washington see as a loophole, the Trump administration announced on Monday that it would move ahead with a new rule to prevent China from being able to access advanced semiconductors from Nvidia and other U.S. companies through the use of data centers outside China.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">為了堵住華盛頓許多人眼中的這一漏洞，川普政府週一宣布，將推進一項新規定，阻止中國通過境外數據中心使用英偉達及其他美國公司的先進半導體晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new restriction will require overseas data centers to obtain a government license before supplying “significant volumes of computing power” to firms with headquarters in countries on a list that includes China, Russia and Iran. It goes into effect in about 90 days.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據這項新限制，境外數據中心在向總部位於中國、俄羅斯、伊朗等名單所列國家的企業提供「大規模算力」之前，必須先取得美國政府許可證。新規將在約90天後生效。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The restriction could make China’s pursuit of self-reliance more urgent, a goal Mr. Xi has cast as a fight for survival, echoing the party’s revolutionary past.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項限制可能使中國更加迫切地追求技術自立自強。習近平將這一目標描述為一場生存之戰，其措辭令人聯想到共產黨的革命歷史。 </div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Like the Red Army on the Long March, we’re now on a new Long March,” he told technicians, while visiting an A.I. data hub under construction in northern China last month. He was referring to a grueling trek taken by Communist troops in the 1930s that cemented Mao’s leadership of the revolution. “You are an army in the drive for advanced technological self-reliance.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">上個月，習近平視察中國北方一處正在建設的人工智慧數據中心時，對技術人員說：「就像紅軍長征一樣，我們現在進行新的長征。」他指的是中國共產黨軍隊在20世紀30年代經歷的那場艱苦跋涉，那次長征鞏固了毛澤東在中國革命中的領導地位。「你們是高水平科技自立自強的一個方面軍。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">儲百亮(Chris Buckley)是《紐約時報》首席中國記者，自台北報導中國和台灣問題，重點關注政治、社會變革以及安全和軍事問題。</p><div class="" data-poster=""><span><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p><div class="" data-poster=""></div></span></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/china/20261123/china-nvidia-spy-chips-state-security/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
