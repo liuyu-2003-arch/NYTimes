@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國人工智慧雄心面臨一個嚴峻問題：去哪裡找錢 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">中國人工智慧雄心面臨一個嚴峻問題：去哪裡找錢</h1>
+    <h2 class="en-headline">China’s A.I. Ambitions Are Running Into a Money Problem</h2>
+    <div class="meta-line">黃瑞黎, LI YOU <span style="margin: 0 8px;">•</span> 2026-11-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="中國深圳繁忙的電子市場。" height="700" src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-01-wjcq/20Biz-Ai-China-01-wjcq-master1050.jpg" width="1050"/><figcaption><span>中國深圳繁忙的電子市場。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">As the United States and China vie for artificial intelligence supremacy, Chinese tech companies are facing a mounting challenge: finding the money to keep up.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">隨著美中兩國爭奪人工智慧霸權，中國科技企業正面臨一個日益嚴峻的挑戰：尋找足夠的資金以跟上步伐。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Like their American rivals, China’s A.I. start-ups face soaring costs to train increasingly powerful models. But while Anthropic raised more than $80 billion in a<strong> </strong>record-breaking initial public offering this week, its Chinese competitors face a far more unforgiving financial landscape.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>與美國競爭對手一樣，中國的人工智慧初創企業也面臨著訓練日益強大模型的飆升成本。但就在Anthropic本週通過一場創紀錄的首次公開募股籌集逾800億美元之際，其中國競爭對手卻面臨著嚴峻得多的融資環境。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Venture capital investment in China lags far behind that of the United States. Alibaba, Baidu and Tencent, three tech giants backing some of China’s leading A.I. companies, are grappling with negative cash flows. And investor enthusiasm for A.I. has soured. Since the end of July, China’s STAR 50 index, its version of the Nasdaq, has plunged 43 percent in a deeper sell-off than the recent downturn in American tech stocks.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國的風險投資規模遠遠落後於美國。支撐著中國部分頂尖人工智慧企業的三大科技巨頭——阿里巴巴、百度和騰訊，正苦苦應對負現金流問題。投資者對人工智慧的熱情也已降溫。自7月底以來，中國版納斯達克「科創50指數」暴跌了43%，其拋售幅度超過了近期美國科技股的下跌。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s biggest tech companies are expected to double capital spending this year to $139 billion, even though the revenue from their A.I. labs covers less than 8 percent of that amount, according to Rhodium Group, a research firm. It forecasts that spending could top $193 billion in 2027.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究機構榮鼎集團的數據顯示，儘管中國最大型科技企業旗下人工智慧實驗室的收入尚不足其資本支出的8%，但這些企業今年的資本支出預計仍將翻倍，至1390億美元。該機構預測，2027年這一支出可能突破1930億美元。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“When you look at their numbers, it looks like they’re running on a treadmill that’s speeding up and getting harder to run,” said Kyle Chan, a fellow at the Brookings Institution, who specializes in China’s technology and industrial policies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「當你看到他們的數據時，感覺就像他們正跑在一台不斷加速、越來越難跑下去的跑步機上，」專門研究中國科技與產業政策的布魯金斯學會研究員陳凱欣(Kyle Chan)表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Much of the debate over China’s ability to compete in A.I. has focused on American export controls to restrict Chinese access to advanced semiconductors. Chinese A.I. labs have found costly workarounds, including renting data centers in Southeast Asia equipped with Nvidia chips. The Trump administration said this week it was moving forward with new rules to close that loophole.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>關於中國在人工智慧領域競爭能力的討論，大多集中在美國為限制中國獲取先進半導體而實施的出口管制上。中國的人工智慧實驗室已找到代價高昂的變通辦法，包括在東南亞租賃配備英偉達晶片的數據中心。川普政府本週表示，正推進出台新規以堵住這一漏洞。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But money might prove an equally formidable obstacle. Even if Chinese companies can find the chips they need, they must raise enough capital to buy them and finance the rising cost of developing frontier models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但資金可能成為同樣難以逾越的障礙。即便中國企業能夠找到所需的晶片，它們也必須籌集足夠資金來購買晶片，並支撐開發前沿模型不斷攀升的成本。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國人工智慧企業面臨不斷攀升的成本，既要獲取先進晶片，又要為開發日益精密的模型提供資金。" data-src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-02-wjcq/20Biz-Ai-China-02-wjcq-master1050.jpg" src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-02-wjcq/20Biz-Ai-China-02-wjcq-master1050.jpg"/></div><figcaption><span>中國人工智慧企業面臨不斷攀升的成本，既要獲取先進晶片，又要為開發日益精密的模型提供資金。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Logan Wright, a partner at Rhodium Group who co-wrote a report on China’s A.I. financing, said those financial constraints “will be probably more decisive” than the chip shortage in the long term.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">曾合著一份關於中國人工智慧融資報告的榮鼎集團合伙人洛根·賴特表示，從長遠來看，這些資金限制「可能比晶片短缺更具決定性」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The big problem is that the revenue mismatch with the Chinese models relative to capex is arguably more extreme than the U.S. case,” Mr. Wright said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「最大的問題在於，中國模型相對於資本支出的收入錯配，可以說比美國的情況更為極端，」賴特說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">American A.I. companies spend roughly five to six times what their Chinese counterparts do, but bring in substantially more money. China’s six leading A.I. firms collectively generate about one-tenth the combined revenue of OpenAI and Anthropic, according to Epoch AI, a nonprofit research organization.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國人工智慧企業的支出大約是中國同行的五到六倍，但帶來的收入卻要高得多。非營利研究機構Epoch AI的數據顯示，中國六家領先人工智慧企業的總收入，大約僅為OpenAI和Anthropic合併收入的十分之一。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s embrace of open-source A.I. has made that imbalance even harder to overcome.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國對開源人工智慧的擁抱，使這種失衡變得更加難以克服。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By allowing developers to use and modify their models freely, Chinese companies have accelerated the global spread of their technology. But that strategy has also undermined their ability to profit from it. Companies can charge for access, only to see rivals offer the same technology at lower prices. Fierce price wars have squeezed profits further.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>通過允許開發者自由使用和修改其模型，中國企業加速了自身技術的全球傳播。但這一策略也削弱了它們從中盈利的能力。企業一旦對訪問收費，就會看到競爭對手以更低價格提供相同技術。激烈的價格戰進一步擠壓了利潤。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Z.ai, a Chinese A.I. start-up, learned that lesson in August when it released its latest open-source model, GLM-5.3 Flash. The company halved prices for two weeks to entice users to run the model on Z.ai’s servers rather than their own. But competitors quickly moved in.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國人工智慧初創企業智譜(Z.ai)在8月發布其最新開源模型GLM-5.3 Flash時就嘗到了這一教訓。該公司將價格減半兩週，以吸引用戶在</span>智譜的伺服器而非自建伺服器上運行該模型。但競爭對手迅速跟進。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">By November, roughly 20 rival providers were charging less than Z.ai for access to its own technology, according to Open Router, a platform connecting users with A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">連接用戶與人工智慧模型的平台Open Router的數據顯示，到11月，約有20家競爭對手服務商對智譜自身技術的訪問收費低於智譜。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Your own pricing power is lost during this process,” said Cheryl Wu, a researcher at GovAI, a think tank.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「在這一過程中，你自身的定價權喪失了，」智庫GovAI研究員謝麗爾·吳表示。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“No one has figured out how to make money off consumers,” said Rui Ma, a technology investor, referring to Chinese A.I. start-ups.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「還沒有人想明白如何從消費者身上賺錢，」科技投資者馬睿在談及中國人工智慧初創企業時說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Cost of Compute</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>算力成本</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Another obstacle worsens China’s financing problems: access to advanced Nvidia chips, the gold standard for training the most powerful A.I. models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">另一個障礙加劇了中國的融資難題：獲取用於訓練最強大人工智慧模型的黃金標準——先進英偉達晶片。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">From 2022 to June 2026, American companies possessed computing capacity equivalent to about 20 million Nvidia H100 chips, compared with roughly 2.6 million in China, some of it acquired through smuggling, according to EpochAI.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">Epoch AI的數據顯示，從2022年到2026年6月，美國企業擁有的算力相當於約2000萬塊英偉達H100晶片，而中國約為260萬塊，其中部分通過走私獲得。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Goofish, a Chinese secondhand online marketplace, sellers have advertised Nvidia’s DGX B300, an A.I. supercomputing server, for nearly $3 million — about eight times the U.S. price. Asking prices have reportedly quintupled since the start of the year, underscoring the premium Chinese companies must pay for advanced computing power.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在中國二手在線交易平台閑魚上，賣家將人工智慧超級計算伺服器英偉達DGX B300標價近300萬美元——約為美國價格的八倍。據報導，自年初以來要價已翻了五倍，凸顯出中國企業為獲取先進算力必須支付的高昂溢價。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The squeeze could worsen. Jensen Huang, who resigned as Nvidia’s chief last week amid an investigation into a romantic relationship with a Chinese businesswoman, was a powerful advocate of doing business with China. On Tuesday, Nvidia said it would stop shipping its chips to China, a deal that President Trump had previously permitted at Mr. Huang’s urging. The company also said it had established an export control oversight committee.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這種擠壓可能會進一步惡化。<span>黃仁勛曾是對華開展業務的有力倡導者。他</span>因與一名中國女商人的婚外情接受調查而於上週辭去英偉達首席執行官職務。（黃仁勛目前已復職——編注）週二，英偉達表示將停止向中國運送晶片，而這筆交易此前是在黃仁勛的敦促下獲得川普總統批准的。該公司還表示已成立一個出口管制監督委員會。</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="2022年展示的英偉達H100圖形處理器，專為處理大型人工智慧模型而打造。" data-src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-03-wjcq/20Biz-Ai-China-03-wjcq-master1050.jpg" src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-03-wjcq/20Biz-Ai-China-03-wjcq-master1050.jpg"/></div><figcaption><span>2022年展示的英偉達H100圖形處理器，專為處理大型人工智慧模型而打造。</span> <cite>Nvidia, via Reuters</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">To reduce their dependence on American technology, Chinese developers are adapting their systems to run on chips made by Huawei, the Chinese telecommunications and electronics company leading the country’s chip charge.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>為減少對美國技術的依賴，中國開發者正在調整其系統，使其能夠在引領中國晶片攻關的電信和電子巨頭華為製造的晶片上運行。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Liang Wenfeng, chief executive of DeepSeek, the Chinese start-up that stunned Silicon Valley by developing a powerful A.I. model at a fraction of the expected cost, said Huawei’s technology is only about two years behind Nvidia’s.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>中國初創企業DeepSeek曾以</span>遠遠低於預期的成本開發出強大人工智慧模型，從而震驚矽谷，其首席執行官梁文鋒表示，華為的技術僅落後英偉達約兩年。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But the gap remains consequential. DeepSeek would need four times as many Huawei 950 chips to match the performance of a single advanced Nvidia GB300 chip, Mr. Liang said, according to a leaked transcript of his call with investors, excerpts from which Chinese media outlets published. Huawei also lacks sufficient production capacity, he added.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但差距依然顯著。據一份洩漏的梁文鋒與投資者電話會議記錄（中國媒體刊發了節選），他表示，DeepSeek需要四倍數量的華為950晶片才能匹配單顆先進英偉達GB300晶片的性能。他補充說，華為還缺乏足夠的產能。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“We simply can’t afford to train the largest models available right now,” he said. DeepSeek did not respond to a request for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「我們目前根本負擔不起訓練現有最大規模模型的費用，」他說。DeepSeek未回應置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Yet China’s A.I. industry has repeatedly demonstrated an ability to do more with less. Chinese researchers have pioneered techniques to train and run powerful models more efficiently. Silicon Valley has accused Chinese firms of copying leading American technologies through a process called distillation, reducing the time needed to build foundational models with expensive computing infrastructure.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>然而，中國人工智慧行業一再展現出以少勝多的能力。中國研究人員開創了更高效地訓練和運行強大模型的技術。矽谷指責中國企業通過一種名為蒸餾的工藝抄襲美國領先技術，從而減少了利用昂貴計算基礎設施構建基礎模型所需的時間。</span></div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="中國開發者正在調整系統，使其在華為晶片上運行，以減少對美國技術的依賴。" data-src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-04-wjcq/20Biz-Ai-China-04-wjcq-master1050.jpg" src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-04-wjcq/20Biz-Ai-China-04-wjcq-master1050.jpg"/></div><figcaption><span>中國開發者正在調整系統，使其在華為晶片上運行，以減少對美國技術的依賴。</span> <cite>Qilai Shen for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Worries of a Bubble</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span><b>泡沫擔憂</b><b></b></span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">For China’s A.I. companies, finding investors willing to bankroll the competition is increasingly difficult.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">對中國人工智慧企業而言，尋找願意為這場競賽提供資金的投資者正變得越來越困難。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">DeepSeek, which has raised more than $20 billion, is preparing for an initial public offering in Shanghai early next year, according to Chinese media reports. Its investors include Tencent, the battery maker CATL and state-backed investment funds.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據中國媒體報導，已融資逾200億美元的DeepSeek正籌備明年初在上海進行首次公開募股。其投資者包括騰訊、電池製造商寧德時代以及國家背景的投資基金。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid5","adv":""}' id="medium-rectangle-ad-4"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_5__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Few competitors have access to such deep pockets.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">很少有競爭對手擁有如此雄厚的財力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s venture capital industry has been shrinking since 2021 and though it has recovered slightly in the third quarter, it is still a fraction of its American counterpart. Banks are lending to China’s tech giants, but they are more cautious with smaller A.I. labs. Credit growth has fallen to historic lows, and the central bank governor has called for slower, “higher-quality” lending.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國風險投資行業自2021年以來一直在萎縮，儘管第三季度略有回升，但仍只是美國同行的一個零頭。銀行正在向中國科技巨頭放貸，但對規模較小的人工智慧實驗室則更為謹慎。信貸增速已降至歷史低點，央行行長也呼籲放緩步伐、開展「更高質量」的信貸投放。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Foreign investment has also dried up. U.S. dollar-denominated investment funds in China have plunged partly because Washington has barred American venture capital from certain advanced Chinese technologies.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">外國投資也已枯竭。在華美元計價投資基金大幅縮水，部分原因是華盛頓已禁止美國風險投資涉足某些中國先進技術領域。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In 2025, private<strong> </strong>A.I. investment in China totaled $12.4 billion, compared with $280 billion in the United States, according to the Stanford A.I. Index.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>史丹佛人工智慧指數顯示，2025年中國私人人工智慧投資總額為124億美元，而美國為2800億美元。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Han Lin, the China country director for the Asia Group, an advisory firm, said China had exceptional engineering talent and a government capable of mobilizing enormous resources for strategic industries.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">諮詢公司亞洲集團中國區總裁林漢昇(Han Lin)表示，中國擁有卓越的工程人才，以及一個能夠為戰略性產業調動龐大資源的政府。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">But he added, “What frontier technology also needs is harder to mobilize — risk capital that can absorb failure.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">但他補充道：「前沿技術同樣需要的東西卻更難調動——能夠承受失敗的風險資本。」</div></div></div><figure class="article-inline-photo large"><div class="img-box"><img alt="據一份梁文鋒對投資者講話的文字記錄，這位DeepSeek首席執行官表示，該公司需要四倍數量的華為晶片，才能匹配單顆先進英偉達晶片的性能。" data-src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-05-wjcq/20Biz-Ai-China-05-wjcq-master1050.jpg" src="https://static01.nyt.com/images/2026/11/20/multimedia/20Biz-Ai-China-05-wjcq/20Biz-Ai-China-05-wjcq-master1050.jpg"/></div><figcaption><span>據一份梁文鋒對投資者講話的文字記錄，這位DeepSeek首席執行官表示，該公司需要四倍數量的華為晶片，才能匹配單顆先進英偉達晶片的性能。</span> <cite>Kelsey McClellan for The New York Times</cite></figcaption></figure><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Even the public markets, a lifeline for cash-hungry start-ups, are becoming less welcoming. Amid the sell-off, the Chinese authorities have instructed some companies to delay or suspend planned public listings, according to Cailian Press, a Chinese business publication, suggesting Beijing is concerned about an A.I. investment bubble.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">就連作為渴望資金的初創企業生命線的公開市場也正變得不那麼友好。據中國財經媒體財聯社報導，在市場拋售潮中，中國當局已指示部分企業推遲或暫停原定的公開上市計劃，這表明北京對人工智慧投資泡沫感到擔憂。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China has announced investment funds to support A.I., but much of the money has gone toward semiconductors rather than companies developing large language models.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國已宣布設立支持人工智慧的投資基金，但大部分資金流向了半導體領域，而非開發大語言模型的企業。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Government investors face many of the same constraints as private ones. Wang Renxuan, an assistant finance professor at the China Europe International Business School in Shanghai, said government funds also need a credible path to returns.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府投資者面臨著與私人投資者許多相同的制約。上海中歐國際工商學院金融學助理教授王任軒表示，政府基金同樣需要一條可靠的回報路徑。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Erik Walenza, a Shanghai-based managing partner at Asia Growth Partners, a consultancy advising on A.I.,<strong> </strong>said it was difficult to see how Chinese A.I. companies could make their finances work “without a lot of sustained government financing.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">駐上海的人工智慧諮詢公司亞洲增長合伙人(Asia Growth Partners)管理合伙人埃里克·瓦倫扎表示，很難想像中國人工智慧企業「在沒有大量持續政府融資的情況下」如何實現財務運轉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The challenge, he added, is not only whether Chinese engineers can build models to rival America’s but also how much of the financial burden the government is prepared to shoulder.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">他補充說，挑戰不僅在於中國工程師能否構建出與美國相匹敵的模型，還在於政府準備承擔多大的財政負擔。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“It becomes more of a political will question, of how much sacrifice are we willing to make to compete in this area,” Mr. Walenza said.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「這更多變成了一個政治意願問題，即我們願意做出多大犧牲來在這一領域展開競爭，」瓦倫扎說。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><span><p class="cn-p">黃瑞黎(Sui-Lee Wee)是《紐約時報》亞洲商業記者。</p><div class="" data-poster=""><div class="css-1i6tsou" data-poster=""><div class="css-hsn83p eqi4ubu0" data-poster=""><div class="" data-poster=""><p class="cn-p">Li You是《紐約時報》記者/研究員，報導中國經濟和商業新聞。</p></div></div></div></div></span></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261126/china-ai-investment-spending/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究稱AI虛假帳號試圖影響台灣選情 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">研究稱AI虛假帳號試圖影響台灣選情</h1>
+    <h2 class="en-headline">Fake Personas Aligned With China Are Targeting Taiwan’s Election, Researchers Say</h2>
+    <div class="meta-line">JULIAN E. BARNES <span style="margin: 0 8px;">•</span> 2026-11-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="2024年台灣總統選舉期間，台北的投票點。台灣將於11月28日舉行地方選舉。" height="700" src="https://static01.nyt.com/images/2026/11/23/multimedia/23dc-Taiwan-disinfo-vgfc/23dc-Taiwan-disinfo-vgfc-master1050.jpg" width="1050"/><figcaption><span>2024年台灣總統選舉期間，台北的投票點。台灣將於11月28日舉行地方選舉。</span> <cite>Lam Yik Fei for The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Researchers have discovered a coordinated social media campaign powered by artificial intelligence that appears to be trying to influence elections in Taiwan this month.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究人員發現，一場由人工智慧驅動的協同社群媒體行動似乎正試圖影響台灣本月的選舉。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Fake accounts believed to be controlled by groups aligned with China’s government are pushing messages that support the policies and positions of the Chinese Communist Party.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">據信由與中國政府立場一致的團體控制的虛假帳號正在推送支持中國共產黨政策與立場的信息。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">China’s information operations have traditionally lacked sophistication, according to U.S. former officials and experts. But the research suggests that China has used A.I. — and possibly studied Russian efforts — to improve its methods.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國前官員和專家表示，中國的信息戰行動傳統上較為簡陋。但這項研究表明，中國已利用人工智慧——並可能借鑒了俄羅斯的做法——來改進其手段。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Taiwan is holding local elections on Nov. 28 to fill more than 11,000 offices in cities and counties across the island. China considers Taiwan, a self-governed democracy, as part of its territory.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">台灣將於11月28日舉行地方選舉，選出全島各縣市11000多個公職人員。中國將實行自治民主制度的台灣視為其領土的一部分。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The National Security Bureau, Taiwan’s civilian intelligence agency, has warned about Chinese interference in the election. And Taiwanese officials this month flagged to Meta thousands of accounts that they said were linked to China and were involved in the campaign.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>台灣民事情報機構「國家安全局」已就中國干預此次選舉發出警告。台灣官員本月也向Meta標記了數千個帳號，稱這些帳號與中國有關聯且參與了此次行動。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In October and November, researchers at Vanderbilt University observed “traditional, hybrid and A.I.-powered inauthentic activity” aimed at influencing the vote, according to the research report.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究報告顯示，10月和11月，范德堡大學的研究人員觀察到旨在影響投票的「傳統、混合以及人工智慧驅動的非真實活動」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Last year, Vanderbilt researchers uncovered an effort by GoLaxy, a Chinese company, to develop artificial intelligence tools to create sophisticated disinformation campaigns. Working with Doublethink Lab, a nonprofit organization in Taiwan, the researchers began searching for evidence of China’s expanding A.I.-powered influence operations.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>去年，范德堡大學的研究人員發現，中國企業中科天璣正試圖開發人工智慧工具，以製造複雜的虛假信息行動。研究人員與台灣非營利組織台灣民主實驗室合作，開始尋找中國不斷擴大的人工智慧驅動影響力行動的證據。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The research uses a new tool developed by the Vanderbilt lab to detect A.I.-generated posts and other inauthentic material in both English and Chinese.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這項研究使用范德堡大學實驗室開發的一種新工具，檢測英文和中文的人工智慧生成帖文及其他非真實內容。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The research team “developed methods to find subtle differences between human and A.I. operators’ tone and word preferences,” said Brett J. Goldstein, the director of the Wicked Problems Lab at Vanderbilt’s Institute of National Security. “This let us identify patterns across seemingly unrelated accounts that were peddling political narratives.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德堡大學國家安全研究所棘手問題實驗室主任布雷特·J·戈德斯坦表示，研究團隊「開發了識別人類與人工智慧操作者在語氣和用詞偏好上細微差異的方法」。「這使我們能夠在看似互不關聯、卻都在兜售政治敘事的帳號之間識別出規律。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The tool and the researchers found inauthentic accounts aligned with Beijing that were either posting on nonpolitical topics, like food, animals or celebrities, or creating social media feeds featuring sexualized imagery, known as “thirst traps.” Interspersed in those otherwise entertainment-oriented feeds were messages supporting China or unification.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該工具和研究人員發現，與北京立場一致的非真實帳號要麼發布美食、動物或名人等非政治話題，要麼創建包含性感挑逗圖像的社群媒體動態，即所謂的「誘惑陷阱」。在這些原本以娛樂為主的動態中，穿插著支持中國或統一的信息。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some of the accounts posted material directly attacking the Democratic Progressive Party, Taiwan’s governing party, accusing it of corruption or criticizing its record in office.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">部分帳號發布內容直接攻擊台灣執政黨民進黨，指責其腐敗或批評其施政表現。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other fake accounts took a more sophisticated approach. One presented itself as supporting the governing party. But that inauthentic account responded to pro-Chinese accounts that were not gaining traction to give Beijing’s messaging more attention, the Vanderbilt researchers found.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">還有一些虛假帳號則採取了更為老練的手法。范德堡大學研究人員發現，有一個帳號將自己包裝成支持執政黨的形象，卻會回覆那些未能引起關注的親中帳號，以使北京方面的信息獲得更多關注。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Accounts across platforms coordinate messaging and appear to be testing different strategies, the research found.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">研究發現，跨平台的帳號在信息發布上相互協調，且似乎正在測試不同的策略。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Spokespeople for the Chinese Embassy and Taiwan’s office in Washington did not respond to requests for comment.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">中國駐美大使館和台灣駐華盛頓代表處的發言人均未回應置評請求。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The technique of putting political messages in unrelated, celebrity-focused feeds was observed during the U.S. midterm elections. Alethea, a threat intelligence company, identified the fake accounts, which were aiming to undermine Democrats, as being Russian in origin.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p"><span>在無關的、以名人為中心的動態中植入政治信息的手法，在美國期中選舉期間也曾被觀察到。威脅情報公司Alethea認定，那些旨在削弱民主黨人的虛假帳號源自俄羅斯。</span></div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Vanderbilt research showed that accounts spent months posting provocative A.I.-generated images on Instagram, and then added political content on Threads, a companion social media platform, as Taiwan’s election approached.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德堡大學的研究顯示，一些帳號花了數月時間在Instagram上發布挑逗性的人工智慧生成圖像，隨後在台灣選舉臨近之際，在配套社群媒體平台Threads上加入了政治內容。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/asia-pacific_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Brett Benson, a political science professor at Vanderbilt, said the new disinformation campaign in Taiwan showed a remarkable amount of patience.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德堡大學政治學教授布雷特·本森表示，台灣此次出現的新型虛假信息行動展現出了驚人的耐心。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“Synthetic personas sometimes spend months posting nonpolitical content, cultivating followers and establishing an apparently authentic social media presence before introducing political messaging,” Mr. Benson said. “A.I. is making it easier to construct and maintain synthetic identities that can establish credibility within social networks before being mobilized for political purposes.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「合成虛擬人設有時會花數月時間發布非政治內容，積累粉絲並建立看似真實的社群媒體形象，然後再引入政治信息，」本森說。「人工智慧正使構建和維護合成身份變得更加容易，這些身份在被用於政治目的之前，就能在社交網路中建立起可信度。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Many of the accounts tracked by the research appeared to be so-called cyborg accounts, which mix A.I.-generated imagery or slogans with the work of human propagandists. Some of the accounts posted during regular business hours, suggesting that people were involved in operating them and that they were not purely automated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">該研究追蹤的許多帳號似乎是所謂的「賽博格」帳號，即將人工智慧生成的圖像或口號與人類宣傳人員的工作相結合。部分帳號在正常辦公時間發帖，表明有人參與操作，並非純粹自動化運作。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The earlier Vanderbilt research on GoLaxy revealed that the company was trying to use A.I. to create hyper-targeted messaging, hoping to craft large numbers of messages to persuade people based on their specific views.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德堡大學此前針對中科天璣的研究顯示，該公司曾試圖利用人工智慧製造超精準定向信息，希望根據人們的具體觀點撰寫大量信息以說服受眾。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The new Vanderbilt program has not found evidence of such hyper-targeted campaigns, but researchers said they were continuing to look.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">范德堡大學的這一新項目尚未發現此類超精準定向行動的證據，但研究人員表示他們仍在繼續尋找。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><p class="cn-p">Julian E. Barnes為《紐約時報》報導美國情報機構和國際安全事務。他撰寫安全相關議題已有20餘年。</p></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/asia-pacific/20261126/taiwan-elections-misinformation/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>

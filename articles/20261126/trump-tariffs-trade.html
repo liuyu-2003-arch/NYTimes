@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球貿易戰再次升級 - NYTimes</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --text-color: #111;
+            --base-font-size: 18px;
+            --base-font-family: 'Georgia', 'Times New Roman', 'SongTi', serif;
+            --line-height: 1.8;
+        }
+        body {
+            font-family: var(--base-font-family);
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: font-size 0.2s, font-family 0.2s;
+        }
+
+        /* --- 语言显示模式 --- */
+        body.mode-en .cn-p { display: none; }
+        body.mode-cn .en-p { display: none; }
+
+        /* 顶部控制栏 */
+        .controls-panel {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .controls-panel::-webkit-scrollbar { display: none; }
+
+        .controls-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+        .control-group { display: flex; align-items: center; gap: 5px; }
+        .control-group label { font-weight: 600; color: #555; font-size: 12px; display: none; }
+        @media (min-width: 500px) { .control-group label { display: block; } }
+
+        .btn-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .btn {
+            background: #fff; border: none; border-right: 1px solid #ccc;
+            padding: 5px 10px; cursor: pointer; font-size: 12px; color: #333;
+            transition: all 0.2s;
+        }
+        .btn:last-child { border-right: none; }
+        .btn:hover { background: #f5f5f5; }
+        .btn.active { background: #333; color: white; }
+
+        /* 容器间距调优 */
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px 20px 20px; /* 缩减底部 padding */
+            min-height: 100vh;
+        }
+
+        h1.cn-headline { font-weight: 700; margin-bottom: 15px; font-size: 1.8em; line-height: 1.3; color: #000; }
+        h2.en-headline { font-weight: 400; font-style: italic; margin-top: 0; margin-bottom: 2em; font-size: 1.2em; color: #555; }
+
+        .meta-line {
+            font-family: sans-serif; font-size: 0.85rem; color: #666;
+            margin-bottom: 2.5em; padding-bottom: 1em; border-bottom: 1px solid #eee; font-weight: 500;
+        }
+
+        .article-paragraph { margin-bottom: 2em; }
+        p { margin: 0 0 1em 0; }
+        .en-p { color: #222; margin-bottom: 0.6em; }
+        .cn-p { color: #004276; font-weight: 500; }
+
+        .back-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-shrink: 0; }
+        .back-link:hover { color: #000; }
+
+        figure { margin: 2em 0; width: 100%; }
+        img { max-width: 100%; height: auto; display: block; background: #f0f0f0; border-radius: 4px; }
+        figcaption { font-size: 0.85em; color: #888; margin-top: 0.8em; text-align: center; }
+
+        /* 内容页紧凑 Footer */
+        .footer-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            font-family: sans-serif;
+        }
+        .footer-link a { color: #888; text-decoration: none; font-size: 0.85em; }
+        .footer-link a:hover { color: #333; text-decoration: underline; }
+
+        .home-footer-link {
+            display: inline !important;
+            margin-left: 10px;
+            font-weight: 600;
+            border-left: 1px solid #ddd;
+            padding-left: 10px;
+            color: #888 !important;
+        }
+    </style>
+    <script>
+        function setLanguage(lang, btn) {
+            document.body.classList.remove('mode-dual', 'mode-en', 'mode-cn');
+            document.body.classList.add('mode-' + lang);
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-lang', lang);
+        }
+
+        function setFontSize(size, btn) {
+            const root = document.documentElement;
+            if(size === 'small') root.style.setProperty('--base-font-size', '18px');
+            if(size === 'medium') root.style.setProperty('--base-font-size', '22px');
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-size', size);
+        }
+
+        function setFontFamily(font, btn) {
+            const root = document.documentElement;
+            if(font === 'serif') root.style.setProperty('--base-font-family', "'Georgia', 'Times New Roman', 'SongTi', serif");
+            if(font === 'reading') root.style.setProperty('--base-font-family', "'Segoe UI', 'Microsoft YaHei', sans-serif");
+            updateActive(btn);
+            localStorage.setItem('nyt-pref-font', font);
+        }
+
+        function updateActive(target) {
+            const group = target.parentElement;
+            group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            target.classList.add('active');
+        }
+
+        window.onload = function() {
+            const savedSize = localStorage.getItem('nyt-pref-size') || 'small';
+            const savedFont = localStorage.getItem('nyt-pref-font') || 'serif';
+            const savedLang = localStorage.getItem('nyt-pref-lang') || 'dual';
+
+            let targetSize = savedSize === 'large' ? 'medium' : savedSize;
+            let targetFont = savedFont === 'sans' ? 'serif' : savedFont;
+
+            const sizeBtn = document.querySelector(`.size-btn[data-size="${targetSize}"]`);
+            if(sizeBtn) sizeBtn.click();
+
+            const fontBtn = document.querySelector(`.font-btn[data-font="${targetFont}"]`);
+            if(fontBtn) fontBtn.click();
+
+            const langBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+            if(langBtn) langBtn.click();
+        }
+    </script>
+</head>
+<body>
+<div class="controls-panel">
+    <a href="https://nytimes.324893.xyz" class="back-link">← Index</a>
+    <div class="controls-right">
+        <div class="control-group">
+            <label>Lang</label>
+            <div class="btn-group">
+                <button class="btn lang-btn" data-lang="dual" onclick="setLanguage('dual', this)">Dual</button>
+                <button class="btn lang-btn" data-lang="en" onclick="setLanguage('en', this)">EN</button>
+                <button class="btn lang-btn" data-lang="cn" onclick="setLanguage('cn', this)">CN</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Size</label>
+            <div class="btn-group">
+                <button class="btn size-btn" data-size="small" onclick="setFontSize('small', this)">A</button>
+                <button class="btn size-btn" data-size="medium" onclick="setFontSize('medium', this)">A+</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Font</label>
+            <div class="btn-group">
+                <button class="btn font-btn" data-font="serif" onclick="setFontFamily('serif', this)">Serif</button>
+                <button class="btn font-btn" data-font="reading" onclick="setFontFamily('reading', this)">Modern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container">
+    <h1 class="cn-headline">全球貿易戰再次升級</h1>
+    <h2 class="en-headline">Trump Administration Unveils New Tariffs for Dozens of Countries, Citing Unfair Practices</h2>
+    <div class="meta-line">TONY ROMM, ANA SWANSON <span style="margin: 0 8px;">•</span> 2026-11-26</div>
+
+    <div class="article-body">
+        <article class="article-content article-dual font-normal"><figure class="article-span-photo"><img alt="川普總統將第二次依據《1974年貿易法》第301條大規模徵收關稅。" height="700" src="https://static01.nyt.com/images/2026/11/24/multimedia/00dc-hfo-trump-tariffs-zptw/00dc-hfo-trump-tariffs-zptw-master1050.jpg" width="1050"/><figcaption><span>川普總統將第二次依據《1974年貿易法》第301條大規模徵收關稅。</span> <cite>The New York Times</cite></figcaption></figure><div class="row"><section class="article-body"><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration proposed a slate of new tariffs on Wednesday targeting imports from dozens of countries, including China, Japan and the members of the European Union, marking the latest expansion of a global trade war that faces mounting obstacles in Congress and the courts.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府週三提出了一系列新關稅措施，針對來自數十個國家的進口商品，其中包括中國、日本和歐盟成員國。這標誌著全球貿易戰再升級，儘管這場貿易戰在國會和法院面臨越來越多的阻力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The administration framed the duties as a response to unfair trade practices, as it accused some of its closest economic partners of overproducing certain products, undercutting American businesses and contributing to a swelling U.S. trade deficit.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">政府將這些關稅描繪為對不公平貿易行為的回應，並指責一些最親密的經濟夥伴過度生產某些產品，衝擊美國企業，並導致美國貿易逆差不斷擴大。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The newly unveiled roster of tariffs included a 20 percent tax on some imports from China, which the Trump administration signaled it could ratchet up — to 40 percent — if Beijing does not hew to the terms of a trade truce it has struck with Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">新公布的關稅清單包括對部分中國進口商品徵收20%的關稅，川普政府表示，如果北京不遵守與華盛頓達成的貿易休戰條款，可能將稅率提高至40%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration also proposed similarly high and potentially escalating rates on goods from the 27 members of the European Union and other trading partners including Cambodia, India, South Korea, Taiwan and Vietnam. Some of those duties could reach up to 20 percent as well. And it coupled the sweeping action with a separate, specific proposal seeking to raise rates on Brazil, targeting its sugar and aircraft exports.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府還提議對歐盟27個成員國以及柬埔寨、印度、韓國、台灣和越南等其他貿易夥伴的商品徵收類似的高稅率，且可能進一步上調。其中一些關稅也可能高達20%。與此同時，川普政府還單獨提出了一項針對巴西的加稅方案，目標是該國出口的糖和飛機。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid1","adv":""}' id="medium-rectangle-ad-0"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_1__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Before the new tariffs take effect, the administration must fulfill a set of final regulatory requirements, which would include seeking public feedback, according to Jamieson Greer, the U.S. trade representative, who appeared Wednesday on CNBC. He described the approach as “targeted,” but noted that discussions continued with each of the affected trading partners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">美國貿易代表傑米森·格里爾週三在接受CNBC採訪時表示，在新關稅生效之前，政府必須完成一系列最終監管要求，其中包括徵求公眾意見。他稱這種做法是「具針對性的」，但指出，美國仍在與每個受影響的貿易夥伴進行磋商。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In many cases, though, Mr. Greer said the tariffs would not stack on top of those that the administration had already put in place. That included duties that President Trump has applied on national security grounds to products such as steel and cars. He said the White House also sought to keep its tariffs in line with the trade agreements it had already brokered.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">不過，格里爾表示，在許多情況下，新關稅不會與川普政府已經實施的關稅疊加徵收，其中包括川普總統以國家安全為由對鋼鐵和汽車等產品徵收的關稅。他說，白宮也力求確保其關稅措施與已經達成的貿易協議保持一致。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The battery of new tariffs nonetheless arrived at a precarious political moment for Mr. Trump, who has continued to engage in a strategy of aggressive trade brinkmanship even after the Supreme Court struck down his initial slate of country-by-country duties this year.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">然而，這一系列新關稅措施出台之際，川普正處於政治上的艱難時刻。即便最高法院今年已裁定他最初推出的針對不同國家分別徵收關稅的措施無效，他仍繼續推行激進的貿易邊緣政策。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump has long portrayed tariffs as essential for boosting domestic manufacturing, raising revenue and fostering better trade deals. But his shifting policies have still counted among the many forces driving up prices for consumers and business, feeding a public backlash that ultimately stripped Republicans of their congressional majorities in the midterm election.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">長期以來，川普一直宣稱，關稅對於振興國內製造業、增加財政收入以及爭取更有利的貿易協議至關重要。但他反覆變化的政策仍是推高消費者和企業成本的諸多因素之一，由此引發的公眾不滿最終導致共和黨在期中選舉中失去了國會兩院的多數席位。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Still, the White House risked touching off a widespread backlash — angering Congress, as Democrats prepare to take control of the House and the Senate, and rattling Wall Street, where stocks fell sharply to open trading on Wednesday. It coincided with the government’s release of a key gauge of inflation, which showed that prices rose 3.8 percent in October from a year earlier, marking a pickup from September.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">儘管如此，白宮還是冒著引發廣泛反彈的風險採取了這一行動——此舉可能激怒即將由民主黨掌控參眾兩院的國會，也令華爾街感到不安，週三股市開盤後大幅下挫。與此同時，政府公布了一項關鍵通膨指標，數據顯示10月份物價同比上漲3.8%，漲幅較9月份有所加快。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The announcement also appeared to rankle the country’s closest allies and trading partners. Some had already struck deals with Mr. Trump to avert higher tariffs — or were in the midst of negotiations — when the administration signaled Wednesday that it could raise rates even higher.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">這一宣布似乎也激怒了美國最親密的盟友和貿易夥伴。其中一些已與川普達成協議，以避免被徵收更高的關稅，還有一些仍在談判中，而川普政府週三卻釋放出可能進一步提高關稅稅率的信號。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid2","adv":""}' id="medium-rectangle-ad-1"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_2__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In the European Union, officials said they would study the Trump administration’s findings but disputed that Europe was the source of overproduction. Olof Gill, a spokesperson for the bloc, said E.U. members expected “any measure from this investigation to respect” the trade deal between Brussels and Washington.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">歐盟官員表示將研究川普政府的調查結果，但質疑歐洲是產能過剩源頭的說法。歐盟發言人奧洛夫·吉爾表示，歐盟成員國希望美國「根據此次調查採取的任何措施」都能尊重布魯塞爾與華盛頓之間的貿易協議。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Mr. Trump’s newly proposed tariffs on the European Union would be set at 15 percent, as the agreement between trans-Atlantic partners had stipulated. But the administration also warned it could raise rates as high as 25 percent if it found compliance was “unsatisfactory.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">按照跨大西洋貿易夥伴之間達成的協議，川普此次提議對歐盟徵收的關稅稅率將定為15%。但川普政府同時警告，如果發現歐盟履行協議的情況「不盡如人意」，可能將稅率提高至25%。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">In China, meanwhile, officials also reacted forcefully to the White House’s latest tariff actions, just days after the country’s leader, Xi Jinping, hosted Mr. Trump for another round of trade talks. “The so-called overcapacity is a false proposition, and China opposes using it as a pretext for political manipulation,” said Guo Jiakun, spokesman for China’s foreign ministry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">與此同時，中國官員也對白宮最新的關稅行動作出了強烈回應。就在幾天前，中國領導人習近平剛剛接待川普，舉行了新一輪貿易談判。中國外交部發言人郭嘉昆表示：「所謂『產能過剩』是一個偽命題，中方反對以此為藉口進行政治操弄。」</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The Trump administration said it would enforce the new duties under Section 301 of the Trade Act of 1974, which permits the U.S. government to investigate unfair trade practices abroad and impose tariffs in response to its findings. It is a power that presidents of both parties, including Mr. Trump, have invoked successfully in the past.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">川普政府表示將根據1974年《貿易法》第301條執行新關稅。該條款允許美國政府調查海外不公平貿易行為，並根據調查結果徵收關稅。過去，包括川普在內的兩黨總統都曾成功援引這一權力。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Under Section 301, the government can impose tariffs only after investigating and uncovering evidence that other countries discriminated or impeded U.S. industries. The administration announced two such inquiries in March, as it sought ways to resuscitate the tariffs that the Supreme Court had invalidated.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">根據第301條，政府只有在調查並發現其他國家歧視或阻礙美國產業的證據後，才能徵收關稅。今年3月，為尋求恢復被最高法院裁定無效的關稅措施，川普政府宣布啟動兩項此類調查。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">One of those inquiries focused on dozens of countries for failing to crack down on forced labor. Those tariffs, which took effect in July, sparked a swift court challenge — and now await a verdict from a panel of judges that recently seemed poised to rule against the administration.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其中一項調查針對數十個未能有效打擊強迫勞動的國家。由此產生的關稅於7月生效，隨即遭到法律挑戰。目前，這些關稅正等待一個法官合議庭作出裁決，而該合議庭最近似乎傾向於作出不利於川普政府的裁決。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid3","adv":""}' id="medium-rectangle-ad-2"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_3__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">The second investigation targeted what the administration has described as “excess capacity.” At the time, Jamieson Greer, the U.S. trade representative, said the inquiry would focus on the extent to which dozens of countries had unfairly boosted their manufacturing sectors and overproduced goods to the detriment of American industry.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">第二項調查針對川普政府所稱的「產能過剩」問題。美國貿易代表傑米森·格里爾當時表示，調查將著重了解數十個國家在多大程度上以不公平的手段扶持本國製造業、過度生產商品，從而損害美國工業的利益。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">On Mr. Greer’s radar was a wide range of foreign practices, including other countries’ use of state subsidies; their currency management; their support for state-owned enterprises; and their economic, labor and environmental regulations. For the administration, the main concern was that these practices gave foreign industry an unfair advantage over American manufacturers while driving up the nation’s trade deficit, which Mr. Trump has struggled to reduce.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">格里爾關注的是外國採取的一系列做法，包括政府補貼、貨幣管理、對國有企業的扶持，以及經濟、勞工和環境監管政策。川普政府主要擔心的是，這些做法使外國工業相對於美國製造商獲得了不公平的競爭優勢，同時加劇了美國的貿易逆差，而川普一直未能有效縮減這一逆差。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">This month, the government reported that the deficit reached $105 billion in September, a slight decrease from August yet still the second-largest total since Mr. Trump returned to office. A key force behind that imbalance is artificial intelligence, a priority for Mr. Trump, as U.S. firms snap up expensive semiconductors and other computing components from abroad.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">本月，美國政府公布的數據顯示，9月份貿易逆差達到1050億美元，較8月份略有下降，但仍是川普重返白宮以來第二高的水平。造成這一貿易失衡的一個重要因素是人工智慧，而這恰恰是川普的優先事項，因為美國企業正在從海外大量採購價格高昂的半導體及其他計算機零部件。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Some business owners criticized the tariffs, saying that Americans were already struggling with affordability concerns and that new tariffs could force them to raise prices again.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">一些企業主對新關稅提出批評，稱美國民眾已經在為生活成本問題苦苦掙扎，而新關稅可能迫使企業再次提高價格。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Anne-Marie De Witt, the chief executive of Fireside Games, a board game publisher in Austin, Texas, said the move was “especially disheartening after the electorate spoke extremely clearly about the hardship tariffs are placing on the budgets of all Americans.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">總部位於得克薩斯州奧斯汀的桌游發行商Fireside Games的首席執行官安妮-瑪麗·德維特表示，此舉「尤其令人沮喪，選民已經非常明確地表達了關稅給所有美國人的生計造成的困難」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">She issued the criticism alongside We Pay the Tariffs, a coalition of small businesses that has fought Mr. Trump’s trade policies. In response to the announcement on Wednesday, Ms. De Witt added, “We have all suffered enough.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">她與一直反對川普貿易政策的小企業聯盟「關稅由我們埋單」共同提出了這一批評。針對週三公布的關稅措施，德維特還說：「我們受的苦已經夠多了。」</div></div></div></div><div class="article-body-aside col-lg-3"></div></div><div class="big_ad" data-target='{"pos":"mid4","adv":""}' id="medium-rectangle-ad-3"><small>廣告</small><div id="google_ads_iframe_/29390238/cnnyt/business_4__container__" style="border: 0pt; width: 300px; height: 0px;"></div></div><div class="article-partial"><div class="article-body-item col-lg-5"><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Other groups welcomed the move. In a release, the United Steelworkers union called the crackdown “long overdue" and said that extended global dialogues in recent years had failed to make progress on excess capacity in a range of industries, from steel and aluminum to chemicals, tires and ships.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">其他團體則歡迎這一舉措。美國鋼鐵工人聯合會在新聞稿中稱此次打擊「早該進行」，並表示近年來曠日持久的全球對話未能在鋼鐵、鋁、化工、輪胎和船舶等一系列行業的產能過剩問題上取得進展。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“America’s manufacturing workers have been under attack for far too long, and now we have an opportunity to start restoring fair markets,” said Roxanne Brown, the president of United Steelworkers International.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「美國製造業工人受到衝擊的時間已經太久了，現在我們有機會著手恢復公平的市場競爭環境，」美國鋼鐵工人國際聯合會主席羅克珊·布朗說。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">Absent from the tariffs unveiled on Wednesday were Norway and Mexico, which had been among the countries that the Trump administration investigated. A senior official said reviews continued with respect to both trading partners.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">挪威和墨西哥也曾是川普政府的調查對象，但並未出現在週三公布的關稅清單上。一名高級官員表示，針對這兩個貿易夥伴的審查仍在繼續。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“The problem of global structural overcapacity is very real for many American companies and industries,” said Timothy Brightbill, a top trade lawyer at the law firm Wiley Rein. He explained that other countries’ overproduced goods also affected global markets “where U.S. companies would like to be able to export but can’t due to unfair competition.”</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「對美國許多企業和行業而言，全球結構性產能過剩是一個非常現實的問題，」Wiley Rein律師事務所的資深貿易律師蒂莫西·布賴特比爾說。他解釋說，其他國家過度生產的商品也對全球市場造成了影響，「美國企業原本希望向這些市場出口，卻因不公平競爭而無法做到」。</div></div></div><div class="row article-dual-body-item"><div class="col-lg-6"><div class="article-paragraph en-p">“There are likely challenges in quantifying the amount of structural overcapacity in particular industries, but there is no doubt that this problem is real and growing,” Mr. Brightbill continued.</div></div><div class="col-lg-6"><div class="article-paragraph cn-p">「量化特定行業的結構性產能過剩可能存在一定困難，但毫無疑問，這個問題確實存在，而且正在日益加劇，」布賴特比爾接著說道。</div></div></div></div><div class="article-body-aside col-lg-3"></div></div></section></div><div class="col-lg-12 row author-info-container"><footer class="author-info"><div class="css-53u6y8" data-poster=""><p class="cn-p">黃瑞黎(Sui-Lee Wee)和Jeanna Smialek對本文有報導貢獻。</p><p class="cn-p">Tony Romm常駐華盛頓，為時報報導經濟政策和川普政府新聞。</p><p class="cn-p">Ana Swanson報導貿易和國際經濟新聞，常駐華盛頓。她從事新聞工作已超過十年。</p><div class="" data-poster=""><br/></div></div></footer></div></article>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://cn.nytimes.com/business/20261126/trump-tariffs-trade/zh-hant/dual/" target="_blank">View Original ↗</a>
+        <a href="https://324893.xyz/" class="home-footer-link">324893.xyz</a>
+    </div>
+</div>
+</body>
+</html>
